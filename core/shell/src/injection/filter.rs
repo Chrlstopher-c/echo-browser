@@ -16,8 +16,9 @@ use tracing::debug;
 /// une balise d'accueil et on insere au plus tot.
 const SEARCH_LIMIT: usize = 96 * 1024;
 
-/// Quantite retenue avant d'inserer, le temps de reperer le jeton de la page.
-const MIN_SCAN: usize = 48 * 1024;
+/// Quantite au-dela de laquelle on renonce a trouver un jeton et on insere sans.
+/// Une page qui n'en utilise pas accepte les scripts en ligne de toute facon.
+const NONCE_PATIENCE: usize = 12 * 1024;
 
 /// Etat du filtre, partage entre les clones que CEF fabrique.
 #[derive(Default)]
@@ -88,12 +89,13 @@ impl HtmlInjector {
         }
         state.scanned.extend_from_slice(&incoming);
 
-        // Retenir un peu de flux avant d'inserer : le jeton de la page arrive plus loin
-        // que la balise d'accueil. L'ordre final ne change pas — le traitement reste en
-        // tete du document, donc devant les scripts du site.
-        let enough = state.scanned.len() >= MIN_SCAN || last_chunk;
+        // Rien ne s'affiche tant que le flux est retenu : on part des qu'on a de quoi
+        // travailler — une balise d'accueil et le jeton de la page — sans attendre le
+        // plafond. Le jeton apparait des les premiers kilo-octets.
         let reached_limit = state.scanned.len() >= SEARCH_LIMIT || last_chunk;
-        if !enough {
+        let ready = insertion_point(&state.scanned).is_some()
+            && (page_nonce(&state.scanned).is_some() || state.scanned.len() >= NONCE_PATIENCE);
+        if !ready && !reached_limit {
             return;
         }
         let Some(_) = insertion_point(&state.scanned).or(reached_limit.then_some(0)) else {
@@ -118,6 +120,8 @@ impl HtmlInjector {
         debug!(
             position = at,
             octets = payload.len(),
+            retenu = scanned.len(),
+            jeton = nonce.is_some(),
             politiques_desamorcees = disarmed,
             "traitement insere dans le document"
         );
