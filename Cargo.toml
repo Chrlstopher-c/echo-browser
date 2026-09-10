@@ -3,6 +3,7 @@ resolver = "3"
 members = [
     "core/contract",
     "core/extensions",
+    "core/library",
     "core/shell",
     "core/shield",
 ]

@@ -204,7 +204,11 @@ pub fn publish_extensions() {
             name: extension.name,
             version: extension.version,
             enabled: extension.enabled,
-            pending,
+            // Seules celles que nous chargeons nous-memes attendent une relance ;
+            // celles du catalogue sont prises en compte immediatement par Chromium.
+            pending: pending && extension.from_command_line,
+            removable: extension.from_command_line,
+            icon: None,
         })
         .collect();
     publish(&CoreEvent::ExtensionsChanged { extensions: view, restart_pending: pending });

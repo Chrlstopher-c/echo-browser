@@ -23,6 +23,11 @@ pub struct Tab {
     pub history: Vec<String>,
     /// Position courante dans `history`.
     pub position: usize,
+    pub pinned: bool,
+    /// Facteur de zoom, 1.0 etant la taille naturelle.
+    pub zoom: f32,
+    /// Vrai quand la page joue du son.
+    pub audible: bool,
 }
 
 impl Tab {
@@ -74,6 +79,10 @@ impl Tab {
             can_go_forward,
             favicon: None,
             security: security_of(&self.url),
+            pinned: self.pinned,
+            zoom: self.zoom,
+            audible: self.audible,
+            asleep: false,
         }
     }
 
@@ -152,6 +161,9 @@ impl Tabs {
             loading: true,
             history: vec![url.to_string()],
             position: 0,
+            pinned: false,
+            zoom: 1.0,
+            audible: false,
         });
         self.select(id);
         debug!(id, %url, "onglet ouvert");
