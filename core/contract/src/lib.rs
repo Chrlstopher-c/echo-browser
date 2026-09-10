@@ -24,8 +24,12 @@ pub enum UiRequest {
     SetShieldEnabled { enabled: bool },
     RefreshFilterLists { force: bool },
     OpenDevTools { id: TabId },
-    /// L'interface reclame une hauteur : le coeur repositionne la vue du contenu sous elle.
-    SetChromeHeight { pixels: u32 },
+    /// L'interface reclame une largeur : le coeur repositionne la vue du contenu a sa droite.
+    SetChromeWidth { pixels: u32 },
+    /// Replie ou deplie la barre laterale.
+    SetSidebarCollapsed { collapsed: bool },
+    /// Teinte dominante de l'espace courant, appliquee au cadre autour de la page.
+    SetAccent { color: String },
 }
 
 /// Ce que le coeur renvoie a l'interface.
@@ -51,6 +55,18 @@ pub struct TabView {
     pub can_go_back: bool,
     pub can_go_forward: bool,
     pub favicon: Option<String>,
+    /// Etat de la connexion, tel que le coeur le connait.
+    pub security: Security,
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub enum Security {
+    Secure,
+    Mixed,
+    Invalid,
+    Insecure,
+    Local,
 }
 
 /// L'etat du bouclier pour l'onglet courant.

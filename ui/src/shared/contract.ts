@@ -17,8 +17,12 @@ export type UiRequest =
   | { kind: 'setShieldEnabled'; enabled: boolean }
   | { kind: 'refreshFilterLists'; force: boolean }
   | { kind: 'openDevTools'; id: TabId }
-  /** L'interface reclame une hauteur : le coeur repositionne la vue du contenu sous elle. */
-  | { kind: 'setChromeHeight'; pixels: number }
+  /** L'interface reclame une largeur : le coeur repositionne la vue du contenu a sa droite. */
+  | { kind: 'setChromeWidth'; pixels: number }
+  /** Replie ou deplie la barre laterale. */
+  | { kind: 'setSidebarCollapsed'; collapsed: boolean }
+  /** Teinte dominante de l'espace courant, appliquee au cadre autour de la page. */
+  | { kind: 'setAccent'; color: string }
 
 /** Ce que le coeur renvoie a l'interface. */
 export type CoreEvent =
@@ -38,7 +42,11 @@ export interface TabView {
   canGoBack: boolean
   canGoForward: boolean
   favicon: string | null
+  /** Etat de la connexion, tel que le coeur le connait. */
+  security: Security
 }
+
+export type Security = 'secure' | 'mixed' | 'invalid' | 'insecure' | 'local'
 
 /** L'etat du bouclier pour l'onglet courant. */
 export interface ShieldView {
