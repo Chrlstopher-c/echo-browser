@@ -13,3 +13,6 @@ serde_json.workspace = true
 tracing.workspace = true
 ureq = "3"
 zip = { version = "6", default-features = false, features = ["deflate"] }
+
+[dev-dependencies]
+tracing-subscriber.workspace = true

@@ -437,6 +437,7 @@ dependencies = [
  "serde_json",
  "thiserror 2.0.20",
  "tracing",
+ "tracing-subscriber",
  "ureq",
  "zip",
 ]
@@ -448,6 +449,7 @@ dependencies = [
  "anyhow",
  "cef",
  "echo-contract",
+ "echo-extensions",
  "echo-shield",
  "parking_lot",
  "serde_json",

@@ -44,7 +44,7 @@ pub fn apply(process_type: &str, command_line: &mut CommandLine) {
     // fenetre et la laisse flotter. C'est aussi ce qui porte l'icone dans la barre des taches.
     switch_with_value(command_line, "class", APP_ID);
 
-    let loadable = installed_extensions(&extensions_dir());
+    let loadable = echo_extensions::Extensions::new(extensions_dir()).loadable();
     if !loadable.is_empty() {
         switch_with_value(command_line, "load-extension", &loadable.join(","));
         tracing::info!(nombre = loadable.len(), "extensions chargees au demarrage");
@@ -82,17 +82,4 @@ pub fn seed_shield_data() {
         }
     }
     tracing::warn!("aucun paquet de scriptlets trouve — lancer : bun tools/build-resources.mjs");
-}
-
-/// Les dossiers d'extension prets a charger — ceux qui portent un `manifest.json`.
-pub fn installed_extensions(dir: &Path) -> Vec<String> {
-    let Ok(entries) = std::fs::read_dir(dir) else {
-        return Vec::new();
-    };
-    entries
-        .filter_map(Result::ok)
-        .map(|entry| entry.path())
-        .filter(|path| path.join("manifest.json").is_file())
-        .filter_map(|path| path.to_str().map(str::to_owned))
-        .collect()
 }
