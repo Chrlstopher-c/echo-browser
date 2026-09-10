@@ -113,6 +113,25 @@ wrap_window_delegate! {
         fn window_runtime_style(&self) -> RuntimeStyle {
             self.runtime_style
         }
+
+        /// Identifie la fenetre aupres du gestionnaire de fenetres.
+        ///
+        /// Sans effet observable sur Wayland le 2026-09-10 : le rappel arrive avant
+        /// l'affichage, le pont recopie bien les valeurs, mais la fenetre reste sans
+        /// classe — Chromium les ignore pour une fenetre batie avec son systeme de vues.
+        /// Le titre, lui, est fiable : c'est par lui qu'une regle de fenetrage la vise.
+        fn linux_window_properties(
+            &self,
+            _window: Option<&mut Window>,
+            properties: Option<&mut LinuxWindowProperties>,
+        ) -> i32 {
+            let Some(properties) = properties else { return 0 };
+            properties.wayland_app_id = CefString::from(crate::flags::APP_ID);
+            properties.wm_class_class = CefString::from(crate::flags::APP_ID);
+            properties.wm_class_name = CefString::from(crate::flags::APP_ID);
+            properties.wm_role_name = CefString::from("browser");
+            1
+        }
     }
 }
 

@@ -8,6 +8,9 @@ use std::path::{Path, PathBuf};
 /// Mesure le 2026-09-10 sur RTX 3060 + Wayland.
 const DISABLED_FEATURES: &str = "Vulkan";
 
+/// Identifiant d'application, tel que le gestionnaire de fenetres le voit.
+pub const APP_ID: &str = "echo-browser";
+
 /// Repertoire ou l'export CEF a depose libcef.so, les .pak et icudtl.dat.
 pub fn cef_dir() -> PathBuf {
     std::env::var_os("CEF_PATH")
@@ -37,6 +40,9 @@ pub fn apply(process_type: &str, command_line: &mut CommandLine) {
         return;
     }
     switch_with_value(command_line, "disable-features", DISABLED_FEATURES);
+    // Sans identifiant d'application, le gestionnaire de fenetres ne sait pas ranger la
+    // fenetre et la laisse flotter. C'est aussi ce qui porte l'icone dans la barre des taches.
+    switch_with_value(command_line, "class", APP_ID);
 
     let loadable = installed_extensions(&extensions_dir());
     if !loadable.is_empty() {
