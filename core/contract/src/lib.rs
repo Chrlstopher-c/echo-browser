@@ -30,6 +30,13 @@ pub enum UiRequest {
     SetSidebarCollapsed { collapsed: bool },
     /// Teinte dominante de l'espace courant, appliquee au cadre autour de la page.
     SetAccent { color: String },
+    /// Installe une extension depuis un identifiant ou une adresse du catalogue Chrome.
+    InstallExtension { source: String },
+    RemoveExtension { id: String },
+    SetExtensionEnabled { id: String, enabled: bool },
+    /// Relance le navigateur pour appliquer les changements d'extensions.
+    /// Les onglets ouverts sont retrouves apres la relance.
+    RestartBrowser,
 }
 
 /// Ce que le coeur renvoie a l'interface.
@@ -41,6 +48,14 @@ pub enum CoreEvent {
     ShieldUpdated { id: TabId, state: ShieldView },
     FilterListsRefreshed { count: usize },
     Notice { level: NoticeLevel, message: String },
+    /// L'inventaire des extensions a change.
+    ExtensionsChanged {
+        extensions: Vec<ExtensionView>,
+        /// Vrai si une relance est necessaire pour que les changements prennent effet.
+        restart_pending: bool,
+    },
+    /// Le navigateur va se relancer : l'interface montre son ecran d'attente.
+    Restarting { reason: String },
 }
 
 /// L'etat d'un onglet tel que l'interface l'affiche.
@@ -79,6 +94,18 @@ pub struct ShieldView {
     pub active_here: bool,
     pub blocked_here: u64,
     pub blocked_total: u64,
+}
+
+/// Une extension telle que l'interface l'affiche.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ExtensionView {
+    pub id: String,
+    pub name: String,
+    pub version: String,
+    pub enabled: bool,
+    /// Vrai tant que l'etat affiche ne correspond pas a ce qui tourne reellement.
+    pub pending: bool,
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize)]

@@ -23,6 +23,13 @@ export type UiRequest =
   | { kind: 'setSidebarCollapsed'; collapsed: boolean }
   /** Teinte dominante de l'espace courant, appliquee au cadre autour de la page. */
   | { kind: 'setAccent'; color: string }
+  /** Installe une extension depuis un identifiant ou une adresse du catalogue Chrome. */
+  | { kind: 'installExtension'; source: string }
+  | { kind: 'removeExtension'; id: string }
+  | { kind: 'setExtensionEnabled'; id: string; enabled: boolean }
+  /** Relance le navigateur pour appliquer les changements d'extensions.
+   *  Les onglets ouverts sont retrouves apres la relance. */
+  | { kind: 'restartBrowser' }
 
 /** Ce que le coeur renvoie a l'interface. */
 export type CoreEvent =
@@ -31,6 +38,10 @@ export type CoreEvent =
   | { kind: 'shieldUpdated'; id: TabId; state: ShieldView }
   | { kind: 'filterListsRefreshed'; count: number }
   | { kind: 'notice'; level: NoticeLevel; message: string }
+  /** L'inventaire des extensions a change. */
+  | { kind: 'extensionsChanged'; extensions: ExtensionView[]; restartPending: boolean }
+  /** Le navigateur va se relancer : l'interface montre son ecran d'attente. */
+  | { kind: 'restarting'; reason: string }
 
 /** L'etat d'un onglet tel que l'interface l'affiche. */
 export interface TabView {
@@ -56,6 +67,16 @@ export interface ShieldView {
   activeHere: boolean
   blockedHere: number
   blockedTotal: number
+}
+
+/** Une extension telle que l'interface l'affiche. */
+export interface ExtensionView {
+  id: string
+  name: string
+  version: string
+  enabled: boolean
+  /** Vrai tant que l'etat affiche ne correspond pas a ce qui tourne reellement. */
+  pending: boolean
 }
 
 export type NoticeLevel = 'info' | 'warning' | 'error'
