@@ -18,6 +18,7 @@ const INITIAL_HEIGHT: i32 = 900;
 wrap_window_delegate! {
     pub struct BrowserWindowDelegate {
         chrome_view: RefCell<Option<BrowserView>>,
+        content_view: RefCell<Option<BrowserView>>,
         runtime_style: RuntimeStyle,
         initial_show_state: ShowState,
     }
@@ -38,15 +39,29 @@ wrap_window_delegate! {
             let (Some(window), Some(chrome)) = (window, chrome.as_ref()) else {
                 return;
             };
-            let mut view = View::from(chrome);
-            window.add_child_view(Some(&mut view));
+            // Disposition verticale : la bande d'interface en haut a sa hauteur preferee,
+            // la vue web dessous prend tout le reste (flex 1).
+            let layout = window.set_to_box_layout(Some(&vertical_layout()));
+            let mut chrome_view = View::from(chrome);
+            window.add_child_view(Some(&mut chrome_view));
+
+            let content = self.content_view.borrow().clone();
+            if let Some(content) = content.as_ref() {
+                let mut content_view = View::from(content);
+                window.add_child_view(Some(&mut content_view));
+                if let Some(layout) = layout {
+                    layout.set_flex_for_view(Some(&mut content_view), 1);
+                }
+            }
+
             window.set_title(Some(&CefString::from(WINDOW_TITLE)));
             window.show();
-            info!("fenetre du navigateur affichee");
+            info!(contenu = content.is_some(), "fenetre du navigateur affichee");
         }
 
         fn on_window_destroyed(&self, _window: Option<&mut Window>) {
             *self.chrome_view.borrow_mut() = None;
+            *self.content_view.borrow_mut() = None;
         }
 
         fn can_close(&self, _window: Option<&mut Window>) -> i32 {
@@ -73,9 +88,14 @@ wrap_window_delegate! {
 wrap_browser_view_delegate! {
     pub struct ChromeViewDelegate {
         runtime_style: RuntimeStyle,
+        preferred_height: i32,
     }
 
-    impl ViewDelegate {}
+    impl ViewDelegate {
+        fn preferred_size(&self, _view: Option<&mut View>) -> Size {
+            Size { width: INITIAL_WIDTH, height: self.preferred_height }
+        }
+    }
 
     impl BrowserViewDelegate {
         fn browser_runtime_style(&self) -> RuntimeStyle {
@@ -84,12 +104,20 @@ wrap_browser_view_delegate! {
     }
 }
 
-/// Cree la vue qui porte l'interface du navigateur.
-pub fn create_chrome_view(client: Option<&mut Client>, url: &str) -> Option<BrowserView> {
-    // Style Alloy impose : une vue en style Chrome ajoutee a une fenetre sur mesure cherche
-    // l'infrastructure d'onglets du vrai Chrome et fait planter le processus dans
-    // tabs::TabInterface::GetFromContents. Mesure le 2026-09-10, pile a l'appui.
-    let mut delegate = ChromeViewDelegate::new(RuntimeStyle::ALLOY);
+/// Disposition verticale de la fenetre.
+fn vertical_layout() -> BoxLayoutSettings {
+    BoxLayoutSettings {
+        horizontal: 0,
+        main_axis_alignment: AxisAlignment::START,
+        cross_axis_alignment: AxisAlignment::STRETCH,
+        default_flex: 0,
+        ..Default::default()
+    }
+}
+
+/// Cree une vue navigateur en style Alloy, seul style compatible avec une fenetre sur mesure.
+pub fn create_view(client: Option<&mut Client>, url: &str, preferred_height: i32) -> Option<BrowserView> {
+    let mut delegate = ChromeViewDelegate::new(RuntimeStyle::ALLOY, preferred_height);
     browser_view_create(
         client,
         Some(&CefString::from(url)),
@@ -98,4 +126,12 @@ pub fn create_chrome_view(client: Option<&mut Client>, url: &str) -> Option<Brow
         None,
         Some(&mut delegate),
     )
+}
+
+/// Cree la vue qui porte l'interface du navigateur.
+pub fn create_chrome_view(client: Option<&mut Client>, url: &str) -> Option<BrowserView> {
+    // Style Alloy impose : une vue en style Chrome ajoutee a une fenetre sur mesure cherche
+    // l'infrastructure d'onglets du vrai Chrome et fait planter le processus dans
+    // tabs::TabInterface::GetFromContents. Mesure le 2026-09-10, pile a l'appui.
+    create_view(client, url, CHROME_HEIGHT)
 }

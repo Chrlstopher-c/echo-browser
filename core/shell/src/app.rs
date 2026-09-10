@@ -8,6 +8,8 @@ use tracing::info;
 
 /// L'interface du navigateur, servie par le schema interne.
 const STARTUP_URL: &str = "echo://ui/index.html";
+/// Page ouverte dans le premier onglet.
+const HOME_URL: &str = "https://www.qwant.com/";
 
 wrap_app! {
     pub struct EchoApp;
@@ -46,8 +48,10 @@ wrap_browser_process_handler! {
             *self.client.borrow_mut() = Some(EchoClient::new(Default::default()));
             let mut client = self.client.borrow().clone();
             let chrome_view = window::create_chrome_view(client.as_mut(), &url);
+            let content_view = window::create_view(client.as_mut(), &home_url(), 0);
             let mut delegate = window::BrowserWindowDelegate::new(
                 RefCell::new(chrome_view),
+                RefCell::new(content_view),
                 RuntimeStyle::ALLOY,
                 ShowState::NORMAL,
             );
@@ -58,6 +62,15 @@ wrap_browser_process_handler! {
             self.client.borrow().clone()
         }
     }
+}
+
+/// Page ouverte dans la vue contenu au demarrage.
+fn home_url() -> String {
+    let Some(command_line) = command_line_get_global() else {
+        return HOME_URL.to_string();
+    };
+    let value = CefString::from(&command_line.switch_value(Some(&CefString::from("url")))).to_string();
+    if value.is_empty() { HOME_URL.to_string() } else { value }
 }
 
 /// URL d'ouverture : `--url=` si fournie, sinon la page de demarrage.
