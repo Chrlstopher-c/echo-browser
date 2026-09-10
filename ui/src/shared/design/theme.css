@@ -1,0 +1,100 @@
+/* Responsabilite : systeme de design d'Echo Browser — jetons semantiques, dark only. */
+@import 'tailwindcss';
+
+@import '@fontsource-variable/ibm-plex-sans/wght.css';
+@import '@fontsource/ibm-plex-mono/latin-400.css';
+@import '@fontsource/ibm-plex-mono/latin-ext-400.css';
+@import '@fontsource/ibm-plex-mono/latin-500.css';
+
+@theme {
+  /* Typographie — IBM Plex : industrielle, dense, lisible dix heures par jour. */
+  --font-sans: 'IBM Plex Sans Variable', 'IBM Plex Sans', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+
+  /* Surfaces, du plus profond au plus haut. */
+  --color-inset: #0c0d0e;
+  --color-shell: #121315;
+  --color-surface: #191b1e;
+  --color-raised: #212428;
+  --color-hover: #282c31;
+
+  /* Traits. */
+  --color-hairline: #2a2e33;
+  --color-edge: #3a3f46;
+
+  /* Encre. */
+  --color-ink: #e8e9eb;
+  --color-ink-muted: #9aa0a7;
+  --color-ink-faint: #676d74;
+
+  /* Etats semantiques. Le vert « garde » est l'identite du produit : bouclier actif. */
+  --color-guard: #55b98d;
+  --color-guard-deep: #1c3f31;
+  --color-warn: #d2a056;
+  --color-danger: #d5564c;
+
+  /* Geometrie du chrome. */
+  --radius-tab: 7px;
+  --radius-field: 8px;
+  --radius-panel: 12px;
+
+  --shadow-panel: 0 18px 40px -12px rgb(0 0 0 / 0.65), 0 0 0 1px var(--color-hairline);
+
+  --ease-chrome: cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  html,
+  body,
+  #racine {
+    height: 100%;
+  }
+
+  body {
+    margin: 0;
+    overflow: hidden;
+    background: var(--color-shell);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: 13px;
+    line-height: 1.35;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    user-select: none;
+    cursor: default;
+  }
+
+  button {
+    font: inherit;
+    color: inherit;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-guard);
+    outline-offset: 1px;
+  }
+
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-edge);
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+}
+
+@utility numerique {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
