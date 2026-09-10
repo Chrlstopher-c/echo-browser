@@ -10,7 +10,7 @@ pub type DownloadId = u32;
 
 /// Ce que l'interface demande au coeur.
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(tag = "kind", rename_all = "camelCase")]
+#[serde(tag = "kind", rename_all = "camelCase", rename_all_fields = "camelCase")]
 pub enum UiRequest {
     // --- Onglets et navigation ---
     NewTab { url: Option<String> },
@@ -80,7 +80,7 @@ pub enum UiRequest {
 
 /// Ce que le coeur renvoie a l'interface.
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(tag = "kind", rename_all = "camelCase")]
+#[serde(tag = "kind", rename_all = "camelCase", rename_all_fields = "camelCase")]
 pub enum CoreEvent {
     TabsChanged { tabs: Vec<TabView>, active: Option<TabId> },
     TabUpdated { tab: TabView },
@@ -237,4 +237,34 @@ pub enum NoticeLevel {
     Info,
     Warning,
     Error,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// `rename_all` ne renomme que les variantes : sans `rename_all_fields`, un champ en
+    /// deux mots reste en `snake_case` cote Rust alors que le miroir TypeScript ecrit du
+    /// `camelCase`. La demande partait, le coeur la rejetait, et le bouton recharger ne
+    /// faisait rien. Ce test lit les formes exactes que l'interface envoie.
+    #[test]
+    fn les_champs_en_deux_mots_suivent_le_miroir_typescript() {
+        let reload: UiRequest =
+            serde_json::from_str(r#"{"kind":"reload","id":1,"bypassCache":true}"#).expect("reload");
+        assert!(matches!(reload, UiRequest::Reload { id: 1, bypass_cache: true }));
+
+        let oubli: UiRequest =
+            serde_json::from_str(r#"{"kind":"removeHistoryEntry","url":"https://x/","visitedAt":42}"#)
+                .expect("removeHistoryEntry");
+        assert!(matches!(oubli, UiRequest::RemoveHistoryEntry { visited_at: 42, .. }));
+    }
+
+    /// Meme regle dans l'autre sens : ce que le coeur emet doit se lire cote interface.
+    #[test]
+    fn les_evenements_sortent_en_camel_case() {
+        let evenement = CoreEvent::ExtensionsChanged { extensions: Vec::new(), restart_pending: true };
+        let json = serde_json::to_string(&evenement).expect("serialisation");
+        assert!(json.contains("\"restartPending\":true"), "{json}");
+        assert!(!json.contains("restart_pending"), "{json}");
+    }
 }

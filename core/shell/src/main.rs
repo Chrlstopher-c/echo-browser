@@ -12,6 +12,7 @@ mod filtering;
 mod flags;
 mod identity;
 mod injection;
+mod presence;
 mod selftest;
 mod restart;
 mod search;
@@ -48,6 +49,8 @@ fn main() -> anyhow::Result<()> {
     let settings = browser_settings();
     let started = initialize(Some(args.as_main_args()), Some(&settings), Some(&mut app), std::ptr::null_mut());
     anyhow::ensure!(started == 1, "Chromium n'a pas demarre");
+
+    presence::ouvrir();
 
     info!("boucle de messages lancee");
     run_message_loop();

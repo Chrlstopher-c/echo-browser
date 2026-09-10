@@ -2,23 +2,30 @@
 
 **Statut** : navigateur fonctionnel, utilisable pour naviguer et bloquer — pas encore pour remplacer Zen au quotidien.
 **Stack** : Rust (coque, onglets, bouclier) · CEF 152 / Chromium 152 · React + TypeScript + Tailwind (interface)
+**Centre de contrôle** : fiche `.echoforge.yml` à jour — type `desktop`, sonde `4330`, `./start.sh` / `./stop.sh`.
 **Branche** : `refonte/rust-cef` — la branche `main` porte encore le MVP Electron abandonné.
 
 ## Ce qui fonctionne, vérifié dans le navigateur
-- Fenêtre native, interface en haut, page web dessous
+- Fenêtre native, colonne latérale à gauche, page dans un cadre à droite
 - Onglets multiples : ouverture, bascule sans rechargement, fermeture
 - Navigation : saisie d'adresse, précédent/suivant, rechargement
 - **Bouclier** : blocage réseau (180 000 règles, 6,5 µs/requête), remplacement de scripts publicitaires,
   masquage d'éléments, scriptlets d'uBlock Origin exécutés **avant le premier script du site**
 - **Aucune publicité sur YouTube**, pré-roll compris
 - Le navigateur se présente comme un Chrome de bureau français (empreinte vérifiée côté serveur)
+- Raccourcis clavier, onglets épinglés, déplacement dans la liste, zoom par onglet
+- Extensions : inventaire lu dans le profil Chromium, installation depuis la boutique
+- Favoris, historique daté, téléchargements réels, dix-neuf réglages — le tout en base SQLite
+- Interface complète : colonne latérale, feuilles bouclier / bibliothèque / extensions / réglages,
+  progression de chargement, plein écran qui démonte la barre
+- **Sonde de présence sur 127.0.0.1:4330** — le seul port ouvert, servant une page d'état au centre
+  de contrôle. Aucun en-tête d'origine croisée : une page web peut la solliciter, jamais la lire.
 
 ## Ce qui n'existe pas encore
-- Raccourcis clavier (Ctrl+T, Ctrl+W, Ctrl+L…)
-- Extensions : faisabilité prouvée, rien d'implémenté
-- Favoris, historique, téléchargements : panneaux dessinés, cœur muet
-- Plein écran vidéo, mode lecture, glisser-déposer des onglets
-- Design abouti — repoussé volontairement après le fonctionnel, référence donnée : l'app Qwant
+- Mode lecture
+- Pagination de l'historique : la recherche ne rend que les soixante premières entrées
+- Mise en sourdine et mise en veille d'un onglet : l'état est affiché, pas pilotable
+- Les extensions déclarées en ligne de commande demandent encore une relance
 
 ## Décisions structurantes
 - **CEF plutôt que Tauri.** Tauri sur Linux utilise WebKitGTK : aucune extension possible, moteur en retrait,

@@ -1,6 +1,11 @@
+# Fiche lue par le centre de controle. Le port n'est pas une interface : c'est la sonde
+# de presence du navigateur (core/shell/src/presence.rs), le seul port qu'il ouvre.
 name: echo-browser
 type: desktop
-stack: bun
-start: start.sh
-stop: stop.sh
+stack: rust
+port: 4330
+start: ./start.sh
+stop: ./stop.sh
 logs: logs/
+e2e:
+  url: http://127.0.0.1:4330
