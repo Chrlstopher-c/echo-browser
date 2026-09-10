@@ -5,37 +5,76 @@
 
 use serde::{Deserialize, Serialize};
 
-/// Identifiant d'onglet, partage par tous les domaines.
 pub type TabId = u32;
+pub type DownloadId = u32;
 
 /// Ce que l'interface demande au coeur.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "kind", rename_all = "camelCase")]
 pub enum UiRequest {
+    // --- Onglets et navigation ---
     NewTab { url: Option<String> },
     CloseTab { id: TabId },
     SelectTab { id: TabId },
+    /// Deplace un onglet a une nouvelle position dans la liste.
+    MoveTab { id: TabId, to: usize },
+    PinTab { id: TabId, pinned: bool },
     Navigate { id: TabId, input: String },
     GoBack { id: TabId },
     GoForward { id: TabId },
     Reload { id: TabId, bypass_cache: bool },
     Stop { id: TabId },
-    ToggleShieldForSite { id: TabId },
-    SetShieldEnabled { enabled: bool },
-    RefreshFilterLists { force: bool },
+    /// Facteur de zoom de la page, 1.0 etant la taille naturelle.
+    SetZoom { id: TabId, factor: f32 },
     OpenDevTools { id: TabId },
+    /// Sort du plein ecran, quand l'utilisateur le demande depuis l'interface.
+    ExitFullscreen,
+
+    // --- Mise en page ---
     /// L'interface reclame une largeur : le coeur repositionne la vue du contenu a sa droite.
     SetChromeWidth { pixels: u32 },
-    /// Replie ou deplie la barre laterale.
     SetSidebarCollapsed { collapsed: bool },
     /// Teinte dominante de l'espace courant, appliquee au cadre autour de la page.
     SetAccent { color: String },
-    /// Installe une extension depuis un identifiant ou une adresse du catalogue Chrome.
+
+    // --- Bouclier ---
+    ToggleShieldForSite { id: TabId },
+    SetShieldEnabled { enabled: bool },
+    RefreshFilterLists { force: bool },
+    /// Active ou desactive une liste de filtres.
+    SetFilterListEnabled { id: String, enabled: bool },
+
+    // --- Extensions ---
+    /// Ouvre la fiche d'une extension, ou le catalogue, pour que Chromium l'installe.
     InstallExtension { source: String },
     RemoveExtension { id: String },
     SetExtensionEnabled { id: String, enabled: bool },
-    /// Relance le navigateur pour appliquer les changements d'extensions.
-    /// Les onglets ouverts sont retrouves apres la relance.
+    /// Ouvre le gestionnaire d'extensions de Chromium.
+    OpenExtensionManager,
+
+    // --- Bibliotheque ---
+    AddBookmark { id: TabId },
+    RemoveBookmark { url: String },
+    /// Deplace un favori dans la liste.
+    MoveBookmark { url: String, to: usize },
+    RemoveHistoryEntry { url: String, visited_at: i64 },
+    ClearHistory,
+    /// Filtre l'historique. Une requete vide rend les entrees les plus recentes.
+    SearchHistory { terms: String },
+
+    // --- Telechargements ---
+    OpenDownload { id: DownloadId },
+    /// Ouvre le dossier contenant le fichier.
+    RevealDownload { id: DownloadId },
+    CancelDownload { id: DownloadId },
+    /// Retire l'entree de la liste, sans effacer le fichier.
+    ForgetDownload { id: DownloadId },
+
+    // --- Reglages ---
+    UpdateSetting { key: String, value: SettingValue },
+
+    // --- Cycle de vie ---
+    /// Relance le navigateur. Les onglets ouverts sont retrouves apres la relance.
     RestartBrowser,
 }
 
@@ -46,23 +85,20 @@ pub enum CoreEvent {
     TabsChanged { tabs: Vec<TabView>, active: Option<TabId> },
     TabUpdated { tab: TabView },
     ShieldUpdated { id: TabId, state: ShieldView },
-    FilterListsRefreshed { count: usize },
-    Notice { level: NoticeLevel, message: String },
-    /// L'inventaire des extensions a change.
-    ExtensionsChanged {
-        extensions: Vec<ExtensionView>,
-        /// Vrai si une relance est necessaire pour que les changements prennent effet.
-        restart_pending: bool,
-    },
+    /// Etat des listes de filtres et date du dernier rafraichissement.
+    FilterListsChanged { lists: Vec<FilterListView>, refreshed_at: Option<i64> },
+    ExtensionsChanged { extensions: Vec<ExtensionView>, restart_pending: bool },
+    BookmarksChanged { bookmarks: Vec<BookmarkView> },
+    HistoryChanged { entries: Vec<HistoryEntryView>, total: usize },
+    DownloadsChanged { downloads: Vec<DownloadView> },
+    SettingsChanged { settings: Vec<SettingView> },
+    /// La page est passee en plein ecran, ou en est sortie : l'interface s'efface.
+    FullscreenChanged { active: bool },
+    /// Le coeur demande le focus sur le champ d'adresse (raccourci clavier).
+    FocusAddressRequested,
     /// Le navigateur va se relancer : l'interface montre son ecran d'attente.
     Restarting { reason: String },
-    /// Une installation s'est terminee, reussie ou non. Sans cet accuse, l'interface
-    /// ne peut qu'attendre que l'inventaire bouge, et tourne dans le vide en cas d'echec.
-    InstallFinished {
-        source: String,
-        ok: bool,
-        reason: Option<String>,
-    },
+    Notice { level: NoticeLevel, message: String },
 }
 
 /// L'etat d'un onglet tel que l'interface l'affiche.
@@ -73,12 +109,19 @@ pub struct TabView {
     pub title: String,
     pub url: String,
     pub loading: bool,
+    /// Avancement du chargement, de 0 a 1.
     pub progress: f32,
     pub can_go_back: bool,
     pub can_go_forward: bool,
+    /// Adresse de l'icone du site, servie par le coeur.
     pub favicon: Option<String>,
-    /// Etat de la connexion, tel que le coeur le connait.
     pub security: Security,
+    pub pinned: bool,
+    pub zoom: f32,
+    /// Vrai si la page joue du son.
+    pub audible: bool,
+    /// Vrai si l'onglet a ete mis en sommeil pour economiser la memoire.
+    pub asleep: bool,
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
@@ -95,12 +138,21 @@ pub enum Security {
 #[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ShieldView {
-    /// Bouclier actif globalement.
     pub enabled: bool,
-    /// Bouclier actif sur ce site precis.
     pub active_here: bool,
     pub blocked_here: u64,
     pub blocked_total: u64,
+}
+
+/// Une liste de filtres souscrite par le bouclier.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FilterListView {
+    pub id: String,
+    pub title: String,
+    pub enabled: bool,
+    /// Nombre de regles chargees, quand la liste est active.
+    pub rules: Option<usize>,
 }
 
 /// Une extension telle que l'interface l'affiche.
@@ -113,6 +165,70 @@ pub struct ExtensionView {
     pub enabled: bool,
     /// Vrai tant que l'etat affiche ne correspond pas a ce qui tourne reellement.
     pub pending: bool,
+    /// Vrai si l'interface peut la retirer elle-meme.
+    pub removable: bool,
+    /// Adresse de son icone, quand le paquet en fournit une.
+    pub icon: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct BookmarkView {
+    pub url: String,
+    pub title: String,
+    pub favicon: Option<String>,
+    pub added_at: i64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct HistoryEntryView {
+    pub url: String,
+    pub title: String,
+    pub favicon: Option<String>,
+    pub visited_at: i64,
+    /// Nombre de visites sur cette adresse.
+    pub visits: u32,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DownloadView {
+    pub id: DownloadId,
+    pub file_name: String,
+    pub url: String,
+    /// Chemin complet, une fois le fichier ecrit.
+    pub path: Option<String>,
+    pub received: u64,
+    pub total: Option<u64>,
+    pub state: DownloadState,
+    pub started_at: i64,
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub enum DownloadState {
+    Running,
+    Paused,
+    Complete,
+    Cancelled,
+    Failed,
+}
+
+/// Un reglage et sa valeur courante.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SettingView {
+    pub key: String,
+    pub value: SettingValue,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[serde(tag = "type", content = "value", rename_all = "camelCase")]
+pub enum SettingValue {
+    Flag(bool),
+    Text(String),
+    Number(f64),
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize)]
