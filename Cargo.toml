@@ -1,0 +1,32 @@
+[workspace]
+resolver = "3"
+members = [
+    "core/shield",
+]
+
+[workspace.package]
+version = "0.2.0"
+edition = "2024"
+license = "MIT"
+
+[workspace.dependencies]
+echo-contract   = { path = "core/contract" }
+echo-shield     = { path = "core/shield" }
+echo-tabs       = { path = "core/tabs" }
+echo-extensions = { path = "core/extensions" }
+echo-library    = { path = "core/library" }
+echo-settings   = { path = "core/settings" }
+
+anyhow     = "1"
+thiserror  = "2"
+serde      = { version = "1", features = ["derive"] }
+serde_json = "1"
+tracing    = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+parking_lot = "0.12"
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+codegen-units = 1
+strip = true

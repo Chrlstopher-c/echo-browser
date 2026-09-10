@@ -1,8 +1,7 @@
+target/
 node_modules/
-dist/
-out/
+.cache/
+data/
 logs/
-*.pid
 *.log
 .env
-.env.local
