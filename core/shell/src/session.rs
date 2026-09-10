@@ -20,6 +20,7 @@ pub struct Session {
     /// Le client partage par toutes les vues, necessaire pour ouvrir un onglet.
     pub client: Option<Client>,
     pub tabs: Tabs,
+    pub extensions: echo_extensions::Extensions,
     pub shield: Arc<Shield>,
 }
 

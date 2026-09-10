@@ -1,0 +1,83 @@
+//! Responsabilite : relancer le navigateur sans perdre ce qui etait ouvert.
+//!
+//! Chromium ne se reinitialise pas dans un processus vivant : appliquer un changement
+//! d'extensions demande de repartir. Pour l'utilisateur, cela doit rester un clignotement,
+//! pas une fermeture — d'ou la sauvegarde des onglets avant, et leur reprise apres.
+
+use serde::{Deserialize, Serialize};
+use std::path::{Path, PathBuf};
+use std::sync::atomic::{AtomicBool, Ordering};
+use tracing::{info, warn};
+
+/// Positionne quand une relance a ete demandee : le programme repart apres l'arret de Chromium.
+static REQUESTED: AtomicBool = AtomicBool::new(false);
+
+/// Ce qu'on retrouve apres la relance.
+#[derive(Debug, Default, Serialize, Deserialize)]
+pub struct Snapshot {
+    pub urls: Vec<String>,
+    /// Position de l'onglet actif dans `urls`.
+    pub active: usize,
+}
+
+fn snapshot_path(data_dir: &Path) -> PathBuf {
+    data_dir.join("session.json")
+}
+
+/// Enregistre l'etat courant. Appele juste avant de relancer.
+pub fn save(data_dir: &Path, snapshot: &Snapshot) {
+    if let Some(parent) = snapshot_path(data_dir).parent() {
+        let _ = std::fs::create_dir_all(parent);
+    }
+    match serde_json::to_vec_pretty(snapshot) {
+        Ok(bytes) => {
+            if let Err(err) = std::fs::write(snapshot_path(data_dir), bytes) {
+                warn!(%err, "onglets non enregistres, ils seront perdus a la relance");
+            } else {
+                info!(onglets = snapshot.urls.len(), "onglets enregistres pour la relance");
+            }
+        }
+        Err(err) => warn!(%err, "onglets non serialisables"),
+    }
+}
+
+/// Reprend l'etat laisse par la relance precedente, et l'oublie aussitot :
+/// une session restauree ne doit pas ressurgir au demarrage suivant.
+pub fn take(data_dir: &Path) -> Option<Snapshot> {
+    let path = snapshot_path(data_dir);
+    let text = std::fs::read_to_string(&path).ok()?;
+    let _ = std::fs::remove_file(&path);
+    match serde_json::from_str::<Snapshot>(&text) {
+        Ok(snapshot) if !snapshot.urls.is_empty() => {
+            info!(onglets = snapshot.urls.len(), "reprise des onglets");
+            Some(snapshot)
+        }
+        Ok(_) => None,
+        Err(err) => {
+            warn!(%err, "etat de session illisible");
+            None
+        }
+    }
+}
+
+/// Note qu'il faudra repartir une fois Chromium arrete.
+pub fn request() {
+    REQUESTED.store(true, Ordering::SeqCst);
+}
+
+pub fn requested() -> bool {
+    REQUESTED.load(Ordering::SeqCst)
+}
+
+/// Remplace le processus courant par un neuf, avec les memes arguments.
+///
+/// A n'appeler qu'apres l'arret de Chromium : `exec` ne revient jamais en cas de succes,
+/// et le faire plus tot laisserait ses processus enfants orphelins.
+pub fn relaunch() -> std::io::Error {
+    use std::os::unix::process::CommandExt;
+
+    let program = std::env::current_exe().unwrap_or_else(|_| PathBuf::from("echo-browser"));
+    let args: Vec<String> = std::env::args().skip(1).collect();
+    info!(?program, ?args, "relance du navigateur");
+    std::process::Command::new(program).args(args).exec()
+}

@@ -13,6 +13,7 @@ mod flags;
 mod identity;
 mod injection;
 mod selftest;
+mod restart;
 mod session;
 mod shortcuts;
 mod tabs;
@@ -49,6 +50,13 @@ fn main() -> anyhow::Result<()> {
     info!("boucle de messages lancee");
     run_message_loop();
     shutdown();
+
+    // La relance a lieu ici, et pas avant : `exec` ne revient jamais, et le faire
+    // pendant que Chromium tourne laisserait ses processus enfants orphelins.
+    if restart::requested() {
+        let err = restart::relaunch();
+        anyhow::bail!("relance impossible : {err}");
+    }
     Ok(())
 }
 

@@ -11,7 +11,7 @@ use cef::*;
 use echo_contract::{CoreEvent, ShieldView, TabId, UiRequest};
 use parking_lot::Mutex;
 use std::collections::VecDeque;
-use tracing::{debug, warn};
+use tracing::{debug, info, warn};
 
 use crate::session;
 
@@ -94,6 +94,37 @@ fn apply(request: UiRequest) {
             let host = session::with(|s| s.tabs.host()).flatten();
             crate::window::set_accent(&color, host.as_ref());
         }
+        UiRequest::InstallExtension { source } => {
+            let outcome = session::with(|s| s.extensions.install(&source));
+            match outcome {
+                Some(Ok(extension)) => {
+                    info!(nom = %extension.name, "extension installee");
+                    mark_restart_needed();
+                }
+                Some(Err(err)) => notify_error(&format!("installation impossible : {err}")),
+                None => (),
+            }
+            publish_extensions();
+        }
+        UiRequest::RemoveExtension { id } => {
+            let outcome = session::with(|s| s.extensions.remove(&id));
+            if let Some(Err(err)) = outcome {
+                notify_error(&format!("suppression impossible : {err}"));
+            } else {
+                mark_restart_needed();
+            }
+            publish_extensions();
+        }
+        UiRequest::SetExtensionEnabled { id, enabled } => {
+            let outcome = session::with(|s| s.extensions.set_enabled(&id, enabled));
+            if let Some(Err(err)) = outcome {
+                notify_error(&format!("changement impossible : {err}"));
+            } else {
+                mark_restart_needed();
+            }
+            publish_extensions();
+        }
+        UiRequest::RestartBrowser => restart_browser(),
         other => debug!(?other, "demande pas encore traitee"),
     }
 }
@@ -128,6 +159,77 @@ pub fn close_tab(id: TabId) {
     session::with(|s| s.tabs.refresh_visibility());
     publish_tabs();
     publish_shield();
+}
+
+/// Vrai quand une relance est necessaire pour que les extensions prennent effet.
+static RESTART_NEEDED: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+
+fn mark_restart_needed() {
+    RESTART_NEEDED.store(true, std::sync::atomic::Ordering::SeqCst);
+}
+
+fn notify_error(message: &str) {
+    warn!(%message, "demande refusee");
+    publish(&CoreEvent::Notice {
+        level: echo_contract::NoticeLevel::Error,
+        message: message.to_string(),
+    });
+}
+
+/// Diffuse l'inventaire des extensions.
+pub fn publish_extensions() {
+    let pending = RESTART_NEEDED.load(std::sync::atomic::Ordering::SeqCst);
+    let Some(extensions) = session::with(|s| s.extensions.list()) else { return };
+    let view = extensions
+        .into_iter()
+        .map(|extension| echo_contract::ExtensionView {
+            id: extension.id,
+            name: extension.name,
+            version: extension.version,
+            enabled: extension.enabled,
+            pending,
+        })
+        .collect();
+    publish(&CoreEvent::ExtensionsChanged { extensions: view, restart_pending: pending });
+}
+
+/// Enregistre les onglets, previent l'interface, puis relance apres un court delai
+/// pour lui laisser le temps d'afficher son ecran d'attente.
+pub fn restart_browser() {
+    let snapshot = session::with(|s| {
+        let tabs = s.tabs.snapshot();
+        let active = s
+            .tabs
+            .active_id()
+            .and_then(|id| tabs.iter().position(|tab| tab.id == id))
+            .unwrap_or(0);
+        crate::restart::Snapshot {
+            urls: tabs.into_iter().map(|tab| tab.url).filter(|url| !url.is_empty()).collect(),
+            active,
+        }
+    });
+    if let Some(snapshot) = snapshot {
+        crate::restart::save(&crate::flags::data_dir(), &snapshot);
+    }
+    publish(&CoreEvent::Restarting {
+        reason: "Application des extensions".to_string(),
+    });
+    crate::restart::request();
+
+    let mut task = QuitTask::new(());
+    post_delayed_task(ThreadId::UI, Some(&mut task), 400);
+}
+
+wrap_task! {
+    struct QuitTask {
+        marker: (),
+    }
+
+    impl Task {
+        fn execute(&self) {
+            quit_message_loop();
+        }
+    }
 }
 
 /// Applique un raccourci clavier.

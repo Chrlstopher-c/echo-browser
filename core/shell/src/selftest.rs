@@ -17,6 +17,9 @@ pub fn schedule() {
     plan(6_000, Step::Open);
     plan(11_000, Step::Close);
     plan(15_000, Step::Report);
+    if std::env::var_os("ECHO_SELFTEST_RESTART").is_some() {
+        plan(18_000, Step::Restart);
+    }
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -24,6 +27,7 @@ enum Step {
     Open,
     Close,
     Report,
+    Restart,
 }
 
 fn plan(delay_ms: i64, step: Step) {
@@ -51,9 +55,13 @@ wrap_task! {
                         crate::bridge::close_tab(id);
                     }
                 }
-                _ => {
+                2 => {
                     let count = crate::session::with(|s| s.tabs.snapshot().len()).unwrap_or(0);
                     info!(onglets_restants = count, "autotest termine, navigateur toujours vivant");
+                }
+                _ => {
+                    info!("autotest : relance du navigateur");
+                    crate::bridge::restart_browser();
                 }
             }
         }

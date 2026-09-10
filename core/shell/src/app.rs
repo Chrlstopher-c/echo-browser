@@ -55,9 +55,10 @@ wrap_browser_process_handler! {
                 chrome: chrome_view.clone(),
                 client: client.clone(),
                 tabs,
+                extensions: echo_extensions::Extensions::new(flags::extensions_dir()),
                 shield: shield.clone(),
             });
-            crate::bridge::open_tab(&home_url());
+            restore_or_open();
             crate::selftest::schedule();
 
             let mut delegate = window::BrowserWindowDelegate::new(
@@ -73,6 +74,25 @@ wrap_browser_process_handler! {
             self.client.borrow().clone()
         }
     }
+}
+
+/// Reprend les onglets laisses par une relance, ou ouvre la page d'accueil.
+fn restore_or_open() {
+    let Some(snapshot) = crate::restart::take(&flags::data_dir()) else {
+        crate::bridge::open_tab(&home_url());
+        return;
+    };
+    for url in &snapshot.urls {
+        crate::bridge::open_tab(url);
+    }
+    let restored = crate::session::with(|s| {
+        s.tabs.snapshot().get(snapshot.active).map(|tab| tab.id)
+    })
+    .flatten();
+    if let Some(id) = restored {
+        crate::session::with(|s| s.tabs.select(id));
+    }
+    crate::bridge::publish_tabs();
 }
 
 /// Prepare le bouclier. Le chargement des listes se fait a cote du demarrage : le navigateur

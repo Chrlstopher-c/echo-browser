@@ -1,7 +1,7 @@
 //! Responsabilite : les drapeaux Chromium imposes au demarrage, et pourquoi chacun est la.
 
 use cef::{CefString, CommandLine, ImplCommandLine};
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 /// Vulkan et la plateforme Wayland sont incompatibles dans Chromium : sans ce drapeau,
 /// le processus navigateur s'arrete avec le code 28 avant d'avoir ouvert une fenetre.
