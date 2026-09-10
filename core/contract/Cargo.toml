@@ -1,0 +1,10 @@
+[package]
+name = "echo-contract"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Contrat d'echange entre le coeur Rust et l'interface TypeScript"
+
+[dependencies]
+serde.workspace = true
+serde_json.workspace = true
