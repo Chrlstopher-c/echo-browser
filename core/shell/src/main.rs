@@ -10,6 +10,7 @@ mod bridge;
 mod client;
 mod filtering;
 mod flags;
+mod identity;
 mod session;
 mod window;
 
@@ -52,6 +53,11 @@ fn browser_settings() -> Settings {
     let data_dir = flags::data_dir();
     Settings {
         no_sandbox: 1,
+        locale: "fr".into(),
+        // Chromium repose cet en-tete apres les gestionnaires de requete : il ne peut se
+        // regler qu'ici. Une adresse francaise qui reclame ses pages en anglais est un
+        // signal d'automate, et vaut un captcha.
+        accept_language_list: identity::ACCEPT_LANGUAGE.into(),
         root_cache_path: data_dir.join("profile").to_string_lossy().as_ref().into(),
         resources_dir_path: cef_dir.to_string_lossy().as_ref().into(),
         locales_dir_path: cef_dir.join("locales").to_string_lossy().as_ref().into(),

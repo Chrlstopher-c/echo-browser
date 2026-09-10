@@ -52,6 +52,8 @@ wrap_resource_request_handler! {
             let kind = resource_kind(request.resource_type());
             let method = CefString::from(&request.method()).to_string();
 
+            crate::identity::apply(request);
+
             match self.shield.decide(0, &url, &source, kind, &method) {
                 Verdict::Allow => ReturnValue::CONTINUE,
                 Verdict::Block { .. } | Verdict::Redirect { .. } => {
