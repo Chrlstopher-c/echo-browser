@@ -34,6 +34,31 @@ wrap_resource_request_handler! {
     }
 
     impl ResourceRequestHandler {
+        /// Glisse le traitement du bouclier dans le document lui-meme, seul moment
+        /// ou il precede vraiment les scripts du site.
+        fn resource_response_filter(
+            &self,
+            _browser: Option<&mut Browser>,
+            frame: Option<&mut Frame>,
+            request: Option<&mut Request>,
+            response: Option<&mut Response>,
+        ) -> Option<ResponseFilter> {
+            let request = request?;
+            // Le type de ressource n'est pas encore renseigne a ce stade : la page
+            // principale s'y annonce « autre ». On se fie a la frame, qui, elle, est sure.
+            if frame.map(|f| f.is_main()) != Some(1) {
+                return None;
+            }
+            let response = response?;
+            let mime = CefString::from(&response.mime_type()).to_string();
+            if !mime.eq_ignore_ascii_case("text/html") {
+                return None;
+            }
+            let url = CefString::from(&request.url()).to_string();
+            let script = crate::injection::page_script(&url, &self.shield)?;
+            Some(crate::injection::filter::new_filter(script))
+        }
+
         fn on_before_resource_load(
             &self,
             _browser: Option<&mut Browser>,

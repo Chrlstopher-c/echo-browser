@@ -4,12 +4,36 @@
 //! Le moment compte autant que le contenu : injecte apres le premier script du site,
 //! le traitement arrive trop tard et la regie a deja gagne.
 
+pub mod filter;
+
 use cef::{CefString, Frame, ImplFrame};
 use echo_shield::verdict::PageTreatment;
 use echo_shield::Shield;
 use tracing::debug;
 
+/// Le code a poser dans le document d'une page, ou `None` s'il n'y a rien a y faire.
+pub fn page_script(url: &str, shield: &Shield) -> Option<String> {
+    if url.is_empty() || url.starts_with("echo://") || url.starts_with("about:") {
+        return None;
+    }
+    let treatment = shield.treat_page(url);
+    if treatment.is_empty() {
+        return None;
+    }
+    debug!(
+        %url,
+        masquage = treatment.hide_selectors.len(),
+        scriptlets = treatment.injected_script.len(),
+        "traitement prepare"
+    );
+    Some(build(&treatment))
+}
+
 /// Applique le traitement du bouclier a une page qui commence a charger.
+///
+/// Filet de securite pour les pages dont le flux HTML n'a pas pu etre filtre : le
+/// traitement arrive alors apres les premiers scripts du site — trop tard pour un
+/// anti-bloqueur, a temps pour le masquage.
 pub fn treat_page(frame: &Frame, shield: &Shield) {
     let url = CefString::from(&frame.url()).to_string();
     if url.is_empty() || url.starts_with("echo://") || url.starts_with("about:") {
