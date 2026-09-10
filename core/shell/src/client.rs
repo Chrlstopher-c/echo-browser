@@ -17,11 +17,10 @@ impl LiveBrowsers {
         info!(vivants = *count, "vue navigateur ouverte");
     }
 
-    fn closed(&self) -> bool {
+    fn closed(&self) {
         let mut count = self.0.lock();
         *count = count.saturating_sub(1);
         info!(vivants = *count, "vue navigateur fermee");
-        *count == 0
     }
 }
 
@@ -45,14 +44,14 @@ wrap_client! {
         }
 
         fn load_handler(&self) -> Option<LoadHandler> {
-            Some(EchoLoadHandler::new(()))
+            Some(EchoLoadHandler::new(self.shield.clone()))
         }
     }
 }
 
 wrap_load_handler! {
     struct EchoLoadHandler {
-        marker: (),
+        shield: std::sync::Arc<echo_shield::Shield>,
     }
 
     impl LoadHandler {
@@ -65,15 +64,16 @@ wrap_load_handler! {
         ) {
             let Some(frame) = frame else { return };
             let url = CefString::from(&frame.url()).to_string();
-            if !url.starts_with("echo://ui/") {
+            if url.starts_with("echo://ui/") {
+                frame.execute_java_script(
+                    Some(&CefString::from(crate::bridge::script::BOOTSTRAP)),
+                    Some(&CefString::from("echo://bridge")),
+                    0,
+                );
+                info!("pont injecte dans l'interface");
                 return;
             }
-            frame.execute_java_script(
-                Some(&CefString::from(crate::bridge::script::BOOTSTRAP)),
-                Some(&CefString::from("echo://bridge")),
-                0,
-            );
-            info!("pont injecte dans l'interface");
+            crate::injection::treat_page(frame, &self.shield);
         }
 
         /// L'interface est chargee : elle a besoin de son etat de depart, sinon elle
@@ -149,9 +149,10 @@ wrap_life_span_handler! {
         }
 
         fn on_before_close(&self, _browser: Option<&mut Browser>) {
-            if self.live.closed() {
-                quit_message_loop();
-            }
+            // Ne jamais quitter ici : fermer un onglet detruit plusieurs vues en cascade
+            // et le compteur passe par zero alors que la fenetre est toujours la.
+            // La sortie appartient a la fenetre — voir `on_window_destroyed`.
+            self.live.closed();
         }
     }
 }

@@ -8,7 +8,7 @@ pub mod script;
 
 // Les macros `wrap_*` de CEF exigent les traits `Impl*` et `Wrap*` dans la portee : import global impose.
 use cef::*;
-use echo_contract::{CoreEvent, ShieldView, UiRequest};
+use echo_contract::{CoreEvent, ShieldView, TabId, UiRequest};
 use parking_lot::Mutex;
 use std::collections::VecDeque;
 use tracing::{debug, warn};
@@ -77,10 +77,7 @@ fn apply(request: UiRequest) {
         }
         UiRequest::NewTab { url } => {
             let target = url.map(|u| normalize(&u)).unwrap_or_else(|| HOME_URL.to_string());
-            session::with(|s| {
-                let mut client = s.client.clone();
-                s.tabs.open(client.as_mut(), &target)
-            });
+            open_tab(&target);
             publish_tabs();
         }
         UiRequest::SelectTab { id } => {
@@ -88,16 +85,45 @@ fn apply(request: UiRequest) {
             publish_tabs();
             publish_shield();
         }
-        UiRequest::CloseTab { id } => {
-            let empty = session::with(|s| s.tabs.close(id)).unwrap_or(false);
-            if empty {
-                quit_message_loop();
-                return;
-            }
-            publish_tabs();
+        UiRequest::CloseTab { id } => close_tab(id),
+        UiRequest::SetChromeHeight { pixels } => {
+            let chrome = session::with(|s| s.chrome.clone()).flatten();
+            crate::window::set_chrome_height(pixels as i32, chrome.as_ref());
         }
         other => debug!(?other, "demande pas encore traitee"),
     }
+}
+
+/// Ouvre un onglet. Chaque appel a Chromium se fait hors de l'acces a l'etat : la creation
+/// de la vue et son rattachement declenchent des rappels qui veulent lire cet etat.
+pub fn open_tab(url: &str) {
+    let Some((mut client, host)) = session::with(|s| (s.client.clone(), s.tabs.host())) else {
+        return;
+    };
+    let Some(view) = crate::window::create_view(client.as_mut(), url, 0) else {
+        warn!(%url, "vue d'onglet non creee");
+        return;
+    };
+    if let Some(host) = host {
+        let mut child = View::from(&view);
+        host.add_child_view(Some(&mut child));
+    }
+    session::with(|s| s.tabs.adopt(view, url));
+}
+
+/// Ferme un onglet. Comme pour l'ouverture, les appels a Chromium se font hors de
+/// l'acces a l'etat, sinon la fermeture fige le navigateur.
+pub fn close_tab(id: TabId) {
+    let Some(detached) = session::with(|s| s.tabs.detach(id)) else { return };
+    let remaining = detached.remaining;
+    detached.dispose();
+    if remaining == 0 {
+        quit_message_loop();
+        return;
+    }
+    session::with(|s| s.tabs.refresh_visibility());
+    publish_tabs();
+    publish_shield();
 }
 
 fn with_browser(action: impl FnOnce(&Browser)) {

@@ -48,7 +48,20 @@ pub fn install(session: Session) {
     SESSION.with(|cell| *cell.borrow_mut() = Some(session));
 }
 
-/// Donne acces a la session sur le thread interface. Renvoie `None` ailleurs.
+/// Donne acces a la session sur le thread interface. Renvoie `None` ailleurs, ou si
+/// l'etat est deja en cours de modification.
+///
+/// L'acces est tentant, jamais force : Chromium rappelle le programme au milieu de ses
+/// propres appels (une navigation declenchee ici revient signaler qu'elle charge). Un
+/// acces force ferait paniquer le processus, donc mourir le navigateur — mesure le
+/// 2026-09-10 en ouvrant un onglet. A l'appelant de ne pas tenir l'acces pendant un
+/// appel a Chromium.
 pub fn with<R>(f: impl FnOnce(&mut Session) -> R) -> Option<R> {
-    SESSION.with(|cell| cell.borrow_mut().as_mut().map(f))
+    SESSION.with(|cell| match cell.try_borrow_mut() {
+        Ok(mut guard) => guard.as_mut().map(f),
+        Err(_) => {
+            tracing::warn!("etat du navigateur deja en cours de modification, acces ignore");
+            None
+        }
+    })
 }

@@ -11,6 +11,8 @@ mod client;
 mod filtering;
 mod flags;
 mod identity;
+mod injection;
+mod selftest;
 mod session;
 mod tabs;
 mod window;

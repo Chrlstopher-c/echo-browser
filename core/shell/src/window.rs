@@ -3,11 +3,35 @@
 // Les macros `wrap_*` de CEF exigent les traits `Impl*` et `Wrap*` dans la portee : import global impose.
 use cef::*;
 use std::cell::RefCell;
-use tracing::info;
+use std::sync::atomic::{AtomicI32, Ordering};
+use tracing::{debug, info};
 
-/// Hauteur de la bande d'interface au repos. L'interface peut en reclamer davantage
+/// Hauteur de la bande d'interface au repos. L'interface en reclame davantage
 /// quand elle ouvre un panneau — voir `UiRequest::SetChromeHeight`.
 pub const CHROME_HEIGHT: i32 = 78;
+
+/// Hauteur courante de la bande d'interface. Partagee parce que la disposition
+/// l'interroge depuis un rappel de Chromium, hors de tout acces a l'etat.
+static CHROME_HEIGHT_NOW: AtomicI32 = AtomicI32::new(CHROME_HEIGHT);
+
+/// Garde-fou : une interface qui reclamerait toute la fenetre masquerait la page.
+const MAX_CHROME_HEIGHT: i32 = 720;
+
+/// Fixe la hauteur reclamee par l'interface et relance la disposition.
+pub fn set_chrome_height(pixels: i32, chrome: Option<&BrowserView>) {
+    let clamped = pixels.clamp(CHROME_HEIGHT, MAX_CHROME_HEIGHT);
+    if CHROME_HEIGHT_NOW.swap(clamped, Ordering::Relaxed) == clamped {
+        return;
+    }
+    if let Some(chrome) = chrome {
+        let view = View::from(chrome);
+        view.invalidate_layout();
+        if let Some(parent) = view.parent_view() {
+            parent.invalidate_layout();
+        }
+    }
+    debug!(hauteur = clamped, "hauteur de l'interface");
+}
 
 /// Titre porte par la fenetre. Le nom du projet ne s'affiche nulle part dans l'application.
 const WINDOW_TITLE: &str = "Navigateur";
@@ -62,6 +86,8 @@ wrap_window_delegate! {
         fn on_window_destroyed(&self, _window: Option<&mut Window>) {
             *self.chrome_view.borrow_mut() = None;
             *self.content_host.borrow_mut() = None;
+            info!("fenetre fermee, arret du navigateur");
+            quit_message_loop();
         }
 
         fn can_close(&self, _window: Option<&mut Window>) -> i32 {
@@ -93,7 +119,12 @@ wrap_browser_view_delegate! {
 
     impl ViewDelegate {
         fn preferred_size(&self, _view: Option<&mut View>) -> Size {
-            Size { width: INITIAL_WIDTH, height: self.preferred_height }
+            let height = if self.preferred_height == 0 {
+                0
+            } else {
+                CHROME_HEIGHT_NOW.load(Ordering::Relaxed)
+            };
+            Size { width: INITIAL_WIDTH, height }
         }
     }
 

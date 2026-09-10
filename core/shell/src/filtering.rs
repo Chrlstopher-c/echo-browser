@@ -57,7 +57,7 @@ wrap_resource_request_handler! {
             match self.shield.decide(0, &url, &source, kind, &method) {
                 Verdict::Allow => ReturnValue::CONTINUE,
                 Verdict::Block { .. } | Verdict::Redirect { .. } => {
-                    debug!(%url, "requete bloquee");
+                    debug!(%url, %source, %kind, "requete bloquee");
                     ReturnValue::CANCEL
                 }
             }

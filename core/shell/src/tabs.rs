@@ -42,6 +42,27 @@ impl Tab {
     }
 }
 
+/// Ce qu'il reste a faire cote Chromium apres avoir retire un onglet de la liste.
+pub struct Detached {
+    pub view: Option<BrowserView>,
+    pub host: Option<Panel>,
+    /// Nombre d'onglets encore ouverts.
+    pub remaining: usize,
+}
+
+impl Detached {
+    /// Retire la vue de la scene. A appeler hors de l'acces a l'etat.
+    ///
+    /// On ne ferme **pas** le navigateur explicitement : pour une vue posee dans une
+    /// fenetre sur mesure, cette demande remonte jusqu'a la fenetre et la ferme
+    /// entierement — mesure le 2026-09-10, fermer un onglet fermait le navigateur.
+    /// Retirer la vue suffit : Chromium libere le navigateur avec elle.
+    pub fn dispose(self) {
+        let (Some(view), Some(host)) = (self.view, self.host) else { return };
+        host.remove_child_view(Some(&mut View::from(&view)));
+    }
+}
+
 /// L'ensemble des onglets ouverts et leur scene commune.
 #[derive(Default)]
 pub struct Tabs {
@@ -64,13 +85,11 @@ impl Tabs {
         self.host.clone()
     }
 
-    /// Ouvre un onglet et le rend actif.
-    pub fn open(&mut self, client: Option<&mut Client>, url: &str) -> Option<TabId> {
-        let view = crate::window::create_view(client, url, 0)?;
-        let host = self.host()?;
-        let mut child = View::from(&view);
-        host.add_child_view(Some(&mut child));
-
+    /// Enregistre une vue deja creee et rattachee, et la rend active.
+    ///
+    /// La creation de la vue et son rattachement se font **hors** de l'acces a l'etat :
+    /// Chromium rappelle le programme pendant ces appels.
+    pub fn adopt(&mut self, view: BrowserView, url: &str) -> TabId {
         let id = self.next_id;
         self.next_id += 1;
         self.entries.push(Tab {
@@ -82,7 +101,7 @@ impl Tabs {
         });
         self.select(id);
         debug!(id, %url, "onglet ouvert");
-        Some(id)
+        id
     }
 
     /// Rend un onglet visible et masque les autres.
@@ -97,23 +116,26 @@ impl Tabs {
         }
     }
 
-    /// Ferme un onglet. Renvoie vrai s'il ne reste plus rien d'ouvert.
-    pub fn close(&mut self, id: TabId) -> bool {
+    /// Retire un onglet de la liste et renvoie sa vue, sans toucher a Chromium.
+    ///
+    /// Le detachement et la fermeture se font **hors** de l'acces a l'etat : ces appels
+    /// rendent la main a Chromium, qui rappelle le programme au milieu.
+    pub fn detach(&mut self, id: TabId) -> Detached {
         let Some(index) = self.entries.iter().position(|tab| tab.id == id) else {
-            return self.entries.is_empty();
+            return Detached { view: None, host: self.host.clone(), remaining: self.entries.len() };
         };
         let tab = self.entries.remove(index);
-        if let Some(browser) = tab.view.browser().and_then(|b| b.host()) {
-            browser.close_browser(1);
-        }
         if self.active == Some(id) {
-            let fallback = self.entries.get(index).or_else(|| self.entries.last());
-            match fallback.map(|tab| tab.id) {
-                Some(next) => self.select(next),
-                None => self.active = None,
-            }
+            self.active = self.entries.get(index).or_else(|| self.entries.last()).map(|t| t.id);
         }
-        self.entries.is_empty()
+        Detached { view: Some(tab.view), host: self.host.clone(), remaining: self.entries.len() }
+    }
+
+    /// Rend visible l'onglet actif. A appeler apres un detachement.
+    pub fn refresh_visibility(&self) {
+        for tab in &self.entries {
+            View::from(&tab.view).set_visible(i32::from(Some(tab.id) == self.active));
+        }
     }
 
     pub fn active(&self) -> Option<&Tab> {

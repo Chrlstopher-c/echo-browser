@@ -51,14 +51,14 @@ wrap_browser_process_handler! {
             let chrome_view = window::create_chrome_view(client.as_mut(), &url);
             let mut tabs = crate::tabs::Tabs::default();
             let host = tabs.host();
-            tabs.open(client.as_mut(), &home_url());
-
             crate::session::install(crate::session::Session {
                 chrome: chrome_view.clone(),
                 client: client.clone(),
                 tabs,
                 shield: shield.clone(),
             });
+            crate::bridge::open_tab(&home_url());
+            crate::selftest::schedule();
 
             let mut delegate = window::BrowserWindowDelegate::new(
                 RefCell::new(chrome_view),
