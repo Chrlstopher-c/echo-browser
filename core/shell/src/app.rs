@@ -55,7 +55,8 @@ wrap_browser_process_handler! {
                 chrome: chrome_view.clone(),
                 client: client.clone(),
                 tabs,
-                extensions: echo_extensions::Extensions::new(flags::extensions_dir()),
+                extensions: echo_extensions::Extensions::new(flags::extensions_dir())
+                    .with_profile(echo_extensions::profile::default_profile(&flags::data_dir())),
                 shield: shield.clone(),
             });
             restore_or_open();

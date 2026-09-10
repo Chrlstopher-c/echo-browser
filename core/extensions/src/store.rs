@@ -11,8 +11,13 @@ pub struct Extension {
     pub id: String,
     pub name: String,
     pub version: String,
-    /// Une extension desactivee reste sur disque mais n'est pas chargee au demarrage.
     pub enabled: bool,
+    /// Vrai si l'utilisateur peut la retirer — les pieces internes ne le sont pas.
+    #[serde(default)]
+    pub removable: bool,
+    /// Vrai si elle est chargee par la ligne de commande : la retirer demande une relance.
+    #[serde(default)]
+    pub from_command_line: bool,
 }
 
 /// Emplacement d'une extension depaquetee.
@@ -69,6 +74,8 @@ pub fn list(root: &Path) -> Vec<Extension> {
                 name: resolve_name(&path, &raw_name),
                 version,
                 id,
+                removable: true,
+                from_command_line: true,
             })
         })
         .collect();

@@ -94,31 +94,27 @@ fn apply(request: UiRequest) {
             let host = session::with(|s| s.tabs.host()).flatten();
             crate::window::set_accent(&color, host.as_ref());
         }
-        UiRequest::InstallExtension { source } => {
-            let outcome = session::with(|s| s.extensions.install(&source));
-            let (ok, reason) = match outcome {
-                Some(Ok(extension)) => {
-                    info!(nom = %extension.name, "extension installee");
-                    mark_restart_needed();
-                    (true, None)
-                }
-                Some(Err(err)) => {
-                    warn!(%err, "installation impossible");
-                    (false, Some(err.to_string()))
-                }
-                None => (false, Some("navigateur indisponible".to_string())),
-            };
-            publish_extensions();
-            publish(&CoreEvent::InstallFinished { source, ok, reason });
-        }
+        UiRequest::InstallExtension { source } => open_store(&source),
         UiRequest::RemoveExtension { id } => {
-            let outcome = session::with(|s| s.extensions.remove(&id));
-            if let Some(Err(err)) = outcome {
-                notify_error(&format!("suppression impossible : {err}"));
+            let ours = session::with(|s| {
+                s.extensions.list().into_iter().find(|e| e.id == id).map(|e| e.from_command_line)
+            })
+            .flatten()
+            .unwrap_or(false);
+            if ours {
+                let outcome = session::with(|s| s.extensions.remove(&id));
+                if let Some(Err(err)) = outcome {
+                    notify_error(&format!("suppression impossible : {err}"));
+                } else {
+                    mark_restart_needed();
+                }
+                publish_extensions();
             } else {
-                mark_restart_needed();
+                // Celles du catalogue appartiennent au gestionnaire de Chromium :
+                // les effacer dans son dos laisserait son profil incoherent.
+                open_tab(echo_extensions::profile::MANAGE_PAGE);
+                publish_tabs();
             }
-            publish_extensions();
         }
         UiRequest::SetExtensionEnabled { id, enabled } => {
             let outcome = session::with(|s| s.extensions.set_enabled(&id, enabled));
@@ -165,6 +161,23 @@ pub fn close_tab(id: TabId) {
     publish_tabs();
     publish_shield();
 }
+
+/// Ouvre la fiche d'une extension dans un onglet, pour que Chromium mene l'installation.
+///
+/// Chromium sait installer depuis le catalogue, avec sa demande de permissions et sa
+/// prise en compte immediate. Telecharger le paquet nous-memes ferait un second
+/// inventaire, invisible de son gestionnaire, et imposerait une relance.
+fn open_store(source: &str) {
+    let target = echo_extensions::catalog::extract_id(source)
+        .map(|id| echo_extensions::Extensions::store_page(&id))
+        .unwrap_or_else(|| CATALOG_HOME.to_string());
+    info!(%target, "ouverture du catalogue");
+    open_tab(&target);
+    publish_tabs();
+}
+
+/// Page d'accueil du catalogue.
+const CATALOG_HOME: &str = "https://chromewebstore.google.com/";
 
 /// Vrai quand une relance est necessaire pour que les extensions prennent effet.
 static RESTART_NEEDED: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
@@ -384,6 +397,7 @@ pub fn publish(event: &CoreEvent) {
 pub fn publish_initial_state() {
     publish_tabs();
     publish_shield();
+    publish_extensions();
 }
 
 /// Diffuse l'etat courant du bouclier.
@@ -428,4 +442,28 @@ pub fn publish_tabs() {
         return;
     };
     publish(&CoreEvent::TabsChanged { tabs, active });
+}
+
+#[cfg(test)]
+mod tests {
+    use super::normalize;
+
+    #[test]
+    fn une_adresse_reste_une_adresse() {
+        assert_eq!(normalize("https://exemple.fr/page"), "https://exemple.fr/page");
+        assert_eq!(normalize("exemple.fr"), "https://exemple.fr");
+        assert_eq!(normalize("exemple.fr/page?a=1"), "https://exemple.fr/page?a=1");
+    }
+
+    #[test]
+    fn des_mots_deviennent_une_recherche() {
+        assert!(normalize("chat mignon").starts_with("https://www.qwant.com/?q="));
+        assert!(normalize("chat mignon").contains("chat+mignon"));
+        assert!(normalize("rust cef").contains("rust+cef"));
+    }
+
+    #[test]
+    fn un_mot_seul_sans_point_est_une_recherche() {
+        assert!(normalize("meteo").starts_with("https://www.qwant.com/?q="));
+    }
 }
