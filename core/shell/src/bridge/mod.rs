@@ -66,6 +66,15 @@ fn apply(request: UiRequest) {
             if bypass_cache { browser.reload_ignore_cache() } else { browser.reload() }
         }),
         UiRequest::Stop { .. } => with_browser(|browser| browser.stop_load()),
+        UiRequest::RefreshFilterLists { force } => refresh_lists(force),
+        UiRequest::SetFilterListEnabled { id, enabled } => {
+            let known = session::with(|s| s.shield.set_list_enabled(&id, enabled)).unwrap_or(false);
+            if !known {
+                notify_error(&format!("liste de filtres inconnue : {id}"));
+            }
+            publish_filter_lists();
+            publish_shield();
+        }
         UiRequest::SetShieldEnabled { enabled } => {
             session::with(|s| s.shield.set_enabled(enabled));
             publish_shield();
@@ -141,6 +150,11 @@ fn apply(request: UiRequest) {
         UiRequest::ClearHistory => library::clear_history(),
         UiRequest::SearchHistory { terms } => library::publish_history(&terms),
         UiRequest::ForgetDownload { id } => library::forget_download(id),
+        UiRequest::CancelDownload { id } => {
+            crate::transfers::request_cancel(id);
+        }
+        UiRequest::OpenDownload { id } => library::open_download(id, false),
+        UiRequest::RevealDownload { id } => library::open_download(id, true),
         UiRequest::UpdateSetting { key, value } => library::update_setting(&key, &value),
         UiRequest::OpenExtensionManager => {
             open_tab(echo_extensions::profile::MANAGE_PAGE);
@@ -447,6 +461,52 @@ pub fn publish_initial_state() {
     library::publish_history("");
     library::publish_downloads();
     library::publish_settings();
+    publish_filter_lists();
+}
+
+/// Diffuse l'etat des listes de filtres.
+pub fn publish_filter_lists() {
+    let Some((subs, rules, refreshed_at)) = session::with(|s| {
+        (s.shield.subscriptions(), s.shield.rules_per_list(), s.shield.refreshed_at())
+    }) else {
+        return;
+    };
+    let lists = subs
+        .into_iter()
+        .map(|sub| echo_contract::FilterListView {
+            rules: rules.iter().find(|(id, _)| *id == sub.id).and_then(|(_, count)| *count),
+            id: sub.id,
+            title: sub.title,
+            enabled: sub.enabled,
+        })
+        .collect();
+    publish(&CoreEvent::FilterListsChanged { lists, refreshed_at });
+}
+
+/// Rafraichit les listes hors du thread interface : le telechargement est long.
+fn refresh_lists(force: bool) {
+    let Some(shield) = session::with(|s| s.shield.clone()) else { return };
+    std::thread::spawn(move || {
+        match shield.refresh_lists(force) {
+            Ok(count) => info!(listes = count, "listes rafraichies"),
+            Err(err) => warn!(%err, "rafraichissement incomplet"),
+        }
+        let mut task = RefreshDoneTask::new(());
+        post_task(ThreadId::UI, Some(&mut task));
+    });
+}
+
+wrap_task! {
+    struct RefreshDoneTask {
+        marker: (),
+    }
+
+    impl Task {
+        fn execute(&self) {
+            publish_filter_lists();
+            publish_shield();
+        }
+    }
 }
 
 /// Diffuse l'etat courant du bouclier.

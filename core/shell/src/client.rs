@@ -45,6 +45,10 @@ wrap_client! {
             Some(EchoDisplayHandler::new(()))
         }
 
+        fn download_handler(&self) -> Option<DownloadHandler> {
+            Some(crate::transfers::Transfers::new(()))
+        }
+
         fn keyboard_handler(&self) -> Option<KeyboardHandler> {
             Some(crate::shortcuts::BrowserShortcuts::new(()))
         }

@@ -146,6 +146,30 @@ pub fn update_setting(key: &str, value: &SettingValue) {
     }
 }
 
+/// Ouvre le fichier telecharge, ou le dossier qui le contient.
+pub fn open_download(id: echo_contract::DownloadId, reveal: bool) {
+    let path = session::with(|s| {
+        downloads::list(&s.library).into_iter().find(|entry| entry.id == id).and_then(|e| e.path)
+    })
+    .flatten();
+    let Some(path) = path else {
+        warn!(id, "telechargement sans fichier sur disque");
+        return;
+    };
+    let target = if reveal {
+        std::path::Path::new(&path).parent().map(|p| p.to_string_lossy().to_string())
+    } else {
+        Some(path)
+    };
+    let Some(target) = target else { return };
+    // `xdg-open` est le point d'entree standard du bureau : c'est lui qui sait quelle
+    // application ouvre quel type de fichier.
+    match std::process::Command::new("xdg-open").arg(&target).spawn() {
+        Ok(_) => (),
+        Err(err) => warn!(%err, %target, "ouverture impossible"),
+    }
+}
+
 pub fn forget_download(id: echo_contract::DownloadId) {
     session::with(|s| downloads::forget(&s.library, id));
     publish_downloads();

@@ -18,6 +18,7 @@ mod search;
 mod session;
 mod shortcuts;
 mod tabs;
+mod transfers;
 mod window;
 
 use cef::{api_hash, args::Args, execute_process, initialize, run_message_loop, shutdown, ImplCommandLine, Settings};

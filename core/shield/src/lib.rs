@@ -36,13 +36,20 @@ impl Shield {
         let data_dir = data_dir.into();
         let lists_dir = data_dir.join("filter-lists");
         let allowlist = Allowlist::load(&allowlist_path(&data_dir));
+        let disabled = Self::load_subscription_choices(&data_dir);
+        let mut subscriptions = catalog::default_subscriptions();
+        for sub in subscriptions.iter_mut() {
+            if disabled.iter().any(|id| *id == sub.id) {
+                sub.enabled = false;
+            }
+        }
         Self {
             engine: RwLock::new(None),
             allowlist: RwLock::new(allowlist),
             tally: Tally::default(),
             data_dir,
             lists_dir,
-            subscriptions: RwLock::new(catalog::default_subscriptions()),
+            subscriptions: RwLock::new(subscriptions),
             enabled: RwLock::new(true),
         }
     }
@@ -165,6 +172,93 @@ impl Shield {
 
     pub fn subscriptions(&self) -> Vec<Subscription> {
         self.subscriptions.read().clone()
+    }
+
+    /// Nombre de regles chargees par liste, pour celles qui sont actives.
+    pub fn rules_per_list(&self) -> Vec<(String, Option<usize>)> {
+        self.subscriptions
+            .read()
+            .iter()
+            .map(|sub| {
+                let count = sub.enabled.then(|| {
+                    std::fs::read_to_string(catalog::list_path(&self.lists_dir, &sub.id))
+                        .map(|text| text.lines().count())
+                        .unwrap_or(0)
+                });
+                (sub.id.clone(), count)
+            })
+            .collect()
+    }
+
+    /// Active ou desactive une liste, puis reconstruit le moteur.
+    /// Renvoie faux si la liste est inconnue.
+    pub fn set_list_enabled(&self, id: &str, enabled: bool) -> bool {
+        {
+            let mut subs = self.subscriptions.write();
+            let Some(sub) = subs.iter_mut().find(|sub| sub.id == id) else {
+                warn!(%id, "liste inconnue");
+                return false;
+            };
+            if sub.enabled == enabled {
+                return true;
+            }
+            sub.enabled = enabled;
+        }
+        self.save_subscriptions();
+        if let Err(err) = self.rebuild() {
+            warn!(%err, "moteur non reconstruit apres changement de liste");
+        }
+        true
+    }
+
+    /// Reconstruit le moteur depuis les listes actives, en jetant le cache.
+    pub fn rebuild(&self) -> Result<(), EngineError> {
+        let _ = std::fs::remove_file(engine::cache_path(&self.data_dir));
+        let subs = self.subscriptions.read().clone();
+        let pack = resources::load_pack(&resources::pack_path(&self.data_dir));
+        let engine = FilterEngine::build(&self.lists_dir, &subs, pack)?;
+        if let Err(err) = engine.write_cache(&engine::cache_path(&self.data_dir)) {
+            warn!(%err, "cache non reecrit");
+        }
+        *self.engine.write() = Some(engine);
+        info!("moteur reconstruit");
+        Ok(())
+    }
+
+    /// Date du dernier rafraichissement, lue sur la liste la plus recemment ecrite.
+    pub fn refreshed_at(&self) -> Option<i64> {
+        self.subscriptions
+            .read()
+            .iter()
+            .filter_map(|sub| std::fs::metadata(catalog::list_path(&self.lists_dir, &sub.id)).ok())
+            .filter_map(|meta| meta.modified().ok())
+            .filter_map(|time| time.duration_since(std::time::UNIX_EPOCH).ok())
+            .map(|since| since.as_secs() as i64)
+            .max()
+    }
+
+    fn save_subscriptions(&self) {
+        let path = self.data_dir.join("shield-lists.json");
+        let subs = self.subscriptions.read();
+        let disabled: Vec<&str> =
+            subs.iter().filter(|sub| !sub.enabled).map(|sub| sub.id.as_str()).collect();
+        match serde_json::to_vec_pretty(&disabled) {
+            Ok(bytes) => {
+                if let Err(err) = std::fs::write(&path, bytes) {
+                    warn!(%err, "choix de listes non enregistre");
+                }
+            }
+            Err(err) => warn!(%err, "choix de listes non serialisable"),
+        }
+    }
+
+    /// Reprend les listes que l'utilisateur avait desactivees.
+    fn load_subscription_choices(data_dir: &Path) -> Vec<String> {
+        let path = data_dir.join("shield-lists.json");
+        std::fs::read_to_string(path)
+            .ok()
+            .and_then(|text| serde_json::from_str(&text).ok())
+            .unwrap_or_default()
     }
 }
 

@@ -143,11 +143,8 @@ fn home_url() -> String {
     if value.is_empty() { crate::search::HOME.to_string() } else { value }
 }
 
-/// URL d'ouverture : `--url=` si fournie, sinon la page de demarrage.
+/// L'interface du navigateur. Toujours la meme : `--url=` designe la page a ouvrir
+/// dans l'onglet, pas la surface qui affiche la barre laterale.
 fn startup_url() -> String {
-    let Some(command_line) = command_line_get_global() else {
-        return STARTUP_URL.to_string();
-    };
-    let value = CefString::from(&command_line.switch_value(Some(&CefString::from("url")))).to_string();
-    if value.is_empty() { STARTUP_URL.to_string() } else { value }
+    STARTUP_URL.to_string()
 }
