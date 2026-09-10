@@ -49,7 +49,13 @@ export function SidebarRail({ model, essentials }: SidebarRailProps): ReactEleme
         <TabsArea essentials={essentials} activeId={core.state.activeId} actions={actions} compact />
       </div>
       <footer className="flex justify-center">
-        <UtilityRow shield={core.shield} open={sheet.current} compact onToggle={openSheet} />
+        <UtilityRow
+          shield={core.shield}
+          open={sheet.current}
+          compact
+          restartPending={model.extensions.restartPending}
+          onToggle={openSheet}
+        />
       </footer>
     </div>
   )

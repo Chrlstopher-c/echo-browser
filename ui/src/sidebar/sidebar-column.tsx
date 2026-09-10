@@ -2,6 +2,7 @@
 
 import type { ReactElement } from 'react'
 import { AddressField } from '../address/address-field'
+import { RestartStrip } from '../restart/restart-strip'
 import { TopControls } from '../address/top-controls'
 import { TabsArea } from '../tabs/tabs-area'
 import type { EssentialsController } from '../tabs/use-essentials'
@@ -34,8 +35,25 @@ function ColumnHeader({ model }: { model: SidebarModel }): ReactElement {
   )
 }
 
+function ColumnFooter({ model }: { model: SidebarModel }): ReactElement {
+  const { core, sheet, extensions } = model
+  return (
+    <footer className="shrink-0">
+      <RestartStrip pending={extensions.restartPending} count={extensions.pending} onRestart={extensions.restart} />
+      <NoticeStrip notice={core.notice} />
+      <UtilityRow
+        shield={core.shield}
+        open={sheet.current}
+        compact={false}
+        restartPending={extensions.restartPending}
+        onToggle={sheet.toggle}
+      />
+    </footer>
+  )
+}
+
 export function SidebarColumn({ model, essentials }: SidebarColumnProps): ReactElement {
-  const { core, actions, sheet, space } = model
+  const { core, actions, sheet, space, extensions } = model
   return (
     <div className="flex h-full flex-col gap-3 px-3 pt-2 pb-2">
       <ColumnHeader model={model} />
@@ -50,12 +68,10 @@ export function SidebarColumn({ model, essentials }: SidebarColumnProps): ReactE
           filterListCount={core.state.filterListCount}
           actions={actions}
           space={space}
+          extensions={extensions}
         />
       </div>
-      <footer className="shrink-0">
-        <NoticeStrip notice={core.notice} />
-        <UtilityRow shield={core.shield} open={sheet.current} compact={false} onToggle={sheet.toggle} />
-      </footer>
+      <ColumnFooter model={model} />
     </div>
   )
 }

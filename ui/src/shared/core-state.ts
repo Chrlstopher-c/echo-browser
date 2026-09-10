@@ -1,6 +1,6 @@
 // Responsabilite : etat de l'interface derive des evenements du coeur. Reducteur pur, sans effet de bord.
 
-import type { CoreEvent, NoticeLevel, ShieldView, TabId, TabView } from './contract'
+import type { CoreEvent, ExtensionView, NoticeLevel, ShieldView, TabId, TabView } from './contract'
 
 export interface Notice {
   level: NoticeLevel
@@ -15,6 +15,12 @@ export interface CoreState {
   shields: Map<TabId, ShieldView>
   notice: Notice | null
   filterListCount: number | null
+  /** Inventaire des extensions, tel que le coeur le connait. */
+  extensions: ExtensionView[]
+  /** Vrai quand au moins un changement d'extension attend la relance du navigateur. */
+  restartPending: boolean
+  /** Raison de la relance en cours, ou null tant que le navigateur tourne normalement. */
+  restarting: string | null
 }
 
 export const EMPTY_CORE_STATE: CoreState = {
@@ -23,6 +29,9 @@ export const EMPTY_CORE_STATE: CoreState = {
   shields: new Map(),
   notice: null,
   filterListCount: null,
+  extensions: [],
+  restartPending: false,
+  restarting: null,
 }
 
 function withShield(state: CoreState, id: TabId, view: ShieldView): CoreState {
@@ -43,6 +52,10 @@ export function reduceCore(state: CoreState, event: CoreEvent): CoreState {
       return { ...state, filterListCount: event.count }
     case 'notice':
       return { ...state, notice: { level: event.level, message: event.message, at: Date.now() } }
+    case 'extensionsChanged':
+      return { ...state, extensions: event.extensions, restartPending: event.restartPending }
+    case 'restarting':
+      return { ...state, restarting: event.reason }
   }
 }
 

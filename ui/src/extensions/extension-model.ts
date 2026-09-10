@@ -1,15 +1,23 @@
-// Responsabilite : modele des extensions. Le coeur ne les expose pas encore dans le contrat.
+// Responsabilite : lecture du modele d'extension — libelles et derivations, sans etat ni rendu.
 
-export interface Extension {
-  id: string
-  name: string
-  version: string
-  enabled: boolean
-  /** Description courte, une ligne. */
-  summary: string
+import type { ExtensionView } from '../shared/contract'
+
+/** Un changement d'extension ne prend effet qu'apres relance : Chromium ne les charge qu'au demarrage. */
+export const RESTART_NOTICE = 'Des changements attendent la relance du navigateur.'
+
+export const RESTART_HINT = 'Vos onglets seront retrouvés.'
+
+/** Empreinte de l'inventaire : change des qu'une extension apparait, disparait ou bascule. */
+export function inventorySignature(extensions: ExtensionView[]): string {
+  return extensions.map((item) => `${item.id}:${item.version}:${item.enabled ? 1 : 0}`).join('|')
 }
 
-export const NO_EXTENSIONS: Extension[] = []
+/** Nombre d'extensions dont l'etat affiche ne correspond pas encore a ce qui tourne. */
+export function pendingCount(extensions: ExtensionView[]): number {
+  return extensions.filter((item) => item.pending).length
+}
 
-/** Un changement d'extension ne prend effet qu'apres relance du navigateur. */
-export const RESTART_NOTICE = "L'ajout ou le retrait d'une extension prend effet au prochain démarrage."
+export function extensionStatus(item: ExtensionView): string {
+  if (item.pending) return item.enabled ? 'Activation à la relance' : 'Désactivation à la relance'
+  return item.enabled ? 'Active' : 'Désactivée'
+}

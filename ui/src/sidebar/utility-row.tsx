@@ -11,17 +11,27 @@ export interface UtilityRowProps {
   shield: ShieldView
   open: SheetId | null
   compact: boolean
+  /** Un changement d'extension attend la relance : le bouton porte une pastille. */
+  restartPending: boolean
   onToggle: (sheet: SheetId) => void
 }
 
-export function UtilityRow({ shield, open, compact, onToggle }: UtilityRowProps): ReactElement {
+function PendingDot(): ReactElement {
+  return <span aria-hidden className="absolute top-1 right-1 size-1.5 rounded-full bg-warn" />
+}
+
+export function UtilityRow(props: UtilityRowProps): ReactElement {
+  const { shield, open, compact, restartPending, onToggle } = props
   return (
     <div className={`flex items-center gap-0.5 ${compact ? 'flex-col' : ''}`}>
       <ShieldButton shield={shield} open={open === 'shield'} compact={compact} onClick={() => onToggle('shield')} />
       {!compact && <span className="flex-1" />}
-      <IconButton label="Extensions" onClick={() => onToggle('extensions')} active={open === 'extensions'}>
-        <IconPuzzle size={15} />
-      </IconButton>
+      <span className="relative flex">
+        <IconButton label="Extensions" onClick={() => onToggle('extensions')} active={open === 'extensions'}>
+          <IconPuzzle size={15} />
+        </IconButton>
+        {restartPending && <PendingDot />}
+      </span>
       <IconButton label="Téléchargements" onClick={() => onToggle('downloads')} active={open === 'downloads'}>
         <IconDownload size={15} />
       </IconButton>

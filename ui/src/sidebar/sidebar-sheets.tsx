@@ -3,7 +3,7 @@
 import type { ReactElement } from 'react'
 import type { ShieldView } from '../shared/contract'
 import { ExtensionsSheet } from '../extensions/extensions-sheet'
-import { useExtensions } from '../extensions/use-extensions'
+import type { ExtensionsController } from '../extensions/use-extensions'
 import { LibrarySheet } from '../library/library-sheet'
 import { useLibrary } from '../library/use-library'
 import { SettingsSheet } from '../settings/settings-sheet'
@@ -21,6 +21,7 @@ export interface SidebarSheetsProps {
   filterListCount: number | null
   actions: SidebarActions
   space: SpaceController
+  extensions: ExtensionsController
 }
 
 type LibrarySheetId = Extract<SheetId, 'bookmarks' | 'history' | 'downloads'>
@@ -30,9 +31,8 @@ function isLibrary(sheet: SheetId | null): sheet is LibrarySheetId {
 }
 
 export function SidebarSheets(props: SidebarSheetsProps): ReactElement {
-  const { sheet, shield, url, filterListCount, actions, space } = props
+  const { sheet, shield, url, filterListCount, actions, space, extensions } = props
   const library = useLibrary()
-  const extensions = useExtensions()
   const footer =
     sheet.current === 'shield' ? (
       <FilterListFooter count={filterListCount} onRefresh={actions.refreshLists} />
@@ -47,9 +47,7 @@ export function SidebarSheets(props: SidebarSheetsProps): ReactElement {
           onToggleSite={actions.toggleShieldSite}
         />
       )}
-      {sheet.current === 'extensions' && (
-        <ExtensionsSheet extensions={extensions.extensions} onToggle={extensions.toggle} />
-      )}
+      {sheet.current === 'extensions' && <ExtensionsSheet controller={extensions} />}
       {sheet.current === 'settings' && (
         <SettingsSheet
           space={space.space.id}

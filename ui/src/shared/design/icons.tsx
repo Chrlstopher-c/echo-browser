@@ -225,3 +225,12 @@ export function IconCheck(props: IconProps): ReactElement {
     </Glyph>
   )
 }
+
+export function IconTrash(props: IconProps): ReactElement {
+  return (
+    <Glyph {...props}>
+      <path d="M3 4.3h10M6.4 4.3V2.9h3.2v1.4" />
+      <path d="M4.4 4.3l.6 8.2c0 .4.4.6.8.6h4.4c.4 0 .8-.2.8-.6l.6-8.2" />
+    </Glyph>
+  )
+}

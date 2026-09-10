@@ -2,6 +2,7 @@
 // Aucune logique metier reelle ici — il ne fait que rejouer des evenements plausibles.
 
 import type { CoreBridge, CoreEvent, ShieldView, TabId, TabView, UiRequest } from './contract'
+import { FakeExtensions } from './fake-extensions'
 import { fallbackTitle, looksLikeUrl, securityOf } from './url-shape'
 
 const LOAD_STEPS = 14
@@ -42,6 +43,7 @@ class FakeCore implements CoreBridge {
   private siteShield = new Map<TabId, { activeHere: boolean; blockedHere: number }>()
   private timers = new Map<TabId, ReturnType<typeof setInterval>>()
   private listeners = new Set<(event: CoreEvent) => void>()
+  private extensions = new FakeExtensions((event) => this.emit(event))
 
   constructor() {
     for (const url of SEED_URLS) this.openTab(url)
@@ -52,6 +54,7 @@ class FakeCore implements CoreBridge {
     this.listeners.add(listener)
     queueMicrotask(() => {
       listener({ kind: 'tabsChanged', tabs: this.tabs, active: this.active })
+      listener(this.extensions.snapshot())
       if (this.active !== null) this.emitShield(this.active)
     })
     return () => {
@@ -60,7 +63,9 @@ class FakeCore implements CoreBridge {
   }
 
   public send(request: UiRequest): void {
-    if (!this.handleTabRequest(request)) this.handleShieldRequest(request)
+    if (this.handleTabRequest(request)) return
+    if (this.extensions.handle(request)) return
+    this.handleShieldRequest(request)
   }
 
   private handleTabRequest(request: UiRequest): boolean {
