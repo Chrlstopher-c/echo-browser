@@ -48,10 +48,18 @@ pub fn apply(process_type: &str, command_line: &mut CommandLine) {
         command_line.append_switch(Some(&CefString::from("no-proxy-server")));
     }
 
-    let loadable = echo_extensions::Extensions::new(extensions_dir()).loadable();
+    let inventaire = echo_extensions::Extensions::new(extensions_dir())
+        .with_profile(echo_extensions::profile::default_profile(&data_dir()));
+    let loadable = inventaire.loadable();
     if !loadable.is_empty() {
         switch_with_value(command_line, "load-extension", &loadable.join(","));
         tracing::info!(nombre = loadable.len(), "extensions chargees au demarrage");
+    }
+    // Ce que l'utilisateur a ecarte ne se desactive pas dans le profil : Chromium y
+    // remet sa propre valeur. Il respecte en revanche cette liste-ci.
+    if let Some(gardees) = inventaire.enabled_paths() {
+        switch_with_value(command_line, "disable-extensions-except", &gardees.join(","));
+        tracing::info!(nombre = gardees.len(), "extensions gardees actives");
     }
 }
 

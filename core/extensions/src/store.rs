@@ -113,7 +113,7 @@ pub fn set_enabled(root: &Path, id: &str, enabled: bool) -> anyhow::Result<()> {
     Ok(())
 }
 
-fn read_disabled(root: &Path) -> Vec<String> {
+pub fn read_disabled(root: &Path) -> Vec<String> {
     let Ok(text) = std::fs::read_to_string(state_path(root)) else {
         return Vec::new();
     };

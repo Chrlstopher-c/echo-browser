@@ -13,6 +13,8 @@ pub struct Action {
     pub popup: Option<String>,
     /// Chemin de l'icone dans le paquet, la plus grande disponible.
     pub icon: Option<String>,
+    /// Chemin de sa page de reglages, quand elle en propose une.
+    pub options: Option<String>,
 }
 
 impl Action {
@@ -36,7 +38,15 @@ impl Action {
             .and_then(largest_icon)
             .or_else(|| manifest.get("icons").and_then(largest_icon));
 
-        Self { popup, icon }
+        // `options_ui.page` est la forme moderne, `options_page` celle des vieux paquets.
+        let options = manifest
+            .get("options_ui")
+            .and_then(|ui| ui.get("page"))
+            .or_else(|| manifest.get("options_page"))
+            .and_then(Value::as_str)
+            .map(trim_path);
+
+        Self { popup, icon, options }
     }
 }
 
@@ -91,6 +101,14 @@ mod tests {
         let action = Action::from_manifest(&manifest);
         assert_eq!(action.popup.as_deref(), Some("ui/popup/index.html"), "barre de tete retiree");
         assert_eq!(action.icon.as_deref(), Some("logo.png"));
+    }
+
+    #[test]
+    fn lit_la_page_de_reglages_sous_ses_deux_formes() {
+        let moderne = serde_json::json!({ "options_ui": { "page": "options.html" } });
+        assert_eq!(Action::from_manifest(&moderne).options.as_deref(), Some("options.html"));
+        let ancienne = serde_json::json!({ "options_page": "/reglages.html" });
+        assert_eq!(Action::from_manifest(&ancienne).options.as_deref(), Some("reglages.html"));
     }
 
     #[test]

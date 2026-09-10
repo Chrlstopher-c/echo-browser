@@ -44,6 +44,8 @@ export type UiRequest =
   | { kind: 'openExtensionPopup'; id: string; anchor: AnchorRect }
   /** Referme la fenetre d'extension ouverte, s'il y en a une. */
   | { kind: 'closeExtensionPopup' }
+  /** Ouvre la page de reglages d'une extension dans un onglet. */
+  | { kind: 'openExtensionOptions'; id: string }
   // --- Bibliotheque ---
   | { kind: 'addBookmark'; id: TabId }
   | { kind: 'removeBookmark'; url: string }
@@ -149,6 +151,8 @@ export interface ExtensionView {
   icon: string | null
   /** Adresse de sa fenetre, quand elle en declare une. */
   popup: string | null
+  /** Adresse de sa page de reglages, quand elle en propose une. */
+  options: string | null
 }
 
 export interface BookmarkView {

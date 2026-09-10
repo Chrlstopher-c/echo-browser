@@ -1,6 +1,6 @@
 // Responsabilite : la rangee d'icones des extensions, et l'ouverture de leur fenetre.
 
-import { useCallback, useState, type ReactElement } from 'react'
+import { useCallback, useState, type MouseEvent, type ReactElement } from 'react'
 import type { AnchorRect, ExtensionView } from '../shared/contract'
 import { IconPuzzle } from '../shared/design/icons'
 
@@ -9,6 +9,8 @@ export interface ExtensionBarProps {
   /** Extension dont la fenetre est ouverte, s'il y en a une. */
   openId: string | null
   onOpen: (id: string, anchor: AnchorRect) => void
+  /** Menu de gestion, ouvert au clic droit sur une icone. */
+  onMenu: (id: string) => (event: MouseEvent) => void
 }
 
 /** Une extension n'a sa place dans la barre que si elle est active et sait s'ouvrir. */
@@ -30,14 +32,15 @@ interface ExtensionIconProps {
   extension: ExtensionView
   open: boolean
   onOpen: (id: string, anchor: AnchorRect) => void
+  onMenu: (event: MouseEvent) => void
 }
 
-function ExtensionIcon({ extension, open, onOpen }: ExtensionIconProps): ReactElement {
+function ExtensionIcon({ extension, open, onOpen, onMenu }: ExtensionIconProps): ReactElement {
   // Un paquet peut ne pas fournir d'icone lisible : le bouton garde alors la piece de
   // puzzle plutot que de devenir un carre vide.
   const [failed, setFailed] = useState(false)
   const click = useCallback(
-    (event: React.MouseEvent<HTMLButtonElement>): void => onOpen(extension.id, anchorOf(event.currentTarget)),
+    (event: MouseEvent<HTMLButtonElement>): void => onOpen(extension.id, anchorOf(event.currentTarget)),
     [extension.id, onOpen],
   )
   return (
@@ -47,6 +50,7 @@ function ExtensionIcon({ extension, open, onOpen }: ExtensionIconProps): ReactEl
       aria-label={extension.name}
       aria-pressed={open}
       onClick={click}
+      onContextMenu={onMenu}
       className={`relative flex size-7 shrink-0 items-center justify-center rounded-row text-ink-muted
         transition-colors duration-100 hover:bg-hover hover:text-ink ${open ? 'bg-card text-ink shadow-card' : ''}`}
     >
@@ -64,7 +68,7 @@ function ExtensionIcon({ extension, open, onOpen }: ExtensionIconProps): ReactEl
   )
 }
 
-export function ExtensionBar({ extensions, openId, onOpen }: ExtensionBarProps): ReactElement | null {
+export function ExtensionBar({ extensions, openId, onOpen, onMenu }: ExtensionBarProps): ReactElement | null {
   const shown = barExtensions(extensions)
   if (shown.length === 0) return null
   return (
@@ -75,6 +79,7 @@ export function ExtensionBar({ extensions, openId, onOpen }: ExtensionBarProps):
           extension={extension}
           open={openId === extension.id}
           onOpen={onOpen}
+          onMenu={onMenu(extension.id)}
         />
       ))}
     </div>

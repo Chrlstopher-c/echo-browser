@@ -28,6 +28,8 @@ export interface ExtensionsController extends Removal {
   popupId: string | null
   openPopup: (id: string, anchor: AnchorRect) => void
   closePopup: () => void
+  /** Ouvre la page de reglages de l'extension dans un onglet. */
+  openOptions: (id: string) => void
   pending: number
   install: InstallField
   setEnabled: (id: string, enabled: boolean) => void
@@ -104,6 +106,10 @@ export function useExtensions(
     [send],
   )
   const closePopup = useCallback((): void => send({ kind: 'closeExtensionPopup' }), [send])
+  const openOptions = useCallback(
+    (id: string): void => send({ kind: 'openExtensionOptions', id }),
+    [send],
+  )
 
   return {
     ...removal,
@@ -112,6 +118,7 @@ export function useExtensions(
     popupId,
     openPopup,
     closePopup,
+    openOptions,
     pending,
     install,
     setEnabled,

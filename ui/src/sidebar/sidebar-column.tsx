@@ -3,6 +3,7 @@
 import type { ReactElement } from 'react'
 import { AddressField } from '../address/address-field'
 import { ExtensionBar } from '../extensions/extension-bar'
+import { ExtensionMenu } from '../extensions/extension-menu'
 import { TopControls } from '../address/top-controls'
 import { RestartStrip } from '../restart/restart-strip'
 import { SpaceStrip } from '../spaces/space-strip'
@@ -39,6 +40,15 @@ function ColumnHeader({ model }: { model: SidebarModel }): ReactElement {
         extensions={extensions.extensions}
         openId={extensions.popupId}
         onOpen={extensions.openPopup}
+        onMenu={model.extensionMenu.openFor}
+      />
+      <ExtensionMenu
+        controller={extensions}
+        menu={model.extensionMenu}
+        onAskRemove={(id) => {
+          extensions.askRemove(id)
+          model.sheet.open('extensions')
+        }}
       />
     </header>
   )

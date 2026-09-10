@@ -1,6 +1,7 @@
 // Responsabilite : modele complet de la barre — coeur, gestes, largeur, feuilles, espace, domaines.
 
 import { useCallback, useEffect, useState } from 'react'
+import { useExtensionMenu, type ExtensionMenuController } from '../extensions/extension-menu'
 import { useExtensions, type ExtensionsController } from '../extensions/use-extensions'
 import { useLibrary, type LibraryController } from '../library/use-library'
 import { useSettings, type SettingsController } from '../settings/use-settings'
@@ -26,6 +27,8 @@ export interface SidebarModel extends SidebarDomains {
   core: CoreConnection
   tabs: TabActions
   menu: TabMenuController
+  /** Menu de gestion d'une extension, ouvert au clic droit sur son icone. */
+  extensionMenu: ExtensionMenuController
   width: SidebarWidth
   sheet: SheetController
   space: SpaceController
@@ -50,6 +53,7 @@ export function useSidebar(): SidebarModel {
   const { state, send } = core
   const tabs = useTabActions(send, state.activeId)
   const menu = useTabMenu()
+  const extensionMenu = useExtensionMenu()
   const width = useSidebarWidth(send)
   const sheet = useSheet()
   const space = useSpace(send)
@@ -71,7 +75,7 @@ export function useSidebar(): SidebarModel {
   useKeyboard({ tabs, activeId: state.activeId, space, focusAddress })
 
   return {
-    ...domains, core, tabs, menu, width, sheet, space,
+    ...domains, core, tabs, menu, extensionMenu, width, sheet, space,
     addressFocusToken: localFocus + state.addressFocusToken,
     focusAddress,
   }

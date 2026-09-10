@@ -55,6 +55,8 @@ pub enum UiRequest {
     OpenExtensionPopup { id: String, anchor: AnchorRect },
     /// Referme la fenetre d'extension ouverte, s'il y en a une.
     CloseExtensionPopup,
+    /// Ouvre la page de reglages d'une extension dans un onglet.
+    OpenExtensionOptions { id: String },
 
     // --- Bibliotheque ---
     AddBookmark { id: TabId },
@@ -178,6 +180,8 @@ pub struct ExtensionView {
     /// Adresse de sa fenetre, quand elle en declare une. Sans elle, l'extension n'a
     /// rien a montrer : son icone declenche son action et c'est tout.
     pub popup: Option<String>,
+    /// Adresse de sa page de reglages, quand elle en propose une.
+    pub options: Option<String>,
 }
 
 /// Un rectangle de l'interface, en pixels, repere depuis le coin haut-gauche de la

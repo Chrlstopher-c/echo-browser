@@ -75,13 +75,17 @@ Proton Pass est installé et actif, mais rien ne permet de l'ouvrir : le panneau
 ne fait que lister et activer. Une extension moderne vit dans sa fenêtre — celle de Proton Pass
 est le gestionnaire de mots de passe lui-même. Sans elle, l'extension est décorative.
 
-- [ ] Barre d'icônes d'extensions près de l'adresse, une par extension qui en déclare une
-- [ ] Icône réelle de l'extension, et sa pastille de compteur quand elle en pose une
-- [ ] Clic : la fenêtre de l'extension s'ouvre ancrée sous son icône, à la bonne taille
-- [ ] La fenêtre se ferme au clic ailleurs, à Échap, et se redimensionne à la demande de la page
+- [x] Barre d'icônes d'extensions sous l'adresse, une par extension qui en déclare une
+- [x] Icône réelle de l'extension, servie par le cœur depuis le paquet
+- [x] Clic : la fenêtre de l'extension s'ouvre ancrée sous son icône
+- [x] La fenêtre se ferme au second clic, à Échap, et au changement d'onglet
+- [ ] Elle ne se ferme pas encore au clic dans la page : la vue web ne nous prévient pas
+- [x] Le menu de l'icône : réglages de l'extension, activer/désactiver, retirer
+- [x] Activation et retrait effectifs pour **toutes** les extensions, catalogue compris
 - [ ] Épinglage : choisir les icônes visibles, les autres dans un dépassement
-- [ ] Le menu de l'icône : options de l'extension, retirer, gérer
 - [ ] Les extensions qui n'ont pas de fenêtre déclenchent leur action au clic
+- [ ] La fenêtre se dimensionne à sa page (taille fixe 380 × 600 aujourd'hui)
+- [ ] Pastille de compteur sur l'icône, quand l'extension en pose une
 
 Technique : la fenêtre d'une extension est une page `chrome-extension://<id>/…`. Elle s'affiche
 dans une vue superposée (chantier 7), ancrée sous l'icône.

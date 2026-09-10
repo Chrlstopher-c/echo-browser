@@ -106,6 +106,7 @@ fn apply(request: UiRequest) {
         }
         UiRequest::InstallExtension { source } => open_store(&source),
         UiRequest::OpenExtensionPopup { id, anchor } => open_extension_popup(&id, anchor),
+        UiRequest::OpenExtensionOptions { id } => open_extension_options(&id),
         UiRequest::CloseExtensionPopup => {
             crate::overlay::close_extension_popup();
             publish(&CoreEvent::ExtensionPopupChanged { id: None });
@@ -269,10 +270,10 @@ pub fn publish_extensions() {
                 name: extension.name.clone(),
                 version: extension.version.clone(),
                 enabled: extension.enabled,
-                // Seules celles que nous chargeons nous-memes attendent une relance ;
-                // celles du catalogue sont prises en compte immediatement par Chromium.
-                pending: pending && extension.from_command_line,
-                removable: extension.from_command_line,
+                // Toute bascule attend la relance : Chromium ne sait pas desactiver une
+                // extension a chaud, il sait n'en charger qu'une liste au demarrage.
+                pending,
+                removable: true,
                 // L'icone passe par notre schema : celui de l'extension ne se lit pas
                 // depuis une page interne (voir assets::ICON_HOST).
                 icon: extension
@@ -281,6 +282,7 @@ pub fn publish_extensions() {
                     .as_ref()
                     .map(|_| format!("echo://{}/{}", crate::assets::ICON_HOST, extension.id)),
                 popup: extension.action.popup.as_deref().map(&url),
+                options: extension.action.options.as_deref().map(&url),
                 id: extension.id.clone(),
             }
         })
@@ -660,4 +662,21 @@ fn open_extension_popup(id: &str, anchor: echo_contract::AnchorRect) {
     let rect = cef::Rect { x: anchor.x, y: anchor.y, width: anchor.width, height: anchor.height };
     crate::overlay::toggle_extension_popup(id, &url, rect, &chrome);
     publish(&CoreEvent::ExtensionPopupChanged { id: crate::overlay::open_popup_id() });
+}
+
+/// Ouvre la page de reglages d'une extension dans un onglet.
+fn open_extension_options(id: &str) {
+    let page = session::with(|s| {
+        s.extensions
+            .list()
+            .into_iter()
+            .find(|extension| extension.id == id)
+            .and_then(|extension| extension.action.options.clone())
+    })
+    .flatten();
+    let Some(page) = page else {
+        notify_error("Cette extension n'a pas de page de réglages.");
+        return;
+    };
+    open_tab(&echo_extensions::action::resource_url(id, &page));
 }

@@ -88,15 +88,60 @@ impl Extensions {
                 found.push(ours);
             }
         }
+        // Notre propre registre a le dernier mot sur l'activation, y compris pour les
+        // extensions du catalogue : Chromium refuse qu'on ecrive dans ses preferences
+        // (mesure du 2026-09-10, la valeur est remise a l'identique au demarrage), mais
+        // il accepte de ne charger que ce qu'on lui designe en ligne de commande.
+        let disabled = store::read_disabled(&self.root);
+        for extension in &mut found {
+            extension.enabled = extension.enabled && !disabled.contains(&extension.id);
+        }
         found.sort_by(|a, b| a.name.to_lowercase().cmp(&b.name.to_lowercase()));
         found
+    }
+
+    /// Les dossiers des extensions a laisser vivre, quand au moins une est ecartee.
+    ///
+    /// Chromium ne sait pas desactiver une extension a chaud : il sait n'en charger
+    /// qu'une liste au demarrage. Une bascule attend donc la relance — c'est deja ce
+    /// que l'interface annonce pour nos propres paquets.
+    pub fn enabled_paths(&self) -> Option<Vec<String>> {
+        let all = self.list();
+        if all.iter().all(|extension| extension.enabled) {
+            return None;
+        }
+        Some(
+            all.into_iter()
+                .filter(|extension| extension.enabled)
+                .filter(|extension| extension.dir.is_dir())
+                .filter_map(|extension| extension.dir.to_str().map(str::to_owned))
+                .collect(),
+        )
     }
 
     pub fn set_enabled(&self, id: &str, enabled: bool) -> anyhow::Result<()> {
         store::set_enabled(&self.root, id, enabled)
     }
 
+    /// Retire une extension, d'ou qu'elle vienne.
+    ///
+    /// Nos paquets vivent dans notre dossier ; celles du catalogue vivent dans le
+    /// profil, ou Chromium les a depaquetees. Dans les deux cas on efface le dossier :
+    /// Chromium constate l'absence au demarrage suivant et oublie l'entree. Il n'existe
+    /// pas d'autre voie — ses preferences refusent nos ecritures.
     pub fn remove(&self, id: &str) -> anyhow::Result<()> {
+        let known = self.list().into_iter().find(|extension| extension.id == id);
+        if let Some(extension) = known {
+            let dir = &extension.dir;
+            // La suppression ne sort jamais de nos deux racines connues.
+            let sien = dir.starts_with(&self.root) || dir.starts_with(&self.profile);
+            if sien && dir.is_dir() {
+                std::fs::remove_dir_all(dir)?;
+                info!(%id, ?dir, "extension retiree");
+            } else if !sien {
+                anyhow::bail!("dossier inattendu pour {id} : {}", dir.display());
+            }
+        }
         store::remove(&self.root, id)
     }
 
