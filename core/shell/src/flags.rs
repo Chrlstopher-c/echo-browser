@@ -49,6 +49,35 @@ fn switch_with_value(command_line: &mut CommandLine, name: &str, value: &str) {
     command_line.append_switch_with_value(Some(&CefString::from(name)), Some(&CefString::from(value)));
 }
 
+/// Copie le paquet de scriptlets livre avec l'application dans le repertoire de travail,
+/// s'il n'y est pas deja. Sans lui, les filtres `+js(...)` restent inertes.
+pub fn seed_shield_data() {
+    let target = data_dir().join("shield-resources.json");
+    if target.exists() {
+        return;
+    }
+    let candidates = [
+        std::env::current_exe().ok().and_then(|exe| exe.parent().map(|d| d.join("shield-resources.json"))),
+        Some(PathBuf::from("data/shield-resources.json")),
+    ];
+    for source in candidates.into_iter().flatten() {
+        if !source.is_file() {
+            continue;
+        }
+        if let Some(parent) = target.parent() {
+            let _ = std::fs::create_dir_all(parent);
+        }
+        match std::fs::copy(&source, &target) {
+            Ok(octets) => {
+                tracing::info!(?source, octets, "paquet de scriptlets installe");
+                return;
+            }
+            Err(err) => tracing::warn!(?source, %err, "paquet de scriptlets non copie"),
+        }
+    }
+    tracing::warn!("aucun paquet de scriptlets trouve — lancer : bun tools/build-resources.mjs");
+}
+
 /// Les dossiers d'extension prets a charger — ceux qui portent un `manifest.json`.
 pub fn installed_extensions(dir: &Path) -> Vec<String> {
     let Ok(entries) = std::fs::read_dir(dir) else {

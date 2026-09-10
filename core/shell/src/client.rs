@@ -28,15 +28,72 @@ impl LiveBrowsers {
 wrap_client! {
     pub struct EchoClient {
         live: LiveBrowsers,
+        shield: std::sync::Arc<echo_shield::Shield>,
     }
 
     impl Client {
+        fn request_handler(&self) -> Option<RequestHandler> {
+            Some(crate::filtering::FilteringRequestHandler::new(self.shield.clone()))
+        }
+
         fn life_span_handler(&self) -> Option<LifeSpanHandler> {
             Some(EchoLifeSpanHandler::new(self.live.clone()))
         }
 
         fn display_handler(&self) -> Option<DisplayHandler> {
             Some(EchoDisplayHandler::new(()))
+        }
+
+        fn load_handler(&self) -> Option<LoadHandler> {
+            Some(EchoLoadHandler::new(()))
+        }
+    }
+}
+
+wrap_load_handler! {
+    struct EchoLoadHandler {
+        marker: (),
+    }
+
+    impl LoadHandler {
+        /// Injecte le pont dans la page d'interface avant que ses scripts ne s'executent.
+        fn on_load_start(
+            &self,
+            _browser: Option<&mut Browser>,
+            frame: Option<&mut Frame>,
+            _transition: TransitionType,
+        ) {
+            let Some(frame) = frame else { return };
+            let url = CefString::from(&frame.url()).to_string();
+            if !url.starts_with("echo://ui/") {
+                return;
+            }
+            frame.execute_java_script(
+                Some(&CefString::from(crate::bridge::script::BOOTSTRAP)),
+                Some(&CefString::from("echo://bridge")),
+                0,
+            );
+            info!("pont injecte dans l'interface");
+        }
+
+        fn on_loading_state_change(
+            &self,
+            browser: Option<&mut Browser>,
+            is_loading: i32,
+            _can_go_back: i32,
+            _can_go_forward: i32,
+        ) {
+            let Some(url) = browser
+                .and_then(|b| b.main_frame())
+                .map(|f| CefString::from(&f.url()).to_string())
+            else {
+                return;
+            };
+            if url.starts_with("echo://ui/") {
+                return;
+            }
+            crate::bridge::publish_tab(&url, &url, is_loading == 1);
+            crate::bridge::publish_shield();
         }
     }
 }

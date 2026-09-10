@@ -13,6 +13,7 @@ path = "src/main.rs"
 cef = "152"
 echo-contract.workspace = true
 echo-shield.workspace = true
+serde_json.workspace = true
 anyhow.workspace = true
 tracing.workspace = true
 tracing-subscriber.workspace = true

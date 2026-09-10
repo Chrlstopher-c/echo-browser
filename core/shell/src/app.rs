@@ -45,10 +45,17 @@ wrap_browser_process_handler! {
             assets::install_factory();
             let url = startup_url();
             info!(%url, "contexte Chromium pret, ouverture de la fenetre");
-            *self.client.borrow_mut() = Some(EchoClient::new(Default::default()));
+            let shield = load_shield();
+            *self.client.borrow_mut() = Some(EchoClient::new(Default::default(), shield.clone()));
             let mut client = self.client.borrow().clone();
             let chrome_view = window::create_chrome_view(client.as_mut(), &url);
             let content_view = window::create_view(client.as_mut(), &home_url(), 0);
+            crate::session::install(crate::session::Session {
+                chrome: chrome_view.clone(),
+                content: content_view.clone(),
+                shield: shield.clone(),
+            });
+
             let mut delegate = window::BrowserWindowDelegate::new(
                 RefCell::new(chrome_view),
                 RefCell::new(content_view),
@@ -62,6 +69,24 @@ wrap_browser_process_handler! {
             self.client.borrow().clone()
         }
     }
+}
+
+/// Prepare le bouclier. Le chargement des listes se fait a cote du demarrage : le navigateur
+/// s'ouvre tout de suite, le filtrage prend effet des que le moteur est pret.
+fn load_shield() -> std::sync::Arc<echo_shield::Shield> {
+    let shield = std::sync::Arc::new(echo_shield::Shield::new(flags::data_dir()));
+    flags::seed_shield_data();
+    let background = shield.clone();
+    std::thread::spawn(move || {
+        if let Err(err) = background.refresh_lists(false) {
+            tracing::warn!(%err, "listes de filtrage non rafraichies");
+        }
+        match background.load() {
+            Ok(()) => tracing::info!("bouclier operationnel"),
+            Err(err) => tracing::warn!(%err, "bouclier indisponible — navigation sans filtrage"),
+        }
+    });
+    shield
 }
 
 /// Page ouverte dans la vue contenu au demarrage.

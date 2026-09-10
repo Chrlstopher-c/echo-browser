@@ -6,6 +6,7 @@ cd "$(dirname "$0")"
 export CEF_PATH="${CEF_PATH:-$HOME/.local/share/cef}"
 export ECHO_DATA_DIR="${ECHO_DATA_DIR:-$HOME/.local/share/echo-browser}"
 export LD_LIBRARY_PATH="${LD_LIBRARY_PATH:-}:$CEF_PATH"
+export ECHO_UI_DIR="${ECHO_UI_DIR:-$PWD/ui/dist}"
 
 if [ ! -f "$CEF_PATH/libcef.so" ]; then
   echo "libcef.so introuvable dans $CEF_PATH — lancer d'abord : bash tools/fetch-cef.sh" >&2

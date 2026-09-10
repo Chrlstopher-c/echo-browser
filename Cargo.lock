@@ -417,6 +417,7 @@ dependencies = [
  "echo-contract",
  "echo-shield",
  "parking_lot",
+ "serde_json",
  "tracing",
  "tracing-subscriber",
 ]

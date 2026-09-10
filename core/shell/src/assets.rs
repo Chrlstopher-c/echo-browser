@@ -65,7 +65,12 @@ wrap_scheme_handler_factory! {
             _scheme_name: Option<&CefString>,
             request: Option<&mut Request>,
         ) -> Option<ResourceHandler> {
-            let url = request.map(|r| CefString::from(&r.url()).to_string())?;
+            let request = request?;
+            let url = CefString::from(&request.url()).to_string();
+            if is_ipc(&url) {
+                crate::bridge::submit(&post_body(request));
+                return Some(StaticResource::new(b"[]".to_vec(), "application/json".into(), StdRc::new(Cell::new(0))));
+            }
             let (body, mime) = load(&self.root, &url);
             Some(StaticResource::new(body, mime, StdRc::new(Cell::new(0))))
         }
@@ -128,6 +133,31 @@ wrap_resource_handler! {
             i32::from(count > 0)
         }
     }
+}
+
+/// Chemin reserve aux demandes de l'interface.
+fn is_ipc(url: &str) -> bool {
+    let path = url.split(['?', '#']).next().unwrap_or(url);
+    path.ends_with("/ipc")
+}
+
+/// Extrait le corps d'une requete POST envoyee par l'interface.
+fn post_body(request: &mut Request) -> Vec<u8> {
+    let Some(post) = request.post_data() else { return Vec::new() };
+    let mut elements: Vec<Option<PostDataElement>> = Vec::new();
+    post.elements(Some(&mut elements));
+    let mut collected = Vec::new();
+    for element in elements.into_iter().flatten() {
+        let size = element.bytes_count();
+        if size == 0 {
+            continue;
+        }
+        let mut buffer = vec![0u8; size];
+        let read = element.bytes(size, buffer.as_mut_ptr());
+        buffer.truncate(read);
+        collected.extend_from_slice(&buffer);
+    }
+    collected
 }
 
 /// Lit le fichier demande sous la racine de l'interface. Toute URL inconnue retombe sur `index.html`.

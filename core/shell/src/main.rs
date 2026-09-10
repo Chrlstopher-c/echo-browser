@@ -6,8 +6,11 @@
 
 mod app;
 mod assets;
+mod bridge;
 mod client;
+mod filtering;
 mod flags;
+mod session;
 mod window;
 
 use cef::{api_hash, args::Args, execute_process, initialize, run_message_loop, shutdown, ImplCommandLine, Settings};
