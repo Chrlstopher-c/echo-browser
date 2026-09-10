@@ -53,6 +53,10 @@ wrap_client! {
             Some(crate::shortcuts::BrowserShortcuts::new(()))
         }
 
+        fn context_menu_handler(&self) -> Option<ContextMenuHandler> {
+            Some(EchoContextMenu::new(()))
+        }
+
         fn load_handler(&self) -> Option<LoadHandler> {
             Some(EchoLoadHandler::new(self.shield.clone()))
         }
@@ -191,5 +195,68 @@ wrap_life_span_handler! {
             // La sortie appartient a la fenetre — voir `on_window_destroyed`.
             self.live.closed();
         }
+    }
+}
+
+// Le clic droit du navigateur. Chromium propose quatre entrees en anglais, sans rapport
+// avec la cible : on prend la main et on sert le notre.
+wrap_context_menu_handler! {
+    pub struct EchoContextMenu {
+        marker: (),
+    }
+
+    impl ContextMenuHandler {
+        /// Vide le modele de Chromium. Sans cela, son menu s'ouvrirait par-dessus le notre.
+        fn on_before_context_menu(
+            &self,
+            _browser: Option<&mut Browser>,
+            _frame: Option<&mut Frame>,
+            _params: Option<&mut ContextMenuParams>,
+            model: Option<&mut MenuModel>,
+        ) {
+            if let Some(model) = model {
+                model.clear();
+            }
+        }
+
+        /// Prend la main sur l'affichage. Rendre 1 dit a Chromium que le menu est a nous.
+        fn run_context_menu(
+            &self,
+            _browser: Option<&mut Browser>,
+            _frame: Option<&mut Frame>,
+            params: Option<&mut ContextMenuParams>,
+            _model: Option<&mut MenuModel>,
+            callback: Option<&mut RunContextMenuCallback>,
+        ) -> i32 {
+            let Some(params) = params else { return 0 };
+            let click = read_click(params);
+            let (x, y) = (params.xcoord(), params.ycoord());
+            // Le rappel se referme tout de suite : notre menu ne passe pas par lui, et
+            // le laisser ouvert bloquerait la page sur un menu invisible.
+            if let Some(callback) = callback {
+                callback.cancel();
+            }
+            crate::bridge::context::open(click, x, y);
+            1
+        }
+
+        fn on_context_menu_dismissed(&self, _browser: Option<&mut Browser>, _frame: Option<&mut Frame>) {
+            crate::bridge::context::close();
+        }
+    }
+}
+
+/// Traduit ce que Chromium rapporte du clic en ce dont le menu a besoin.
+fn read_click(params: &ContextMenuParams) -> crate::menu::Click {
+    let text = |value: CefStringUserfree| CefString::from(&value).to_string();
+    let browser = crate::session::with(|s| s.tabs.active().and_then(|tab| tab.view.browser())).flatten();
+    crate::menu::Click {
+        link: text(params.link_url()),
+        image: if params.has_image_contents() == 1 { text(params.source_url()) } else { String::new() },
+        selection: text(params.selection_text()),
+        page: text(params.page_url()),
+        editable: params.is_editable() == 1,
+        can_go_back: browser.as_ref().map(|b| b.can_go_back() == 1).unwrap_or(false),
+        can_go_forward: browser.as_ref().map(|b| b.can_go_forward() == 1).unwrap_or(false),
     }
 }

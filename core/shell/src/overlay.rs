@@ -38,6 +38,9 @@ impl Overlay {
             Some(&mut delegate),
         )?;
         let mut as_view = View::from(&view);
+        // Fond transparent sur la vue elle-meme : sans cela, Chromium peint un
+        // rectangle plein sous la page et les angles arrondis se voient decoupes.
+        as_view.set_background_color(0);
         let controller = window.add_overlay_view(Some(&mut as_view), DockingMode::CUSTOM, 1)?;
         controller.set_bounds(Some(&bounds));
         controller.set_visible(1);
@@ -115,6 +118,22 @@ wrap_task! {
             // declare une, ou de celle que designe ECHO_OVERLAY_EXT.
             if std::env::var_os("ECHO_OVERLAY_TEST").is_some_and(|v| v == "extension") {
                 essai_extension(&anchor);
+                return;
+            }
+
+            // Variante « menu » : ouvre le menu contextuel d'une page nue, sans clic.
+            if std::env::var_os("ECHO_OVERLAY_TEST").is_some_and(|v| v == "menu") {
+                let click = crate::menu::Click {
+                    link: "https://exemple.fr/page".to_string(),
+                    image: String::new(),
+                    selection: String::new(),
+                    page: "https://exemple.fr/".to_string(),
+                    editable: false,
+                    can_go_back: true,
+                    can_go_forward: false,
+                };
+                crate::bridge::context::open(click, 260, 200);
+                tracing::info!(ouvert = menu_open(), "essai menu : menu demande");
                 return;
             }
 
@@ -242,4 +261,75 @@ fn place_under(anchor: Rect, anchor_view: &BrowserView) -> Rect {
         .min(frame.height - height - POPUP_MARGIN)
         .max(POPUP_MARGIN);
     Rect { x, y, width, height }
+}
+
+thread_local! {
+    /// Le menu contextuel ouvert, s'il y en a un. Comme la fenetre d'extension : un seul
+    /// a la fois, et il faut le garder vivant pour qu'il reste a l'ecran.
+    static MENU: std::cell::RefCell<Option<Overlay>> = const { std::cell::RefCell::new(None) };
+}
+
+/// Marge minimale entre le menu et le bord de la fenetre.
+const MENU_MARGIN: i32 = 6;
+
+/// Ouvre le menu contextuel au point clique. Son contenu voyage dans le fragment de
+/// l'adresse : la page le lit des sa premiere ligne, sans attendre un message.
+pub fn open_menu(anchor_view: &BrowserView, payload: &str, at: Rect) {
+    close_menu();
+    let bounds = place_menu(at, anchor_view);
+    let url = format!("echo://ui/menu.html#{}", encode(payload));
+    let Some(overlay) = Overlay::open(anchor_view, &url, bounds) else {
+        warn!("menu contextuel : ouverture refusee");
+        return;
+    };
+    MENU.with(|cell| *cell.borrow_mut() = Some(overlay));
+}
+
+/// Referme le menu contextuel. Sans effet s'il n'y en a pas.
+pub fn close_menu() {
+    let previous = MENU.with(|cell| cell.borrow_mut().take());
+    if let Some(overlay) = previous {
+        overlay.close();
+        debug!("menu contextuel ferme");
+    }
+}
+
+/// Vrai si un menu est ouvert.
+pub fn menu_open() -> bool {
+    MENU.with(|cell| cell.borrow().is_some())
+}
+
+/// Pose le menu au point clique, en le retournant plutot que de le laisser deborder.
+fn place_menu(at: Rect, anchor_view: &BrowserView) -> Rect {
+    let frame = View::from(anchor_view)
+        .window()
+        .map(|window| View::from(&window).bounds())
+        .unwrap_or(Rect { x: 0, y: 0, width: 1440, height: 900 });
+    let width = at.width.min(frame.width - 2 * MENU_MARGIN);
+    let height = at.height.min(frame.height - 2 * MENU_MARGIN);
+    // A droite du curseur si la place y est, a gauche sinon ; de meme vers le bas.
+    let x = if at.x + width + MENU_MARGIN <= frame.width {
+        at.x
+    } else {
+        (at.x - width).max(MENU_MARGIN)
+    };
+    let y = if at.y + height + MENU_MARGIN <= frame.height {
+        at.y
+    } else {
+        (at.y - height).max(MENU_MARGIN)
+    };
+    Rect { x, y, width, height }
+}
+
+/// Encode le contenu du menu pour le porter dans une adresse.
+fn encode(payload: &str) -> String {
+    payload
+        .bytes()
+        .map(|byte| match byte {
+            b'A'..=b'Z' | b'a'..=b'z' | b'0'..=b'9' | b'-' | b'_' | b'.' | b'~' => {
+                (byte as char).to_string()
+            }
+            other => format!("%{other:02X}"),
+        })
+        .collect()
 }

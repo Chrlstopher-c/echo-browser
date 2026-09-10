@@ -2,10 +2,18 @@
 // au coeur pour le cadre autour de la page.
 
 import { useCallback, useEffect, useState } from 'react'
-import type { UiRequest } from '../shared/contract'
+import type { OverlayTheme, UiRequest } from '../shared/contract'
 import { readLocal, writeLocal } from '../shared/local-store'
 import { applySpace } from './apply-space'
-import { DEFAULT_SPACE, isSpaceId, SPACES, spaceOf, type Space, type SpaceId } from './space-palette'
+import {
+  DEFAULT_SPACE,
+  isSpaceId,
+  SCHEME_TOKENS,
+  SPACES,
+  spaceOf,
+  type Space,
+  type SpaceId,
+} from './space-palette'
 
 const STORE_KEY = 'echo.space'
 
@@ -14,6 +22,12 @@ export interface SpaceController {
   select: (id: SpaceId) => void
   /** Passe a l'espace suivant ou precedent, en boucle. */
   cycle: (direction: 1 | -1) => void
+}
+
+/** Les quelques couleurs dont une surimpression a besoin pour se fondre dans l'espace. */
+function overlayTheme(space: Space): OverlayTheme {
+  const { shell, card, hover, hairline, ink, inkMuted, inkFaint } = space.tokens
+  return { shell, card, hover, hairline, ink, inkMuted, inkFaint, danger: SCHEME_TOKENS[space.scheme].danger }
 }
 
 function readStoredSpace(): SpaceId {
@@ -27,6 +41,9 @@ export function useSpace(send: (request: UiRequest) => void): SpaceController {
   useEffect(() => {
     applySpace(space)
     send({ kind: 'setAccent', color: space.tokens.shell })
+    // Ce qui s'affiche au-dessus de la page est une page a part : elle ne partage pas
+    // nos jetons, le coeur les lui transmet.
+    send({ kind: 'setOverlayTheme', theme: overlayTheme(space) })
   }, [space, send])
 
   const select = useCallback((next: SpaceId): void => {

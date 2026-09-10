@@ -52,10 +52,7 @@ pub fn perform(action: crate::shortcuts::Action) {
             if bypass_cache { browser.reload_ignore_cache() } else { browser.reload() }
         }),
         Action::FocusAddress => publish(&CoreEvent::FocusAddressRequested),
-        Action::DismissOverlay => {
-            crate::overlay::close_extension_popup();
-            publish(&CoreEvent::ExtensionPopupChanged { id: None });
-        }
+        Action::DismissOverlay => super::dismiss_overlays(),
         // F11 ne fait que sortir du plein ecran : c'est la page qui y entre, pas nous.
         Action::ToggleFullscreen => with_browser(|browser| {
             if let Some(host) = browser.host() {

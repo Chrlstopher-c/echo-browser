@@ -18,6 +18,11 @@
 - Favoris, historique daté, téléchargements réels, dix-neuf réglages — le tout en base SQLite
 - Interface complète : colonne latérale, feuilles bouclier / bibliothèque / extensions / réglages,
   progression de chargement, plein écran qui démonte la barre
+- **Clic droit complet** : menu construit selon la cible — lien, image, sélection, champ,
+  page — en français, dessiné par nous au-dessus du contenu
+- **Extensions** : installées par déclaration à Chromium, qui les télécharge et les
+  maintient ; leur fenêtre s'ouvre au-dessus de la page, clic droit sur l'icône pour les
+  gérer, panneau dépliant sur les permissions
 - **Sonde de présence sur 127.0.0.1:4330** — le seul port ouvert, servant une page d'état au centre
   de contrôle. Aucun en-tête d'origine croisée : une page web peut la solliciter, jamais la lire.
 
@@ -38,6 +43,20 @@
   (Manifest V2 supprimé). Le moteur lit les mêmes listes, sans dépendre du bon vouloir de Google.
 - **Les scriptlets viennent d'uBlock Origin (GPL-3.0)** : distribuer le navigateur imposerait d'en publier
   le code source.
+
+## Limites mesurées, à ne pas re-tenter
+
+- **Une vue posée au-dessus de la page ne peut pas être transparente.** Chromium peint un
+  rectangle plein dessous : les angles arrondis se voient découpés. Trois essais le
+  10/09 — fond transparent sur les réglages du navigateur, sur la vue, sur la page.
+- **`--load-extension` est inopérant.** L'extension est listée, annoncée active, et
+  toutes ses adresses répondent `ERR_BLOCKED_BY_CLIENT`. Ni le mode développeur ni
+  `--disable-extensions-except` n'y changent rien. Passer par la déclaration externe.
+- **Ne jamais écrire dans les préférences de Chromium.** Sa protection d'intégrité
+  invalide l'entrée et l'extension cesse d'être chargée, tout en restant listée active.
+  C'est ce qui a cassé Proton Pass le 10/09.
+- **Le gestionnaire d'extensions de Chromium ne s'affiche pas** dans ce mode : page
+  blanche. Toute la gestion doit être la nôtre.
 
 ## Pièges vérifiés, à ne pas réintroduire
 - **Ne jamais tenir l'accès à l'état pendant un appel à Chromium** : il rappelle le programme au milieu.

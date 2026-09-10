@@ -15,20 +15,20 @@ page y flotte dedans.
 - [ ] Marge égale des quatre côtés de la page, valeur unique et assumée
 - [ ] La barre et la marge forment une seule surface continue
 
-## 2. Le clic droit — **inexistant**
+## 2. Le clic droit — fait le 10/09
 
-Le menu affiché est celui de Chromium par défaut : quatre entrées, en anglais, sans rapport
-avec ce qui a été cliqué. Un navigateur doit servir un menu complet et contextuel.
+Menu construit par le cœur selon la cible, dessiné par nous, en français.
 
-- [ ] Menu selon la cible : lien, image, vidéo, texte sélectionné, champ de saisie, page nue
-- [ ] Lien : ouvrir dans un nouvel onglet, en arrière-plan, copier l'adresse
-- [ ] Image : ouvrir, copier, copier l'adresse, enregistrer
-- [ ] Sélection : copier, rechercher sur le web, ouvrir si c'est une adresse
-- [ ] Champ : couper, copier, coller, coller sans mise en forme, tout sélectionner
-- [ ] Page : précédent, suivant, recharger, enregistrer, imprimer, code source, inspecter
-- [ ] Entrées à nous : bloquer cet élément, lever le bouclier sur ce site
-- [ ] Tout en français
-- [ ] **Dessiné par nous**, pas par Chromium — voir le chantier 7 (vues superposées)
+- [x] Menu selon la cible : lien, image, sélection, champ de saisie, page nue
+- [x] Lien : nouvel onglet, arrière-plan, copier l'adresse, enregistrer la cible
+- [x] Image : ouvrir, copier l'adresse, enregistrer
+- [x] Sélection : copier, rechercher, ouvrir si c'est une adresse
+- [x] Champ : couper, copier, coller, coller sans mise en forme, tout sélectionner
+- [x] Page : précédent, suivant, recharger, copier l'adresse, favori, enregistrer,
+      imprimer, bouclier sur ce site, code source, examiner l'élément
+- [x] Entrées grisées plutôt que masquées — une action qui disparaît déplace les autres
+- [ ] Se ferme-t-il bien au clic dans la page ? À constater à l'usage
+- [ ] Sous-menus (langue, encodage) et raccourcis affichés à droite des libellés
 
 ## 3. Le nouvel onglet — page et suggestions
 
@@ -90,16 +90,14 @@ est le gestionnaire de mots de passe lui-même. Sans elle, l'extension est déco
 Technique : la fenêtre d'une extension est une page `chrome-extension://<id>/…`. Elle s'affiche
 dans une vue superposée (chantier 7), ancrée sous l'icône.
 
-## 7. Vues superposées — le socle technique des chantiers 2, 3, 5 et 6
+## 7. Vues superposées — socle en place
 
-Ce qui manquait jusqu'ici : rien ne pouvait s'afficher **au-dessus** de la page, la vue web
-étant une surface native opaque. `Window::add_overlay_view` le permet — une vue ancrée
-librement au-dessus de la page, dont on pilote position, taille et visibilité.
-
-- [ ] Vue superposée transparente chargée en `echo://`, à établir d'abord sur un cas simple
-- [ ] Un canal de rendu partagé avec l'interface principale (même contrat, même thème)
-- [ ] S'en servir pour : menu contextuel, palette du nouvel onglet, rail flottant, masques
-      d'angle, **fenêtres d'extension**
+- [x] Vue posée au-dessus de la page, position et taille au pixel
+- [x] Sert déjà : menu contextuel, fenêtres d'extension
+- [ ] **Elle ne sait pas être transparente** : Chromium peint un rectangle plein
+      dessous, les angles arrondis se voient découpés (mesuré le 10/09, trois essais).
+      Tout ce qui s'affiche au-dessus de la page est donc opaque et rectangulaire.
+- [ ] Reste à en tirer : palette du nouvel onglet, rail flottant, masques d'angle
 
 ## 8. Ce qui doit être réellement conservé d'une session à l'autre
 

@@ -84,7 +84,9 @@ wrap_keyboard_handler! {
             };
             // Echap appartient a la page tant que rien n'est pose au-dessus d'elle :
             // le confisquer casserait la fermeture des fenetres des sites.
-            if action == Action::DismissOverlay && crate::overlay::open_popup_id().is_none() {
+            let rien_au_dessus =
+                crate::overlay::open_popup_id().is_none() && !crate::overlay::menu_open();
+            if action == Action::DismissOverlay && rien_au_dessus {
                 return 0;
             }
             debug!(?action, "raccourci");

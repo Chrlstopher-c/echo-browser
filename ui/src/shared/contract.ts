@@ -46,6 +46,12 @@ export type UiRequest =
   | { kind: 'openExtensionPopup'; id: string; anchor: AnchorRect }
   /** Referme la fenetre d'extension ouverte, s'il y en a une. */
   | { kind: 'closeExtensionPopup' }
+  /** Donne au coeur les couleurs de l'espace, pour ce qui s'affiche au-dessus de la page. */
+  | { kind: 'setOverlayTheme'; theme: OverlayTheme }
+  /** Declenche une action du menu contextuel. */
+  | { kind: 'runContextMenu'; action: MenuItemKind }
+  /** Referme le menu contextuel. */
+  | { kind: 'closeContextMenu' }
   /** Ouvre la page de reglages d'une extension dans un onglet. */
   | { kind: 'openExtensionOptions'; id: string }
   // --- Bibliotheque ---
@@ -133,6 +139,57 @@ export interface FilterListView {
 
 /** Une extension telle que l'interface l'affiche. */
 /** Un rectangle de l'interface, repere depuis le coin haut-gauche de la fenetre. */
+export interface OverlayTheme {
+  shell: string
+  card: string
+  hover: string
+  hairline: string
+  ink: string
+  inkMuted: string
+  inkFaint: string
+  danger: string
+}
+
+export type MenuItemKind =
+  | 'separator'
+  | 'openLinkInTab'
+  | 'openLinkInBackground'
+  | 'copyLink'
+  | 'saveLink'
+  | 'openImage'
+  | 'copyImageLink'
+  | 'saveImage'
+  | 'copy'
+  | 'cut'
+  | 'paste'
+  | 'pastePlain'
+  | 'selectAll'
+  | 'searchSelection'
+  | 'openSelection'
+  | 'back'
+  | 'forward'
+  | 'reload'
+  | 'copyPageLink'
+  | 'bookmark'
+  | 'savePage'
+  | 'print'
+  | 'toggleShield'
+  | 'viewSource'
+  | 'inspect'
+
+export interface MenuEntry {
+  kind: MenuItemKind
+  label: string
+  enabled: boolean
+  separator: boolean
+}
+
+export interface ContextTarget {
+  entries: MenuEntry[]
+  link: string
+  selection: string
+}
+
 export interface AnchorRect {
   x: number
   y: number

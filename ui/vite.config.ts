@@ -11,6 +11,13 @@ export default defineConfig({
   },
   plugins: [react(), tailwindcss()],
   build: {
+    // Deux pages : l'interface, et le menu contextuel servi au-dessus du contenu.
+    rollupOptions: {
+      input: {
+        main: fileURLToPath(new URL('./index.html', import.meta.url)),
+        menu: fileURLToPath(new URL('./menu.html', import.meta.url)),
+      },
+    },
     outDir: 'dist',
     emptyOutDir: true,
     target: 'chrome120',

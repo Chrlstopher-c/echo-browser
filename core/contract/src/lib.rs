@@ -61,6 +61,18 @@ pub enum UiRequest {
     /// Ouvre la page de reglages d'une extension dans un onglet.
     OpenExtensionOptions { id: String },
 
+    // --- Menu contextuel ---
+    /// Declenche une action du menu contextuel sur la derniere cible cliquee.
+    /// Le champ ne peut pas s'appeler « kind » : c'est deja l'etiquette de l'enveloppe.
+    RunContextMenu { action: MenuItemKind },
+    /// Referme le menu contextuel sans rien declencher.
+    CloseContextMenu,
+
+    // --- Apparence des surimpressions ---
+    /// Donne au coeur les couleurs de l'espace courant, pour que ce qui s'affiche
+    /// au-dessus de la page — menu, fenetres — porte la meme matiere que la barre.
+    SetOverlayTheme { theme: OverlayTheme },
+
     // --- Bibliotheque ---
     AddBookmark { id: TabId },
     RemoveBookmark { url: String },
@@ -99,6 +111,8 @@ pub enum CoreEvent {
     ExtensionsChanged { extensions: Vec<ExtensionView>, restart_pending: bool },
     /// Quelle fenetre d'extension est ouverte, pour que son icone se marque.
     ExtensionPopupChanged { id: Option<String> },
+    /// Le clic droit demande un menu : voici ce qu'il propose, et ou le poser.
+    ContextMenuRequested { target: ContextTarget, x: i32, y: i32 },
     BookmarksChanged { bookmarks: Vec<BookmarkView> },
     HistoryChanged { entries: Vec<HistoryEntryView>, total: usize },
     DownloadsChanged { downloads: Vec<DownloadView> },
@@ -189,6 +203,105 @@ pub struct ExtensionView {
     pub description: String,
     /// Les permissions que son manifeste reclame.
     pub permissions: Vec<String>,
+}
+
+/// Les quelques couleurs dont une surimpression a besoin pour se fondre dans l'espace.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OverlayTheme {
+    pub shell: String,
+    pub card: String,
+    pub hover: String,
+    pub hairline: String,
+    pub ink: String,
+    pub ink_muted: String,
+    pub ink_faint: String,
+    pub danger: String,
+}
+
+impl Default for OverlayTheme {
+    fn default() -> Self {
+        Self {
+            shell: "#141517".to_string(),
+            card: "#24272c".to_string(),
+            hover: "#1e2126".to_string(),
+            hairline: "#2a2d33".to_string(),
+            ink: "#e8e6e3".to_string(),
+            ink_muted: "#9b9a97".to_string(),
+            ink_faint: "#6b6a68".to_string(),
+            danger: "#e5484d".to_string(),
+        }
+    }
+}
+
+/// Ce que propose le clic droit, construit par le coeur selon la cible.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ContextTarget {
+    pub entries: Vec<MenuEntry>,
+    /// Adresse du lien clique, vide s'il n'y en avait pas.
+    pub link: String,
+    /// Texte selectionne, ecourte pour l'affichage.
+    pub selection: String,
+}
+
+/// Une entree du menu contextuel.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MenuEntry {
+    pub kind: MenuItemKind,
+    pub label: String,
+    pub enabled: bool,
+    /// Vrai pour un simple trait de separation : ni libelle, ni action.
+    pub separator: bool,
+}
+
+impl MenuEntry {
+    pub fn new(kind: MenuItemKind, label: &str) -> Self {
+        Self { kind, label: label.to_string(), enabled: true, separator: false }
+    }
+
+    pub fn separator() -> Self {
+        Self { kind: MenuItemKind::Separator, label: String::new(), enabled: false, separator: true }
+    }
+
+    /// Grise l'entree quand la condition est vraie. L'entree reste affichee : une action
+    /// qui disparait deplace les autres et se cherche du regard.
+    pub fn disabled_when(mut self, condition: bool) -> Self {
+        self.enabled = !condition;
+        self
+    }
+}
+
+/// Les actions que le menu contextuel sait declencher.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum MenuItemKind {
+    Separator,
+    OpenLinkInTab,
+    OpenLinkInBackground,
+    CopyLink,
+    SaveLink,
+    OpenImage,
+    CopyImageLink,
+    SaveImage,
+    Copy,
+    Cut,
+    Paste,
+    PastePlain,
+    SelectAll,
+    SearchSelection,
+    OpenSelection,
+    Back,
+    Forward,
+    Reload,
+    CopyPageLink,
+    Bookmark,
+    SavePage,
+    Print,
+    ToggleShield,
+    ViewSource,
+    Inspect,
 }
 
 /// Un rectangle de l'interface, en pixels, repere depuis le coin haut-gauche de la

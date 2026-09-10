@@ -4,6 +4,7 @@
 //! rejouees sur le thread interface, seul endroit ou les objets Chromium sont manipulables.
 //! Les evenements repartent par un appel de fonction dans la page.
 
+pub mod context;
 pub mod extensions;
 pub mod navigation;
 pub mod library;
@@ -119,6 +120,9 @@ fn apply(request: UiRequest) {
         UiRequest::OpenCatalog => extensions::open_store(""),
         UiRequest::OpenExtensionPopup { id, anchor } => extensions::open_extension_popup(&id, anchor),
         UiRequest::OpenExtensionOptions { id } => extensions::open_extension_options(&id),
+        UiRequest::RunContextMenu { action } => context::run(action),
+        UiRequest::CloseContextMenu => context::close(),
+        UiRequest::SetOverlayTheme { theme } => context::set_theme(theme),
         UiRequest::CloseExtensionPopup => {
             crate::overlay::close_extension_popup();
             publish(&CoreEvent::ExtensionPopupChanged { id: None });
@@ -201,6 +205,7 @@ fn apply(request: UiRequest) {
 /// Referme ce qui est pose au-dessus de la page. A appeler des que le contenu change :
 /// une fenetre d'extension qui survit a un changement d'onglet flotte dans le vide.
 pub(super) fn dismiss_overlays() {
+    crate::overlay::close_menu();
     if crate::overlay::open_popup_id().is_some() {
         crate::overlay::close_extension_popup();
         publish(&CoreEvent::ExtensionPopupChanged { id: None });
