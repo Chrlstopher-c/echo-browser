@@ -76,6 +76,17 @@ wrap_load_handler! {
             info!("pont injecte dans l'interface");
         }
 
+        /// L'interface est chargee : elle a besoin de son etat de depart, sinon elle
+        /// ignore jusqu'a l'existence de l'onglet et reste inerte.
+        fn on_load_end(&self, _browser: Option<&mut Browser>, frame: Option<&mut Frame>, _status: i32) {
+            let Some(frame) = frame else { return };
+            let url = CefString::from(&frame.url()).to_string();
+            if !url.starts_with("echo://ui/") {
+                return;
+            }
+            crate::bridge::publish_initial_state();
+        }
+
         fn on_loading_state_change(
             &self,
             browser: Option<&mut Browser>,

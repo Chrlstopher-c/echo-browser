@@ -144,7 +144,11 @@ fn is_ipc(url: &str) -> bool {
 /// Extrait le corps d'une requete POST envoyee par l'interface.
 fn post_body(request: &mut Request) -> Vec<u8> {
     let Some(post) = request.post_data() else { return Vec::new() };
-    let mut elements: Vec<Option<PostDataElement>> = Vec::new();
+    // Le tampon doit etre dimensionne avant l'appel : CEF lit sa longueur pour savoir
+    // combien d'elements rendre. Un vecteur vide fait revenir zero element, et le corps
+    // de la demande arrive vide.
+    let count = post.element_count();
+    let mut elements: Vec<Option<PostDataElement>> = (0..count).map(|_| None).collect();
     post.elements(Some(&mut elements));
     let mut collected = Vec::new();
     for element in elements.into_iter().flatten() {

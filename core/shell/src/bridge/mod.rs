@@ -148,6 +148,26 @@ pub fn publish(event: &CoreEvent) {
     }
 }
 
+/// Envoie a l'interface tout ce qu'elle doit savoir pour s'afficher : l'onglet et le bouclier.
+pub fn publish_initial_state() {
+    let url = current_url();
+    let title = if url.is_empty() { "Nouvel onglet" } else { url.as_str() };
+    publish(&CoreEvent::TabsChanged {
+        tabs: vec![TabView {
+            id: 0,
+            title: title.to_string(),
+            url: url.clone(),
+            loading: false,
+            progress: 1.0,
+            can_go_back: false,
+            can_go_forward: false,
+            favicon: None,
+        }],
+        active: Some(0),
+    });
+    publish_shield();
+}
+
 /// Diffuse l'etat courant du bouclier.
 pub fn publish_shield() {
     let url = current_url();
