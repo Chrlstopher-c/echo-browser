@@ -5,7 +5,7 @@
 
 // Les macros `wrap_*` de CEF exigent les traits `Impl*` et `Wrap*` dans la portee : import global impose.
 use cef::*;
-use echo_contract::{TabId, TabView};
+use echo_contract::{Security, TabId, TabView};
 use tracing::{debug, warn};
 
 /// Un onglet et la vue qui l'affiche.
@@ -33,12 +33,24 @@ impl Tab {
             can_go_back,
             can_go_forward,
             favicon: None,
+            security: security_of(&self.url),
         }
     }
 
     /// Vrai si cette vue porte le navigateur donne.
     pub fn owns(&self, browser_id: i32) -> bool {
         self.view.browser().map(|b| b.identifier()) == Some(browser_id)
+    }
+}
+
+/// Etat de la connexion, lu depuis l'adresse. Le detail du certificat viendra plus tard.
+fn security_of(url: &str) -> Security {
+    if url.starts_with("https://") {
+        Security::Secure
+    } else if url.starts_with("http://") {
+        Security::Insecure
+    } else {
+        Security::Local
     }
 }
 

@@ -6,21 +6,26 @@ use std::cell::RefCell;
 use std::sync::atomic::{AtomicI32, Ordering};
 use tracing::{debug, info};
 
-/// Hauteur de la bande d'interface au repos. L'interface en reclame davantage
-/// quand elle ouvre un panneau — voir `UiRequest::SetChromeHeight`.
-pub const CHROME_HEIGHT: i32 = 78;
+/// Largeur de la barre laterale au repos.
+pub const CHROME_WIDTH: i32 = 240;
 
-/// Hauteur courante de la bande d'interface. Partagee parce que la disposition
-/// l'interroge depuis un rappel de Chromium, hors de tout acces a l'etat.
-static CHROME_HEIGHT_NOW: AtomicI32 = AtomicI32::new(CHROME_HEIGHT);
+/// Largeur minimale une fois la barre repliee.
+const MIN_CHROME_WIDTH: i32 = 0;
 
-/// Garde-fou : une interface qui reclamerait toute la fenetre masquerait la page.
-const MAX_CHROME_HEIGHT: i32 = 720;
+/// Garde-fou : une barre qui prendrait toute la fenetre masquerait la page.
+const MAX_CHROME_WIDTH: i32 = 520;
 
-/// Fixe la hauteur reclamee par l'interface et relance la disposition.
-pub fn set_chrome_height(pixels: i32, chrome: Option<&BrowserView>) {
-    let clamped = pixels.clamp(CHROME_HEIGHT, MAX_CHROME_HEIGHT);
-    if CHROME_HEIGHT_NOW.swap(clamped, Ordering::Relaxed) == clamped {
+/// Marge entre la page et les bords de la fenetre. C'est elle qui fait flotter la page.
+const CONTENT_INSET: i32 = 8;
+
+/// Largeur courante de la barre laterale. Partagee parce que la disposition l'interroge
+/// depuis un rappel de Chromium, hors de tout acces a l'etat.
+static CHROME_WIDTH_NOW: AtomicI32 = AtomicI32::new(CHROME_WIDTH);
+
+/// Fixe la largeur reclamee par la barre laterale et relance la disposition.
+pub fn set_chrome_width(pixels: i32, chrome: Option<&BrowserView>) {
+    let clamped = pixels.clamp(MIN_CHROME_WIDTH, MAX_CHROME_WIDTH);
+    if CHROME_WIDTH_NOW.swap(clamped, Ordering::Relaxed) == clamped {
         return;
     }
     if let Some(chrome) = chrome {
@@ -30,7 +35,7 @@ pub fn set_chrome_height(pixels: i32, chrome: Option<&BrowserView>) {
             parent.invalidate_layout();
         }
     }
-    debug!(hauteur = clamped, "hauteur de l'interface");
+    debug!(largeur = clamped, "largeur de la barre laterale");
 }
 
 /// Titre porte par la fenetre. Le nom du projet ne s'affiche nulle part dans l'application.
@@ -65,7 +70,7 @@ wrap_window_delegate! {
             };
             // Disposition verticale : la bande d'interface en haut a sa hauteur preferee,
             // la vue web dessous prend tout le reste (flex 1).
-            let layout = window.set_to_box_layout(Some(&vertical_layout()));
+            let layout = window.set_to_box_layout(Some(&side_by_side_layout()));
             let mut chrome_view = View::from(chrome);
             window.add_child_view(Some(&mut chrome_view));
 
@@ -114,17 +119,19 @@ wrap_window_delegate! {
 wrap_browser_view_delegate! {
     pub struct ChromeViewDelegate {
         runtime_style: RuntimeStyle,
-        preferred_height: i32,
+        is_chrome: i32,
     }
 
     impl ViewDelegate {
         fn preferred_size(&self, _view: Option<&mut View>) -> Size {
-            let height = if self.preferred_height == 0 {
+            // `is_chrome` vaut 0 pour les vues de contenu : elles n'ont pas de taille
+            // preferee, la disposition leur donne tout l'espace restant.
+            let width = if self.is_chrome == 0 {
                 0
             } else {
-                CHROME_HEIGHT_NOW.load(Ordering::Relaxed)
+                CHROME_WIDTH_NOW.load(Ordering::Relaxed)
             };
-            Size { width: INITIAL_WIDTH, height }
+            Size { width, height: INITIAL_HEIGHT }
         }
     }
 
@@ -135,20 +142,29 @@ wrap_browser_view_delegate! {
     }
 }
 
-/// Disposition verticale de la fenetre.
-fn vertical_layout() -> BoxLayoutSettings {
+/// Disposition en colonnes : la barre laterale a gauche, la page a droite.
+/// La marge interieure fait flotter la page au lieu de la coller aux bords.
+fn side_by_side_layout() -> BoxLayoutSettings {
     BoxLayoutSettings {
-        horizontal: 0,
+        horizontal: 1,
         main_axis_alignment: AxisAlignment::START,
         cross_axis_alignment: AxisAlignment::STRETCH,
+        inside_border_insets: Insets {
+            top: CONTENT_INSET,
+            left: 0,
+            bottom: CONTENT_INSET,
+            right: CONTENT_INSET,
+            ..Default::default()
+        },
+        between_child_spacing: CONTENT_INSET,
         default_flex: 0,
         ..Default::default()
     }
 }
 
 /// Cree une vue navigateur en style Alloy, seul style compatible avec une fenetre sur mesure.
-pub fn create_view(client: Option<&mut Client>, url: &str, preferred_height: i32) -> Option<BrowserView> {
-    let mut delegate = ChromeViewDelegate::new(RuntimeStyle::ALLOY, preferred_height);
+pub fn create_view(client: Option<&mut Client>, url: &str, is_chrome: i32) -> Option<BrowserView> {
+    let mut delegate = ChromeViewDelegate::new(RuntimeStyle::ALLOY, is_chrome);
     browser_view_create(
         client,
         Some(&CefString::from(url)),
@@ -164,5 +180,5 @@ pub fn create_chrome_view(client: Option<&mut Client>, url: &str) -> Option<Brow
     // Style Alloy impose : une vue en style Chrome ajoutee a une fenetre sur mesure cherche
     // l'infrastructure d'onglets du vrai Chrome et fait planter le processus dans
     // tabs::TabInterface::GetFromContents. Mesure le 2026-09-10, pile a l'appui.
-    create_view(client, url, CHROME_HEIGHT)
+    create_view(client, url, 1)
 }

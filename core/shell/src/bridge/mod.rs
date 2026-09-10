@@ -86,9 +86,9 @@ fn apply(request: UiRequest) {
             publish_shield();
         }
         UiRequest::CloseTab { id } => close_tab(id),
-        UiRequest::SetChromeHeight { pixels } => {
+        UiRequest::SetChromeWidth { pixels } => {
             let chrome = session::with(|s| s.chrome.clone()).flatten();
-            crate::window::set_chrome_height(pixels as i32, chrome.as_ref());
+            crate::window::set_chrome_width(pixels as i32, chrome.as_ref());
         }
         other => debug!(?other, "demande pas encore traitee"),
     }
