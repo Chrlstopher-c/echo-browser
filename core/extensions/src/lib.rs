@@ -4,6 +4,7 @@
 //! extension demande donc de relancer le navigateur. Ce domaine gere le disque et
 //! l'inventaire ; le chargement lui-meme appartient a la coque.
 
+pub mod action;
 pub mod catalog;
 pub mod crx;
 pub mod profile;
@@ -53,11 +54,26 @@ impl Extensions {
         let dir = store::extension_dir(&self.root, &id);
         let files = crx::unpack(&package, &dir)?;
 
-        let (raw_name, version) = store::read_manifest(&dir)
+        let manifest = store::read_manifest_json(&dir)
             .ok_or_else(|| anyhow::anyhow!("le paquet de {id} n'a pas de manifeste lisible"))?;
-        let name = store::resolve_name(&dir, &raw_name);
+        let raw_name = manifest
+            .get("name")
+            .and_then(|v| v.as_str())
+            .ok_or_else(|| anyhow::anyhow!("le manifeste de {id} n'a pas de nom"))?;
+        let version =
+            manifest.get("version").and_then(|v| v.as_str()).unwrap_or("0").to_string();
+        let name = store::resolve_name(&dir, raw_name);
         info!(%id, %name, %version, fichiers = files, "extension installee");
-        Ok(Extension { id, name, version, enabled: true, removable: true, from_command_line: true })
+        Ok(Extension {
+            id,
+            name,
+            version,
+            enabled: true,
+            removable: true,
+            from_command_line: true,
+            action: action::Action::from_manifest(&manifest),
+            dir,
+        })
     }
 
     /// L'inventaire complet : ce que Chromium connait, complete par nos propres paquets.

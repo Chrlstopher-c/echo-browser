@@ -10,6 +10,7 @@ use tracing::debug;
 /// Codes de touches Windows, seule table que Chromium expose de facon portable.
 mod key {
     pub const TAB: i32 = 0x09;
+    pub const ESCAPE: i32 = 0x1B;
     pub const F5: i32 = 0x74;
     pub const F11: i32 = 0x7A;
     pub const L: i32 = 0x4C;
@@ -34,6 +35,8 @@ pub enum Action {
     FocusAddress,
     Reload { bypass_cache: bool },
     ToggleFullscreen,
+    /// Referme ce qui est pose au-dessus de la page : fenetre d'extension, menu.
+    DismissOverlay,
 }
 
 /// Traduit une frappe en action, ou `None` si elle appartient a la page.
@@ -51,6 +54,7 @@ pub fn resolve(code: i32, modifiers: u32) -> Option<Action> {
         (true, true, key::R) => Some(Action::Reload { bypass_cache: true }),
         (false, false, key::F5) => Some(Action::Reload { bypass_cache: false }),
         (false, false, key::F11) => Some(Action::ToggleFullscreen),
+        (false, false, key::ESCAPE) => Some(Action::DismissOverlay),
         (true, false, code) if (key::DIGIT_1..=key::DIGIT_9).contains(&code) => {
             Some(Action::SelectTab((code - key::DIGIT_1) as usize))
         }
@@ -78,6 +82,11 @@ wrap_keyboard_handler! {
             let Some(action) = resolve(event.windows_key_code, event.modifiers) else {
                 return 0;
             };
+            // Echap appartient a la page tant que rien n'est pose au-dessus d'elle :
+            // le confisquer casserait la fermeture des fenetres des sites.
+            if action == Action::DismissOverlay && crate::overlay::open_popup_id().is_none() {
+                return 0;
+            }
             debug!(?action, "raccourci");
             crate::bridge::perform(action);
             1

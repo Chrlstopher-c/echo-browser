@@ -66,7 +66,8 @@ fn read_entry(profile: &Path, id: &str, entry: &Value) -> Option<Extension> {
 
     // Chromium n'ecrit `state` que lorsqu'il a ete change : son absence vaut « active ».
     let enabled = entry.get("state").and_then(Value::as_u64).unwrap_or(1) == 1;
-    let name = resolve_name(&entry_dir(profile, id, entry), &name);
+    let dir = entry_dir(profile, id, entry);
+    let name = resolve_name(&dir, &name);
 
     Some(Extension {
         id: id.to_string(),
@@ -75,6 +76,8 @@ fn read_entry(profile: &Path, id: &str, entry: &Value) -> Option<Extension> {
         enabled,
         removable: origin == location::STORE,
         from_command_line: origin == location::COMMAND_LINE,
+        action: crate::action::Action::from_manifest(manifest),
+        dir,
     })
 }
 

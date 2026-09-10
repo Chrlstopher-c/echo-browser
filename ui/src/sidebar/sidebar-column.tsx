@@ -2,6 +2,7 @@
 
 import type { ReactElement } from 'react'
 import { AddressField } from '../address/address-field'
+import { ExtensionBar } from '../extensions/extension-bar'
 import { TopControls } from '../address/top-controls'
 import { RestartStrip } from '../restart/restart-strip'
 import { SpaceStrip } from '../spaces/space-strip'
@@ -13,7 +14,7 @@ import { UtilityRow } from './utility-row'
 import type { SidebarModel } from './use-sidebar'
 
 function ColumnHeader({ model }: { model: SidebarModel }): ReactElement {
-  const { core, tabs, width } = model
+  const { core, tabs, width, extensions } = model
   const active = core.activeTab
   return (
     <header className="flex shrink-0 flex-col gap-2">
@@ -33,6 +34,11 @@ function ColumnHeader({ model }: { model: SidebarModel }): ReactElement {
           if (active !== null) tabs.setZoom(active.id, 1)
         }}
         focusToken={model.addressFocusToken}
+      />
+      <ExtensionBar
+        extensions={extensions.extensions}
+        openId={extensions.popupId}
+        onOpen={extensions.openPopup}
       />
     </header>
   )

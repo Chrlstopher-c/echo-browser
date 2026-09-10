@@ -31,6 +31,8 @@ export interface CoreState {
   extensions: ExtensionView[]
   /** Vrai quand au moins un changement d'extension attend la relance du navigateur. */
   restartPending: boolean
+  /** Extension dont la fenetre est ouverte au-dessus de la page, ou null. */
+  extensionPopupId: string | null
   bookmarks: BookmarkView[]
   history: HistoryEntryView[]
   /** Nombre total d'entrees d'historique, au-dela de celles livrees. */
@@ -53,6 +55,7 @@ export const EMPTY_CORE_STATE: CoreState = {
   filterListsRefreshedAt: null,
   extensions: [],
   restartPending: false,
+  extensionPopupId: null,
   bookmarks: [],
   history: [],
   historyTotal: 0,
@@ -82,6 +85,8 @@ export function reduceCore(state: CoreState, event: CoreEvent): CoreState {
       return { ...state, filterLists: event.lists, filterListsRefreshedAt: event.refreshedAt }
     case 'extensionsChanged':
       return { ...state, extensions: event.extensions, restartPending: event.restartPending }
+    case 'extensionPopupChanged':
+      return { ...state, extensionPopupId: event.id }
     case 'bookmarksChanged':
       return { ...state, bookmarks: event.bookmarks }
     case 'historyChanged':

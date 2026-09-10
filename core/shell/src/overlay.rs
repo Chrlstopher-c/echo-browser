@@ -26,8 +26,11 @@ impl Overlay {
         // Fond transparent : la page reste visible sous les coins et les ombres.
         let settings = BrowserSettings { background_color: 0, ..Default::default() };
         let mut delegate = crate::window::OverlayViewDelegate::new(bounds.width, bounds.height);
+        // Le client partage porte les memes rappels que les onglets : sans lui, la vue
+        // n'a ni gestionnaire de requete, ni de chargement, ni de duree de vie.
+        let mut client = crate::session::with(|s| s.client.clone()).flatten();
         let view = browser_view_create(
-            None,
+            client.as_mut(),
             Some(&CefString::from(url)),
             Some(&settings),
             None,
@@ -116,6 +119,44 @@ wrap_task! {
                 return;
             };
             let bounds = Rect { x: 420, y: 260, width: 320, height: 184 };
+            // Variante « extension » : ouvre la fenetre de la premiere extension qui en
+            // declare une. Verifie le point incertain — une page chrome-extension:// se
+            // charge-t-elle dans une vue posee au-dessus de la page ?
+            if std::env::var_os("ECHO_OVERLAY_TEST").is_some_and(|v| v == "extension") {
+                let vise = std::env::var("ECHO_OVERLAY_EXT").ok();
+                let cible = crate::session::with(|s| {
+                    s.extensions
+                        .list()
+                        .into_iter()
+                        .find(|e| {
+                            e.action.popup.is_some()
+                                && e.enabled
+                                && vise.as_deref().is_none_or(|id| id == e.id)
+                        })
+                        .map(|e| (e.id.clone(), e.action.popup.clone().unwrap_or_default()))
+                })
+                .flatten();
+                let Some((id, chemin)) = cible else {
+                    warn!("essai extension : aucune extension avec fenetre");
+                    return;
+                };
+                let url = echo_extensions::action::resource_url(&id, &chemin);
+                // Voie « onglet » : la meme adresse, ouverte comme une page ordinaire.
+                // Si elle passe la, l'obstacle tient a la vue superposee, pas au
+                // schema ; si elle echoue aussi, c'est Chromium qui refuse la page
+                // d'extension a une vue non privilegiee.
+                if std::env::var_os("ECHO_OVERLAY_ONGLET").is_some() {
+                    tracing::info!(%url, "essai extension : ouverture en onglet");
+                    crate::bridge::open_tab(&url);
+                    return;
+                }
+                let ancre = Rect { x: 60, y: 120, width: 28, height: 28 };
+                toggle_extension_popup(&id, &url, ancre, &anchor);
+                tracing::info!(%id, %url, ouverte = open_popup_id().is_some(),
+                    "essai extension : fenetre demandee");
+                return;
+            }
+
             // Variante « soeur » : une seconde vue web ajoutee au meme conteneur que la
             // page, apres elle. Si les surfaces natives se composent dans l'ordre des
             // enfants, c'est la voie ; sinon, aucune surimpression n'est possible.
@@ -194,4 +235,84 @@ wrap_task! {
             TEST_OVERLAY.with(|cell| *cell.borrow_mut() = Some(overlay));
         }
     }
+}
+
+/// Dimensions de depart d'une fenetre d'extension. Chrome mesure la page pour s'y
+/// ajuster ; faute de pouvoir l'interroger, on prend la taille la plus courante et on
+/// laisse la page defiler dedans.
+const POPUP_WIDTH: i32 = 380;
+const POPUP_HEIGHT: i32 = 600;
+
+/// Ecart entre l'icone et la fenetre qu'elle ouvre.
+const POPUP_GAP: i32 = 6;
+
+/// Marge minimale entre la fenetre d'extension et le bord de la fenetre du navigateur.
+const POPUP_MARGIN: i32 = 8;
+
+thread_local! {
+    /// La fenetre d'extension ouverte, s'il y en a une. Une seule a la fois : c'est ce
+    /// que fait Chrome, et deux fenetres ouvertes n'auraient pas de sens a l'usage.
+    static POPUP: std::cell::RefCell<Option<(String, Overlay)>> =
+        const { std::cell::RefCell::new(None) };
+}
+
+/// Identifiant de l'extension dont la fenetre est ouverte.
+pub fn open_popup_id() -> Option<String> {
+    POPUP.with(|cell| cell.borrow().as_ref().map(|(id, _)| id.clone()))
+}
+
+/// Ouvre la fenetre d'une extension sous son icone. Rouvrir la meme la referme :
+/// c'est le comportement attendu d'un bouton a bascule.
+pub fn toggle_extension_popup(id: &str, url: &str, anchor: Rect, anchor_view: &BrowserView) {
+    if open_popup_id().as_deref() == Some(id) {
+        close_extension_popup();
+        return;
+    }
+    close_extension_popup();
+    let bounds = place_under(anchor, anchor_view);
+    let (x, y) = (bounds.x, bounds.y);
+    let Some(overlay) = Overlay::open(anchor_view, url, bounds) else {
+        warn!(%id, "fenetre d'extension : ouverture refusee");
+        return;
+    };
+    debug!(%id, %url, x, y, "fenetre d'extension ouverte");
+    POPUP.with(|cell| *cell.borrow_mut() = Some((id.to_string(), overlay)));
+}
+
+/// Referme la fenetre d'extension ouverte. Sans effet s'il n'y en a pas.
+pub fn close_extension_popup() {
+    let previous = POPUP.with(|cell| cell.borrow_mut().take());
+    if let Some((id, overlay)) = previous {
+        overlay.close();
+        debug!(%id, "fenetre d'extension fermee");
+    }
+}
+
+/// Pose la fenetre sous son ancre, sans deborder de la fenetre du navigateur.
+///
+/// L'interface donne l'ancre dans ses propres coordonnees ; la surimpression, elle, se
+/// place dans celles de la fenetre. La vue de l'interface n'etant pas collee au coin —
+/// la disposition lui pose une marge — les deux reperes different, et l'ecart se lit sur
+/// la vue elle-meme plutot que de se deviner.
+fn place_under(anchor: Rect, anchor_view: &BrowserView) -> Rect {
+    let view = View::from(anchor_view);
+    let frame = view
+        .window()
+        .map(|window| View::from(&window).bounds())
+        .unwrap_or(Rect { x: 0, y: 0, width: 1440, height: 900 });
+    let origine = view.bounds();
+    let anchor = Rect {
+        x: anchor.x + origine.x,
+        y: anchor.y + origine.y,
+        width: anchor.width,
+        height: anchor.height,
+    };
+
+    let height = POPUP_HEIGHT.min(frame.height - 2 * POPUP_MARGIN).max(200);
+    let width = POPUP_WIDTH.min(frame.width - 2 * POPUP_MARGIN).max(240);
+    let x = anchor.x.min(frame.width - width - POPUP_MARGIN).max(POPUP_MARGIN);
+    let y = (anchor.y + anchor.height + POPUP_GAP)
+        .min(frame.height - height - POPUP_MARGIN)
+        .max(POPUP_MARGIN);
+    Rect { x, y, width, height }
 }

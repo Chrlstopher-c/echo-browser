@@ -90,6 +90,7 @@ fn apply(request: UiRequest) {
             publish_tabs();
         }
         UiRequest::SelectTab { id } => {
+            dismiss_overlays();
             session::with(|s| s.tabs.select(id));
             publish_tabs();
             publish_shield();
@@ -104,6 +105,11 @@ fn apply(request: UiRequest) {
             crate::window::set_accent(&color, host.as_ref());
         }
         UiRequest::InstallExtension { source } => open_store(&source),
+        UiRequest::OpenExtensionPopup { id, anchor } => open_extension_popup(&id, anchor),
+        UiRequest::CloseExtensionPopup => {
+            crate::overlay::close_extension_popup();
+            publish(&CoreEvent::ExtensionPopupChanged { id: None });
+        }
         UiRequest::RemoveExtension { id } => {
             let ours = session::with(|s| {
                 s.extensions.list().into_iter().find(|e| e.id == id).map(|e| e.from_command_line)
@@ -179,7 +185,17 @@ fn apply(request: UiRequest) {
 
 /// Ouvre un onglet. Chaque appel a Chromium se fait hors de l'acces a l'etat : la creation
 /// de la vue et son rattachement declenchent des rappels qui veulent lire cet etat.
+/// Referme ce qui est pose au-dessus de la page. A appeler des que le contenu change :
+/// une fenetre d'extension qui survit a un changement d'onglet flotte dans le vide.
+fn dismiss_overlays() {
+    if crate::overlay::open_popup_id().is_some() {
+        crate::overlay::close_extension_popup();
+        publish(&CoreEvent::ExtensionPopupChanged { id: None });
+    }
+}
+
 pub fn open_tab(url: &str) {
+    dismiss_overlays();
     let Some((mut client, host)) = session::with(|s| (s.client.clone(), s.tabs.host())) else {
         return;
     };
@@ -247,16 +263,26 @@ pub fn publish_extensions() {
     let Some(extensions) = session::with(|s| s.extensions.list()) else { return };
     let view = extensions
         .into_iter()
-        .map(|extension| echo_contract::ExtensionView {
-            id: extension.id,
-            name: extension.name,
-            version: extension.version,
-            enabled: extension.enabled,
-            // Seules celles que nous chargeons nous-memes attendent une relance ;
-            // celles du catalogue sont prises en compte immediatement par Chromium.
-            pending: pending && extension.from_command_line,
-            removable: extension.from_command_line,
-            icon: None,
+        .map(|extension| {
+            let url = |path: &str| echo_extensions::action::resource_url(&extension.id, path);
+            echo_contract::ExtensionView {
+                name: extension.name.clone(),
+                version: extension.version.clone(),
+                enabled: extension.enabled,
+                // Seules celles que nous chargeons nous-memes attendent une relance ;
+                // celles du catalogue sont prises en compte immediatement par Chromium.
+                pending: pending && extension.from_command_line,
+                removable: extension.from_command_line,
+                // L'icone passe par notre schema : celui de l'extension ne se lit pas
+                // depuis une page interne (voir assets::ICON_HOST).
+                icon: extension
+                    .action
+                    .icon
+                    .as_ref()
+                    .map(|_| format!("echo://{}/{}", crate::assets::ICON_HOST, extension.id)),
+                popup: extension.action.popup.as_deref().map(&url),
+                id: extension.id.clone(),
+            }
         })
         .collect();
     publish(&CoreEvent::ExtensionsChanged { extensions: view, restart_pending: pending });
@@ -333,6 +359,10 @@ pub fn perform(action: crate::shortcuts::Action) {
             if bypass_cache { browser.reload_ignore_cache() } else { browser.reload() }
         }),
         Action::FocusAddress => publish(&CoreEvent::FocusAddressRequested),
+        Action::DismissOverlay => {
+            crate::overlay::close_extension_popup();
+            publish(&CoreEvent::ExtensionPopupChanged { id: None });
+        }
         // F11 ne fait que sortir du plein ecran : c'est la page qui y entre, pas nous.
         Action::ToggleFullscreen => with_browser(|browser| {
             if let Some(host) = browser.host() {
@@ -603,4 +633,31 @@ mod tests {
     fn un_mot_seul_sans_point_est_une_recherche() {
         assert!(normalize("meteo").starts_with("https://www.google.com/search?q="));
     }
+}
+
+/// Ouvre la fenetre d'une extension sous son icone, ou la referme si c'est deja elle.
+///
+/// L'adresse de la fenetre vient du manifeste, jamais de l'interface : une adresse
+/// choisie par la page afficherait n'importe quoi au-dessus du contenu.
+fn open_extension_popup(id: &str, anchor: echo_contract::AnchorRect) {
+    let found = session::with(|s| {
+        s.extensions.list().into_iter().find(|extension| extension.id == id)
+    })
+    .flatten();
+    let Some(extension) = found else {
+        tracing::warn!(%id, "fenetre d'extension : extension inconnue");
+        return;
+    };
+    let Some(path) = extension.action.popup.as_deref() else {
+        tracing::warn!(%id, "cette extension ne declare pas de fenetre");
+        return;
+    };
+    let url = echo_extensions::action::resource_url(id, path);
+
+    // L'appel a Chromium se fait hors de tout acces a l'etat : il rappelle le programme
+    // pendant la creation de la vue.
+    let Some(chrome) = session::with(|s| s.chrome.clone()).flatten() else { return };
+    let rect = cef::Rect { x: anchor.x, y: anchor.y, width: anchor.width, height: anchor.height };
+    crate::overlay::toggle_extension_popup(id, &url, rect, &chrome);
+    publish(&CoreEvent::ExtensionPopupChanged { id: crate::overlay::open_popup_id() });
 }

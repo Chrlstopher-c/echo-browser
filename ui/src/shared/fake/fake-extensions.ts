@@ -33,6 +33,7 @@ const SEED: ExtensionView[] = [
     pending: false,
     removable: true,
     icon: ICON_UBLOCK,
+    popup: 'chrome-extension://exemple/popup.html',
   },
   {
     id: 'nngceckbapebfimnlniiiahkandclblb',
@@ -42,6 +43,7 @@ const SEED: ExtensionView[] = [
     pending: false,
     removable: true,
     icon: ICON_BITWARDEN,
+    popup: 'chrome-extension://exemple/popup.html',
   },
   {
     id: 'echo-internal-reader',
@@ -51,6 +53,7 @@ const SEED: ExtensionView[] = [
     pending: false,
     removable: false,
     icon: null,
+    popup: 'chrome-extension://exemple/popup.html',
   },
 ]
 
@@ -106,6 +109,7 @@ export class FakeExtensions {
       const name = CATALOGUE_NAMES[this.items.length % CATALOGUE_NAMES.length] ?? 'Extension'
       const added: ExtensionView = {
         id, name, version: '1.0.0', enabled: true, pending: true, removable: true, icon: null,
+        popup: 'chrome-extension://exemple/popup.html',
       }
       this.items = [...this.items, added]
       this.restartPending = true

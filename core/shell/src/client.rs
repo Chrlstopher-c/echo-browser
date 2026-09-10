@@ -88,6 +88,21 @@ wrap_load_handler! {
 
         /// L'interface est chargee : elle a besoin de son etat de depart, sinon elle
         /// ignore jusqu'a l'existence de l'onglet et reste inerte.
+        /// Une page qui echoue le dit ici, et nulle part ailleurs : sans ce rappel, un
+        /// `ERR_BLOCKED_BY_CLIENT` ne se lit qu'a l'ecran.
+        fn on_load_error(
+            &self,
+            _browser: Option<&mut Browser>,
+            _frame: Option<&mut Frame>,
+            error_code: Errorcode,
+            error_text: Option<&CefString>,
+            failed_url: Option<&CefString>,
+        ) {
+            let url = failed_url.map(CefString::to_string).unwrap_or_default();
+            let texte = error_text.map(CefString::to_string).unwrap_or_default();
+            tracing::warn!(%url, %texte, code = error_code.get_raw(), "chargement en echec");
+        }
+
         fn on_load_end(&self, _browser: Option<&mut Browser>, frame: Option<&mut Frame>, _status: i32) {
             let Some(frame) = frame else { return };
             let url = CefString::from(&frame.url()).to_string();

@@ -2,7 +2,7 @@
 // retrait confirme, gestionnaire de Chromium, relance.
 
 import { useCallback, useMemo, useState } from 'react'
-import type { ExtensionView, UiRequest } from '../shared/contract'
+import type { AnchorRect, ExtensionView, UiRequest } from '../shared/contract'
 import { pendingCount, STORE_URL } from './extension-model'
 import { readExtensionSource } from './extension-source'
 
@@ -24,6 +24,10 @@ export interface Removal {
 export interface ExtensionsController extends Removal {
   extensions: ExtensionView[]
   restartPending: boolean
+  /** Extension dont la fenetre est ouverte, ou null. */
+  popupId: string | null
+  openPopup: (id: string, anchor: AnchorRect) => void
+  closePopup: () => void
   pending: number
   install: InstallField
   setEnabled: (id: string, enabled: boolean) => void
@@ -76,7 +80,12 @@ function useRemoval(send: Send): Removal {
   return { confirming, askRemove, cancelRemove, confirmRemove }
 }
 
-export function useExtensions(send: Send, extensions: ExtensionView[], restartPending: boolean): ExtensionsController {
+export function useExtensions(
+  send: Send,
+  extensions: ExtensionView[],
+  restartPending: boolean,
+  popupId: string | null,
+): ExtensionsController {
   const installed = useMemo(() => extensions.map((item) => item.id), [extensions])
   const install = useInstallField(send, installed)
   const removal = useRemoval(send)
@@ -90,5 +99,24 @@ export function useExtensions(send: Send, extensions: ExtensionView[], restartPe
   const openManager = useCallback((): void => send({ kind: 'openExtensionManager' }), [send])
   const restart = useCallback((): void => send({ kind: 'restartBrowser' }), [send])
 
-  return { ...removal, extensions, restartPending, pending, install, setEnabled, openStore, openManager, restart }
+  const openPopup = useCallback(
+    (id: string, anchor: AnchorRect): void => send({ kind: 'openExtensionPopup', id, anchor }),
+    [send],
+  )
+  const closePopup = useCallback((): void => send({ kind: 'closeExtensionPopup' }), [send])
+
+  return {
+    ...removal,
+    extensions,
+    restartPending,
+    popupId,
+    openPopup,
+    closePopup,
+    pending,
+    install,
+    setEnabled,
+    openStore,
+    openManager,
+    restart,
+  }
 }

@@ -14,6 +14,13 @@ use tracing::{debug, warn};
 pub const SCHEME: &str = "echo";
 /// Hote reserve a l'interface. `echo://ui/index.html` est la page du navigateur.
 pub const UI_HOST: &str = "ui";
+/// Hote des icones d'extension : `echo://icones/<identifiant>`.
+///
+/// Une ressource `chrome-extension://` n'est lisible depuis une page interne que si le
+/// paquet la declare accessible au web — ce que presque aucun ne fait pour ses icones.
+/// Mesure le 2026-09-10 : la rangee affichait trois boutons vides. Le coeur lit donc le
+/// fichier sur disque et le sert lui-meme.
+pub const ICON_HOST: &str = "icones";
 
 /// Options du schema, valeurs de `cef_scheme_options_t` :
 /// standard (1) + secure (8) + cors enabled (16) + fetch enabled (64).
@@ -45,6 +52,15 @@ pub fn install_factory() {
         Some(&CefString::from(UI_HOST)),
         Some(&mut factory),
     );
+    let mut icons = UiSchemeFactory::new(ui_root());
+    let icons_installed = register_scheme_handler_factory(
+        Some(&CefString::from(SCHEME)),
+        Some(&CefString::from(ICON_HOST)),
+        Some(&mut icons),
+    );
+    if icons_installed != 1 {
+        warn!("hote des icones d'extension non branche");
+    }
     if installed == 1 {
         debug!(racine = ?ui_root(), "schema echo:// branche");
     } else {
@@ -70,6 +86,10 @@ wrap_scheme_handler_factory! {
             if is_ipc(&url) {
                 crate::bridge::submit(&post_body(request));
                 return Some(StaticResource::new(b"[]".to_vec(), "application/json".into(), StdRc::new(Cell::new(0))));
+            }
+            if let Some(id) = url.strip_prefix("echo://icones/") {
+                let (body, mime) = load_icon(id.split(['?', '#']).next().unwrap_or(""));
+                return Some(StaticResource::new(body, mime, StdRc::new(Cell::new(0))));
             }
             let (body, mime) = load(&self.root, &url);
             Some(StaticResource::new(body, mime, StdRc::new(Cell::new(0))))
@@ -208,5 +228,34 @@ fn mime_of(path: &Path) -> &'static str {
         Some("woff2") => "font/woff2",
         Some("woff") => "font/woff",
         _ => "application/octet-stream",
+    }
+}
+
+/// Lit l'icone d'une extension sur disque. Le chemin vient de son manifeste, jamais de
+/// l'adresse demandee : une page ne choisit pas quel fichier le coeur va ouvrir.
+fn load_icon(id: &str) -> (Vec<u8>, String) {
+    if id.is_empty() || !id.chars().all(|c| c.is_ascii_alphanumeric()) {
+        warn!(%id, "identifiant d'extension refuse");
+        return (Vec::new(), "text/plain".to_string());
+    }
+    // L'inventaire se relit ici plutot que de passer par l'etat vivant : cette fabrique
+    // repond sur le fil des entrees-sorties, ou l'etat du navigateur n'existe pas.
+    let inventaire = echo_extensions::Extensions::new(crate::flags::extensions_dir())
+        .with_profile(echo_extensions::profile::default_profile(&crate::flags::data_dir()));
+    let found = inventaire
+        .list()
+        .into_iter()
+        .find(|extension| extension.id == id)
+        .and_then(|extension| Some(extension.dir.join(extension.action.icon.as_ref()?)));
+    let Some(path) = found else {
+        debug!(%id, "cette extension ne declare pas d'icone");
+        return (Vec::new(), "text/plain".to_string());
+    };
+    match std::fs::read(&path) {
+        Ok(body) => (body, mime_of(&path).to_string()),
+        Err(err) => {
+            warn!(%id, ?path, %err, "icone d'extension illisible");
+            (Vec::new(), "text/plain".to_string())
+        }
     }
 }

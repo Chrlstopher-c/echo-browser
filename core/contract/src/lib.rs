@@ -51,6 +51,10 @@ pub enum UiRequest {
     SetExtensionEnabled { id: String, enabled: bool },
     /// Ouvre le gestionnaire d'extensions de Chromium.
     OpenExtensionManager,
+    /// Ouvre la fenetre d'une extension, ancree sous son icone.
+    OpenExtensionPopup { id: String, anchor: AnchorRect },
+    /// Referme la fenetre d'extension ouverte, s'il y en a une.
+    CloseExtensionPopup,
 
     // --- Bibliotheque ---
     AddBookmark { id: TabId },
@@ -88,6 +92,8 @@ pub enum CoreEvent {
     /// Etat des listes de filtres et date du dernier rafraichissement.
     FilterListsChanged { lists: Vec<FilterListView>, refreshed_at: Option<i64> },
     ExtensionsChanged { extensions: Vec<ExtensionView>, restart_pending: bool },
+    /// Quelle fenetre d'extension est ouverte, pour que son icone se marque.
+    ExtensionPopupChanged { id: Option<String> },
     BookmarksChanged { bookmarks: Vec<BookmarkView> },
     HistoryChanged { entries: Vec<HistoryEntryView>, total: usize },
     DownloadsChanged { downloads: Vec<DownloadView> },
@@ -169,6 +175,20 @@ pub struct ExtensionView {
     pub removable: bool,
     /// Adresse de son icone, quand le paquet en fournit une.
     pub icon: Option<String>,
+    /// Adresse de sa fenetre, quand elle en declare une. Sans elle, l'extension n'a
+    /// rien a montrer : son icone declenche son action et c'est tout.
+    pub popup: Option<String>,
+}
+
+/// Un rectangle de l'interface, en pixels, repere depuis le coin haut-gauche de la
+/// fenetre. Sert d'ancre a ce qui s'affiche au-dessus de la page.
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AnchorRect {
+    pub x: i32,
+    pub y: i32,
+    pub width: i32,
+    pub height: i32,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

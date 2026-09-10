@@ -39,7 +39,7 @@ function useDomains(send: (request: UiRequest) => void, state: CoreState): Sideb
   const shield = useShield(send, {
     lists: state.filterLists, refreshedAt: state.filterListsRefreshedAt, activeId: state.activeId,
   })
-  const extensions = useExtensions(send, state.extensions, state.restartPending)
+  const extensions = useExtensions(send, state.extensions, state.restartPending, state.extensionPopupId)
   const library = useLibrary(send, state)
   const settings = useSettings(send, state.settings)
   return { shield, extensions, library, settings }

@@ -40,6 +40,10 @@ export type UiRequest =
   | { kind: 'removeExtension'; id: string }
   | { kind: 'setExtensionEnabled'; id: string; enabled: boolean }
   | { kind: 'openExtensionManager' }
+  /** Ouvre la fenetre d'une extension, ancree sous son icone. */
+  | { kind: 'openExtensionPopup'; id: string; anchor: AnchorRect }
+  /** Referme la fenetre d'extension ouverte, s'il y en a une. */
+  | { kind: 'closeExtensionPopup' }
   // --- Bibliotheque ---
   | { kind: 'addBookmark'; id: TabId }
   | { kind: 'removeBookmark'; url: string }
@@ -69,6 +73,8 @@ export type CoreEvent =
   /** Etat des listes de filtres et date du dernier rafraichissement. */
   | { kind: 'filterListsChanged'; lists: FilterListView[]; refreshedAt: number | null }
   | { kind: 'extensionsChanged'; extensions: ExtensionView[]; restartPending: boolean }
+  /** Quelle fenetre d'extension est ouverte, pour que son icone se marque. */
+  | { kind: 'extensionPopupChanged'; id: string | null }
   | { kind: 'bookmarksChanged'; bookmarks: BookmarkView[] }
   | { kind: 'historyChanged'; entries: HistoryEntryView[]; total: number }
   | { kind: 'downloadsChanged'; downloads: DownloadView[] }
@@ -122,6 +128,14 @@ export interface FilterListView {
 }
 
 /** Une extension telle que l'interface l'affiche. */
+/** Un rectangle de l'interface, repere depuis le coin haut-gauche de la fenetre. */
+export interface AnchorRect {
+  x: number
+  y: number
+  width: number
+  height: number
+}
+
 export interface ExtensionView {
   id: string
   name: string
@@ -133,6 +147,8 @@ export interface ExtensionView {
   removable: boolean
   /** Adresse de son icone, quand le paquet en fournit une. */
   icon: string | null
+  /** Adresse de sa fenetre, quand elle en declare une. */
+  popup: string | null
 }
 
 export interface BookmarkView {

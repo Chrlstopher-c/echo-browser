@@ -68,7 +68,7 @@ wrap_resource_request_handler! {
         ) -> ReturnValue {
             let Some(request) = request else { return ReturnValue::CONTINUE };
             let url = CefString::from(&request.url()).to_string();
-            if url.starts_with("echo://") {
+            if est_interne(&url) {
                 return ReturnValue::CONTINUE;
             }
             let source = frame
@@ -90,6 +90,25 @@ wrap_resource_request_handler! {
     }
 }
 
+/// Une adresse interne au navigateur ne passe jamais par le bouclier.
+///
+/// Les listes de filtres sont ecrites pour le web : appliquees aux pages du navigateur
+/// lui-meme, elles bloquent au hasard des chemins qui ressemblent a de la publicite.
+/// Mesure le 2026-09-10 : la fenetre de Dark Reader, `chrome-extension://…/ui/popup/`,
+/// rendait un `ERR_BLOCKED_BY_CLIENT` — bloquee par notre propre bouclier.
+fn est_interne(url: &str) -> bool {
+    const SCHEMAS: [&str; 7] = [
+        "echo://",
+        "chrome-extension://",
+        "chrome://",
+        "chrome-untrusted://",
+        "devtools://",
+        "blob:",
+        "about:",
+    ];
+    SCHEMAS.iter().any(|schema| url.starts_with(schema))
+}
+
 /// Traduit le type de ressource de Chromium vers le vocabulaire des listes de filtres.
 fn resource_kind(kind: ResourceType) -> &'static str {
     match kind {
@@ -107,5 +126,24 @@ fn resource_kind(kind: ResourceType) -> &'static str {
         ResourceType::CSP_REPORT => "csp_report",
         ResourceType::XHR => "xhr",
         _ => "other",
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::est_interne;
+
+    #[test]
+    fn les_pages_du_navigateur_echappent_au_bouclier() {
+        assert!(est_interne("chrome-extension://abc/ui/popup/index.html"));
+        assert!(est_interne("echo://ui/index.html"));
+        assert!(est_interne("about:blank"));
+        assert!(est_interne("devtools://devtools/bundled/inspector.html"));
+    }
+
+    #[test]
+    fn le_web_reste_filtre() {
+        assert!(!est_interne("https://ads.example.com/track.js"));
+        assert!(!est_interne("http://www.google.com/"));
     }
 }
