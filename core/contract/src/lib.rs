@@ -46,7 +46,10 @@ pub enum UiRequest {
 
     // --- Extensions ---
     /// Ouvre la fiche d'une extension, ou le catalogue, pour que Chromium l'installe.
+    /// Installe une extension depuis le catalogue : identifiant ou adresse de sa fiche.
     InstallExtension { source: String },
+    /// Ouvre le catalogue dans un onglet, pour y chercher une extension.
+    OpenCatalog,
     RemoveExtension { id: String },
     SetExtensionEnabled { id: String, enabled: bool },
     /// Ouvre le gestionnaire d'extensions de Chromium.

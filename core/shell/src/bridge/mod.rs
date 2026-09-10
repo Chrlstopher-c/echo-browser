@@ -104,7 +104,8 @@ fn apply(request: UiRequest) {
             let host = session::with(|s| s.tabs.host()).flatten();
             crate::window::set_accent(&color, host.as_ref());
         }
-        UiRequest::InstallExtension { source } => open_store(&source),
+        UiRequest::InstallExtension { source } => install_extension(&source),
+        UiRequest::OpenCatalog => open_store(""),
         UiRequest::OpenExtensionPopup { id, anchor } => open_extension_popup(&id, anchor),
         UiRequest::OpenExtensionOptions { id } => open_extension_options(&id),
         UiRequest::CloseExtensionPopup => {
@@ -228,9 +229,31 @@ pub fn close_tab(id: TabId) {
 
 /// Ouvre la fiche d'une extension dans un onglet, pour que Chromium mene l'installation.
 ///
-/// Chromium sait installer depuis le catalogue, avec sa demande de permissions et sa
-/// prise en compte immediate. Telecharger le paquet nous-memes ferait un second
-/// inventaire, invisible de son gestionnaire, et imposerait une relance.
+/// Installe une extension sans quitter le navigateur.
+///
+/// Passer par la fiche du catalogue ne marche pas : la page reconnait qu'elle ne parle
+/// pas au vrai Chrome et renvoie l'utilisateur vers l'application installee sur la
+/// machine — une autre fenetre, un autre navigateur, une extension qui atterrit ailleurs.
+/// On telecharge donc le paquet et on le depaquette nous-memes. Il devient une extension
+/// a nous, chargee au demarrage, que notre gestionnaire pilote entierement.
+fn install_extension(source: &str) {
+    let outcome = session::with(|s| s.extensions.install(source));
+    match outcome {
+        Some(Ok(id)) => {
+            mark_restart_needed();
+            info!(%id, "extension declaree");
+            publish(&CoreEvent::Notice {
+                level: echo_contract::NoticeLevel::Info,
+                message: "Extension ajoutée — elle s'installe à la relance.".to_string(),
+            });
+        }
+        Some(Err(err)) => notify_error(&format!("installation impossible : {err}")),
+        None => notify_error("installation impossible : le navigateur est occupé."),
+    }
+    publish_extensions();
+}
+
+/// Ouvre le catalogue dans un onglet, pour y chercher une extension a installer.
 fn open_store(source: &str) {
     let target = echo_extensions::catalog::extract_id(source)
         .map(|id| echo_extensions::Extensions::store_page(&id))
@@ -272,7 +295,8 @@ pub fn publish_extensions() {
                 enabled: extension.enabled,
                 // Toute bascule attend la relance : Chromium ne sait pas desactiver une
                 // extension a chaud, il sait n'en charger qu'une liste au demarrage.
-                pending,
+                // Une extension sans version est declaree mais pas encore installee.
+                pending: pending || extension.version.is_empty(),
                 removable: true,
                 // L'icone passe par notre schema : celui de l'extension ne se lit pas
                 // depuis une page interne (voir assets::ICON_HOST).

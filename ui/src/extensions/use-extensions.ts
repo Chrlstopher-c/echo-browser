@@ -3,7 +3,7 @@
 
 import { useCallback, useMemo, useState } from 'react'
 import type { AnchorRect, ExtensionView, UiRequest } from '../shared/contract'
-import { pendingCount, STORE_URL } from './extension-model'
+import { pendingCount } from './extension-model'
 import { readExtensionSource } from './extension-source'
 
 export interface InstallField {
@@ -97,7 +97,7 @@ export function useExtensions(
     (id: string, enabled: boolean): void => send({ kind: 'setExtensionEnabled', id, enabled }),
     [send],
   )
-  const openStore = useCallback((): void => send({ kind: 'installExtension', source: STORE_URL }), [send])
+  const openStore = useCallback((): void => send({ kind: 'openCatalog' }), [send])
   const openManager = useCallback((): void => send({ kind: 'openExtensionManager' }), [send])
   const restart = useCallback((): void => send({ kind: 'restartBrowser' }), [send])
 

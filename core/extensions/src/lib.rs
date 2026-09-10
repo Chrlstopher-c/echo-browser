@@ -5,6 +5,7 @@
 //! l'inventaire ; le chargement lui-meme appartient a la coque.
 
 pub mod action;
+pub mod external;
 pub mod catalog;
 pub mod crx;
 pub mod profile;
@@ -45,35 +46,25 @@ impl Extensions {
         profile::store_page(id)
     }
 
-    /// Installe une extension depuis le catalogue. Accepte un identifiant ou une adresse.
-    /// Prend effet au prochain demarrage du navigateur.
-    pub fn install(&self, input: &str) -> anyhow::Result<Extension> {
+    /// La racine du profil Chromium — le dossier au-dessus de « Default ».
+    fn profile_root(&self) -> &Path {
+        self.profile.parent().unwrap_or(&self.profile)
+    }
+
+    /// Installe une extension du catalogue. Accepte un identifiant ou une adresse.
+    ///
+    /// On ne telecharge rien nous-memes : on declare l'extension a Chromium, qui
+    /// l'installe dans son profil au demarrage suivant, avec ses verifications et ses
+    /// mises a jour. Les autres voies ont ete essayees et mesurees — voir `external`.
+    pub fn install(&self, input: &str) -> anyhow::Result<String> {
         let id = catalog::extract_id(input)
             .ok_or_else(|| anyhow::anyhow!("aucun identifiant d'extension dans « {input} »"))?;
-        let package = catalog::download(&id)?;
-        let dir = store::extension_dir(&self.root, &id);
-        let files = crx::unpack(&package, &dir)?;
-
-        let manifest = store::read_manifest_json(&dir)
-            .ok_or_else(|| anyhow::anyhow!("le paquet de {id} n'a pas de manifeste lisible"))?;
-        let raw_name = manifest
-            .get("name")
-            .and_then(|v| v.as_str())
-            .ok_or_else(|| anyhow::anyhow!("le manifeste de {id} n'a pas de nom"))?;
-        let version =
-            manifest.get("version").and_then(|v| v.as_str()).unwrap_or("0").to_string();
-        let name = store::resolve_name(&dir, raw_name);
-        info!(%id, %name, %version, fichiers = files, "extension installee");
-        Ok(Extension {
-            id,
-            name,
-            version,
-            enabled: true,
-            removable: true,
-            from_command_line: true,
-            action: action::Action::from_manifest(&manifest),
-            dir,
-        })
+        external::check_id(&id)?;
+        if self.list().iter().any(|extension| extension.id == id) {
+            anyhow::bail!("cette extension est deja installee");
+        }
+        external::declare(self.profile_root(), &id)?;
+        Ok(id)
     }
 
     /// L'inventaire complet : ce que Chromium connait, complete par nos propres paquets.
@@ -88,6 +79,24 @@ impl Extensions {
                 found.push(ours);
             }
         }
+        // Une extension declaree mais pas encore installee doit se voir : sans cela,
+        // l'utilisateur ajoute une extension et l'ecran ne bouge pas jusqu'a la relance.
+        for id in external::declared(self.profile_root()) {
+            if found.iter().any(|known| known.id == id) {
+                continue;
+            }
+            found.push(Extension {
+                name: format!("Extension {}…", &id[..6.min(id.len())]),
+                version: String::new(),
+                enabled: true,
+                removable: true,
+                from_command_line: false,
+                action: action::Action::default(),
+                dir: PathBuf::new(),
+                id,
+            });
+        }
+
         // Notre propre registre a le dernier mot sur l'activation, y compris pour les
         // extensions du catalogue : Chromium refuse qu'on ecrive dans ses preferences
         // (mesure du 2026-09-10, la valeur est remise a l'identique au demarrage), mais
@@ -130,6 +139,8 @@ impl Extensions {
     /// Chromium constate l'absence au demarrage suivant et oublie l'entree. Il n'existe
     /// pas d'autre voie — ses preferences refusent nos ecritures.
     pub fn remove(&self, id: &str) -> anyhow::Result<()> {
+        // La declaration d'abord : tant qu'elle est la, Chromium reinstalle au demarrage.
+        external::withdraw(self.profile_root(), id)?;
         let known = self.list().into_iter().find(|extension| extension.id == id);
         if let Some(extension) = known {
             let dir = &extension.dir;

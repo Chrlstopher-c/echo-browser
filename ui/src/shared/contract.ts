@@ -37,6 +37,8 @@ export type UiRequest =
   // --- Extensions ---
   /** Ouvre la fiche d'une extension, ou le catalogue, pour que Chromium l'installe. */
   | { kind: 'installExtension'; source: string }
+  /** Ouvre le catalogue dans un onglet, pour y chercher une extension. */
+  | { kind: 'openCatalog' }
   | { kind: 'removeExtension'; id: string }
   | { kind: 'setExtensionEnabled'; id: string; enabled: boolean }
   | { kind: 'openExtensionManager' }

@@ -50,11 +50,11 @@ pub fn apply(process_type: &str, command_line: &mut CommandLine) {
 
     let inventaire = echo_extensions::Extensions::new(extensions_dir())
         .with_profile(echo_extensions::profile::default_profile(&data_dir()));
-    let loadable = inventaire.loadable();
-    if !loadable.is_empty() {
-        switch_with_value(command_line, "load-extension", &loadable.join(","));
-        tracing::info!(nombre = loadable.len(), "extensions chargees au demarrage");
-    }
+    // `--load-extension` n'est pas repris ici : mesure du 10/09/2026, une extension
+    // ainsi chargee est listee, annoncee active, et toutes ses adresses repondent
+    // ERR_BLOCKED_BY_CLIENT — y compris avec le mode developpeur. Les extensions
+    // passent desormais par une declaration que Chromium installe lui-meme
+    // (echo_extensions::external).
     // Ce que l'utilisateur a ecarte ne se desactive pas dans le profil : Chromium y
     // remet sa propre valeur. Il respecte en revanche cette liste-ci.
     if let Some(gardees) = inventaire.enabled_paths() {
