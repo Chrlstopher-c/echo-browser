@@ -43,6 +43,10 @@ wrap_client! {
             Some(EchoDisplayHandler::new(()))
         }
 
+        fn keyboard_handler(&self) -> Option<KeyboardHandler> {
+            Some(crate::shortcuts::BrowserShortcuts::new(()))
+        }
+
         fn load_handler(&self) -> Option<LoadHandler> {
             Some(EchoLoadHandler::new(self.shield.clone()))
         }

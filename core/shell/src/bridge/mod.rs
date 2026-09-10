@@ -126,6 +126,56 @@ pub fn close_tab(id: TabId) {
     publish_shield();
 }
 
+/// Applique un raccourci clavier.
+pub fn perform(action: crate::shortcuts::Action) {
+    use crate::shortcuts::Action;
+    match action {
+        Action::NewTab => {
+            open_tab(HOME_URL);
+            publish_tabs();
+        }
+        Action::CloseTab => {
+            if let Some(id) = session::with(|s| s.tabs.active_id()).flatten() {
+                close_tab(id);
+            }
+        }
+        Action::NextTab => cycle_tab(1),
+        Action::PreviousTab => cycle_tab(-1),
+        Action::SelectTab(index) => {
+            let target = session::with(|s| s.tabs.snapshot().get(index).map(|t| t.id)).flatten();
+            if let Some(id) = target {
+                session::with(|s| s.tabs.select(id));
+                publish_tabs();
+            }
+        }
+        Action::Reload { bypass_cache } => with_browser(|browser| {
+            if bypass_cache { browser.reload_ignore_cache() } else { browser.reload() }
+        }),
+        Action::FocusAddress => publish(&CoreEvent::Notice {
+            level: echo_contract::NoticeLevel::Info,
+            message: "focus-address".to_string(),
+        }),
+        Action::ToggleFullscreen => debug!("plein ecran : pas encore traite"),
+    }
+}
+
+/// Passe a l'onglet suivant ou precedent, en bouclant.
+fn cycle_tab(step: isize) {
+    let Some((ids, active)) = session::with(|s| {
+        (s.tabs.snapshot().iter().map(|t| t.id).collect::<Vec<_>>(), s.tabs.active_id())
+    }) else {
+        return;
+    };
+    if ids.is_empty() {
+        return;
+    }
+    let current = active.and_then(|id| ids.iter().position(|&x| x == id)).unwrap_or(0);
+    let next = (current as isize + step).rem_euclid(ids.len() as isize) as usize;
+    session::with(|s| s.tabs.select(ids[next]));
+    publish_tabs();
+    publish_shield();
+}
+
 fn with_browser(action: impl FnOnce(&Browser)) {
     let browser = session::with(|s| s.tabs.active().and_then(|tab| tab.view.browser())).flatten();
     match browser {
