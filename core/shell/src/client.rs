@@ -94,16 +94,15 @@ wrap_load_handler! {
             _can_go_back: i32,
             _can_go_forward: i32,
         ) {
-            let Some(url) = browser
-                .and_then(|b| b.main_frame())
-                .map(|f| CefString::from(&f.url()).to_string())
-            else {
+            let Some(browser) = browser else { return };
+            let browser_id = browser.identifier();
+            let Some(url) = browser.main_frame().map(|f| CefString::from(&f.url()).to_string()) else {
                 return;
             };
             if url.starts_with("echo://ui/") {
                 return;
             }
-            crate::bridge::publish_tab(&url, &url, is_loading == 1);
+            crate::bridge::publish_tab(browser_id, &url, &url, is_loading == 1);
             crate::bridge::publish_shield();
         }
     }

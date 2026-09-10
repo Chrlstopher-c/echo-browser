@@ -49,16 +49,20 @@ wrap_browser_process_handler! {
             *self.client.borrow_mut() = Some(EchoClient::new(Default::default(), shield.clone()));
             let mut client = self.client.borrow().clone();
             let chrome_view = window::create_chrome_view(client.as_mut(), &url);
-            let content_view = window::create_view(client.as_mut(), &home_url(), 0);
+            let mut tabs = crate::tabs::Tabs::default();
+            let host = tabs.host();
+            tabs.open(client.as_mut(), &home_url());
+
             crate::session::install(crate::session::Session {
                 chrome: chrome_view.clone(),
-                content: content_view.clone(),
+                client: client.clone(),
+                tabs,
                 shield: shield.clone(),
             });
 
             let mut delegate = window::BrowserWindowDelegate::new(
                 RefCell::new(chrome_view),
-                RefCell::new(content_view),
+                RefCell::new(host),
                 RuntimeStyle::ALLOY,
                 ShowState::NORMAL,
             );

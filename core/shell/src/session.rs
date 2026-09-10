@@ -1,9 +1,10 @@
-//! Responsabilite : l'etat vivant du navigateur — les vues, la frame d'interface, le bouclier.
+//! Responsabilite : l'etat vivant du navigateur — les onglets, l'interface, le bouclier.
 //!
 //! Tout cet etat n'existe que sur le thread interface de Chromium : les objets CEF ne
 //! traversent pas les threads. Les autres threads passent par la file du pont.
 
-use cef::{BrowserView, Frame, ImplBrowser, ImplBrowserView};
+use crate::tabs::Tabs;
+use cef::{BrowserView, CefString, Client, Frame, ImplBrowser, ImplBrowserView, ImplFrame};
 use echo_shield::Shield;
 use std::cell::RefCell;
 use std::sync::Arc;
@@ -16,8 +17,9 @@ thread_local! {
 pub struct Session {
     /// La vue qui porte l'interface.
     pub chrome: Option<BrowserView>,
-    /// La vue qui affiche la page web.
-    pub content: Option<BrowserView>,
+    /// Le client partage par toutes les vues, necessaire pour ouvrir un onglet.
+    pub client: Option<Client>,
+    pub tabs: Tabs,
     pub shield: Arc<Shield>,
 }
 
@@ -28,9 +30,16 @@ impl Session {
         self.chrome.as_ref()?.browser()?.main_frame()
     }
 
-    /// La frame de la page affichee.
-    pub fn content_frame(&self) -> Option<Frame> {
-        self.content.as_ref()?.browser()?.main_frame()
+    /// La frame de la page affichee dans l'onglet actif.
+    pub fn active_frame(&self) -> Option<Frame> {
+        self.tabs.active()?.view.browser()?.main_frame()
+    }
+
+    /// L'adresse affichee dans l'onglet actif.
+    pub fn active_url(&self) -> String {
+        self.active_frame()
+            .map(|frame| CefString::from(&frame.url()).to_string())
+            .unwrap_or_default()
     }
 }
 

@@ -8,12 +8,15 @@ pub mod script;
 
 // Les macros `wrap_*` de CEF exigent les traits `Impl*` et `Wrap*` dans la portee : import global impose.
 use cef::*;
-use echo_contract::{CoreEvent, ShieldView, TabView, UiRequest};
+use echo_contract::{CoreEvent, ShieldView, UiRequest};
 use parking_lot::Mutex;
 use std::collections::VecDeque;
 use tracing::{debug, warn};
 
 use crate::session;
+
+/// Page ouverte dans un nouvel onglet.
+const HOME_URL: &str = "https://www.qwant.com/";
 
 /// File des demandes venues de l'interface. Remplie depuis le thread reseau, videe sur
 /// le thread interface : seul du texte la traverse, jamais un objet Chromium.
@@ -72,12 +75,33 @@ fn apply(request: UiRequest) {
             session::with(|s| s.shield.toggle_site(&url));
             publish_shield();
         }
+        UiRequest::NewTab { url } => {
+            let target = url.map(|u| normalize(&u)).unwrap_or_else(|| HOME_URL.to_string());
+            session::with(|s| {
+                let mut client = s.client.clone();
+                s.tabs.open(client.as_mut(), &target)
+            });
+            publish_tabs();
+        }
+        UiRequest::SelectTab { id } => {
+            session::with(|s| s.tabs.select(id));
+            publish_tabs();
+            publish_shield();
+        }
+        UiRequest::CloseTab { id } => {
+            let empty = session::with(|s| s.tabs.close(id)).unwrap_or(false);
+            if empty {
+                quit_message_loop();
+                return;
+            }
+            publish_tabs();
+        }
         other => debug!(?other, "demande pas encore traitee"),
     }
 }
 
 fn with_browser(action: impl FnOnce(&Browser)) {
-    let browser = session::with(|s| s.content.as_ref().and_then(|view| view.browser())).flatten();
+    let browser = session::with(|s| s.tabs.active().and_then(|tab| tab.view.browser())).flatten();
     match browser {
         Some(browser) => action(&browser),
         None => warn!("aucune vue de contenu : demande sans effet"),
@@ -85,7 +109,7 @@ fn with_browser(action: impl FnOnce(&Browser)) {
 }
 
 fn navigate(url: &str) {
-    let frame = session::with(|s| s.content_frame()).flatten();
+    let frame = session::with(|s| s.active_frame()).flatten();
     match frame {
         Some(frame) => {
             debug!(%url, "navigation");
@@ -126,9 +150,7 @@ fn urlencode(value: &str) -> String {
 }
 
 fn current_url() -> String {
-    session::with(|s| s.content_frame().map(|frame| CefString::from(&frame.url()).to_string()))
-        .flatten()
-        .unwrap_or_default()
+    session::with(|s| s.active_url()).unwrap_or_default()
 }
 
 /// Pousse un evenement vers l'interface.
@@ -148,23 +170,9 @@ pub fn publish(event: &CoreEvent) {
     }
 }
 
-/// Envoie a l'interface tout ce qu'elle doit savoir pour s'afficher : l'onglet et le bouclier.
+/// Envoie a l'interface tout ce qu'elle doit savoir pour s'afficher.
 pub fn publish_initial_state() {
-    let url = current_url();
-    let title = if url.is_empty() { "Nouvel onglet" } else { url.as_str() };
-    publish(&CoreEvent::TabsChanged {
-        tabs: vec![TabView {
-            id: 0,
-            title: title.to_string(),
-            url: url.clone(),
-            loading: false,
-            progress: 1.0,
-            can_go_back: false,
-            can_go_forward: false,
-            favicon: None,
-        }],
-        active: Some(0),
-    });
+    publish_tabs();
     publish_shield();
 }
 
@@ -185,27 +193,26 @@ pub fn publish_shield() {
     publish(&CoreEvent::ShieldUpdated { id: 0, state });
 }
 
-/// Diffuse l'etat de l'onglet courant.
-pub fn publish_tab(url: &str, title: &str, loading: bool) {
-    let (can_go_back, can_go_forward) = session::with(|s| {
-        s.content
-            .as_ref()
-            .and_then(|view| view.browser())
-            .map(|browser| (browser.can_go_back() == 1, browser.can_go_forward() == 1))
-            .unwrap_or((false, false))
+/// Met a jour un onglet a partir de ce que Chromium rapporte, puis previent l'interface.
+pub fn publish_tab(browser_id: i32, url: &str, title: &str, loading: bool) {
+    let changed = session::with(|s| {
+        let tab = s.tabs.by_browser(browser_id)?;
+        tab.url = url.to_string();
+        tab.title = if title.is_empty() { url.to_string() } else { title.to_string() };
+        tab.loading = loading;
+        Some(())
     })
-    .unwrap_or((false, false));
+    .flatten();
+    if changed.is_none() {
+        return;
+    }
+    publish_tabs();
+}
 
-    publish(&CoreEvent::TabUpdated {
-        tab: TabView {
-            id: 0,
-            title: title.to_string(),
-            url: url.to_string(),
-            loading,
-            progress: if loading { 0.5 } else { 1.0 },
-            can_go_back,
-            can_go_forward,
-            favicon: None,
-        },
-    });
+/// Diffuse la liste complete des onglets et celui qui est actif.
+pub fn publish_tabs() {
+    let Some((tabs, active)) = session::with(|s| (s.tabs.snapshot(), s.tabs.active_id())) else {
+        return;
+    };
+    publish(&CoreEvent::TabsChanged { tabs, active });
 }

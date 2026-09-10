@@ -18,7 +18,7 @@ const INITIAL_HEIGHT: i32 = 900;
 wrap_window_delegate! {
     pub struct BrowserWindowDelegate {
         chrome_view: RefCell<Option<BrowserView>>,
-        content_view: RefCell<Option<BrowserView>>,
+        content_host: RefCell<Option<Panel>>,
         runtime_style: RuntimeStyle,
         initial_show_state: ShowState,
     }
@@ -45,23 +45,23 @@ wrap_window_delegate! {
             let mut chrome_view = View::from(chrome);
             window.add_child_view(Some(&mut chrome_view));
 
-            let content = self.content_view.borrow().clone();
-            if let Some(content) = content.as_ref() {
-                let mut content_view = View::from(content);
-                window.add_child_view(Some(&mut content_view));
+            let host = self.content_host.borrow().clone();
+            if let Some(host) = host.as_ref() {
+                let mut host_view = View::from(host);
+                window.add_child_view(Some(&mut host_view));
                 if let Some(layout) = layout {
-                    layout.set_flex_for_view(Some(&mut content_view), 1);
+                    layout.set_flex_for_view(Some(&mut host_view), 1);
                 }
             }
 
             window.set_title(Some(&CefString::from(WINDOW_TITLE)));
             window.show();
-            info!(contenu = content.is_some(), "fenetre du navigateur affichee");
+            info!(contenu = host.is_some(), "fenetre du navigateur affichee");
         }
 
         fn on_window_destroyed(&self, _window: Option<&mut Window>) {
             *self.chrome_view.borrow_mut() = None;
-            *self.content_view.borrow_mut() = None;
+            *self.content_host.borrow_mut() = None;
         }
 
         fn can_close(&self, _window: Option<&mut Window>) -> i32 {
