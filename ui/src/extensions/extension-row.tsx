@@ -1,8 +1,11 @@
-// Responsabilite : une extension dans la liste — etat, interrupteur, retrait avec confirmation.
+// Responsabilite : une extension dans la liste — icone, etat, interrupteur, retrait confirme en place
+// ou renvoi vers le gestionnaire de Chromium quand l'interface ne peut pas la retirer elle-meme.
 
 import type { ReactElement } from 'react'
 import type { ExtensionView } from '../shared/contract'
-import { IconPuzzle, IconTrash } from '../shared/design/icons'
+import { ConfirmStrip } from '../shared/design/confirm-strip'
+import { IconOpen, IconPuzzle, IconTrash } from '../shared/design/icons'
+import { RowAction } from '../shared/design/list-row'
 import { Toggle } from '../shared/design/toggle'
 import { extensionStatus } from './extension-model'
 import type { ExtensionsController } from './use-extensions'
@@ -12,12 +15,20 @@ export interface ExtensionRowProps {
   controller: ExtensionsController
 }
 
+function ExtensionIcon({ item }: { item: ExtensionView }): ReactElement {
+  return (
+    <span className={`grid size-7 shrink-0 place-items-center overflow-hidden rounded-row bg-card text-ink-muted
+      shadow-card ${item.enabled ? '' : 'opacity-50 grayscale'}`}>
+      {item.icon !== null ? <img src={item.icon} alt="" width={18} height={18} draggable={false} /> :
+        <IconPuzzle size={15} />}
+    </span>
+  )
+}
+
 function PendingMark(): ReactElement {
   return (
-    <span
-      title="Prend effet à la relance"
-      className="shrink-0 rounded-full bg-warn/15 px-1.5 py-[1px] text-[10px] font-medium text-warn"
-    >
+    <span title="Prend effet à la relance"
+      className="shrink-0 rounded-full bg-warn/15 px-1.5 py-[1px] text-[10px] font-medium text-warn">
       relance
     </span>
   )
@@ -25,61 +36,50 @@ function PendingMark(): ReactElement {
 
 function RemoveConfirm({ item, controller }: ExtensionRowProps): ReactElement {
   return (
-    <div className="flex items-center gap-2 bg-hover px-2 py-2">
-      <p className="min-w-0 flex-1 text-[11.5px] leading-snug text-ink-muted">
-        Retirer <span className="text-ink">{item.name}</span> ? Ses données locales sont perdues.
-      </p>
-      <button
-        type="button"
-        onClick={controller.cancelRemove}
-        className="shrink-0 rounded-md px-2 py-[3px] text-[11px] text-ink-muted hover:text-ink"
-      >
-        Annuler
-      </button>
-      <button
-        type="button"
-        onClick={() => controller.confirmRemove(item.id)}
-        className="shrink-0 rounded-md bg-danger/15 px-2 py-[3px] text-[11px] font-medium text-danger
-          transition-colors duration-100 hover:bg-danger/25"
-      >
-        Retirer
-      </button>
+    <div className="py-1">
+      <ConfirmStrip
+        question={<>Retirer <span className="text-ink">{item.name}</span> ? Ses données locales sont perdues.</>}
+        confirmLabel="Retirer"
+        onConfirm={() => controller.confirmRemove(item.id)}
+        onCancel={controller.cancelRemove}
+      />
     </div>
+  )
+}
+
+function RemoveOrManage({ item, controller }: ExtensionRowProps): ReactElement {
+  if (item.removable) {
+    return (
+      <RowAction label={`Retirer ${item.name}`} onClick={() => controller.askRemove(item.id)} danger>
+        <IconTrash size={13} />
+      </RowAction>
+    )
+  }
+  return (
+    <RowAction label="Gérer dans Chromium" onClick={controller.openManager}>
+      <IconOpen size={13} />
+    </RowAction>
   )
 }
 
 export function ExtensionRow({ item, controller }: ExtensionRowProps): ReactElement {
   if (controller.confirming === item.id) return <RemoveConfirm item={item} controller={controller} />
   return (
-    <div className="group flex items-center gap-2.5 px-2 py-2">
-      <span className="grid size-7 shrink-0 place-items-center rounded-row bg-card text-ink-muted shadow-card">
-        <IconPuzzle size={15} />
-      </span>
+    <div className="group flex h-11 items-center gap-2.5 px-2">
+      <ExtensionIcon item={item} />
       <div className="min-w-0 flex-1">
         <p className="flex items-baseline gap-2 truncate text-[12.5px] text-ink">
-          {item.name}
-          <span className="numerique text-[10.5px] text-ink-faint">{item.version}</span>
+          <span className="truncate">{item.name}</span>
+          <span className="numerique shrink-0 text-[10.5px] text-ink-faint">{item.version}</span>
         </p>
         <p className={`truncate text-[11px] ${item.pending ? 'text-warn' : 'text-ink-faint'}`}>
           {extensionStatus(item)}
         </p>
       </div>
       {item.pending && <PendingMark />}
-      <button
-        type="button"
-        aria-label={`Retirer ${item.name}`}
-        title={`Retirer ${item.name}`}
-        onClick={() => controller.askRemove(item.id)}
-        className="grid size-6 shrink-0 place-items-center rounded-row text-ink-faint opacity-0 transition
-          duration-100 group-hover:opacity-100 hover:bg-hover hover:text-danger focus-visible:opacity-100"
-      >
-        <IconTrash size={13} />
-      </button>
-      <Toggle
-        checked={item.enabled}
-        label={`Activer ${item.name}`}
-        onChange={(next) => controller.setEnabled(item.id, next)}
-      />
+      <RemoveOrManage item={item} controller={controller} />
+      <Toggle checked={item.enabled} label={`Activer ${item.name}`}
+        onChange={(next) => controller.setEnabled(item.id, next)} />
     </div>
   )
 }

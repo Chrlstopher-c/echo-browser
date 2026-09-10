@@ -1,4 +1,4 @@
-// Responsabilite : etat du champ d'adresse — brouillon de saisie, focus, validation.
+// Responsabilite : etat du champ d'adresse — brouillon de saisie, focus, selection, validation.
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { KeyboardEvent, RefObject } from 'react'
@@ -19,7 +19,7 @@ export function useAddressField(
   onSubmit: (input: string) => void,
   focusToken: number,
 ): AddressFieldState {
-  const url = tab?.url ?? ''
+  const url = tab?.url === 'about:blank' ? '' : (tab?.url ?? '')
   const [draft, setDraft] = useState(url)
   const [editing, setEditing] = useState(false)
   const inputRef = useRef<HTMLInputElement | null>(null)
@@ -28,8 +28,13 @@ export function useAddressField(
     if (!editing) setDraft(url)
   }, [url, editing])
 
+  // Ctrl+L, ou le rail : focus et contenu selectionne, pour retaper par-dessus.
   useEffect(() => {
-    if (focusToken > 0) inputRef.current?.focus()
+    if (focusToken === 0) return
+    const input = inputRef.current
+    if (input === null) return
+    input.focus()
+    requestAnimationFrame(() => input.select())
   }, [focusToken])
 
   const onFocus = useCallback((): void => {
@@ -48,7 +53,10 @@ export function useAddressField(
         onSubmit(draft.trim())
         inputRef.current?.blur()
       }
-      if (event.key === 'Escape') inputRef.current?.blur()
+      if (event.key === 'Escape') {
+        event.stopPropagation()
+        inputRef.current?.blur()
+      }
     },
     [draft, onSubmit],
   )

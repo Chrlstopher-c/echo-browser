@@ -1,40 +1,36 @@
-// Responsabilite : la zone des onglets — essentiels au-dessus, liste en dessous, en colonne ou en rail.
+// Responsabilite : la zone des onglets — epingles au-dessus, liste en dessous, menu contextuel commun.
 
-import type { ReactElement } from 'react'
-import type { TabId } from '../shared/contract'
-import type { SidebarActions } from '../sidebar/use-sidebar-actions'
-import { EssentialsGrid } from './essentials-grid'
+import { useMemo, type ReactElement } from 'react'
+import type { TabId, TabView } from '../shared/contract'
+import { PinnedGrid } from './pinned-grid'
 import { TabList } from './tab-list'
-import type { EssentialsController } from './use-essentials'
+import { TabMenu } from './tab-menu'
+import type { TabActions } from './use-tab-actions'
+import type { TabMenuController } from './use-tab-menu'
 
 export interface TabsAreaProps {
-  essentials: EssentialsController
+  tabs: TabView[]
   activeId: TabId | null
-  actions: SidebarActions
+  actions: TabActions
+  menu: TabMenuController
   compact: boolean
 }
 
-export function TabsArea({ essentials, activeId, actions, compact }: TabsAreaProps): ReactElement {
+export function TabsArea({ tabs, activeId, actions, menu, compact }: TabsAreaProps): ReactElement {
+  const pinned = useMemo(() => tabs.filter((tab) => tab.pinned), [tabs])
+  const loose = useMemo(() => tabs.filter((tab) => !tab.pinned), [tabs])
   return (
     <div className="flex flex-col gap-3">
-      <EssentialsGrid
-        essentials={essentials.essentials}
-        represented={essentials.represented}
+      <PinnedGrid
+        pinned={pinned}
         activeId={activeId}
         compact={compact}
-        onSelect={actions.selectTab}
-        onOpen={(url) => actions.newTab(url)}
-        onUnpin={essentials.unpin}
+        onSelect={actions.select}
+        onContextMenu={menu.openFor}
       />
-      <TabList
-        tabs={essentials.loose}
-        activeId={activeId}
-        compact={compact}
-        onSelect={actions.selectTab}
-        onClose={actions.closeTab}
-        onPin={essentials.pin}
-        onNew={() => actions.newTab()}
-      />
+      {pinned.length > 0 && loose.length > 0 && <div className="mx-1 border-t border-hairline" />}
+      <TabList all={tabs} loose={loose} activeId={activeId} compact={compact} actions={actions} menu={menu} />
+      <TabMenu tabs={tabs} controller={menu} actions={actions} />
     </div>
   )
 }

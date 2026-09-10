@@ -1,12 +1,10 @@
 // Responsabilite : identite des feuilles qui se posent sur la liste d'onglets.
 
-export type SheetId = 'shield' | 'extensions' | 'downloads' | 'settings' | 'bookmarks' | 'history'
+export type SheetId = 'shield' | 'library' | 'extensions' | 'settings'
 
 export const SHEET_TITLE: Record<SheetId, string> = {
   shield: 'Bouclier',
+  library: 'Bibliothèque',
   extensions: 'Extensions',
-  downloads: 'Téléchargements',
   settings: 'Réglages',
-  bookmarks: 'Favoris',
-  history: 'Historique',
 }

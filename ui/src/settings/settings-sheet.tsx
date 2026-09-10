@@ -1,48 +1,67 @@
-// Responsabilite : feuille des reglages — espace courant, bibliotheque, outils.
+// Responsabilite : feuille des reglages — apparence tenue par l'interface, puis les reglages du coeur par theme.
 
-import type { ReactElement, ReactNode } from 'react'
-import { IconChevron, IconClock, IconStar } from '../shared/design/icons'
+import type { ReactElement } from 'react'
+import { EmptyState } from '../shared/design/empty-state'
+import { IconSettings, IconWrench } from '../shared/design/icons'
 import { ListRow } from '../shared/design/list-row'
 import { SectionLabel } from '../shared/design/section-label'
-import type { SheetId } from '../sidebar/sheet'
 import { SpacePicker } from '../spaces/space-picker'
-import type { SpaceId } from '../spaces/space-palette'
+import type { SpaceController } from '../spaces/use-space'
+import { SettingRow } from './setting-row'
+import type { SettingsController } from './use-settings'
 
 export interface SettingsSheetProps {
-  space: SpaceId
-  spaceName: string
-  onSelectSpace: (id: SpaceId) => void
-  onOpen: (sheet: SheetId) => void
+  settings: SettingsController
+  space: SpaceController
   onDevTools: () => void
 }
 
-function Entry({ icon, label, onClick }: { icon: ReactNode; label: string; onClick: () => void }): ReactElement {
+function AppearanceSection({ space }: { space: SpaceController }): ReactElement {
   return (
-    <ListRow onClick={onClick}>
-      <span className="text-ink-muted">{icon}</span>
-      <span className="flex-1 text-ink">{label}</span>
-      <IconChevron size={13} className="text-ink-faint" />
-    </ListRow>
+    <section>
+      <SectionLabel aside={<span className="text-[10.5px] text-ink-faint">{space.space.name}</span>}>
+        Espace
+      </SectionLabel>
+      <SpacePicker current={space.space.id} onSelect={space.select} />
+      <p className="px-2 pt-1 text-[11px] leading-snug text-ink-faint">
+        Teinte de la barre et du cadre autour de la page. Le choix est propre à cet ordinateur.
+      </p>
+    </section>
   )
 }
 
-export function SettingsSheet(props: SettingsSheetProps): ReactElement {
-  const { space, spaceName, onSelectSpace, onOpen, onDevTools } = props
+function CoreSections({ settings }: { settings: SettingsController }): ReactElement {
+  if (settings.sections.length === 0) {
+    return <EmptyState icon={<IconSettings size={18} />} title="Aucun réglage reçu"
+      hint="Le cœur n’a pas encore livré ses réglages." />
+  }
+  return (
+    <>
+      {settings.sections.map((section) => (
+        <section key={section.group.id}>
+          <SectionLabel>{section.group.title}</SectionLabel>
+          <div className="divide-y divide-hairline">
+            {section.entries.map((entry) => (
+              <SettingRow key={entry.key} entry={entry} onChange={(value) => settings.update(entry.key, value)} />
+            ))}
+          </div>
+        </section>
+      ))}
+    </>
+  )
+}
+
+export function SettingsSheet({ settings, space, onDevTools }: SettingsSheetProps): ReactElement {
   return (
     <div className="flex flex-col gap-3">
-      <section>
-        <SectionLabel>Espace · {spaceName}</SectionLabel>
-        <SpacePicker current={space} onSelect={onSelectSpace} />
-      </section>
-      <section>
-        <SectionLabel>Bibliothèque</SectionLabel>
-        <Entry icon={<IconStar size={15} />} label="Favoris" onClick={() => onOpen('bookmarks')} />
-        <Entry icon={<IconClock size={15} />} label="Historique" onClick={() => onOpen('history')} />
-      </section>
+      <AppearanceSection space={space} />
+      <CoreSections settings={settings} />
       <section>
         <SectionLabel>Outils</SectionLabel>
         <ListRow onClick={onDevTools}>
-          <span className="flex-1 text-ink-muted">Outils de développement</span>
+          <IconWrench size={14} className="text-ink-muted" />
+          <span className="flex-1 text-ink">Inspecter la page</span>
+          <span className="numerique text-[10.5px] text-ink-faint">F12</span>
         </ListRow>
       </section>
     </div>

@@ -1,6 +1,18 @@
 // Responsabilite : etat de l'interface derive des evenements du coeur. Reducteur pur, sans effet de bord.
 
-import type { CoreEvent, ExtensionView, NoticeLevel, ShieldView, TabId, TabView } from './contract'
+import type {
+  BookmarkView,
+  CoreEvent,
+  DownloadView,
+  ExtensionView,
+  FilterListView,
+  HistoryEntryView,
+  NoticeLevel,
+  SettingView,
+  ShieldView,
+  TabId,
+  TabView,
+} from './contract'
 
 export interface Notice {
   level: NoticeLevel
@@ -13,36 +25,43 @@ export interface CoreState {
   tabs: TabView[]
   activeId: TabId | null
   shields: Map<TabId, ShieldView>
-  notice: Notice | null
-  filterListCount: number | null
-  /** Inventaire des extensions, tel que le coeur le connait. */
+  filterLists: FilterListView[]
+  /** Dernier rafraichissement des listes, ou null tant que le coeur n'en a pas fait. */
+  filterListsRefreshedAt: number | null
   extensions: ExtensionView[]
   /** Vrai quand au moins un changement d'extension attend la relance du navigateur. */
   restartPending: boolean
+  bookmarks: BookmarkView[]
+  history: HistoryEntryView[]
+  /** Nombre total d'entrees d'historique, au-dela de celles livrees. */
+  historyTotal: number
+  downloads: DownloadView[]
+  settings: SettingView[]
+  fullscreen: boolean
+  /** Incremente a chaque demande de focus du champ d'adresse venue du coeur. */
+  addressFocusToken: number
   /** Raison de la relance en cours, ou null tant que le navigateur tourne normalement. */
   restarting: string | null
-  /** Resultat de la derniere installation, ou null si aucune n'a encore abouti. */
-  install: InstallOutcome | null
-}
-
-/** Ce que le coeur repond a une demande d'installation. */
-export interface InstallOutcome {
-  source: string
-  ok: boolean
-  reason: string | null
-  at: number
+  notice: Notice | null
 }
 
 export const EMPTY_CORE_STATE: CoreState = {
   tabs: [],
   activeId: null,
   shields: new Map(),
-  notice: null,
-  filterListCount: null,
+  filterLists: [],
+  filterListsRefreshedAt: null,
   extensions: [],
   restartPending: false,
+  bookmarks: [],
+  history: [],
+  historyTotal: 0,
+  downloads: [],
+  settings: [],
+  fullscreen: false,
+  addressFocusToken: 0,
   restarting: null,
-  install: null,
+  notice: null,
 }
 
 function withShield(state: CoreState, id: TabId, view: ShieldView): CoreState {
@@ -59,26 +78,26 @@ export function reduceCore(state: CoreState, event: CoreEvent): CoreState {
       return { ...state, tabs: state.tabs.map((tab) => (tab.id === event.tab.id ? event.tab : tab)) }
     case 'shieldUpdated':
       return withShield(state, event.id, event.state)
-    case 'filterListsRefreshed':
-      return { ...state, filterListCount: event.count }
-    case 'notice':
-      return { ...state, notice: { level: event.level, message: event.message, at: Date.now() } }
+    case 'filterListsChanged':
+      return { ...state, filterLists: event.lists, filterListsRefreshedAt: event.refreshedAt }
     case 'extensionsChanged':
       return { ...state, extensions: event.extensions, restartPending: event.restartPending }
+    case 'bookmarksChanged':
+      return { ...state, bookmarks: event.bookmarks }
+    case 'historyChanged':
+      return { ...state, history: event.entries, historyTotal: event.total }
+    case 'downloadsChanged':
+      return { ...state, downloads: event.downloads }
+    case 'settingsChanged':
+      return { ...state, settings: event.settings }
+    case 'fullscreenChanged':
+      return { ...state, fullscreen: event.active }
+    case 'focusAddressRequested':
+      return { ...state, addressFocusToken: state.addressFocusToken + 1 }
     case 'restarting':
       return { ...state, restarting: event.reason }
-    case 'installFinished':
-      return event.ok
-        ? { ...state, install: { source: event.source, ok: true, reason: null, at: Date.now() } }
-        : {
-            ...state,
-            install: { source: event.source, ok: false, reason: event.reason, at: Date.now() },
-            notice: {
-              level: 'error',
-              message: event.reason ?? "L'installation a échoué",
-              at: Date.now(),
-            },
-          }
+    case 'notice':
+      return { ...state, notice: { level: event.level, message: event.message, at: Date.now() } }
   }
 }
 

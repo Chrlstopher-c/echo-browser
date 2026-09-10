@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion'
 import type { ReactElement } from 'react'
-import { formatCount } from './shield-reading'
+import { formatCount } from '../shared/format'
 
 export interface ShieldStatProps {
   value: number

@@ -1,11 +1,12 @@
-// Responsabilite : intitule de section de la barre — petites capitales, discret.
+// Responsabilite : intitule de section d'une feuille — petites capitales, appendice optionnel a droite.
 
 import type { ReactElement, ReactNode } from 'react'
 
-export function SectionLabel({ children }: { children: ReactNode }): ReactElement {
+export function SectionLabel({ children, aside }: { children: ReactNode; aside?: ReactNode }): ReactElement {
   return (
-    <p className="px-2 pt-1 pb-1.5 text-[10px] font-medium tracking-[0.1em] text-ink-faint uppercase">
-      {children}
-    </p>
+    <div className="flex h-7 items-center justify-between gap-2 px-2">
+      <p className="intitule truncate">{children}</p>
+      {aside !== undefined && <span className="shrink-0">{aside}</span>}
+    </div>
   )
 }

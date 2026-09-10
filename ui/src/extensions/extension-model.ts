@@ -7,10 +7,8 @@ export const RESTART_NOTICE = 'Des changements attendent la relance du navigateu
 
 export const RESTART_HINT = 'Vos onglets seront retrouvés.'
 
-/** Empreinte de l'inventaire : change des qu'une extension apparait, disparait ou bascule. */
-export function inventorySignature(extensions: ExtensionView[]): string {
-  return extensions.map((item) => `${item.id}:${item.version}:${item.enabled ? 1 : 0}`).join('|')
-}
+/** Adresse du catalogue : le coeur l'ouvre quand on n'a pas d'extension precise en tete. */
+export const STORE_URL = 'https://chromewebstore.google.com/'
 
 /** Nombre d'extensions dont l'etat affiche ne correspond pas encore a ce qui tourne. */
 export function pendingCount(extensions: ExtensionView[]): number {
@@ -19,5 +17,6 @@ export function pendingCount(extensions: ExtensionView[]): number {
 
 export function extensionStatus(item: ExtensionView): string {
   if (item.pending) return item.enabled ? 'Activation à la relance' : 'Désactivation à la relance'
+  if (!item.removable) return item.enabled ? 'Intégrée au navigateur' : 'Intégrée, désactivée'
   return item.enabled ? 'Active' : 'Désactivée'
 }

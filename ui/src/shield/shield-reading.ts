@@ -1,4 +1,4 @@
-// Responsabilite : lecture du bouclier — mode affiche, libelles, mise en forme des compteurs.
+// Responsabilite : lecture du bouclier — mode affiche, libelles.
 
 import type { ShieldView } from '../shared/contract'
 
@@ -15,7 +15,8 @@ export const SHIELD_LABEL: Record<ShieldMode, string> = {
   globalOff: 'Protection coupée',
 }
 
-/** Compteur lisible : espace fine insecable tous les trois chiffres. */
-export function formatCount(value: number): string {
-  return value.toLocaleString('fr-FR').replace(/ | /g, ' ')
+export const SHIELD_DETAIL: Record<ShieldMode, string> = {
+  active: 'Traqueurs et publicités filtrés ici.',
+  siteOff: 'Aucun filtrage sur cette page.',
+  globalOff: 'Aucun filtrage, sur aucun site.',
 }

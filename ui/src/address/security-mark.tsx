@@ -2,15 +2,14 @@
 
 import type { ReactElement } from 'react'
 import type { Security } from '../shared/contract'
-import { IconGlobe, IconLock, IconLockOpen, IconWarning } from '../shared/design/icons'
-import type { IconProps } from '../shared/design/icons'
+import { IconGlobe, IconLock, IconLockOpen, IconWarning, type IconComponent } from '../shared/design/icons'
 
 export type SecurityReading = Security | 'blank'
 
 interface Reading {
   label: string
   tone: string
-  Icon: (props: IconProps) => ReactElement
+  Icon: IconComponent
 }
 
 const READING: Record<SecurityReading, Reading> = {

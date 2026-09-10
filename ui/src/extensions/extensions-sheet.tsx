@@ -1,28 +1,26 @@
-// Responsabilite : feuille des extensions — installation, inventaire, avertissement de relance.
+// Responsabilite : feuille des extensions — installation, inventaire, renvoi au gestionnaire de Chromium.
 
 import type { ReactElement } from 'react'
 import { EmptyState } from '../shared/design/empty-state'
-import { IconPuzzle } from '../shared/design/icons'
+import { IconOpen, IconPuzzle } from '../shared/design/icons'
+import { PushButton } from '../shared/design/push-button'
 import { SectionLabel } from '../shared/design/section-label'
 import { ExtensionRow } from './extension-row'
 import { InstallField } from './install-field'
 import type { ExtensionsController } from './use-extensions'
 
-const EMPTY_HINT =
-  "Collez l'adresse d'une extension du Chrome Web Store ci-dessus pour l'installer. " +
-  'Elle sera chargée à la prochaine relance du navigateur.'
+const EMPTY_HINT = 'Collez l’adresse d’une extension du Chrome Web Store ci-dessus, ou parcourez le catalogue.'
 
 function Inventory({ controller }: { controller: ExtensionsController }): ReactElement {
   if (controller.extensions.length === 0) {
-    return (
-      <div className="pt-6">
-        <EmptyState icon={<IconPuzzle size={20} />} title="Aucune extension installée" hint={EMPTY_HINT} />
-      </div>
-    )
+    return <EmptyState icon={<IconPuzzle size={18} />} title="Aucune extension installée" hint={EMPTY_HINT} />
   }
+  const manager = (
+    <PushButton onClick={controller.openManager} icon={<IconOpen size={11} />}>Chromium</PushButton>
+  )
   return (
     <section>
-      <SectionLabel>Installées · {controller.extensions.length}</SectionLabel>
+      <SectionLabel aside={manager}>Installées · {controller.extensions.length}</SectionLabel>
       <div className="divide-y divide-hairline border-t border-hairline">
         {controller.extensions.map((item) => (
           <ExtensionRow key={item.id} item={item} controller={controller} />
@@ -34,8 +32,8 @@ function Inventory({ controller }: { controller: ExtensionsController }): ReactE
 
 export function ExtensionsSheet({ controller }: { controller: ExtensionsController }): ReactElement {
   return (
-    <div className="flex flex-col">
-      <InstallField install={controller.install} />
+    <div className="flex flex-col gap-1">
+      <InstallField install={controller.install} onOpenStore={controller.openStore} />
       <Inventory controller={controller} />
     </div>
   )

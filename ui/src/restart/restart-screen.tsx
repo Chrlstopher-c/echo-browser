@@ -1,11 +1,11 @@
-// Responsabilite : ecran d'attente pendant la relance du navigateur. Il vit quelques secondes,
-// puis le processus est remplace : aucune sortie a gerer, il disparait avec la page.
+// Responsabilite : ecran d'attente plein cadre pendant la relance du navigateur. Il vit quelques
+// secondes, puis le processus est remplace : aucune sortie a gerer, il disparait avec la page.
 
 import { motion } from 'framer-motion'
 import type { ReactElement } from 'react'
 import { RESTART_HINT } from '../extensions/extension-model'
 import { IconReload } from '../shared/design/icons'
-import { CHROME_EASE } from '../sidebar/sidebar-geometry'
+import { CHROME_EASE } from '../shared/design/motion'
 
 /** Va-et-vient de la barre indeterminee, en secondes. */
 const SWEEP_SECONDS = 1.1

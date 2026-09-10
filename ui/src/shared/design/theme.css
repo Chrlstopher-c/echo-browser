@@ -3,15 +3,14 @@
    ci-dessous sont celles de l'espace par defaut, « graphite ». */
 @import 'tailwindcss';
 
-@import '@fontsource-variable/ibm-plex-sans/wght.css';
-@import '@fontsource/ibm-plex-mono/latin-400.css';
-@import '@fontsource/ibm-plex-mono/latin-ext-400.css';
-@import '@fontsource/ibm-plex-mono/latin-500.css';
+@import '@fontsource-variable/instrument-sans/wght.css';
+@import '@fontsource-variable/jetbrains-mono/wght.css';
 
 @theme {
-  /* Typographie — IBM Plex : industrielle, dense, lisible dix heures par jour. */
-  --font-sans: 'IBM Plex Sans Variable', 'IBM Plex Sans', system-ui, sans-serif;
-  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+  /* Typographie — Instrument Sans : grotesque etroite et nette, faite pour la densite d'une
+     barre ouverte dix heures par jour. JetBrains Mono pour les chiffres et les adresses. */
+  --font-sans: 'Instrument Sans Variable', 'Instrument Sans', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace, monospace;
 
   /* Surfaces de l'espace. `shell` est la couleur plate que le coeur reprend autour de la page. */
   --color-shell: #141517;
@@ -26,6 +25,9 @@
   --color-ink-muted: #9a9fa7;
   --color-ink-faint: #63686f;
 
+  /* Teinte propre a l'espace : pastille du selecteur, liseré de l'onglet actif. */
+  --color-tint: #8f96a3;
+
   /* Etats semantiques. Le vert « garde » est l'identite du produit : bouclier actif. */
   --color-guard: #55b98d;
   --color-warn: #d2a056;
@@ -37,10 +39,11 @@
 
   /* Geometrie. */
   --radius-row: 8px;
-  --radius-tile: 14px;
+  --radius-tile: 12px;
   --radius-frame: 12px;
 
   --shadow-card: 0 1px 2px rgb(0 0 0 / 0.35), 0 0 0 1px rgb(255 255 255 / 0.05);
+  --shadow-lift: 0 8px 24px -8px rgb(0 0 0 / 0.6), 0 0 0 1px rgb(255 255 255 / 0.07);
   --shadow-frame: 0 16px 48px -16px rgb(0 0 0 / 0.55), 0 0 0 1px rgb(0 0 0 / 0.25);
 
   --ease-chrome: cubic-bezier(0.22, 0.61, 0.36, 1);
@@ -65,6 +68,7 @@
     font-family: var(--font-sans);
     font-size: 13px;
     line-height: 1.35;
+    font-feature-settings: 'ss01', 'cv05';
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
     user-select: none;
@@ -72,7 +76,8 @@
     transition: background-color 0.3s var(--ease-chrome);
   }
 
-  button {
+  button,
+  input {
     font: inherit;
     color: inherit;
   }
@@ -109,4 +114,29 @@
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.01em;
+}
+
+/* Titre de section : petites capitales espacees, discret. */
+@utility intitule {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-ink-faint);
+}
+
+/* Barres d'egaliseur de l'indicateur de son : trois traits qui respirent en decale. */
+@keyframes egaliseur {
+  0%,
+  100% {
+    transform: scaleY(0.35);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+}
+
+@utility barre-son {
+  transform-origin: bottom;
+  animation: egaliseur 0.9s ease-in-out infinite;
 }

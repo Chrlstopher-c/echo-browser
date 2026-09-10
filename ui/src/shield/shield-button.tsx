@@ -3,9 +3,10 @@
 import { motion } from 'framer-motion'
 import type { ReactElement } from 'react'
 import type { ShieldView } from '../shared/contract'
+import { formatCount } from '../shared/format'
 import { IconButton, type ButtonTone } from '../shared/design/icon-button'
 import { IconShield, IconShieldCheck } from '../shared/design/icons'
-import { formatCount, SHIELD_LABEL, shieldModeOf, type ShieldMode } from './shield-reading'
+import { SHIELD_LABEL, shieldModeOf, type ShieldMode } from './shield-reading'
 
 export interface ShieldButtonProps {
   shield: ShieldView
@@ -22,8 +23,8 @@ export function ShieldButton({ shield, open, compact, onClick }: ShieldButtonPro
   const count = showCount ? (
     <motion.span
       key={shield.blockedHere}
-      initial={{ opacity: 0.4 }}
-      animate={{ opacity: 1 }}
+      initial={{ opacity: 0.4, y: -2 }}
+      animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.15 }}
       className="numerique text-[11px] font-medium"
     >

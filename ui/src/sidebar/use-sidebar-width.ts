@@ -2,7 +2,7 @@
 // prevenu apres l'animation (la barre retrecit dans sa fenetre) ; au depli, avant (la fenetre
 // s'elargit puis la barre s'y deploie). La page ne chevauche jamais la barre.
 
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { UiRequest } from '../shared/contract'
 import { readLocal, writeLocal } from '../shared/local-store'
 import { widthFor } from './sidebar-geometry'
@@ -42,16 +42,22 @@ export function useSidebarWidth(send: (request: UiRequest) => void): SidebarWidt
     [send],
   )
 
-  const toggle = useCallback((): void => apply(!collapsed), [apply, collapsed])
-  const expand = useCallback((): void => {
-    if (collapsed) apply(false)
-  }, [apply, collapsed])
-
   const onSettled = useCallback((): void => {
     if (pendingClaim.current === null) return
     send({ kind: 'setChromeWidth', pixels: pendingClaim.current })
     pendingClaim.current = null
   }, [send])
 
-  return { collapsed, width: widthFor(collapsed), toggle, expand, onSettled }
+  return useGestures(collapsed, apply, onSettled)
+}
+
+function useGestures(collapsed: boolean, apply: (next: boolean) => void, onSettled: () => void): SidebarWidth {
+  const toggle = useCallback((): void => apply(!collapsed), [apply, collapsed])
+  const expand = useCallback((): void => {
+    if (collapsed) apply(false)
+  }, [apply, collapsed])
+  return useMemo(
+    () => ({ collapsed, width: widthFor(collapsed), toggle, expand, onSettled }),
+    [collapsed, toggle, expand, onSettled],
+  )
 }

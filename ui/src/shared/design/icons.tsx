@@ -1,4 +1,4 @@
-// Responsabilite : jeu d'icones du chrome. Traits de 1.5px, grille 16, aucun remplissage.
+// Responsabilite : jeu d'icones du chrome. Traits de 1.5px, grille 16, aucun remplissage sauf mention.
 
 import type { PropsWithChildren, ReactElement } from 'react'
 
@@ -6,6 +6,8 @@ export interface IconProps {
   size?: number
   className?: string
 }
+
+export type IconComponent = (props: IconProps) => ReactElement
 
 function Glyph({ size = 16, className, children }: PropsWithChildren<IconProps>): ReactElement {
   return (
@@ -51,6 +53,14 @@ export function IconReload(props: IconProps): ReactElement {
   )
 }
 
+export function IconStop(props: IconProps): ReactElement {
+  return (
+    <Glyph {...props}>
+      <rect x="4.5" y="4.5" width="7" height="7" rx="1.2" fill="currentColor" stroke="none" />
+    </Glyph>
+  )
+}
+
 export function IconClose(props: IconProps): ReactElement {
   return (
     <Glyph {...props}>
@@ -63,6 +73,14 @@ export function IconPlus(props: IconProps): ReactElement {
   return (
     <Glyph {...props}>
       <path d="M8 3.5v9M3.5 8h9" />
+    </Glyph>
+  )
+}
+
+export function IconMinus(props: IconProps): ReactElement {
+  return (
+    <Glyph {...props}>
+      <path d="M3.5 8h9" />
     </Glyph>
   )
 }
@@ -84,19 +102,20 @@ export function IconShieldCheck(props: IconProps): ReactElement {
   )
 }
 
-export function IconMenu(props: IconProps): ReactElement {
-  return (
-    <Glyph {...props}>
-      <path d="M3 4.5h10M3 8h10M3 11.5h10" />
-    </Glyph>
-  )
-}
-
 export function IconLock(props: IconProps): ReactElement {
   return (
     <Glyph {...props}>
       <rect x="3.5" y="7" width="9" height="6.2" rx="1.4" />
       <path d="M5.7 7V5.4a2.3 2.3 0 0 1 4.6 0V7" />
+    </Glyph>
+  )
+}
+
+export function IconLockOpen(props: IconProps): ReactElement {
+  return (
+    <Glyph {...props}>
+      <rect x="3.5" y="7" width="9" height="6.2" rx="1.4" />
+      <path d="M5.7 7V5.4a2.3 2.3 0 0 1 4.4-.9" />
     </Glyph>
   )
 }
@@ -127,6 +146,17 @@ export function IconStar(props: IconProps): ReactElement {
   )
 }
 
+export function IconStarFilled(props: IconProps): ReactElement {
+  return (
+    <Glyph {...props}>
+      <path
+        d="m8 2.3 1.75 3.6 3.95.57-2.85 2.8.67 3.95L8 11.35 4.48 13.2l.67-3.94L2.3 6.47l3.95-.57z"
+        fill="currentColor"
+      />
+    </Glyph>
+  )
+}
+
 export function IconClock(props: IconProps): ReactElement {
   return (
     <Glyph {...props}>
@@ -141,6 +171,15 @@ export function IconDownload(props: IconProps): ReactElement {
     <Glyph {...props}>
       <path d="M8 2.6v7M5.2 7l2.8 2.7L10.8 7" />
       <path d="M2.9 11.7v1.1h10.2v-1.1" />
+    </Glyph>
+  )
+}
+
+export function IconLibrary(props: IconProps): ReactElement {
+  return (
+    <Glyph {...props}>
+      <path d="M3 3.2v9.6M6.2 3.2v9.6" />
+      <path d="m9 3.9 3.6-.9 2 8.9-3.6.9z" />
     </Glyph>
   )
 }
@@ -168,6 +207,14 @@ export function IconChevronLeft(props: IconProps): ReactElement {
   return (
     <Glyph {...props}>
       <path d="m9.5 4-4 4 4 4" />
+    </Glyph>
+  )
+}
+
+export function IconChevronDown(props: IconProps): ReactElement {
+  return (
+    <Glyph {...props}>
+      <path d="m4 6.5 4 4 4-4" />
     </Glyph>
   )
 }
@@ -209,15 +256,6 @@ export function IconUnpin(props: IconProps): ReactElement {
   )
 }
 
-export function IconLockOpen(props: IconProps): ReactElement {
-  return (
-    <Glyph {...props}>
-      <rect x="3.5" y="7" width="9" height="6.2" rx="1.4" />
-      <path d="M5.7 7V5.4a2.3 2.3 0 0 1 4.4-.9" />
-    </Glyph>
-  )
-}
-
 export function IconCheck(props: IconProps): ReactElement {
   return (
     <Glyph {...props}>
@@ -231,6 +269,121 @@ export function IconTrash(props: IconProps): ReactElement {
     <Glyph {...props}>
       <path d="M3 4.3h10M6.4 4.3V2.9h3.2v1.4" />
       <path d="M4.4 4.3l.6 8.2c0 .4.4.6.8.6h4.4c.4 0 .8-.2.8-.6l.6-8.2" />
+    </Glyph>
+  )
+}
+
+export function IconSearch(props: IconProps): ReactElement {
+  return (
+    <Glyph {...props}>
+      <circle cx="7" cy="7" r="4.2" />
+      <path d="m10.2 10.2 3.3 3.3" />
+    </Glyph>
+  )
+}
+
+export function IconFolder(props: IconProps): ReactElement {
+  return (
+    <Glyph {...props}>
+      <path d="M2.5 4.5a1 1 0 0 1 1-1h3l1.5 1.5h4.5a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1h-9a1 1 0 0 1-1-1z" />
+    </Glyph>
+  )
+}
+
+export function IconOpen(props: IconProps): ReactElement {
+  return (
+    <Glyph {...props}>
+      <path d="M7 3.5H4.2a1 1 0 0 0-1 1v7.3a1 1 0 0 0 1 1h7.3a1 1 0 0 0 1-1V9" />
+      <path d="M9.3 2.8h4v4M13.2 2.9 7.6 8.5" />
+    </Glyph>
+  )
+}
+
+export function IconMoon(props: IconProps): ReactElement {
+  return (
+    <Glyph {...props}>
+      <path d="M12.8 9.6A5.2 5.2 0 0 1 6.4 3.2a5.2 5.2 0 1 0 6.4 6.4z" />
+    </Glyph>
+  )
+}
+
+export function IconVolume(props: IconProps): ReactElement {
+  return (
+    <Glyph {...props}>
+      <path d="M3 6.2h2.3L8.5 3.6v8.8L5.3 9.8H3z" />
+      <path d="M10.6 5.8a3 3 0 0 1 0 4.4M12.4 4a5.6 5.6 0 0 1 0 8" />
+    </Glyph>
+  )
+}
+
+export function IconVolumeOff(props: IconProps): ReactElement {
+  return (
+    <Glyph {...props}>
+      <path d="M3 6.2h2.3L8.5 3.6v8.8L5.3 9.8H3z" />
+      <path d="m10.6 6.4 3 3.2M13.6 6.4l-3 3.2" />
+    </Glyph>
+  )
+}
+
+export function IconMore(props: IconProps): ReactElement {
+  return (
+    <Glyph {...props}>
+      <circle cx="4" cy="8" r="0.9" fill="currentColor" />
+      <circle cx="8" cy="8" r="0.9" fill="currentColor" />
+      <circle cx="12" cy="8" r="0.9" fill="currentColor" />
+    </Glyph>
+  )
+}
+
+export function IconZoom(props: IconProps): ReactElement {
+  return (
+    <Glyph {...props}>
+      <circle cx="7" cy="7" r="4.2" />
+      <path d="m10.2 10.2 3.3 3.3M5 7h4M7 5v4" />
+    </Glyph>
+  )
+}
+
+export function IconExitFullscreen(props: IconProps): ReactElement {
+  return (
+    <Glyph {...props}>
+      <path d="M6.5 2.5v4h-4M9.5 2.5v4h4M6.5 13.5v-4h-4M9.5 13.5v-4h4" />
+    </Glyph>
+  )
+}
+
+export function IconRefresh(props: IconProps): ReactElement {
+  return (
+    <Glyph {...props}>
+      <path d="M2.8 8a5.2 5.2 0 0 1 9.1-3.4M13.2 8a5.2 5.2 0 0 1-9.1 3.4" />
+      <path d="M12 2v2.8H9.2M4 14v-2.8h2.8" />
+    </Glyph>
+  )
+}
+
+export function IconFile(props: IconProps): ReactElement {
+  return (
+    <Glyph {...props}>
+      <path d="M4 2.5h5l3.5 3.5v7a1 1 0 0 1-1 1h-7.5a1 1 0 0 1-1-1v-9.5a1 1 0 0 1 1-1z" />
+      <path d="M9 2.5V6h3.5" />
+    </Glyph>
+  )
+}
+
+export function IconSparkle(props: IconProps): ReactElement {
+  return (
+    <Glyph {...props}>
+      <path d="M8 2.5c.4 2.9 2.2 4.7 5.5 5.5-3.3.8-5.1 2.6-5.5 5.5-.4-2.9-2.2-4.7-5.5-5.5 3.3-.8 5.1-2.6 5.5-5.5z" />
+    </Glyph>
+  )
+}
+
+export function IconWrench(props: IconProps): ReactElement {
+  return (
+    <Glyph {...props}>
+      <path
+        d="M13.2 4.6a3.3 3.3 0 0 1-4.4 3.9L4 13.3a1.4 1.4 0 0 1-2-2l4.8-4.8a3.3 3.3 0 0 1 3.9-4.4L8.9 3.9l1.2 2 2-.2z"
+      />
     </Glyph>
   )
 }

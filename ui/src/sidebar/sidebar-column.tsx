@@ -1,44 +1,47 @@
-// Responsabilite : contenu de la barre depliee — controles, adresse, essentiels, onglets, outils.
+// Responsabilite : contenu de la barre depliee — controles, adresse, onglets, feuilles, outils, espaces.
 
 import type { ReactElement } from 'react'
 import { AddressField } from '../address/address-field'
-import { RestartStrip } from '../restart/restart-strip'
 import { TopControls } from '../address/top-controls'
+import { RestartStrip } from '../restart/restart-strip'
+import { SpaceStrip } from '../spaces/space-strip'
 import { TabsArea } from '../tabs/tabs-area'
-import type { EssentialsController } from '../tabs/use-essentials'
 import { NoticeStrip } from './notice-strip'
 import { SidebarSheets } from './sidebar-sheets'
 import { SimulationMark } from './simulation-mark'
 import { UtilityRow } from './utility-row'
 import type { SidebarModel } from './use-sidebar'
 
-export interface SidebarColumnProps {
-  model: SidebarModel
-  essentials: EssentialsController
-}
-
 function ColumnHeader({ model }: { model: SidebarModel }): ReactElement {
-  const { core, actions, width } = model
+  const { core, tabs, width } = model
+  const active = core.activeTab
   return (
     <header className="flex shrink-0 flex-col gap-2">
       <TopControls
-        tab={core.activeTab}
-        onBack={actions.back}
-        onForward={actions.forward}
-        onReload={actions.reload}
-        onStop={actions.stop}
+        tab={active}
+        onBack={tabs.back}
+        onForward={tabs.forward}
+        onReload={tabs.reloadActive}
+        onStop={tabs.stop}
         onCollapse={width.toggle}
         mark={core.simulated ? <SimulationMark /> : null}
       />
-      <AddressField tab={core.activeTab} onSubmit={actions.navigate} focusToken={model.addressFocusToken} />
+      <AddressField
+        tab={active}
+        onSubmit={tabs.navigate}
+        onResetZoom={() => {
+          if (active !== null) tabs.setZoom(active.id, 1)
+        }}
+        focusToken={model.addressFocusToken}
+      />
     </header>
   )
 }
 
 function ColumnFooter({ model }: { model: SidebarModel }): ReactElement {
-  const { core, sheet, extensions } = model
+  const { core, sheet, extensions, library, space } = model
   return (
-    <footer className="shrink-0">
+    <footer className="flex shrink-0 flex-col gap-1.5">
       <RestartStrip pending={extensions.restartPending} count={extensions.pending} onRestart={extensions.restart} />
       <NoticeStrip notice={core.notice} />
       <UtilityRow
@@ -46,30 +49,24 @@ function ColumnFooter({ model }: { model: SidebarModel }): ReactElement {
         open={sheet.current}
         compact={false}
         restartPending={extensions.restartPending}
+        downloads={library.downloads.summary}
         onToggle={sheet.toggle}
       />
+      <SpaceStrip current={space.space.id} onSelect={space.select} />
     </footer>
   )
 }
 
-export function SidebarColumn({ model, essentials }: SidebarColumnProps): ReactElement {
-  const { core, actions, sheet, space, extensions } = model
+export function SidebarColumn({ model }: { model: SidebarModel }): ReactElement {
+  const { core, tabs, menu, sheet } = model
   return (
-    <div className="flex h-full flex-col gap-3 px-3 pt-2 pb-2">
+    <div className="flex h-full flex-col gap-3 px-3 pt-2 pb-1.5">
       <ColumnHeader model={model} />
       <div className="relative min-h-0 flex-1">
         <div className={`h-full overflow-y-auto ${sheet.current === null ? '' : 'invisible'}`}>
-          <TabsArea essentials={essentials} activeId={core.state.activeId} actions={actions} compact={false} />
+          <TabsArea tabs={core.state.tabs} activeId={core.state.activeId} actions={tabs} menu={menu} compact={false} />
         </div>
-        <SidebarSheets
-          sheet={sheet}
-          shield={core.shield}
-          url={core.activeTab?.url ?? ''}
-          filterListCount={core.state.filterListCount}
-          actions={actions}
-          space={space}
-          extensions={extensions}
-        />
+        <SidebarSheets model={model} />
       </div>
       <ColumnFooter model={model} />
     </div>

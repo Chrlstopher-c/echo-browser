@@ -5,13 +5,15 @@ import { useCallback, useEffect, useState } from 'react'
 import type { UiRequest } from '../shared/contract'
 import { readLocal, writeLocal } from '../shared/local-store'
 import { applySpace } from './apply-space'
-import { DEFAULT_SPACE, isSpaceId, spaceOf, type Space, type SpaceId } from './space-palette'
+import { DEFAULT_SPACE, isSpaceId, SPACES, spaceOf, type Space, type SpaceId } from './space-palette'
 
 const STORE_KEY = 'echo.space'
 
 export interface SpaceController {
   space: Space
   select: (id: SpaceId) => void
+  /** Passe a l'espace suivant ou precedent, en boucle. */
+  cycle: (direction: 1 | -1) => void
 }
 
 function readStoredSpace(): SpaceId {
@@ -32,5 +34,14 @@ export function useSpace(send: (request: UiRequest) => void): SpaceController {
     writeLocal(STORE_KEY, next)
   }, [])
 
-  return { space, select }
+  const cycle = useCallback(
+    (direction: 1 | -1): void => {
+      const index = SPACES.findIndex((candidate) => candidate.id === id)
+      const next = SPACES[(index + direction + SPACES.length) % SPACES.length]
+      if (next !== undefined) select(next.id)
+    },
+    [id, select],
+  )
+
+  return { space, select, cycle }
 }

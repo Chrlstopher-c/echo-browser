@@ -2,14 +2,12 @@
 
 import { AnimatePresence, motion } from 'framer-motion'
 import type { ReactElement } from 'react'
-import { useEssentials } from '../tabs/use-essentials'
+import { CHROME_EASE, COLLAPSE_SECONDS } from '../shared/design/motion'
 import { SidebarColumn } from './sidebar-column'
-import { CHROME_EASE, COLLAPSE_SECONDS } from './sidebar-geometry'
 import { SidebarRail } from './sidebar-rail'
 import type { SidebarModel } from './use-sidebar'
 
 export function Sidebar({ model }: { model: SidebarModel }): ReactElement {
-  const essentials = useEssentials(model.core.state.tabs, model.core.simulated)
   const { collapsed, width } = model.width
   return (
     <motion.aside
@@ -29,11 +27,7 @@ export function Sidebar({ model }: { model: SidebarModel }): ReactElement {
           transition={{ duration: 0.12 }}
           className="h-full"
         >
-          {collapsed ? (
-            <SidebarRail model={model} essentials={essentials} />
-          ) : (
-            <SidebarColumn model={model} essentials={essentials} />
-          )}
+          {collapsed ? <SidebarRail model={model} /> : <SidebarColumn model={model} />}
         </motion.div>
       </AnimatePresence>
     </motion.aside>

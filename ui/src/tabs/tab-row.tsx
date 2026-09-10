@@ -1,14 +1,13 @@
-// Responsabilite : un onglet de la liste — favicon, titre tronque, epingler et fermer au survol.
-// L'onglet actif est une carte posee : le fond glisse d'une ligne a l'autre.
+// Responsabilite : un onglet de la liste — marque, titre tronque, son, fermeture au survol.
+// L'onglet actif est une carte posee : le fond glisse d'une ligne a l'autre. Saisi, il se souleve.
 
-import { motion } from 'framer-motion'
-import type { ReactElement } from 'react'
+import { motion, Reorder, useDragControls } from 'framer-motion'
+import type { MouseEvent, PointerEvent, ReactElement } from 'react'
 import type { TabView } from '../shared/contract'
-import { IconClose, IconPin } from '../shared/design/icons'
-import { SiteMark } from '../shared/design/site-mark'
-import { Spinner } from '../shared/design/spinner'
+import { IconClose } from '../shared/design/icons'
+import { PANEL, QUICK } from '../shared/design/motion'
 import { fallbackTitle } from '../shared/url-shape'
-import { CHROME_EASE } from '../sidebar/sidebar-geometry'
+import { AudioBars, TabMark } from './tab-mark'
 
 export interface TabRowProps {
   tab: TabView
@@ -16,73 +15,87 @@ export interface TabRowProps {
   compact: boolean
   onSelect: () => void
   onClose: () => void
-  onPin: () => void
+  onContextMenu: (event: MouseEvent) => void
+  onDragEnd: () => void
 }
 
-interface HoverActionProps {
-  label: string
-  onClick: () => void
-  children: ReactElement
+const ROW_MOTION = {
+  initial: { opacity: 0, height: 0 },
+  animate: { opacity: 1, height: 32 },
+  exit: { opacity: 0, height: 0 },
+  whileDrag: { scale: 1.02, boxShadow: 'var(--shadow-lift)', zIndex: 5 },
 }
 
-function HoverAction({ label, onClick, children }: HoverActionProps): ReactElement {
+function CloseAction({ onClose }: { onClose: () => void }): ReactElement {
   return (
     <button
       type="button"
-      aria-label={label}
-      title={label}
+      aria-label="Fermer l'onglet"
+      title="Fermer l'onglet"
       onPointerDown={(event) => event.stopPropagation()}
       onClick={(event) => {
         event.stopPropagation()
-        onClick()
+        onClose()
       }}
       className="grid size-5 shrink-0 place-items-center rounded-md text-ink-faint opacity-0
         transition-opacity duration-100 group-hover:opacity-100 hover:bg-ink/10 hover:text-ink
         focus-visible:opacity-100"
     >
-      {children}
+      <IconClose size={12} />
     </button>
   )
 }
 
-function RowBody({ title, onPin, onClose }: { title: string; onPin: () => void; onClose: () => void }): ReactElement {
+function RowBody({ tab, title, onClose }: { tab: TabView; title: string; onClose: () => void }): ReactElement {
   return (
     <>
-      <span className="min-w-0 flex-1 truncate text-[12.5px]">{title}</span>
-      <HoverAction label="Ajouter aux essentiels" onClick={onPin}>
-        <IconPin size={12} />
-      </HoverAction>
-      <HoverAction label="Fermer l'onglet" onClick={onClose}>
-        <IconClose size={12} />
-      </HoverAction>
+      <span className={`min-w-0 flex-1 truncate text-[12.5px] ${tab.asleep ? 'text-ink-faint' : ''}`}>
+        {title}
+      </span>
+      {tab.audible && !tab.asleep && (
+        <AudioBars className="shrink-0 text-guard transition-opacity duration-100 group-hover:opacity-0" />
+      )}
+      <span className={`shrink-0 ${tab.audible ? '-ml-5' : ''}`}>
+        <CloseAction onClose={onClose} />
+      </span>
     </>
   )
 }
 
-export function TabRow({ tab, active, compact, onSelect, onClose, onPin }: TabRowProps): ReactElement {
-  const title = tab.title.length > 0 ? tab.title : fallbackTitle(tab.url)
+function ActiveBackdrop(): ReactElement {
   return (
-    <motion.div
-      layout="position"
-      initial={{ opacity: 0, height: 0 }}
-      animate={{ opacity: 1, height: 32 }}
-      exit={{ opacity: 0, height: 0 }}
-      transition={{ duration: 0.18, ease: CHROME_EASE }}
-      onPointerDown={onSelect}
+    <motion.span layoutId="onglet-actif" transition={PANEL}
+      className="absolute inset-0 -z-10 rounded-row bg-card shadow-card" />
+  )
+}
+
+export function TabRow(props: TabRowProps): ReactElement {
+  const { tab, active, compact, onSelect, onClose, onContextMenu, onDragEnd } = props
+  const title = tab.title.length > 0 ? tab.title : fallbackTitle(tab.url)
+  const controls = useDragControls()
+  const onPointerDown = (event: PointerEvent): void => {
+    if (event.button !== 0) return
+    onSelect()
+    if (!compact) controls.start(event)
+  }
+  return (
+    <Reorder.Item
+      value={tab}
+      dragListener={false}
+      dragControls={controls}
+      onDragEnd={onDragEnd}
+      {...ROW_MOTION}
+      transition={QUICK}
+      onPointerDown={onPointerDown}
+      onContextMenu={onContextMenu}
       title={title}
       className={`group relative isolate flex items-center gap-2.5 overflow-hidden rounded-row
-        ${compact ? 'justify-center px-0' : 'px-2.5'}
+        ${compact ? 'justify-center px-0' : 'pr-1.5 pl-2.5'}
         ${active ? 'text-ink' : 'text-ink-muted hover:bg-hover hover:text-ink'}`}
     >
-      {active && (
-        <motion.span
-          layoutId="onglet-actif"
-          transition={{ duration: 0.2, ease: CHROME_EASE }}
-          className="absolute inset-0 -z-10 rounded-row bg-card shadow-card"
-        />
-      )}
-      {tab.loading ? <Spinner size={16} /> : <SiteMark url={tab.url} favicon={tab.favicon} size={16} />}
-      {!compact && <RowBody title={title} onPin={onPin} onClose={onClose} />}
-    </motion.div>
+      {active && <ActiveBackdrop />}
+      <TabMark tab={tab} size={16} />
+      {!compact && <RowBody tab={tab} title={title} onClose={onClose} />}
+    </Reorder.Item>
   )
 }

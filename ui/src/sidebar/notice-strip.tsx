@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react'
 import type { ReactElement } from 'react'
 import type { NoticeLevel } from '../shared/contract'
 import type { Notice } from '../shared/core-state'
-import { CHROME_EASE } from './sidebar-geometry'
+import { QUICK } from '../shared/design/motion'
 
 const VISIBLE_MS = 4000
 
@@ -30,12 +30,12 @@ export function NoticeStrip({ notice }: { notice: Notice | null }): ReactElement
       {shown !== null && (
         <motion.p
           key={shown.at}
+          role="status"
           initial={{ opacity: 0, y: 4 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.16, ease: CHROME_EASE }}
-          className={`mx-1 mb-1 truncate rounded-row bg-card px-2.5 py-1.5 text-[11.5px] shadow-card
-            ${TONE[shown.level]}`}
+          transition={QUICK}
+          className={`mb-1 truncate rounded-row bg-card px-2.5 py-1.5 text-[11.5px] shadow-card ${TONE[shown.level]}`}
         >
           {shown.message}
         </motion.p>

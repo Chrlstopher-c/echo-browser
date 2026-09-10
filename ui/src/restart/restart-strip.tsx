@@ -4,7 +4,8 @@ import { AnimatePresence, motion } from 'framer-motion'
 import type { ReactElement } from 'react'
 import { RESTART_HINT, RESTART_NOTICE } from '../extensions/extension-model'
 import { IconReload } from '../shared/design/icons'
-import { CHROME_EASE } from '../sidebar/sidebar-geometry'
+import { QUICK } from '../shared/design/motion'
+import { PushButton } from '../shared/design/push-button'
 
 export interface RestartStripProps {
   pending: boolean
@@ -23,25 +24,21 @@ export function RestartStrip({ pending, count, onRestart }: RestartStripProps): 
     <AnimatePresence initial={false}>
       {pending && (
         <motion.div
-          initial={{ opacity: 0, y: 6 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 4 }}
-          transition={{ duration: 0.18, ease: CHROME_EASE }}
-          className="mx-1 mb-1.5 flex items-center gap-2 rounded-row border border-warn/25 bg-warn/10 px-2.5 py-2"
+          initial={{ opacity: 0, y: 6, height: 0 }}
+          animate={{ opacity: 1, y: 0, height: 'auto' }}
+          exit={{ opacity: 0, y: 4, height: 0 }}
+          transition={QUICK}
+          className="overflow-hidden"
         >
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-[11.5px] text-warn">{label(count)}</p>
-            <p className="truncate text-[10.5px] text-ink-faint">{RESTART_HINT}</p>
+          <div className="mb-1.5 flex items-center gap-2 rounded-row border border-warn/25 bg-warn/10 px-2.5 py-2">
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-[11.5px] text-warn">{label(count)}</p>
+              <p className="truncate text-[10.5px] text-ink-faint">{RESTART_HINT}</p>
+            </div>
+            <PushButton tone="warn" onClick={onRestart} icon={<IconReload size={12} />}>
+              Relancer
+            </PushButton>
           </div>
-          <button
-            type="button"
-            onClick={onRestart}
-            className="flex shrink-0 items-center gap-1.5 rounded-md bg-warn/20 px-2 py-[4px] text-[11px]
-              font-medium text-warn transition-colors duration-100 hover:bg-warn/30"
-          >
-            <IconReload size={12} />
-            Relancer
-          </button>
         </motion.div>
       )}
     </AnimatePresence>
