@@ -1,0 +1,152 @@
+//! Responsabilite : les demandes qui touchent la bibliotheque, et ce qu'elle renvoie.
+
+use crate::session;
+use echo_contract::{BookmarkView, CoreEvent, DownloadState, DownloadView, HistoryEntryView};
+use echo_contract::{SettingValue, SettingView};
+use echo_library::{bookmarks, downloads, history, settings};
+use tracing::warn;
+
+/// Diffuse les favoris.
+pub fn publish_bookmarks() {
+    let Some(list) = session::with(|s| bookmarks::list(&s.library)) else { return };
+    let bookmarks = list
+        .into_iter()
+        .map(|entry| BookmarkView {
+            url: entry.url,
+            title: entry.title,
+            favicon: entry.favicon,
+            added_at: entry.added_at,
+        })
+        .collect();
+    super::publish(&CoreEvent::BookmarksChanged { bookmarks });
+}
+
+/// Diffuse l'historique, filtre par `terms`.
+pub fn publish_history(terms: &str) {
+    let Some((found, total)) = session::with(|s| history::search(&s.library, terms)) else {
+        return;
+    };
+    let entries = found
+        .into_iter()
+        .map(|entry| HistoryEntryView {
+            url: entry.url,
+            title: entry.title,
+            favicon: entry.favicon,
+            visited_at: entry.visited_at,
+            visits: entry.visits,
+        })
+        .collect();
+    super::publish(&CoreEvent::HistoryChanged { entries, total });
+}
+
+/// Diffuse les telechargements.
+pub fn publish_downloads() {
+    let Some(list) = session::with(|s| downloads::list(&s.library)) else { return };
+    let downloads = list.into_iter().map(to_view).collect();
+    super::publish(&CoreEvent::DownloadsChanged { downloads });
+}
+
+fn to_view(entry: downloads::Download) -> DownloadView {
+    DownloadView {
+        id: entry.id,
+        file_name: entry.file_name,
+        url: entry.url,
+        path: entry.path,
+        received: entry.received,
+        total: entry.total,
+        state: match entry.state {
+            downloads::State::Running => DownloadState::Running,
+            downloads::State::Paused => DownloadState::Paused,
+            downloads::State::Complete => DownloadState::Complete,
+            downloads::State::Cancelled => DownloadState::Cancelled,
+            downloads::State::Failed => DownloadState::Failed,
+        },
+        started_at: entry.started_at,
+    }
+}
+
+/// Diffuse les reglages.
+pub fn publish_settings() {
+    let Some(all) = session::with(|s| settings::all(&s.library)) else { return };
+    let settings = all
+        .into_iter()
+        .map(|(key, value)| SettingView { key, value: to_contract(value) })
+        .collect();
+    super::publish(&CoreEvent::SettingsChanged { settings });
+}
+
+fn to_contract(value: settings::Value) -> SettingValue {
+    match value {
+        settings::Value::Flag(on) => SettingValue::Flag(on),
+        settings::Value::Text(text) => SettingValue::Text(text),
+        settings::Value::Number(number) => SettingValue::Number(number),
+    }
+}
+
+fn from_contract(value: &SettingValue) -> settings::Value {
+    match value {
+        SettingValue::Flag(on) => settings::Value::Flag(*on),
+        SettingValue::Text(text) => settings::Value::Text(text.clone()),
+        SettingValue::Number(number) => settings::Value::Number(*number),
+    }
+}
+
+/// Met en favori la page de l'onglet donne.
+pub fn add_bookmark(id: echo_contract::TabId) {
+    let entry = session::with(|s| {
+        let tab = s.tabs.get_mut(id)?;
+        Some((tab.url.clone(), tab.title.clone()))
+    })
+    .flatten();
+    let Some((url, title)) = entry else { return };
+    if url.is_empty() {
+        return;
+    }
+    session::with(|s| bookmarks::add(&s.library, &url, &title, None));
+    publish_bookmarks();
+}
+
+pub fn remove_bookmark(url: &str) {
+    session::with(|s| bookmarks::remove(&s.library, url));
+    publish_bookmarks();
+}
+
+pub fn move_bookmark(url: &str, to: usize) {
+    session::with(|s| bookmarks::move_to(&s.library, url, to));
+    publish_bookmarks();
+}
+
+pub fn remove_history_entry(url: &str, visited_at: i64) {
+    session::with(|s| history::remove(&s.library, url, visited_at));
+    publish_history("");
+}
+
+pub fn clear_history() {
+    session::with(|s| history::clear(&s.library));
+    publish_history("");
+}
+
+/// Enregistre une visite. Appele a chaque page arrivee a son terme.
+pub fn record_visit(url: &str, title: &str) {
+    session::with(|s| history::record(&s.library, url, title, None));
+}
+
+/// Applique un reglage, ou previent l'interface s'il est refuse.
+pub fn update_setting(key: &str, value: &SettingValue) {
+    let outcome = session::with(|s| settings::set(&s.library, key, &from_contract(value)));
+    match outcome {
+        Some(Err(reason)) => {
+            warn!(%reason, "reglage refuse");
+            super::publish(&CoreEvent::Notice {
+                level: echo_contract::NoticeLevel::Error,
+                message: reason,
+            });
+        }
+        _ => publish_settings(),
+    }
+}
+
+pub fn forget_download(id: echo_contract::DownloadId) {
+    session::with(|s| downloads::forget(&s.library, id));
+    publish_downloads();
+}

@@ -120,6 +120,18 @@ wrap_display_handler! {
     }
 
     impl DisplayHandler {
+        /// Le vrai titre de la page, celui que l'onglet et l'historique affichent.
+        fn on_title_change(&self, browser: Option<&mut Browser>, title: Option<&CefString>) {
+            let Some(browser) = browser else { return };
+            let title = title.map(CefString::to_string).unwrap_or_default();
+            crate::bridge::set_tab_title(browser.identifier(), &title);
+        }
+
+        /// La page passe en plein ecran, ou en sort : l'interface doit s'effacer.
+        fn on_fullscreen_mode_change(&self, _browser: Option<&mut Browser>, fullscreen: i32) {
+            crate::bridge::set_fullscreen(fullscreen == 1);
+        }
+
         /// Remonte la console de la page dans le journal : sans elle, une erreur de script
         /// se traduit par une fenetre blanche et aucune trace.
         fn on_console_message(

@@ -21,6 +21,7 @@ pub struct Session {
     pub client: Option<Client>,
     pub tabs: Tabs,
     pub extensions: echo_extensions::Extensions,
+    pub library: std::sync::Arc<echo_library::Library>,
     pub shield: Arc<Shield>,
 }
 

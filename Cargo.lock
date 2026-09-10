@@ -462,6 +462,7 @@ dependencies = [
  "cef",
  "echo-contract",
  "echo-extensions",
+ "echo-library",
  "echo-shield",
  "parking_lot",
  "serde",

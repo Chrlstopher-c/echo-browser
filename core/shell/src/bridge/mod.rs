@@ -4,6 +4,7 @@
 //! rejouees sur le thread interface, seul endroit ou les objets Chromium sont manipulables.
 //! Les evenements repartent par un appel de fonction dans la page.
 
+pub mod library;
 pub mod script;
 
 // Les macros `wrap_*` de CEF exigent les traits `Impl*` et `Wrap*` dans la portee : import global impose.
@@ -124,7 +125,40 @@ fn apply(request: UiRequest) {
             }
             publish_extensions();
         }
+        UiRequest::ExitFullscreen => with_browser(|browser| {
+            if let Some(host) = browser.host() {
+                host.exit_fullscreen(1);
+            }
+        }),
         UiRequest::RestartBrowser => restart_browser(),
+
+        UiRequest::AddBookmark { id } => library::add_bookmark(id),
+        UiRequest::RemoveBookmark { url } => library::remove_bookmark(&url),
+        UiRequest::MoveBookmark { url, to } => library::move_bookmark(&url, to),
+        UiRequest::RemoveHistoryEntry { url, visited_at } => {
+            library::remove_history_entry(&url, visited_at)
+        }
+        UiRequest::ClearHistory => library::clear_history(),
+        UiRequest::SearchHistory { terms } => library::publish_history(&terms),
+        UiRequest::ForgetDownload { id } => library::forget_download(id),
+        UiRequest::UpdateSetting { key, value } => library::update_setting(&key, &value),
+        UiRequest::OpenExtensionManager => {
+            open_tab(echo_extensions::profile::MANAGE_PAGE);
+            publish_tabs();
+        }
+        UiRequest::PinTab { id, pinned } => {
+            session::with(|s| {
+                if let Some(tab) = s.tabs.get_mut(id) {
+                    tab.pinned = pinned;
+                }
+            });
+            publish_tabs();
+        }
+        UiRequest::SetZoom { id, factor } => set_zoom(id, factor),
+        UiRequest::MoveTab { id, to } => {
+            session::with(|s| s.tabs.move_to(id, to));
+            publish_tabs();
+        }
         other => debug!(?other, "demande pas encore traitee"),
     }
 }
@@ -242,6 +276,23 @@ wrap_task! {
     }
 }
 
+/// Change le facteur de zoom d'un onglet.
+fn set_zoom(id: echo_contract::TabId, factor: f32) {
+    let clamped = factor.clamp(0.25, 5.0);
+    let host = session::with(|s| {
+        if let Some(tab) = s.tabs.get_mut(id) {
+            tab.zoom = clamped;
+        }
+        s.tabs.get_mut(id).and_then(|tab| tab.view.browser()).and_then(|b| b.host())
+    })
+    .flatten();
+    if let Some(host) = host {
+        // Chromium raisonne en niveaux, pas en facteurs : chaque niveau vaut 1,2 fois.
+        host.set_zoom_level(f64::from(clamped).log(1.2));
+    }
+    publish_tabs();
+}
+
 /// Applique un raccourci clavier.
 pub fn perform(action: crate::shortcuts::Action) {
     use crate::shortcuts::Action;
@@ -267,11 +318,15 @@ pub fn perform(action: crate::shortcuts::Action) {
         Action::Reload { bypass_cache } => with_browser(|browser| {
             if bypass_cache { browser.reload_ignore_cache() } else { browser.reload() }
         }),
-        Action::FocusAddress => publish(&CoreEvent::Notice {
-            level: echo_contract::NoticeLevel::Info,
-            message: "focus-address".to_string(),
+        Action::FocusAddress => publish(&CoreEvent::FocusAddressRequested),
+        // F11 ne fait que sortir du plein ecran : c'est la page qui y entre, pas nous.
+        Action::ToggleFullscreen => with_browser(|browser| {
+            if let Some(host) = browser.host() {
+                if host.is_fullscreen() == 1 {
+                    host.exit_fullscreen(1);
+                }
+            }
         }),
-        Action::ToggleFullscreen => debug!("plein ecran : pas encore traite"),
     }
 }
 
@@ -388,6 +443,10 @@ pub fn publish_initial_state() {
     publish_tabs();
     publish_shield();
     publish_extensions();
+    library::publish_bookmarks();
+    library::publish_history("");
+    library::publish_downloads();
+    library::publish_settings();
 }
 
 /// Diffuse l'etat courant du bouclier.
@@ -409,7 +468,7 @@ pub fn publish_shield() {
 
 /// Met a jour un onglet a partir de ce que Chromium rapporte, puis previent l'interface.
 pub fn publish_tab(browser_id: i32, url: &str, title: &str, loading: bool) {
-    let changed = session::with(|s| {
+    let known = session::with(|s| {
         let tab = s.tabs.by_browser(browser_id)?;
         tab.url = url.to_string();
         tab.title = if title.is_empty() { url.to_string() } else { title.to_string() };
@@ -417,16 +476,44 @@ pub fn publish_tab(browser_id: i32, url: &str, title: &str, loading: bool) {
         if !loading {
             tab.record_visit(url);
         }
-        Some(())
+        Some(tab.title.clone())
     })
     .flatten();
-    if changed.is_none() {
-        return;
+
+    let Some(title) = known else { return };
+    if !loading {
+        library::record_visit(url, &title);
     }
     publish_tabs();
 }
 
-/// Diffuse la liste complete des onglets et celui qui est actif.
+/// Note le titre rendu par la page, et le repercute dans l'historique.
+pub fn set_tab_title(browser_id: i32, title: &str) {
+    if title.is_empty() {
+        return;
+    }
+    let url = session::with(|s| {
+        let tab = s.tabs.by_browser(browser_id)?;
+        tab.title = title.to_string();
+        Some(tab.url.clone())
+    })
+    .flatten();
+    if let Some(url) = url {
+        library::record_visit(&url, title);
+        publish_tabs();
+    }
+}
+
+/// Signale a l'interface que la page occupe tout l'ecran, ou n'en occupe plus.
+pub fn set_fullscreen(active: bool) {
+    info!(active, "plein ecran");
+    publish(&CoreEvent::FullscreenChanged { active });
+    let chrome = session::with(|s| s.chrome.clone()).flatten();
+    // La bande laterale se replie a zero : sans cela elle resterait posee sur la video.
+    let width = if active { 0 } else { crate::window::CHROME_WIDTH };
+    crate::window::set_chrome_width(width, chrome.as_ref());
+}
+
 pub fn publish_tabs() {
     let Some((tabs, active)) = session::with(|s| (s.tabs.snapshot(), s.tabs.active_id())) else {
         return;

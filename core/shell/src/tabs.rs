@@ -242,6 +242,13 @@ impl Tabs {
         }
     }
 
+    /// Deplace un onglet a une nouvelle position dans la liste.
+    pub fn move_to(&mut self, id: TabId, to: usize) {
+        let Some(from) = self.entries.iter().position(|tab| tab.id == id) else { return };
+        let tab = self.entries.remove(from);
+        self.entries.insert(to.min(self.entries.len()), tab);
+    }
+
     /// Rend a un onglet le fil qu'il avait avant la relance.
     pub fn restore_history(&mut self, id: TabId, history: Vec<String>, position: usize) {
         let Some(tab) = self.get_mut(id) else { return };

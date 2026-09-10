@@ -57,6 +57,7 @@ wrap_browser_process_handler! {
                 extensions: echo_extensions::Extensions::new(flags::extensions_dir())
                     .with_profile(echo_extensions::profile::default_profile(&flags::data_dir())),
                 shield: shield.clone(),
+                library: open_library(),
             });
             restore_or_open();
             crate::selftest::schedule();
@@ -72,6 +73,20 @@ wrap_browser_process_handler! {
 
         fn default_client(&self) -> Option<Client> {
             self.client.borrow().clone()
+        }
+    }
+}
+
+/// Ouvre la bibliotheque. Un echec n'empeche pas de naviguer : mieux vaut un
+/// navigateur sans favoris qu'un navigateur qui refuse de demarrer.
+fn open_library() -> std::sync::Arc<echo_library::Library> {
+    match echo_library::Library::open(&flags::data_dir()) {
+        Ok(library) => std::sync::Arc::new(library),
+        Err(err) => {
+            tracing::warn!(%err, "bibliotheque indisponible, repli en memoire");
+            std::sync::Arc::new(
+                echo_library::Library::in_memory().expect("base en memoire"),
+            )
         }
     }
 }
