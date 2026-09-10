@@ -1,5 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 cd "$(dirname "$0")"
-bash stop.sh
-rm -f logs/*.log
-bash start.sh
+./stop.sh || true
+exec ./start.sh "$@"

@@ -1,0 +1,19 @@
+[package]
+name = "echo-shell"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Coque du navigateur : fenetre, processus Chromium, disposition interface et contenu"
+
+[[bin]]
+name = "echo-browser"
+path = "src/main.rs"
+
+[dependencies]
+cef = "152"
+echo-contract.workspace = true
+echo-shield.workspace = true
+anyhow.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
+parking_lot.workspace = true
