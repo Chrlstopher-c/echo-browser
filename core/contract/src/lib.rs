@@ -24,6 +24,8 @@ pub enum UiRequest {
     SetShieldEnabled { enabled: bool },
     RefreshFilterLists { force: bool },
     OpenDevTools { id: TabId },
+    /// L'interface reclame une hauteur : le coeur repositionne la vue du contenu sous elle.
+    SetChromeHeight { pixels: u32 },
 }
 
 /// Ce que le coeur renvoie a l'interface.

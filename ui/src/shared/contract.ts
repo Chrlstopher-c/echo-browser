@@ -17,6 +17,8 @@ export type UiRequest =
   | { kind: 'setShieldEnabled'; enabled: boolean }
   | { kind: 'refreshFilterLists'; force: boolean }
   | { kind: 'openDevTools'; id: TabId }
+  /** L'interface reclame une hauteur : le coeur repositionne la vue du contenu sous elle. */
+  | { kind: 'setChromeHeight'; pixels: number }
 
 /** Ce que le coeur renvoie a l'interface. */
 export type CoreEvent =
