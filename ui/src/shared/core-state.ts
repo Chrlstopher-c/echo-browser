@@ -21,6 +21,16 @@ export interface CoreState {
   restartPending: boolean
   /** Raison de la relance en cours, ou null tant que le navigateur tourne normalement. */
   restarting: string | null
+  /** Resultat de la derniere installation, ou null si aucune n'a encore abouti. */
+  install: InstallOutcome | null
+}
+
+/** Ce que le coeur repond a une demande d'installation. */
+export interface InstallOutcome {
+  source: string
+  ok: boolean
+  reason: string | null
+  at: number
 }
 
 export const EMPTY_CORE_STATE: CoreState = {
@@ -32,6 +42,7 @@ export const EMPTY_CORE_STATE: CoreState = {
   extensions: [],
   restartPending: false,
   restarting: null,
+  install: null,
 }
 
 function withShield(state: CoreState, id: TabId, view: ShieldView): CoreState {
@@ -56,6 +67,18 @@ export function reduceCore(state: CoreState, event: CoreEvent): CoreState {
       return { ...state, extensions: event.extensions, restartPending: event.restartPending }
     case 'restarting':
       return { ...state, restarting: event.reason }
+    case 'installFinished':
+      return event.ok
+        ? { ...state, install: { source: event.source, ok: true, reason: null, at: Date.now() } }
+        : {
+            ...state,
+            install: { source: event.source, ok: false, reason: event.reason, at: Date.now() },
+            notice: {
+              level: 'error',
+              message: event.reason ?? "L'installation a échoué",
+              at: Date.now(),
+            },
+          }
   }
 }
 

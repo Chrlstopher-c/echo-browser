@@ -42,6 +42,8 @@ export type CoreEvent =
   | { kind: 'extensionsChanged'; extensions: ExtensionView[]; restartPending: boolean }
   /** Le navigateur va se relancer : l'interface montre son ecran d'attente. */
   | { kind: 'restarting'; reason: string }
+  /** Une installation s'est terminee, reussie ou non. */
+  | { kind: 'installFinished'; source: string; ok: boolean; reason: string | null }
 
 /** L'etat d'un onglet tel que l'interface l'affiche. */
 export interface TabView {

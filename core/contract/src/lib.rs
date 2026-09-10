@@ -56,6 +56,13 @@ pub enum CoreEvent {
     },
     /// Le navigateur va se relancer : l'interface montre son ecran d'attente.
     Restarting { reason: String },
+    /// Une installation s'est terminee, reussie ou non. Sans cet accuse, l'interface
+    /// ne peut qu'attendre que l'inventaire bouge, et tourne dans le vide en cas d'echec.
+    InstallFinished {
+        source: String,
+        ok: bool,
+        reason: Option<String>,
+    },
 }
 
 /// L'etat d'un onglet tel que l'interface l'affiche.

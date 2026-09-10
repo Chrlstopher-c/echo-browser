@@ -15,9 +15,24 @@ static REQUESTED: AtomicBool = AtomicBool::new(false);
 /// Ce qu'on retrouve apres la relance.
 #[derive(Debug, Default, Serialize, Deserialize)]
 pub struct Snapshot {
-    pub urls: Vec<String>,
-    /// Position de l'onglet actif dans `urls`.
+    pub tabs: Vec<TabSnapshot>,
+    /// Position de l'onglet actif dans `tabs`.
     pub active: usize,
+}
+
+/// Un onglet et son fil de navigation.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TabSnapshot {
+    pub history: Vec<String>,
+    /// Position courante dans `history`.
+    pub position: usize,
+}
+
+impl TabSnapshot {
+    /// L'adresse a rouvrir.
+    pub fn current(&self) -> Option<&str> {
+        self.history.get(self.position).map(String::as_str)
+    }
 }
 
 fn snapshot_path(data_dir: &Path) -> PathBuf {
@@ -34,7 +49,12 @@ pub fn save(data_dir: &Path, snapshot: &Snapshot) {
             if let Err(err) = std::fs::write(snapshot_path(data_dir), bytes) {
                 warn!(%err, "onglets non enregistres, ils seront perdus a la relance");
             } else {
-                info!(onglets = snapshot.urls.len(), "onglets enregistres pour la relance");
+                let pages: usize = snapshot.tabs.iter().map(|tab| tab.history.len()).sum();
+                info!(
+                    onglets = snapshot.tabs.len(),
+                    pages,
+                    "onglets enregistres pour la relance"
+                );
             }
         }
         Err(err) => warn!(%err, "onglets non serialisables"),
@@ -48,8 +68,8 @@ pub fn take(data_dir: &Path) -> Option<Snapshot> {
     let text = std::fs::read_to_string(&path).ok()?;
     let _ = std::fs::remove_file(&path);
     match serde_json::from_str::<Snapshot>(&text) {
-        Ok(snapshot) if !snapshot.urls.is_empty() => {
-            info!(onglets = snapshot.urls.len(), "reprise des onglets");
+        Ok(snapshot) if !snapshot.tabs.is_empty() => {
+            info!(onglets = snapshot.tabs.len(), "reprise des onglets");
             Some(snapshot)
         }
         Ok(_) => None,

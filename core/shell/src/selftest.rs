@@ -16,6 +16,7 @@ pub fn schedule() {
     info!("autotest arme : ouverture puis fermeture d'onglet");
     plan(6_000, Step::Open);
     plan(11_000, Step::Close);
+    plan(13_000, Step::Browse);
     plan(15_000, Step::Report);
     if std::env::var_os("ECHO_SELFTEST_RESTART").is_some() {
         plan(18_000, Step::Restart);
@@ -28,6 +29,7 @@ enum Step {
     Close,
     Report,
     Restart,
+    Browse = 4,
 }
 
 fn plan(delay_ms: i64, step: Step) {
@@ -54,6 +56,10 @@ wrap_task! {
                     if let Some(id) = victim {
                         crate::bridge::close_tab(id);
                     }
+                }
+                4 => {
+                    info!("autotest : navigation pour remplir le fil");
+                    crate::bridge::submit(br#"{"kind":"navigate","id":0,"input":"example.com"}"#);
                 }
                 2 => {
                     let count = crate::session::with(|s| s.tabs.snapshot().len()).unwrap_or(0);

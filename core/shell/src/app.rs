@@ -82,8 +82,14 @@ fn restore_or_open() {
         crate::bridge::open_tab(&home_url());
         return;
     };
-    for url in &snapshot.urls {
+    for tab in &snapshot.tabs {
+        let Some(url) = tab.current() else { continue };
         crate::bridge::open_tab(url);
+        let opened = crate::session::with(|s| s.tabs.active_id()).flatten();
+        if let Some(id) = opened {
+            let (history, position) = (tab.history.clone(), tab.position);
+            crate::session::with(|s| s.tabs.restore_history(id, history, position));
+        }
     }
     let restored = crate::session::with(|s| {
         s.tabs.snapshot().get(snapshot.active).map(|tab| tab.id)

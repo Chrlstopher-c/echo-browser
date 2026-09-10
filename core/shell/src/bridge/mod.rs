@@ -60,8 +60,8 @@ fn drain() {
 fn apply(request: UiRequest) {
     match request {
         UiRequest::Navigate { input, .. } => navigate(&normalize(&input)),
-        UiRequest::GoBack { .. } => with_browser(|browser| browser.go_back()),
-        UiRequest::GoForward { .. } => with_browser(|browser| browser.go_forward()),
+        UiRequest::GoBack { .. } => travel(false),
+        UiRequest::GoForward { .. } => travel(true),
         UiRequest::Reload { bypass_cache, .. } => with_browser(|browser| {
             if bypass_cache { browser.reload_ignore_cache() } else { browser.reload() }
         }),
@@ -96,15 +96,20 @@ fn apply(request: UiRequest) {
         }
         UiRequest::InstallExtension { source } => {
             let outcome = session::with(|s| s.extensions.install(&source));
-            match outcome {
+            let (ok, reason) = match outcome {
                 Some(Ok(extension)) => {
                     info!(nom = %extension.name, "extension installee");
                     mark_restart_needed();
+                    (true, None)
                 }
-                Some(Err(err)) => notify_error(&format!("installation impossible : {err}")),
-                None => (),
-            }
+                Some(Err(err)) => {
+                    warn!(%err, "installation impossible");
+                    (false, Some(err.to_string()))
+                }
+                None => (false, Some("navigateur indisponible".to_string())),
+            };
             publish_extensions();
+            publish(&CoreEvent::InstallFinished { source, ok, reason });
         }
         UiRequest::RemoveExtension { id } => {
             let outcome = session::with(|s| s.extensions.remove(&id));
@@ -196,18 +201,7 @@ pub fn publish_extensions() {
 /// Enregistre les onglets, previent l'interface, puis relance apres un court delai
 /// pour lui laisser le temps d'afficher son ecran d'attente.
 pub fn restart_browser() {
-    let snapshot = session::with(|s| {
-        let tabs = s.tabs.snapshot();
-        let active = s
-            .tabs
-            .active_id()
-            .and_then(|id| tabs.iter().position(|tab| tab.id == id))
-            .unwrap_or(0);
-        crate::restart::Snapshot {
-            urls: tabs.into_iter().map(|tab| tab.url).filter(|url| !url.is_empty()).collect(),
-            active,
-        }
-    });
+    let snapshot = session::with(|s| s.tabs.to_snapshot());
     if let Some(snapshot) = snapshot {
         crate::restart::save(&crate::flags::data_dir(), &snapshot);
     }
@@ -280,6 +274,40 @@ fn cycle_tab(step: isize) {
     session::with(|s| s.tabs.select(ids[next]));
     publish_tabs();
     publish_shield();
+}
+
+/// Recule ou avance dans l'onglet actif. Passe par Chromium quand il le peut, sinon
+/// rejoue notre propre fil — c'est le cas apres une relance, ou son historique est neuf.
+fn travel(forward: bool) {
+    let plan = session::with(|s| {
+        let browser = s.tabs.active().and_then(|tab| tab.view.browser());
+        let native = browser
+            .map(|b| if forward { b.can_go_forward() == 1 } else { b.can_go_back() == 1 })
+            .unwrap_or(false);
+        if native {
+            return Some(None);
+        }
+        let tab = s.tabs.active()?;
+        let url = if forward { tab.next_url() } else { tab.previous_url() }?.to_string();
+        Some(Some(url))
+    })
+    .flatten();
+
+    match plan {
+        Some(None) => with_browser(|browser| if forward { browser.go_forward() } else { browser.go_back() }),
+        Some(Some(url)) => {
+            session::with(|s| {
+                if let Some(id) = s.tabs.active_id() {
+                    if let Some(tab) = s.tabs.get_mut(id) {
+                        tab.step(forward);
+                    }
+                }
+            });
+            debug!(%url, forward, "reprise du fil de navigation");
+            navigate(&url);
+        }
+        None => debug!("aucun deplacement possible"),
+    }
 }
 
 fn with_browser(action: impl FnOnce(&Browser)) {
@@ -382,6 +410,9 @@ pub fn publish_tab(browser_id: i32, url: &str, title: &str, loading: bool) {
         tab.url = url.to_string();
         tab.title = if title.is_empty() { url.to_string() } else { title.to_string() };
         tab.loading = loading;
+        if !loading {
+            tab.record_visit(url);
+        }
         Some(())
     })
     .flatten();

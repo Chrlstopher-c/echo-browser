@@ -15,15 +15,55 @@ pub struct Tab {
     pub title: String,
     pub url: String,
     pub loading: bool,
+    /// Fil des pages visitees dans cet onglet, du plus ancien au plus recent.
+    ///
+    /// Chromium tient le sien, mais ne permet pas de le rendre a un onglet neuf : apres
+    /// une relance, le bouton precedent repartirait de zero. Celui-ci survit, au prix
+    /// d'un rechargement de la page au lieu d'un retour instantane.
+    pub history: Vec<String>,
+    /// Position courante dans `history`.
+    pub position: usize,
+}
+
+impl Tab {
+    /// Enregistre une page atteinte. Ignore un rechargement de la meme adresse.
+    pub fn record_visit(&mut self, url: &str) {
+        if url.is_empty() || self.history.get(self.position).map(String::as_str) == Some(url) {
+            return;
+        }
+        self.history.truncate(self.position + 1);
+        self.history.push(url.to_string());
+        self.position = self.history.len() - 1;
+    }
+
+    /// Adresse precedente dans notre fil, si Chromium ne peut pas y retourner lui-meme.
+    pub fn previous_url(&self) -> Option<&str> {
+        self.position.checked_sub(1).and_then(|index| self.history.get(index)).map(String::as_str)
+    }
+
+    /// Adresse suivante dans notre fil.
+    pub fn next_url(&self) -> Option<&str> {
+        self.history.get(self.position + 1).map(String::as_str)
+    }
+
+    pub fn step(&mut self, forward: bool) {
+        if forward {
+            self.position = (self.position + 1).min(self.history.len().saturating_sub(1));
+        } else {
+            self.position = self.position.saturating_sub(1);
+        }
+    }
 }
 
 impl Tab {
     fn to_view(&self) -> TabView {
-        let (can_go_back, can_go_forward) = self
+        let (native_back, native_forward) = self
             .view
             .browser()
             .map(|browser| (browser.can_go_back() == 1, browser.can_go_forward() == 1))
             .unwrap_or((false, false));
+        let can_go_back = native_back || self.previous_url().is_some();
+        let can_go_forward = native_forward || self.next_url().is_some();
         TabView {
             id: self.id,
             title: self.title.clone(),
@@ -110,6 +150,8 @@ impl Tabs {
             title: url.to_string(),
             url: url.to_string(),
             loading: true,
+            history: vec![url.to_string()],
+            position: 0,
         });
         self.select(id);
         debug!(id, %url, "onglet ouvert");
@@ -166,6 +208,33 @@ impl Tabs {
 
     pub fn get_mut(&mut self, id: TabId) -> Option<&mut Tab> {
         self.entries.iter_mut().find(|tab| tab.id == id)
+    }
+
+    /// Tout ce qu'il faut pour retrouver les onglets apres une relance.
+    pub fn to_snapshot(&self) -> crate::restart::Snapshot {
+        let active = self
+            .active
+            .and_then(|id| self.entries.iter().position(|tab| tab.id == id))
+            .unwrap_or(0);
+        crate::restart::Snapshot {
+            tabs: self
+                .entries
+                .iter()
+                .filter(|tab| !tab.history.is_empty())
+                .map(|tab| crate::restart::TabSnapshot {
+                    history: tab.history.clone(),
+                    position: tab.position,
+                })
+                .collect(),
+            active,
+        }
+    }
+
+    /// Rend a un onglet le fil qu'il avait avant la relance.
+    pub fn restore_history(&mut self, id: TabId, history: Vec<String>, position: usize) {
+        let Some(tab) = self.get_mut(id) else { return };
+        tab.position = position.min(history.len().saturating_sub(1));
+        tab.history = history;
     }
 
     /// L'etat de tous les onglets, dans l'ordre d'affichage.

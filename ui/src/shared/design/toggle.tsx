@@ -10,7 +10,7 @@ export interface ToggleProps {
 }
 
 export function Toggle({ checked, onChange, label, disabled = false }: ToggleProps): ReactElement {
-  const track = checked ? 'bg-guard' : 'bg-edge'
+  const track = checked ? 'bg-guard' : 'bg-hairline'
   return (
     <button
       type="button"
@@ -20,7 +20,7 @@ export function Toggle({ checked, onChange, label, disabled = false }: TogglePro
       disabled={disabled}
       onClick={() => onChange(!checked)}
       className={`relative h-[18px] w-8 shrink-0 rounded-full transition-colors duration-150
-        ${disabled ? 'bg-edge/40 cursor-default' : track}`}
+        ${disabled ? 'bg-hairline/40 cursor-default' : track}`}
     >
       <span
         className={`absolute top-[2px] size-[14px] rounded-full bg-ink shadow-sm transition-[left] duration-150
