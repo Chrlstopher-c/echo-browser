@@ -44,11 +44,27 @@ pub fn apply(process_type: &str, command_line: &mut CommandLine) {
     // fenetre et la laisse flotter. C'est aussi ce qui porte l'icone dans la barre des taches.
     switch_with_value(command_line, "class", APP_ID);
 
+    if aucun_proxy_declare() {
+        command_line.append_switch(Some(&CefString::from("no-proxy-server")));
+    }
+
     let loadable = echo_extensions::Extensions::new(extensions_dir()).loadable();
     if !loadable.is_empty() {
         switch_with_value(command_line, "load-extension", &loadable.join(","));
         tracing::info!(nombre = loadable.len(), "extensions chargees au demarrage");
     }
+}
+
+/// Vrai quand rien, dans l'environnement, ne declare de proxy.
+///
+/// Sans cette indication, Chromium interroge au demarrage un service de configuration
+/// que cette machine n'a pas, et la premiere page echoue avant d'etre reprise :
+/// `ERR_PROXY_CONNECTION_FAILED` a chaque lancement, sur la page d'accueil. Un proxy
+/// declare par variable d'environnement reste evidemment honore.
+fn aucun_proxy_declare() -> bool {
+    const VARIABLES: [&str; 6] =
+        ["http_proxy", "https_proxy", "all_proxy", "HTTP_PROXY", "HTTPS_PROXY", "ALL_PROXY"];
+    VARIABLES.iter().all(|nom| std::env::var_os(nom).is_none())
 }
 
 fn switch_with_value(command_line: &mut CommandLine, name: &str, value: &str) {

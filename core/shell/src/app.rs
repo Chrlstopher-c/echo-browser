@@ -59,7 +59,6 @@ wrap_browser_process_handler! {
                 shield: shield.clone(),
                 library: open_library(),
             });
-            restore_or_open();
             crate::selftest::schedule();
             crate::overlay::arm_test();
 
@@ -70,6 +69,13 @@ wrap_browser_process_handler! {
                 ShowState::NORMAL,
             );
             cef::window_create_top_level(Some(&mut delegate));
+
+            // La premiere page n'est demandee qu'une fois la fenetre debout. Navigure
+            // plus tot, elle partait avant que Chromium ait fini d'etablir sa pile
+            // reseau : la page d'accueil echouait a chaque lancement sur un
+            // `ERR_PROXY_CONNECTION_FAILED`, puis se rechargeait — le temps perdu se
+            // voyait a l'ecran.
+            restore_or_open();
         }
 
         fn default_client(&self) -> Option<Client> {

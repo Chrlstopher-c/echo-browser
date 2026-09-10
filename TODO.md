@@ -112,6 +112,18 @@ passe existent sur le disque. Ce qui n'est pas établi, c'est le chemin complet 
 
 ---
 
+## À élucider — la première page échoue à chaque lancement
+
+`ERR_PROXY_CONNECTION_FAILED` sur la page d'accueil, une fois par démarrage, puis la page
+se recharge et s'affiche. Aucun proxy n'est configuré sur la machine (`gsettings` dit
+« none », aucune variable d'environnement). Deux pistes écartées par la mesure : le
+drapeau `--no-proxy-server` ne change rien, retarder la navigation après l'ouverture de
+la fenêtre non plus. Reste le service réseau de Chromium, qui n'est peut-être pas encore
+debout à la première requête.
+
+- [ ] Mesurer le temps réellement perdu entre l'échec et l'affichage
+- [ ] Si c'est le service réseau : attendre son signal plutôt que de naviguer à l'aveugle
+
 ## Reste du chantier, hors retour du jour
 
 - [ ] Pagination de l'historique (`searchHistory` sans décalage : soixante entrées au plus)
