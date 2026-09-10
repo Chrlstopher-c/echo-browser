@@ -10,8 +10,8 @@ fn main() -> anyhow::Result<()> {
     let extensions = Extensions::new(&root);
 
     if let Some(target) = std::env::args().nth(1) {
-        let installed = extensions.install(&target)?;
-        println!("installee : {} v{} ({})", installed.name, installed.version, installed.id);
+        let id = extensions.install(&target)?;
+        println!("declaree : {id} — Chromium l'installe au prochain demarrage");
     }
 
     println!("\n== INVENTAIRE ==");
