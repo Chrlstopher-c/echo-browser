@@ -69,6 +69,23 @@ pleins et une page qui épouse exactement son cadre.
 - [ ] Liseré continu, de la même épaisseur sur les quatre côtés
 - [ ] Aucun débordement de la page sous la bordure
 
+## 6 bis. Les fenêtres d'extension — **ultra important** (retour du 10/09)
+
+Proton Pass est installé et actif, mais rien ne permet de l'ouvrir : le panneau des extensions
+ne fait que lister et activer. Une extension moderne vit dans sa fenêtre — celle de Proton Pass
+est le gestionnaire de mots de passe lui-même. Sans elle, l'extension est décorative.
+
+- [ ] Barre d'icônes d'extensions près de l'adresse, une par extension qui en déclare une
+- [ ] Icône réelle de l'extension, et sa pastille de compteur quand elle en pose une
+- [ ] Clic : la fenêtre de l'extension s'ouvre ancrée sous son icône, à la bonne taille
+- [ ] La fenêtre se ferme au clic ailleurs, à Échap, et se redimensionne à la demande de la page
+- [ ] Épinglage : choisir les icônes visibles, les autres dans un dépassement
+- [ ] Le menu de l'icône : options de l'extension, retirer, gérer
+- [ ] Les extensions qui n'ont pas de fenêtre déclenchent leur action au clic
+
+Technique : la fenêtre d'une extension est une page `chrome-extension://<id>/…`. Elle s'affiche
+dans une vue superposée (chantier 7), ancrée sous l'icône.
+
 ## 7. Vues superposées — le socle technique des chantiers 2, 3, 5 et 6
 
 Ce qui manquait jusqu'ici : rien ne pouvait s'afficher **au-dessus** de la page, la vue web
@@ -77,7 +94,8 @@ librement au-dessus de la page, dont on pilote position, taille et visibilité.
 
 - [ ] Vue superposée transparente chargée en `echo://`, à établir d'abord sur un cas simple
 - [ ] Un canal de rendu partagé avec l'interface principale (même contrat, même thème)
-- [ ] S'en servir pour : menu contextuel, palette du nouvel onglet, rail flottant, masques d'angle
+- [ ] S'en servir pour : menu contextuel, palette du nouvel onglet, rail flottant, masques
+      d'angle, **fenêtres d'extension**
 
 ## 8. Ce qui doit être réellement conservé d'une session à l'autre
 

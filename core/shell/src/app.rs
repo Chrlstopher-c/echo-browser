@@ -61,6 +61,7 @@ wrap_browser_process_handler! {
             });
             restore_or_open();
             crate::selftest::schedule();
+            crate::overlay::arm_test();
 
             let mut delegate = window::BrowserWindowDelegate::new(
                 RefCell::new(chrome_view),

@@ -12,6 +12,7 @@ mod filtering;
 mod flags;
 mod identity;
 mod injection;
+mod overlay;
 mod presence;
 mod selftest;
 mod restart;

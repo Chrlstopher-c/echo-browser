@@ -62,8 +62,13 @@ fn repondre(mut flux: TcpStream, page: &str) {
          Content-Length: {}\r\nConnection: close\r\nCache-Control: no-store\r\n\r\n",
         page.len()
     );
+    // Le centre de controle sonde chaque seconde et raccroche sans lire : le tuyau rompu
+    // est le cas normal, pas une panne. L'avertir remplissait le journal d'une ligne par
+    // seconde.
     if let Err(erreur) = flux.write_all(entete.as_bytes()).and_then(|_| flux.write_all(page.as_bytes())) {
-        warn!(%erreur, "reponse de presence non ecrite");
+        if erreur.kind() != std::io::ErrorKind::BrokenPipe {
+            warn!(%erreur, "reponse de presence non ecrite");
+        }
     }
 }
 

@@ -41,6 +41,11 @@ pub fn set_chrome_width(pixels: i32, chrome: Option<&BrowserView>) {
 /// Titre porte par la fenetre. Le nom du projet ne s'affiche nulle part dans l'application.
 const WINDOW_TITLE: &str = "Navigateur";
 
+/// Teinte posee avant que l'interface ne se charge : sans elle, la marge autour de la page
+/// est noire pendant tout le demarrage, puis saute a la couleur de l'espace. C'est la valeur
+/// plate de l'espace par defaut (`shell` de « graphite », ui/src/spaces/space-palette.ts).
+const DEFAULT_SHELL: u32 = 0xFF14_1517;
+
 const INITIAL_WIDTH: i32 = 1440;
 const INITIAL_HEIGHT: i32 = 900;
 
@@ -83,6 +88,7 @@ wrap_window_delegate! {
                 }
             }
 
+            View::from(&*window).set_background_color(DEFAULT_SHELL);
             window.set_title(Some(&CefString::from(WINDOW_TITLE)));
             window.show();
             info!(contenu = host.is_some(), "fenetre du navigateur affichee");
@@ -177,15 +183,27 @@ wrap_browser_view_delegate! {
 
 /// Peint le cadre autour de la page avec la teinte de l'espace courant, pour que la
 /// marge se fonde avec la barre laterale au lieu de trancher.
+///
+/// La marge appartient a la **fenetre**, pas au conteneur de la page : la disposition la
+/// pose en retrait interieur, et le conteneur est entierement recouvert par la vue web.
+/// Peindre le seul conteneur ne se voyait donc nulle part, et la gouttiere restait noire —
+/// deux blocs poses cote a cote au lieu d'une fenetre. Mesure le 2026-09-10, capture a
+/// l'appui.
 pub fn set_accent(color: &str, host: Option<&Panel>) {
     let Some(argb) = parse_hex_color(color) else {
         debug!(%color, "teinte illisible, ignoree");
         return;
     };
-    if let Some(host) = host {
-        View::from(host).set_background_color(argb);
-    }
-    debug!(%color, "teinte du cadre");
+    let Some(host) = host else { return };
+    let view = View::from(host);
+    view.set_background_color(argb);
+    let Some(window) = view.window() else {
+        debug!(%color, "fenetre injoignable, seule la marge interieure est peinte");
+        return;
+    };
+    View::from(&window).set_background_color(argb);
+    window.invalidate_layout();
+    debug!(%color, "teinte de la fenetre et du cadre");
 }
 
 /// Lit une couleur `#rrggbb` ou `#aarrggbb` et la rend au format attendu par Chromium.
@@ -238,4 +256,25 @@ pub fn create_chrome_view(client: Option<&mut Client>, url: &str) -> Option<Brow
     // l'infrastructure d'onglets du vrai Chrome et fait planter le processus dans
     // tabs::TabInterface::GetFromContents. Mesure le 2026-09-10, pile a l'appui.
     create_view(client, url, 1)
+}
+
+// Delegue des vues posees au-dessus de la page. Leur taille est imposee par l'appelant :
+// une surimpression n'a pas de place a negocier avec la disposition.
+wrap_browser_view_delegate! {
+    pub struct OverlayViewDelegate {
+        width: i32,
+        height: i32,
+    }
+
+    impl ViewDelegate {
+        fn preferred_size(&self, _view: Option<&mut View>) -> Size {
+            Size { width: self.width, height: self.height }
+        }
+    }
+
+    impl BrowserViewDelegate {
+        fn browser_runtime_style(&self) -> RuntimeStyle {
+            RuntimeStyle::ALLOY
+        }
+    }
 }
