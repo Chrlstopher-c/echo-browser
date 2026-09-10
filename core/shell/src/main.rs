@@ -14,6 +14,7 @@ mod identity;
 mod injection;
 mod selftest;
 mod restart;
+mod search;
 mod session;
 mod shortcuts;
 mod tabs;

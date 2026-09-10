@@ -15,8 +15,7 @@ use tracing::{debug, info, warn};
 
 use crate::session;
 
-/// Page ouverte dans un nouvel onglet.
-const HOME_URL: &str = "https://www.qwant.com/";
+use crate::search;
 
 /// File des demandes venues de l'interface. Remplie depuis le thread reseau, videe sur
 /// le thread interface : seul du texte la traverse, jamais un objet Chromium.
@@ -76,7 +75,7 @@ fn apply(request: UiRequest) {
             publish_shield();
         }
         UiRequest::NewTab { url } => {
-            let target = url.map(|u| normalize(&u)).unwrap_or_else(|| HOME_URL.to_string());
+            let target = url.map(|u| normalize(&u)).unwrap_or_else(|| search::HOME.to_string());
             open_tab(&target);
             publish_tabs();
         }
@@ -244,7 +243,7 @@ pub fn perform(action: crate::shortcuts::Action) {
     use crate::shortcuts::Action;
     match action {
         Action::NewTab => {
-            open_tab(HOME_URL);
+            open_tab(search::HOME);
             publish_tabs();
         }
         Action::CloseTab => {
@@ -356,20 +355,7 @@ pub fn normalize(input: &str) -> String {
     if looks_like_host {
         return format!("https://{trimmed}");
     }
-    format!("https://www.qwant.com/?q={}", urlencode(trimmed))
-}
-
-fn urlencode(value: &str) -> String {
-    value
-        .bytes()
-        .map(|b| match b {
-            b'A'..=b'Z' | b'a'..=b'z' | b'0'..=b'9' | b'-' | b'_' | b'.' | b'~' => {
-                (b as char).to_string()
-            }
-            b' ' => "+".to_string(),
-            other => format!("%{other:02X}"),
-        })
-        .collect()
+    search::query_url(trimmed)
 }
 
 fn current_url() -> String {
@@ -457,13 +443,13 @@ mod tests {
 
     #[test]
     fn des_mots_deviennent_une_recherche() {
-        assert!(normalize("chat mignon").starts_with("https://www.qwant.com/?q="));
+        assert!(normalize("chat mignon").starts_with("https://www.google.com/search?q="));
         assert!(normalize("chat mignon").contains("chat+mignon"));
         assert!(normalize("rust cef").contains("rust+cef"));
     }
 
     #[test]
     fn un_mot_seul_sans_point_est_une_recherche() {
-        assert!(normalize("meteo").starts_with("https://www.qwant.com/?q="));
+        assert!(normalize("meteo").starts_with("https://www.google.com/search?q="));
     }
 }
