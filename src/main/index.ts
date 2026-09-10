@@ -371,6 +371,7 @@ async function createWindow(): Promise<void> {
   })
 
   browserSession = session.fromPartition(BROWSER_PARTITION)
+  browserSession.setUserAgent(CHROME_UA)
   blocker = await createAdBlocker(browserSession)
 
   browserSession.webRequest.onBeforeSendHeaders((details, callback) => {
@@ -379,6 +380,12 @@ async function createWindow(): Promise<void> {
     h['sec-ch-ua'] = '"Not(A:Brand";v="99", "Google Chrome";v="133", "Chromium";v="133"'
     h['sec-ch-ua-mobile'] = '?0'
     h['sec-ch-ua-platform'] = '"Linux"'
+    h['sec-ch-ua-arch'] = '"x86"'
+    h['sec-ch-ua-bitness'] = '"64"'
+    h['sec-ch-ua-full-version-list'] = '"Not(A:Brand";v="99.0.0.0", "Google Chrome";v="133.0.6943.53", "Chromium";v="133.0.6943.53"'
+    h['sec-ch-ua-model'] = '""'
+    h['sec-ch-ua-platform-version'] = '"6.1.0"'
+    h['sec-ch-ua-wow64'] = '?0'
     delete h['X-Requested-With']
     callback({ requestHeaders: h })
   })
@@ -403,6 +410,7 @@ async function createWindow(): Promise<void> {
 // Disable automation fingerprinting — prevents Google/Gmail "not secure" detection
 app.commandLine.appendSwitch('disable-blink-features', 'AutomationControlled')
 app.commandLine.appendSwitch('disable-features', 'AutofillEnableAccountStorage')
+app.userAgentFallback = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36'
 
 app.whenReady().then(createWindow)
 app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit() })
