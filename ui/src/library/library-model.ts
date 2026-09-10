@@ -35,12 +35,6 @@ export interface LibraryContent {
 
 export const EMPTY_LIBRARY: LibraryContent = { bookmarks: [], history: [], downloads: [] }
 
-export const SECTION_TITLE: Record<LibrarySection, string> = {
-  bookmarks: 'Favoris',
-  history: 'Historique',
-  downloads: 'Téléchargements',
-}
-
 /** Heure courte d'une visite, pour la colonne de droite de l'historique. */
 export function shortTime(timestamp: number): string {
   return new Date(timestamp).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })

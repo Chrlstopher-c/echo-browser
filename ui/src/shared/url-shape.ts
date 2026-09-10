@@ -1,5 +1,7 @@
 // Responsabilite : lecture d'une URL pour l'affichage — hote, schema, sortie du champ d'adresse.
 
+import type { Security } from './contract'
+
 export type UrlSafety = 'secure' | 'insecure' | 'local' | 'blank'
 
 export interface UrlShape {
@@ -39,4 +41,12 @@ export function looksLikeUrl(input: string): boolean {
   if (/^[a-z][a-z0-9+.-]*:\/\//i.test(value)) return true
   if (value.startsWith('about:') || value.startsWith('file:')) return true
   return /^[^./]+(\.[^./]+)+(\/|$|:\d)/.test(value)
+}
+
+/** Etat de securite deduit de l'URL — reserve au faux coeur, le vrai le connait. */
+export function securityOf(url: string): Security {
+  const safety = readUrl(url).safety
+  if (safety === 'secure') return 'secure'
+  if (safety === 'insecure') return 'insecure'
+  return 'local'
 }

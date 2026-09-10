@@ -2,12 +2,15 @@
 // Aucune logique metier reelle ici — il ne fait que rejouer des evenements plausibles.
 
 import type { CoreBridge, CoreEvent, ShieldView, TabId, TabView, UiRequest } from './contract'
-import { fallbackTitle, looksLikeUrl } from './url-shape'
+import { fallbackTitle, looksLikeUrl, securityOf } from './url-shape'
 
 const LOAD_STEPS = 14
 const LOAD_TICK_MS = 90
 const SEARCH_PREFIX = 'https://duckduckgo.com/?q='
 const HOME_URL = 'https://anthropic.com/'
+
+/** Onglets ouverts au demarrage du faux coeur, pour juger la barre avec du contenu. */
+const SEED_URLS = [HOME_URL, 'https://github.com/', 'http://neverssl.com/', 'https://developer.mozilla.org/']
 
 function toUrl(input: string): string {
   const value = input.trim()
@@ -25,6 +28,7 @@ function blankTab(id: TabId, url: string): TabView {
     canGoBack: false,
     canGoForward: false,
     favicon: null,
+    security: securityOf(url),
   }
 }
 
@@ -40,7 +44,8 @@ class FakeCore implements CoreBridge {
   private listeners = new Set<(event: CoreEvent) => void>()
 
   constructor() {
-    this.openTab(HOME_URL)
+    for (const url of SEED_URLS) this.openTab(url)
+    this.active = this.tabs[0]?.id ?? null
   }
 
   public subscribe(listener: (event: CoreEvent) => void): () => void {
@@ -142,7 +147,7 @@ class FakeCore implements CoreBridge {
   private navigate(id: TabId, url: string): void {
     const site = this.siteOf(id)
     site.blockedHere = 0
-    this.patch(id, { url, title: fallbackTitle(url), canGoBack: true, favicon: null })
+    this.patch(id, { url, title: fallbackTitle(url), canGoBack: true, favicon: null, security: securityOf(url) })
     this.startLoading(id)
   }
 

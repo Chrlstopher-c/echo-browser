@@ -1,4 +1,6 @@
-/* Responsabilite : systeme de design d'Echo Browser — jetons semantiques, dark only. */
+/* Responsabilite : systeme de design d'Echo Browser — jetons semantiques. Les couleurs sont
+   surchargees a l'execution par l'espace courant (voir spaces/space-palette.ts) ; les valeurs
+   ci-dessous sont celles de l'espace par defaut, « graphite ». */
 @import 'tailwindcss';
 
 @import '@fontsource-variable/ibm-plex-sans/wght.css';
@@ -11,34 +13,35 @@
   --font-sans: 'IBM Plex Sans Variable', 'IBM Plex Sans', system-ui, sans-serif;
   --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
 
-  /* Surfaces, du plus profond au plus haut. */
-  --color-inset: #0c0d0e;
-  --color-shell: #121315;
-  --color-surface: #191b1e;
-  --color-raised: #212428;
-  --color-hover: #282c31;
-
-  /* Traits. */
-  --color-hairline: #2a2e33;
-  --color-edge: #3a3f46;
+  /* Surfaces de l'espace. `shell` est la couleur plate que le coeur reprend autour de la page. */
+  --color-shell: #141517;
+  --color-glow: #23262b;
+  --color-card: #24272c;
+  --color-hover: #1e2126;
+  --color-field: #1b1d21;
+  --color-hairline: #2a2d33;
 
   /* Encre. */
-  --color-ink: #e8e9eb;
-  --color-ink-muted: #9aa0a7;
-  --color-ink-faint: #676d74;
+  --color-ink: #e7e8ea;
+  --color-ink-muted: #9a9fa7;
+  --color-ink-faint: #63686f;
 
   /* Etats semantiques. Le vert « garde » est l'identite du produit : bouclier actif. */
   --color-guard: #55b98d;
-  --color-guard-deep: #1c3f31;
   --color-warn: #d2a056;
   --color-danger: #d5564c;
 
-  /* Geometrie du chrome. */
-  --radius-tab: 7px;
-  --radius-field: 8px;
-  --radius-panel: 12px;
+  /* Page simulee (mode developpement uniquement). */
+  --color-page: #f5f4f1;
+  --color-page-ink: #2b2b2b;
 
-  --shadow-panel: 0 18px 40px -12px rgb(0 0 0 / 0.65), 0 0 0 1px var(--color-hairline);
+  /* Geometrie. */
+  --radius-row: 8px;
+  --radius-tile: 14px;
+  --radius-frame: 12px;
+
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.35), 0 0 0 1px rgb(255 255 255 / 0.05);
+  --shadow-frame: 0 16px 48px -16px rgb(0 0 0 / 0.55), 0 0 0 1px rgb(0 0 0 / 0.25);
 
   --ease-chrome: cubic-bezier(0.22, 0.61, 0.36, 1);
 }
@@ -66,6 +69,7 @@
     text-rendering: optimizeLegibility;
     user-select: none;
     cursor: default;
+    transition: background-color 0.3s var(--ease-chrome);
   }
 
   button {
@@ -79,18 +83,26 @@
   }
 
   ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 6px;
+    height: 6px;
   }
 
   ::-webkit-scrollbar-thumb {
-    background: var(--color-edge);
-    border-radius: 4px;
+    background: var(--color-hairline);
+    border-radius: 3px;
   }
 
   ::-webkit-scrollbar-track {
     background: transparent;
   }
+}
+
+/* Fond de la barre laterale : couleur plate de l'espace, lueur douce en haut a gauche.
+   Le bord droit reste plat pour se fondre dans le cadre peint par le coeur. */
+@utility fond-espace {
+  background-color: var(--color-shell);
+  background-image: radial-gradient(110% 50% at 0% 0%, var(--color-glow), transparent 72%);
+  transition: background-color 0.3s var(--ease-chrome);
 }
 
 @utility numerique {

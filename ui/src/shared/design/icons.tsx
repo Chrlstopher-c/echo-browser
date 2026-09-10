@@ -163,3 +163,65 @@ export function IconChevron(props: IconProps): ReactElement {
     </Glyph>
   )
 }
+
+export function IconChevronLeft(props: IconProps): ReactElement {
+  return (
+    <Glyph {...props}>
+      <path d="m9.5 4-4 4 4 4" />
+    </Glyph>
+  )
+}
+
+export function IconSidebar(props: IconProps): ReactElement {
+  return (
+    <Glyph {...props}>
+      <rect x="2.5" y="3" width="11" height="10" rx="2" />
+      <path d="M6.5 3v10" />
+    </Glyph>
+  )
+}
+
+export function IconSettings(props: IconProps): ReactElement {
+  return (
+    <Glyph {...props}>
+      <path d="M3 5h10M3 11h10" />
+      <circle cx="6" cy="5" r="1.6" fill="var(--color-shell)" />
+      <circle cx="10" cy="11" r="1.6" fill="var(--color-shell)" />
+    </Glyph>
+  )
+}
+
+export function IconPin(props: IconProps): ReactElement {
+  return (
+    <Glyph {...props}>
+      <path d="M9.6 2.6 13.4 6.4 11.2 7l-2 2-.4 3.4-4.2-4.2L8 7.8l-.4-2.6z" />
+      <path d="M6.4 9.6 3 13" />
+    </Glyph>
+  )
+}
+
+export function IconUnpin(props: IconProps): ReactElement {
+  return (
+    <Glyph {...props}>
+      <path d="M9.6 2.6 13.4 6.4 11.2 7l-2 2-.4 3.4-4.2-4.2L8 7.8l-.4-2.6z" />
+      <path d="M6.4 9.6 3 13M2.5 2.5l11 11" />
+    </Glyph>
+  )
+}
+
+export function IconLockOpen(props: IconProps): ReactElement {
+  return (
+    <Glyph {...props}>
+      <rect x="3.5" y="7" width="9" height="6.2" rx="1.4" />
+      <path d="M5.7 7V5.4a2.3 2.3 0 0 1 4.4-.9" />
+    </Glyph>
+  )
+}
+
+export function IconCheck(props: IconProps): ReactElement {
+  return (
+    <Glyph {...props}>
+      <path d="m3.5 8.3 2.8 2.8 6.2-6.4" />
+    </Glyph>
+  )
+}
