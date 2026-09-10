@@ -34,6 +34,40 @@ wrap_client! {
         fn life_span_handler(&self) -> Option<LifeSpanHandler> {
             Some(EchoLifeSpanHandler::new(self.live.clone()))
         }
+
+        fn display_handler(&self) -> Option<DisplayHandler> {
+            Some(EchoDisplayHandler::new(()))
+        }
+    }
+}
+
+wrap_display_handler! {
+    struct EchoDisplayHandler {
+        marker: (),
+    }
+
+    impl DisplayHandler {
+        /// Remonte la console de la page dans le journal : sans elle, une erreur de script
+        /// se traduit par une fenetre blanche et aucune trace.
+        fn on_console_message(
+            &self,
+            _browser: Option<&mut Browser>,
+            level: LogSeverity,
+            message: Option<&CefString>,
+            source: Option<&CefString>,
+            line: i32,
+        ) -> i32 {
+            let message = message.map(CefString::to_string).unwrap_or_default();
+            let source = source.map(CefString::to_string).unwrap_or_default();
+            match level {
+                LogSeverity::ERROR | LogSeverity::FATAL => {
+                    tracing::error!(%source, %line, "console: {message}")
+                }
+                LogSeverity::WARNING => tracing::warn!(%source, %line, "console: {message}"),
+                _ => tracing::info!(%source, %line, "console: {message}"),
+            }
+            0
+        }
     }
 }
 

@@ -1,13 +1,13 @@
 //! Responsabilite : le point de contact avec Chromium — drapeaux au demarrage, creation de la fenetre.
 
-use crate::{client::EchoClient, flags, window};
+use crate::{assets, client::EchoClient, flags, window};
 // Les macros `wrap_*` de CEF exigent les traits `Impl*` et `Wrap*` dans la portee : import global impose.
 use cef::*;
 use std::cell::RefCell;
 use tracing::info;
 
-/// Page servie au demarrage tant que l'interface n'est pas empaquetee.
-const STARTUP_URL: &str = "https://www.qwant.com/";
+/// L'interface du navigateur, servie par le schema interne.
+const STARTUP_URL: &str = "echo://ui/index.html";
 
 wrap_app! {
     pub struct EchoApp;
@@ -23,6 +23,10 @@ wrap_app! {
             flags::apply(&process_type, command_line);
         }
 
+        fn on_register_custom_schemes(&self, registrar: Option<&mut SchemeRegistrar>) {
+            assets::register(registrar);
+        }
+
         fn browser_process_handler(&self) -> Option<BrowserProcessHandler> {
             Some(EchoBrowserProcessHandler::new(RefCell::new(None)))
         }
@@ -36,6 +40,7 @@ wrap_browser_process_handler! {
 
     impl BrowserProcessHandler {
         fn on_context_initialized(&self) {
+            assets::install_factory();
             let url = startup_url();
             info!(%url, "contexte Chromium pret, ouverture de la fenetre");
             *self.client.borrow_mut() = Some(EchoClient::new(Default::default()));

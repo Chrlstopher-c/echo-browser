@@ -5,6 +5,7 @@
 //! execute une fois par processus.
 
 mod app;
+mod assets;
 mod client;
 mod flags;
 mod window;
@@ -22,7 +23,10 @@ fn main() -> anyhow::Result<()> {
     };
     let is_browser_process = command_line.has_switch(Some(&cef::CefString::from("type"))) != 1;
 
-    let code = execute_process(Some(args.as_main_args()), None, std::ptr::null_mut());
+    // L'application est fournie a TOUS les processus : sans elle, les processus de rendu
+    // ignorent le schema echo:// et l'interface se charge sans ses feuilles ni ses scripts.
+    let mut app = app::EchoApp::new();
+    let code = execute_process(Some(args.as_main_args()), Some(&mut app), std::ptr::null_mut());
     if !is_browser_process {
         anyhow::ensure!(code >= 0, "processus enfant non demarre (code {code})");
         return Ok(());
@@ -31,7 +35,6 @@ fn main() -> anyhow::Result<()> {
 
     init_logging();
     let settings = browser_settings();
-    let mut app = app::EchoApp::new();
     let started = initialize(Some(args.as_main_args()), Some(&settings), Some(&mut app), std::ptr::null_mut());
     anyhow::ensure!(started == 1, "Chromium n'a pas demarre");
 
