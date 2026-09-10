@@ -1,0 +1,15 @@
+[package]
+name = "echo-extensions"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Installation et inventaire des extensions du catalogue Chrome"
+
+[dependencies]
+anyhow.workspace = true
+thiserror.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+tracing.workspace = true
+ureq = "3"
+zip = { version = "6", default-features = false, features = ["deflate"] }

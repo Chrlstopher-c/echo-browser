@@ -106,6 +106,20 @@ wrap_window_delegate! {
             }
         }
 
+        /// Sans ces trois-la, la fenetre se declare non redimensionnable : un gestionnaire
+        /// de fenetres en mosaique la met alors systematiquement en flottant.
+        fn can_resize(&self, _window: Option<&mut Window>) -> i32 {
+            1
+        }
+
+        fn can_maximize(&self, _window: Option<&mut Window>) -> i32 {
+            1
+        }
+
+        fn can_minimize(&self, _window: Option<&mut Window>) -> i32 {
+            1
+        }
+
         fn initial_show_state(&self, _window: Option<&mut Window>) -> ShowState {
             self.initial_show_state
         }
@@ -158,6 +172,30 @@ wrap_browser_view_delegate! {
         fn browser_runtime_style(&self) -> RuntimeStyle {
             self.runtime_style
         }
+    }
+}
+
+/// Peint le cadre autour de la page avec la teinte de l'espace courant, pour que la
+/// marge se fonde avec la barre laterale au lieu de trancher.
+pub fn set_accent(color: &str, host: Option<&Panel>) {
+    let Some(argb) = parse_hex_color(color) else {
+        debug!(%color, "teinte illisible, ignoree");
+        return;
+    };
+    if let Some(host) = host {
+        View::from(host).set_background_color(argb);
+    }
+    debug!(%color, "teinte du cadre");
+}
+
+/// Lit une couleur `#rrggbb` ou `#aarrggbb` et la rend au format attendu par Chromium.
+fn parse_hex_color(value: &str) -> Option<u32> {
+    let hex = value.trim().strip_prefix('#')?;
+    let parsed = u32::from_str_radix(hex, 16).ok()?;
+    match hex.len() {
+        6 => Some(0xFF00_0000 | parsed),
+        8 => Some(parsed),
+        _ => None,
     }
 }
 

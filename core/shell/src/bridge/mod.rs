@@ -90,6 +90,10 @@ fn apply(request: UiRequest) {
             let chrome = session::with(|s| s.chrome.clone()).flatten();
             crate::window::set_chrome_width(pixels as i32, chrome.as_ref());
         }
+        UiRequest::SetAccent { color } => {
+            let host = session::with(|s| s.tabs.host()).flatten();
+            crate::window::set_accent(&color, host.as_ref());
+        }
         other => debug!(?other, "demande pas encore traitee"),
     }
 }
