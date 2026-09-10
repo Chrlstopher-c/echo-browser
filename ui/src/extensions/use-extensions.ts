@@ -30,6 +30,8 @@ export interface ExtensionsController extends Removal {
   closePopup: () => void
   /** Ouvre la page de reglages de l'extension dans un onglet. */
   openOptions: (id: string) => void
+  /** Ouvre la fenetre de l'extension depuis le panneau, sans icone pour l'ancrer. */
+  openPopupCentered: (id: string) => void
   pending: number
   install: InstallField
   setEnabled: (id: string, enabled: boolean) => void
@@ -41,6 +43,9 @@ export interface ExtensionsController extends Removal {
 type Send = (request: UiRequest) => void
 
 const ALREADY_HERE = 'Cette extension est déjà installée.'
+
+/** Ancre de repli quand la fenetre est demandee depuis le panneau, pas depuis une icone. */
+const PANEL_ANCHOR: AnchorRect = { x: 8, y: 96, width: 28, height: 28 }
 
 function useInstallField(send: Send, installed: string[]): InstallField {
   const [value, setValue] = useState('')
@@ -111,6 +116,13 @@ export function useExtensions(
     [send],
   )
 
+  // Depuis le panneau, aucune icone ne sert d'ancre : la fenetre se pose sous la barre,
+  // le coeur la ramene dans la fenetre si elle deborde.
+  const openPopupCentered = useCallback(
+    (id: string): void => send({ kind: 'openExtensionPopup', id, anchor: PANEL_ANCHOR }),
+    [send],
+  )
+
   return {
     ...removal,
     extensions,
@@ -119,6 +131,7 @@ export function useExtensions(
     openPopup,
     closePopup,
     openOptions,
+    openPopupCentered,
     pending,
     install,
     setEnabled,

@@ -4,15 +4,26 @@
 //! rejouees sur le thread interface, seul endroit ou les objets Chromium sont manipulables.
 //! Les evenements repartent par un appel de fonction dans la page.
 
+pub mod extensions;
+pub mod navigation;
 pub mod library;
+pub mod publish;
+
+pub use publish::{
+    publish_filter_lists, publish_initial_state, publish_shield, publish_tab, publish_tabs,
+    set_fullscreen, set_tab_title,
+};
+pub use navigation::{normalize, perform};
+use navigation::{current_url, navigate, set_zoom, travel, with_browser};
+use publish::refresh_lists;
 pub mod script;
 
 // Les macros `wrap_*` de CEF exigent les traits `Impl*` et `Wrap*` dans la portee : import global impose.
 use cef::*;
-use echo_contract::{CoreEvent, ShieldView, TabId, UiRequest};
+use echo_contract::{CoreEvent, TabId, UiRequest};
 use parking_lot::Mutex;
 use std::collections::VecDeque;
-use tracing::{debug, info, warn};
+use tracing::{debug, warn};
 
 use crate::session;
 
@@ -104,10 +115,10 @@ fn apply(request: UiRequest) {
             let host = session::with(|s| s.tabs.host()).flatten();
             crate::window::set_accent(&color, host.as_ref());
         }
-        UiRequest::InstallExtension { source } => install_extension(&source),
-        UiRequest::OpenCatalog => open_store(""),
-        UiRequest::OpenExtensionPopup { id, anchor } => open_extension_popup(&id, anchor),
-        UiRequest::OpenExtensionOptions { id } => open_extension_options(&id),
+        UiRequest::InstallExtension { source } => extensions::install_extension(&source),
+        UiRequest::OpenCatalog => extensions::open_store(""),
+        UiRequest::OpenExtensionPopup { id, anchor } => extensions::open_extension_popup(&id, anchor),
+        UiRequest::OpenExtensionOptions { id } => extensions::open_extension_options(&id),
         UiRequest::CloseExtensionPopup => {
             crate::overlay::close_extension_popup();
             publish(&CoreEvent::ExtensionPopupChanged { id: None });
@@ -125,7 +136,7 @@ fn apply(request: UiRequest) {
                 } else {
                     mark_restart_needed();
                 }
-                publish_extensions();
+                extensions::publish_extensions();
             } else {
                 // Celles du catalogue appartiennent au gestionnaire de Chromium :
                 // les effacer dans son dos laisserait son profil incoherent.
@@ -140,7 +151,7 @@ fn apply(request: UiRequest) {
             } else {
                 mark_restart_needed();
             }
-            publish_extensions();
+            extensions::publish_extensions();
         }
         UiRequest::ExitFullscreen => with_browser(|browser| {
             if let Some(host) = browser.host() {
@@ -189,7 +200,7 @@ fn apply(request: UiRequest) {
 /// de la vue et son rattachement declenchent des rappels qui veulent lire cet etat.
 /// Referme ce qui est pose au-dessus de la page. A appeler des que le contenu change :
 /// une fenetre d'extension qui survit a un changement d'onglet flotte dans le vide.
-fn dismiss_overlays() {
+pub(super) fn dismiss_overlays() {
     if crate::overlay::open_popup_id().is_some() {
         crate::overlay::close_extension_popup();
         publish(&CoreEvent::ExtensionPopupChanged { id: None });
@@ -229,89 +240,19 @@ pub fn close_tab(id: TabId) {
 
 /// Ouvre la fiche d'une extension dans un onglet, pour que Chromium mene l'installation.
 ///
-/// Installe une extension sans quitter le navigateur.
-///
-/// Passer par la fiche du catalogue ne marche pas : la page reconnait qu'elle ne parle
-/// pas au vrai Chrome et renvoie l'utilisateur vers l'application installee sur la
-/// machine — une autre fenetre, un autre navigateur, une extension qui atterrit ailleurs.
-/// On telecharge donc le paquet et on le depaquette nous-memes. Il devient une extension
-/// a nous, chargee au demarrage, que notre gestionnaire pilote entierement.
-fn install_extension(source: &str) {
-    let outcome = session::with(|s| s.extensions.install(source));
-    match outcome {
-        Some(Ok(id)) => {
-            mark_restart_needed();
-            info!(%id, "extension declaree");
-            publish(&CoreEvent::Notice {
-                level: echo_contract::NoticeLevel::Info,
-                message: "Extension ajoutée — elle s'installe à la relance.".to_string(),
-            });
-        }
-        Some(Err(err)) => notify_error(&format!("installation impossible : {err}")),
-        None => notify_error("installation impossible : le navigateur est occupé."),
-    }
-    publish_extensions();
-}
-
-/// Ouvre le catalogue dans un onglet, pour y chercher une extension a installer.
-fn open_store(source: &str) {
-    let target = echo_extensions::catalog::extract_id(source)
-        .map(|id| echo_extensions::Extensions::store_page(&id))
-        .unwrap_or_else(|| CATALOG_HOME.to_string());
-    info!(%target, "ouverture du catalogue");
-    open_tab(&target);
-    publish_tabs();
-}
-
-/// Page d'accueil du catalogue.
-const CATALOG_HOME: &str = "https://chromewebstore.google.com/";
-
 /// Vrai quand une relance est necessaire pour que les extensions prennent effet.
-static RESTART_NEEDED: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+pub(super) static RESTART_NEEDED: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
 
-fn mark_restart_needed() {
+pub(super) fn mark_restart_needed() {
     RESTART_NEEDED.store(true, std::sync::atomic::Ordering::SeqCst);
 }
 
-fn notify_error(message: &str) {
+pub(super) fn notify_error(message: &str) {
     warn!(%message, "demande refusee");
     publish(&CoreEvent::Notice {
         level: echo_contract::NoticeLevel::Error,
         message: message.to_string(),
     });
-}
-
-/// Diffuse l'inventaire des extensions.
-pub fn publish_extensions() {
-    let pending = RESTART_NEEDED.load(std::sync::atomic::Ordering::SeqCst);
-    let Some(extensions) = session::with(|s| s.extensions.list()) else { return };
-    let view = extensions
-        .into_iter()
-        .map(|extension| {
-            let url = |path: &str| echo_extensions::action::resource_url(&extension.id, path);
-            echo_contract::ExtensionView {
-                name: extension.name.clone(),
-                version: extension.version.clone(),
-                enabled: extension.enabled,
-                // Toute bascule attend la relance : Chromium ne sait pas desactiver une
-                // extension a chaud, il sait n'en charger qu'une liste au demarrage.
-                // Une extension sans version est declaree mais pas encore installee.
-                pending: pending || extension.version.is_empty(),
-                removable: true,
-                // L'icone passe par notre schema : celui de l'extension ne se lit pas
-                // depuis une page interne (voir assets::ICON_HOST).
-                icon: extension
-                    .action
-                    .icon
-                    .as_ref()
-                    .map(|_| format!("echo://{}/{}", crate::assets::ICON_HOST, extension.id)),
-                popup: extension.action.popup.as_deref().map(&url),
-                options: extension.action.options.as_deref().map(&url),
-                id: extension.id.clone(),
-            }
-        })
-        .collect();
-    publish(&CoreEvent::ExtensionsChanged { extensions: view, restart_pending: pending });
 }
 
 /// Enregistre les onglets, previent l'interface, puis relance apres un court delai
@@ -342,155 +283,6 @@ wrap_task! {
     }
 }
 
-/// Change le facteur de zoom d'un onglet.
-fn set_zoom(id: echo_contract::TabId, factor: f32) {
-    let clamped = factor.clamp(0.25, 5.0);
-    let host = session::with(|s| {
-        if let Some(tab) = s.tabs.get_mut(id) {
-            tab.zoom = clamped;
-        }
-        s.tabs.get_mut(id).and_then(|tab| tab.view.browser()).and_then(|b| b.host())
-    })
-    .flatten();
-    if let Some(host) = host {
-        // Chromium raisonne en niveaux, pas en facteurs : chaque niveau vaut 1,2 fois.
-        host.set_zoom_level(f64::from(clamped).log(1.2));
-    }
-    publish_tabs();
-}
-
-/// Applique un raccourci clavier.
-pub fn perform(action: crate::shortcuts::Action) {
-    use crate::shortcuts::Action;
-    match action {
-        Action::NewTab => {
-            open_tab(search::HOME);
-            publish_tabs();
-        }
-        Action::CloseTab => {
-            if let Some(id) = session::with(|s| s.tabs.active_id()).flatten() {
-                close_tab(id);
-            }
-        }
-        Action::NextTab => cycle_tab(1),
-        Action::PreviousTab => cycle_tab(-1),
-        Action::SelectTab(index) => {
-            let target = session::with(|s| s.tabs.snapshot().get(index).map(|t| t.id)).flatten();
-            if let Some(id) = target {
-                session::with(|s| s.tabs.select(id));
-                publish_tabs();
-            }
-        }
-        Action::Reload { bypass_cache } => with_browser(|browser| {
-            if bypass_cache { browser.reload_ignore_cache() } else { browser.reload() }
-        }),
-        Action::FocusAddress => publish(&CoreEvent::FocusAddressRequested),
-        Action::DismissOverlay => {
-            crate::overlay::close_extension_popup();
-            publish(&CoreEvent::ExtensionPopupChanged { id: None });
-        }
-        // F11 ne fait que sortir du plein ecran : c'est la page qui y entre, pas nous.
-        Action::ToggleFullscreen => with_browser(|browser| {
-            if let Some(host) = browser.host() {
-                if host.is_fullscreen() == 1 {
-                    host.exit_fullscreen(1);
-                }
-            }
-        }),
-    }
-}
-
-/// Passe a l'onglet suivant ou precedent, en bouclant.
-fn cycle_tab(step: isize) {
-    let Some((ids, active)) = session::with(|s| {
-        (s.tabs.snapshot().iter().map(|t| t.id).collect::<Vec<_>>(), s.tabs.active_id())
-    }) else {
-        return;
-    };
-    if ids.is_empty() {
-        return;
-    }
-    let current = active.and_then(|id| ids.iter().position(|&x| x == id)).unwrap_or(0);
-    let next = (current as isize + step).rem_euclid(ids.len() as isize) as usize;
-    session::with(|s| s.tabs.select(ids[next]));
-    publish_tabs();
-    publish_shield();
-}
-
-/// Recule ou avance dans l'onglet actif. Passe par Chromium quand il le peut, sinon
-/// rejoue notre propre fil — c'est le cas apres une relance, ou son historique est neuf.
-fn travel(forward: bool) {
-    let plan = session::with(|s| {
-        let browser = s.tabs.active().and_then(|tab| tab.view.browser());
-        let native = browser
-            .map(|b| if forward { b.can_go_forward() == 1 } else { b.can_go_back() == 1 })
-            .unwrap_or(false);
-        if native {
-            return Some(None);
-        }
-        let tab = s.tabs.active()?;
-        let url = if forward { tab.next_url() } else { tab.previous_url() }?.to_string();
-        Some(Some(url))
-    })
-    .flatten();
-
-    match plan {
-        Some(None) => with_browser(|browser| if forward { browser.go_forward() } else { browser.go_back() }),
-        Some(Some(url)) => {
-            session::with(|s| {
-                if let Some(id) = s.tabs.active_id() {
-                    if let Some(tab) = s.tabs.get_mut(id) {
-                        tab.step(forward);
-                    }
-                }
-            });
-            debug!(%url, forward, "reprise du fil de navigation");
-            navigate(&url);
-        }
-        None => debug!("aucun deplacement possible"),
-    }
-}
-
-fn with_browser(action: impl FnOnce(&Browser)) {
-    let browser = session::with(|s| s.tabs.active().and_then(|tab| tab.view.browser())).flatten();
-    match browser {
-        Some(browser) => action(&browser),
-        None => warn!("aucune vue de contenu : demande sans effet"),
-    }
-}
-
-fn navigate(url: &str) {
-    let frame = session::with(|s| s.active_frame()).flatten();
-    match frame {
-        Some(frame) => {
-            debug!(%url, "navigation");
-            frame.load_url(Some(&CefString::from(url)));
-        }
-        None => warn!(%url, "navigation impossible : pas de frame de contenu"),
-    }
-}
-
-/// Transforme ce que l'utilisateur tape en adresse : une URL telle quelle, sinon une recherche.
-pub fn normalize(input: &str) -> String {
-    let trimmed = input.trim();
-    if trimmed.is_empty() {
-        return String::new();
-    }
-    if trimmed.contains("://") || trimmed.starts_with("about:") {
-        return trimmed.to_string();
-    }
-    let looks_like_host = !trimmed.contains(' ')
-        && trimmed.split('/').next().is_some_and(|host| host.contains('.') && !host.ends_with('.'));
-    if looks_like_host {
-        return format!("https://{trimmed}");
-    }
-    search::query_url(trimmed)
-}
-
-fn current_url() -> String {
-    session::with(|s| s.active_url()).unwrap_or_default()
-}
-
 /// Pousse un evenement vers l'interface.
 pub fn publish(event: &CoreEvent) {
     let payload = match serde_json::to_string(event) {
@@ -506,201 +298,4 @@ pub fn publish(event: &CoreEvent) {
         Some(frame) => frame.execute_java_script(Some(&CefString::from(script.as_str())), None, 0),
         None => debug!("interface pas encore prete, evenement perdu"),
     }
-}
-
-/// Envoie a l'interface tout ce qu'elle doit savoir pour s'afficher.
-pub fn publish_initial_state() {
-    publish_tabs();
-    publish_shield();
-    publish_extensions();
-    library::publish_bookmarks();
-    library::publish_history("");
-    library::publish_downloads();
-    library::publish_settings();
-    publish_filter_lists();
-}
-
-/// Diffuse l'etat des listes de filtres.
-pub fn publish_filter_lists() {
-    let Some((subs, rules, refreshed_at)) = session::with(|s| {
-        (s.shield.subscriptions(), s.shield.rules_per_list(), s.shield.refreshed_at())
-    }) else {
-        return;
-    };
-    let lists = subs
-        .into_iter()
-        .map(|sub| echo_contract::FilterListView {
-            rules: rules.iter().find(|(id, _)| *id == sub.id).and_then(|(_, count)| *count),
-            id: sub.id,
-            title: sub.title,
-            enabled: sub.enabled,
-        })
-        .collect();
-    publish(&CoreEvent::FilterListsChanged { lists, refreshed_at });
-}
-
-/// Rafraichit les listes hors du thread interface : le telechargement est long.
-fn refresh_lists(force: bool) {
-    let Some(shield) = session::with(|s| s.shield.clone()) else { return };
-    std::thread::spawn(move || {
-        match shield.refresh_lists(force) {
-            Ok(count) => info!(listes = count, "listes rafraichies"),
-            Err(err) => warn!(%err, "rafraichissement incomplet"),
-        }
-        let mut task = RefreshDoneTask::new(());
-        post_task(ThreadId::UI, Some(&mut task));
-    });
-}
-
-wrap_task! {
-    struct RefreshDoneTask {
-        marker: (),
-    }
-
-    impl Task {
-        fn execute(&self) {
-            publish_filter_lists();
-            publish_shield();
-        }
-    }
-}
-
-/// Diffuse l'etat courant du bouclier.
-pub fn publish_shield() {
-    let url = current_url();
-    let Some(state) = session::with(|s| {
-        let tally = s.shield.tally(0);
-        ShieldView {
-            enabled: s.shield.is_enabled(),
-            active_here: s.shield.is_active_for(&url),
-            blocked_here: tally.tab,
-            blocked_total: tally.total,
-        }
-    }) else {
-        return;
-    };
-    publish(&CoreEvent::ShieldUpdated { id: 0, state });
-}
-
-/// Met a jour un onglet a partir de ce que Chromium rapporte, puis previent l'interface.
-pub fn publish_tab(browser_id: i32, url: &str, title: &str, loading: bool) {
-    let known = session::with(|s| {
-        let tab = s.tabs.by_browser(browser_id)?;
-        tab.url = url.to_string();
-        tab.title = if title.is_empty() { url.to_string() } else { title.to_string() };
-        tab.loading = loading;
-        if !loading {
-            tab.record_visit(url);
-        }
-        Some(tab.title.clone())
-    })
-    .flatten();
-
-    let Some(title) = known else { return };
-    if !loading {
-        library::record_visit(url, &title);
-    }
-    publish_tabs();
-}
-
-/// Note le titre rendu par la page, et le repercute dans l'historique.
-pub fn set_tab_title(browser_id: i32, title: &str) {
-    if title.is_empty() {
-        return;
-    }
-    let url = session::with(|s| {
-        let tab = s.tabs.by_browser(browser_id)?;
-        tab.title = title.to_string();
-        Some(tab.url.clone())
-    })
-    .flatten();
-    if let Some(url) = url {
-        library::record_visit(&url, title);
-        publish_tabs();
-    }
-}
-
-/// Signale a l'interface que la page occupe tout l'ecran, ou n'en occupe plus.
-pub fn set_fullscreen(active: bool) {
-    info!(active, "plein ecran");
-    publish(&CoreEvent::FullscreenChanged { active });
-    let chrome = session::with(|s| s.chrome.clone()).flatten();
-    // La bande laterale se replie a zero : sans cela elle resterait posee sur la video.
-    let width = if active { 0 } else { crate::window::CHROME_WIDTH };
-    crate::window::set_chrome_width(width, chrome.as_ref());
-}
-
-pub fn publish_tabs() {
-    let Some((tabs, active)) = session::with(|s| (s.tabs.snapshot(), s.tabs.active_id())) else {
-        return;
-    };
-    publish(&CoreEvent::TabsChanged { tabs, active });
-}
-
-#[cfg(test)]
-mod tests {
-    use super::normalize;
-
-    #[test]
-    fn une_adresse_reste_une_adresse() {
-        assert_eq!(normalize("https://exemple.fr/page"), "https://exemple.fr/page");
-        assert_eq!(normalize("exemple.fr"), "https://exemple.fr");
-        assert_eq!(normalize("exemple.fr/page?a=1"), "https://exemple.fr/page?a=1");
-    }
-
-    #[test]
-    fn des_mots_deviennent_une_recherche() {
-        assert!(normalize("chat mignon").starts_with("https://www.google.com/search?q="));
-        assert!(normalize("chat mignon").contains("chat+mignon"));
-        assert!(normalize("rust cef").contains("rust+cef"));
-    }
-
-    #[test]
-    fn un_mot_seul_sans_point_est_une_recherche() {
-        assert!(normalize("meteo").starts_with("https://www.google.com/search?q="));
-    }
-}
-
-/// Ouvre la fenetre d'une extension sous son icone, ou la referme si c'est deja elle.
-///
-/// L'adresse de la fenetre vient du manifeste, jamais de l'interface : une adresse
-/// choisie par la page afficherait n'importe quoi au-dessus du contenu.
-fn open_extension_popup(id: &str, anchor: echo_contract::AnchorRect) {
-    let found = session::with(|s| {
-        s.extensions.list().into_iter().find(|extension| extension.id == id)
-    })
-    .flatten();
-    let Some(extension) = found else {
-        tracing::warn!(%id, "fenetre d'extension : extension inconnue");
-        return;
-    };
-    let Some(path) = extension.action.popup.as_deref() else {
-        tracing::warn!(%id, "cette extension ne declare pas de fenetre");
-        return;
-    };
-    let url = echo_extensions::action::resource_url(id, path);
-
-    // L'appel a Chromium se fait hors de tout acces a l'etat : il rappelle le programme
-    // pendant la creation de la vue.
-    let Some(chrome) = session::with(|s| s.chrome.clone()).flatten() else { return };
-    let rect = cef::Rect { x: anchor.x, y: anchor.y, width: anchor.width, height: anchor.height };
-    crate::overlay::toggle_extension_popup(id, &url, rect, &chrome);
-    publish(&CoreEvent::ExtensionPopupChanged { id: crate::overlay::open_popup_id() });
-}
-
-/// Ouvre la page de reglages d'une extension dans un onglet.
-fn open_extension_options(id: &str) {
-    let page = session::with(|s| {
-        s.extensions
-            .list()
-            .into_iter()
-            .find(|extension| extension.id == id)
-            .and_then(|extension| extension.action.options.clone())
-    })
-    .flatten();
-    let Some(page) = page else {
-        notify_error("Cette extension n'a pas de page de réglages.");
-        return;
-    };
-    open_tab(&echo_extensions::action::resource_url(id, &page));
 }

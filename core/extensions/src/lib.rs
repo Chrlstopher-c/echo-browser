@@ -92,6 +92,8 @@ impl Extensions {
                 removable: true,
                 from_command_line: false,
                 action: action::Action::default(),
+                description: "Installation au prochain demarrage du navigateur.".to_string(),
+                permissions: Vec::new(),
                 dir: PathBuf::new(),
                 id,
             });

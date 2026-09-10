@@ -185,6 +185,10 @@ pub struct ExtensionView {
     pub popup: Option<String>,
     /// Adresse de sa page de reglages, quand elle en propose une.
     pub options: Option<String>,
+    /// Ce que l'extension dit d'elle-meme.
+    pub description: String,
+    /// Les permissions que son manifeste reclame.
+    pub permissions: Vec<String>,
 }
 
 /// Un rectangle de l'interface, en pixels, repere depuis le coin haut-gauche de la

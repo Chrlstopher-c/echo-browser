@@ -1,12 +1,14 @@
-// Responsabilite : une extension dans la liste — icone, etat, interrupteur, retrait confirme en place
-// ou renvoi vers le gestionnaire de Chromium quand l'interface ne peut pas la retirer elle-meme.
+// Responsabilite : une extension dans la liste — icone, etat, interrupteur, detail depliable,
+// retrait confirme en place.
 
-import type { ReactElement } from 'react'
+import { AnimatePresence } from 'framer-motion'
+import { useState, type ReactElement } from 'react'
 import type { ExtensionView } from '../shared/contract'
 import { ConfirmStrip } from '../shared/design/confirm-strip'
-import { IconOpen, IconPuzzle, IconTrash } from '../shared/design/icons'
+import { IconPuzzle, IconTrash } from '../shared/design/icons'
 import { RowAction } from '../shared/design/list-row'
 import { Toggle } from '../shared/design/toggle'
+import { ExtensionDetail } from './extension-detail'
 import { extensionStatus } from './extension-model'
 import type { ExtensionsController } from './use-extensions'
 
@@ -47,39 +49,46 @@ function RemoveConfirm({ item, controller }: ExtensionRowProps): ReactElement {
   )
 }
 
-function RemoveOrManage({ item, controller }: ExtensionRowProps): ReactElement {
-  if (item.removable) {
-    return (
-      <RowAction label={`Retirer ${item.name}`} onClick={() => controller.askRemove(item.id)} danger>
-        <IconTrash size={13} />
-      </RowAction>
-    )
-  }
+function Remove({ item, controller }: ExtensionRowProps): ReactElement {
   return (
-    <RowAction label="Gérer dans Chromium" onClick={controller.openManager}>
-      <IconOpen size={13} />
+    <RowAction label={`Retirer ${item.name}`} onClick={() => controller.askRemove(item.id)} danger>
+      <IconTrash size={13} />
     </RowAction>
   )
 }
 
 export function ExtensionRow({ item, controller }: ExtensionRowProps): ReactElement {
+  const [open, setOpen] = useState(false)
   if (controller.confirming === item.id) return <RemoveConfirm item={item} controller={controller} />
   return (
-    <div className="group flex h-11 items-center gap-2.5 px-2">
-      <ExtensionIcon item={item} />
-      <div className="min-w-0 flex-1">
-        <p className="flex items-baseline gap-2 truncate text-[12.5px] text-ink">
-          <span className="truncate">{item.name}</span>
-          <span className="numerique shrink-0 text-[10.5px] text-ink-faint">{item.version}</span>
-        </p>
-        <p className={`truncate text-[11px] ${item.pending ? 'text-warn' : 'text-ink-faint'}`}>
-          {extensionStatus(item)}
-        </p>
+    <div className="group">
+      <div className="flex h-11 items-center gap-2.5 px-2">
+        <button
+          type="button"
+          aria-expanded={open}
+          aria-label={`Détail de ${item.name}`}
+          onClick={() => setOpen((current) => !current)}
+          className="flex min-w-0 flex-1 items-center gap-2.5 text-left"
+        >
+          <ExtensionIcon item={item} />
+          <span className="min-w-0 flex-1">
+            <span className="flex items-baseline gap-2 truncate text-[12.5px] text-ink">
+              <span className="truncate">{item.name}</span>
+              <span className="numerique shrink-0 text-[10.5px] text-ink-faint">{item.version}</span>
+            </span>
+            <span className={`block truncate text-[11px] ${item.pending ? 'text-warn' : 'text-ink-faint'}`}>
+              {extensionStatus(item)}
+            </span>
+          </span>
+        </button>
+        {item.pending && <PendingMark />}
+        <Remove item={item} controller={controller} />
+        <Toggle checked={item.enabled} label={`Activer ${item.name}`}
+          onChange={(next) => controller.setEnabled(item.id, next)} />
       </div>
-      {item.pending && <PendingMark />}
-      <RemoveOrManage item={item} controller={controller} />
-      <Toggle checked={item.enabled} label={`Activer ${item.name}`}
-        onChange={(next) => controller.setEnabled(item.id, next)} />
+      <AnimatePresence initial={false}>
+        {open && <ExtensionDetail item={item} controller={controller} />}
+      </AnimatePresence>
     </div>
   )
 }

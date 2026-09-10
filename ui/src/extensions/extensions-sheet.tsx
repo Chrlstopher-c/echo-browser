@@ -1,9 +1,8 @@
-// Responsabilite : feuille des extensions — installation, inventaire, renvoi au gestionnaire de Chromium.
+// Responsabilite : feuille des extensions — installation, inventaire, gestion complete.
 
 import type { ReactElement } from 'react'
 import { EmptyState } from '../shared/design/empty-state'
-import { IconOpen, IconPuzzle } from '../shared/design/icons'
-import { PushButton } from '../shared/design/push-button'
+import { IconPuzzle } from '../shared/design/icons'
 import { SectionLabel } from '../shared/design/section-label'
 import { ExtensionRow } from './extension-row'
 import { InstallField } from './install-field'
@@ -15,12 +14,11 @@ function Inventory({ controller }: { controller: ExtensionsController }): ReactE
   if (controller.extensions.length === 0) {
     return <EmptyState icon={<IconPuzzle size={18} />} title="Aucune extension installée" hint={EMPTY_HINT} />
   }
-  const manager = (
-    <PushButton onClick={controller.openManager} icon={<IconOpen size={11} />}>Chromium</PushButton>
-  )
+  // Pas de renvoi au gestionnaire de Chromium : sa page ne s'affiche pas dans ce mode
+  // (verifie le 10/09, page blanche). Tout se gere ici.
   return (
     <section>
-      <SectionLabel aside={manager}>Installées · {controller.extensions.length}</SectionLabel>
+      <SectionLabel>Installées · {controller.extensions.length}</SectionLabel>
       <div className="divide-y divide-hairline border-t border-hairline">
         {controller.extensions.map((item) => (
           <ExtensionRow key={item.id} item={item} controller={controller} />

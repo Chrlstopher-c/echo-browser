@@ -122,3 +122,22 @@ mod tests {
         assert_eq!(resource_url("abc", "/popup.html"), "chrome-extension://abc/popup.html");
     }
 }
+
+/// Ce que l'extension dit d'elle-meme. Les paquets traduits stockent un jeton
+/// `__MSG_...__`, resolu dans les fichiers de langue comme pour le nom.
+pub fn description(manifest: &Value, dir: &std::path::Path) -> String {
+    let raw = manifest.get("description").and_then(Value::as_str).unwrap_or_default();
+    crate::store::resolve_name(dir, raw)
+}
+
+/// Les permissions reclamees par le manifeste, permissions d'hote comprises.
+pub fn permissions(manifest: &Value) -> Vec<String> {
+    ["permissions", "optional_permissions", "host_permissions"]
+        .iter()
+        .filter_map(|key| manifest.get(*key))
+        .filter_map(Value::as_array)
+        .flatten()
+        .filter_map(Value::as_str)
+        .map(str::to_string)
+        .collect()
+}

@@ -77,6 +77,8 @@ fn read_entry(profile: &Path, id: &str, entry: &Value) -> Option<Extension> {
         removable: origin == location::STORE,
         from_command_line: origin == location::COMMAND_LINE,
         action: crate::action::Action::from_manifest(manifest),
+        description: crate::action::description(manifest, &dir),
+        permissions: crate::action::permissions(manifest),
         dir,
     })
 }

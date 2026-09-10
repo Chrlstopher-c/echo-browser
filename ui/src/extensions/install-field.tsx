@@ -1,5 +1,4 @@
 // Responsabilite : champ d'installation d'une extension — saisie, refus lisible, ouverture du catalogue.
-// Chromium prend le relais sur sa fiche avec sa demande de permissions : rien a attendre ici.
 
 import type { KeyboardEvent, ReactElement } from 'react'
 import { IconOpen, IconPlus } from '../shared/design/icons'
@@ -7,7 +6,7 @@ import { PushButton } from '../shared/design/push-button'
 import type { InstallField as InstallFieldState } from './use-extensions'
 
 const PLACEHOLDER = 'Adresse du Chrome Web Store, ou identifiant'
-const HINT = 'La fiche s’ouvre dans Chromium, qui demande les permissions puis installe.'
+const HINT = 'L’extension s’installe au prochain démarrage, sans quitter le navigateur.'
 
 export interface InstallFieldProps {
   install: InstallFieldState
@@ -34,8 +33,8 @@ function SourceInput({ install }: { install: InstallFieldState }): ReactElement 
       />
       <button
         type="button"
-        aria-label="Ouvrir la fiche pour installer"
-        title="Ouvrir la fiche pour installer"
+        aria-label="Installer cette extension"
+        title="Installer cette extension"
         onClick={install.submit}
         className="grid size-6 shrink-0 place-items-center rounded-row text-ink-muted transition-colors
           duration-100 hover:bg-hover hover:text-ink"

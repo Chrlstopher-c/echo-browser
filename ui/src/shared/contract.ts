@@ -155,6 +155,10 @@ export interface ExtensionView {
   popup: string | null
   /** Adresse de sa page de reglages, quand elle en propose une. */
   options: string | null
+  /** Ce que l'extension dit d'elle-meme. */
+  description: string
+  /** Les permissions que son manifeste reclame. */
+  permissions: string[]
 }
 
 export interface BookmarkView {

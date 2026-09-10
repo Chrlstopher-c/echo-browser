@@ -25,6 +25,12 @@ pub struct Extension {
     /// d'extension n'est pas lisible depuis une page interne, elle se lit sur disque.
     #[serde(default, skip)]
     pub dir: PathBuf,
+    /// Ce que l'extension dit d'elle-meme, dans la langue du navigateur.
+    #[serde(default, skip)]
+    pub description: String,
+    /// Les permissions que son manifeste reclame, en clair.
+    #[serde(default, skip)]
+    pub permissions: Vec<String>,
 }
 
 /// Emplacement d'une extension depaquetee.
@@ -92,6 +98,8 @@ pub fn list(root: &Path) -> Vec<Extension> {
                 removable: true,
                 from_command_line: true,
                 action: crate::action::Action::from_manifest(&manifest),
+                description: crate::action::description(&manifest, &path),
+                permissions: crate::action::permissions(&manifest),
                 dir: path.clone(),
             })
         })

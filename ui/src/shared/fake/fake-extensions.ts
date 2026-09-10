@@ -35,6 +35,8 @@ const SEED: ExtensionView[] = [
     icon: ICON_UBLOCK,
     popup: 'chrome-extension://exemple/popup.html',
     options: 'chrome-extension://exemple/options.html',
+    description: 'Extension simulée pour le développement de l’interface.',
+    permissions: ['storage', 'activeTab', 'scripting'],
   },
   {
     id: 'nngceckbapebfimnlniiiahkandclblb',
@@ -46,6 +48,8 @@ const SEED: ExtensionView[] = [
     icon: ICON_BITWARDEN,
     popup: 'chrome-extension://exemple/popup.html',
     options: 'chrome-extension://exemple/options.html',
+    description: 'Extension simulée pour le développement de l’interface.',
+    permissions: ['storage', 'activeTab', 'scripting'],
   },
   {
     id: 'echo-internal-reader',
@@ -57,6 +61,8 @@ const SEED: ExtensionView[] = [
     icon: null,
     popup: 'chrome-extension://exemple/popup.html',
     options: 'chrome-extension://exemple/options.html',
+    description: 'Extension simulée pour le développement de l’interface.',
+    permissions: ['storage', 'activeTab', 'scripting'],
   },
 ]
 
@@ -114,6 +120,8 @@ export class FakeExtensions {
         id, name, version: '1.0.0', enabled: true, pending: true, removable: true, icon: null,
         popup: 'chrome-extension://exemple/popup.html',
     options: 'chrome-extension://exemple/options.html',
+    description: 'Extension simulée pour le développement de l’interface.',
+    permissions: ['storage', 'activeTab', 'scripting'],
       }
       this.items = [...this.items, added]
       this.restartPending = true
