@@ -55,6 +55,7 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `core/shell/src/injection/mod.rs` — appliquer dans la page ce que le blocage reseau ne peut pas faire —
 - `core/shell/src/main.rs`
 - `core/shell/src/menu.rs` — ce que le clic droit propose, selon ce qui est sous le curseur.
+- `core/shell/src/occlusion.rs` — dire a Chromium quand la fenetre n'est plus visible. Wayland ne le signale pas :
 - `core/shell/src/overlay.rs` — les vues posees **au-dessus** de la page.
 - `core/shell/src/permissions.rs` — les demandes de permission des sites (camera, micro, position, notifications,
 - `core/shell/src/persist.rs` — sauvegarder les onglets au fil de l'eau, pour les retrouver apres une fermeture
@@ -97,8 +98,11 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `tools/test-control.sh`
 - `tools/test-folders.sh`
 - `tools/test-ipc-origin.sh`
+- `tools/test-never-sleep.sh`
+- `tools/test-occlusion.sh`
 - `tools/test-sidebar-anim.sh`
 - `tools/test-sleep-scroll.sh`
+- `tools/test-warm.sh`
 - `ui/.gitignore`
 - `ui/README.md`
 - `ui/bun.lock`

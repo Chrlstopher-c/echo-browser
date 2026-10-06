@@ -13,6 +13,7 @@ Ordre voulu par Chris : angles → favicons → mémoire → décodeur vidéo. P
    sur disque (déjà : fiche + défilement), délai de veille plus court, extensions par conteneur.
 4. **Reste** : renommer/supprimer dossiers au glisser-déposer d'onglets vers un dossier ; extensions dans les conteneurs ; menu contextuel
    des sites aux couleurs neumorphiques (aujourd'hui sombre plat) ; retour animé des permissions retenues.
+4b. **Nécessite sudo (Chris)** : `pacman -S libva-nvidia-driver` (décodage vidéo GPU, puis `LIBVA_DRIVER_NAME=nvidia` + `--enable-features=AcceleratedVideoDecodeLinuxGL,VaapiOnNvidiaGPUs`) ; agrandir zram (8-12 Go) — il est plein à 4 Go, ce qui bloque aussi le gel+pageout des onglets.
 5. **Moteur avec codecs** : téléchargement en cours (`/mnt/backup/cef-build/logs/download.log`). Quand `src/` est complet, lancer
    `BUILD=1 /mnt/backup/cef-build/build.sh` (nice 19, 8-12 h), puis remplacer `~/.local/share/cef` et recompiler la coque.
 6. **Décodeur H.264/AAC** (E6.S16). **Build CEF avec codecs** : disque libre sur `/mnt/backup` (752 Go) ; `automate-git.py`
