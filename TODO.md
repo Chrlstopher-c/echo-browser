@@ -69,9 +69,9 @@ Les quatre angles sont mal rendus : la page reste un rectangle net dans un cadre
 liseré d'accent coupe les coins, et le haut de la page passe sous la bordure. Zen a des angles
 pleins et une page qui épouse exactement son cadre.
 
-- [ ] Angles de la page réellement arrondis
-- [ ] Liseré continu, de la même épaisseur sur les quatre côtés
-- [ ] Aucun débordement de la page sous la bordure
+- [x] Angles de la page réellement arrondis (06/10, rayon 12 px)
+- [ ] Liseré continu, de la même épaisseur sur les quatre côtés (à constater)
+- [x] Aucun débordement de la page sous la bordure
 
 ## 6 bis. Les fenêtres d'extension — **ultra important** (retour du 10/09)
 
@@ -162,3 +162,5 @@ debout à la première requête.
 - [ ] Raccourci clavier pour le terminal (ex. Ctrl+Maj+K) et mention dans la bulle
 - [ ] Terminal : sélection/copie (Ctrl+Maj+C/V), liens cliquables, redimensionnement vérifié sous tmux
 - [ ] `ECHO_TERM_CMD` ne gère pas les guillemets (découpe sur les espaces)
+
+- [ ] Angles arrondis : pages en `color-scheme: dark` sans fond déclaré s'affichent en blanc (le fond par défaut est forcé) ; à traiter si ça se voit

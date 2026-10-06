@@ -78,6 +78,9 @@
 
 ## Limites mesurées, à ne pas re-tenter
 
+- **Angles arrondis de la page** : contournement par `clip-path` sur `<html>` (injecté au début du chargement) + fond de
+  la vue = teinte de la fenêtre (les pages sans fond déclaré reçoivent `#fff` à `DOMContentLoaded`) + barres de défilement
+  en surimpression (la colonne native n'est pas rognée). Seul le contenu de page est rogné, jamais l'interface.
 - **Une vue posée au-dessus de la page ne peut pas être transparente.** Chromium peint un
   rectangle plein dessous : les angles arrondis se voient découpés. Trois essais le
   10/09 — fond transparent sur les réglages du navigateur, sur la vue, sur la page.

@@ -364,10 +364,15 @@ fn side_by_side_layout() -> BoxLayoutSettings {
 /// Cree une vue navigateur en style Alloy, seul style compatible avec une fenetre sur mesure.
 pub fn create_view(client: Option<&mut Client>, url: &str, is_chrome: i32) -> Option<BrowserView> {
     let mut delegate = ChromeViewDelegate::new(RuntimeStyle::ALLOY, is_chrome);
+    let settings = if is_chrome == 0 && crate::roundness::enabled() {
+        BrowserSettings { background_color: DEFAULT_SHELL, ..Default::default() }
+    } else {
+        BrowserSettings::default()
+    };
     browser_view_create(
         client,
         Some(&CefString::from(url)),
-        Some(&BrowserSettings::default()),
+        Some(&settings),
         None,
         None,
         Some(&mut delegate),

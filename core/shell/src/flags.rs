@@ -40,6 +40,9 @@ pub fn apply(process_type: &str, command_line: &mut CommandLine) {
         return;
     }
     switch_with_value(command_line, "disable-features", DISABLED_FEATURES);
+    // Barres de defilement en surimpression : celles de Chromium sont une colonne rectangulaire que le
+    // rognage des angles de la page (voir `roundness.rs`) ne peut pas suivre.
+    switch_with_value(command_line, "enable-features", "OverlayScrollbar");
     // Comme Chrome : pas de lecture automatique tant que l'utilisateur n'a pas touche la page.
     // Mesure le 06/10 sur YouTube : 155 Mo de moins, et plus de son non sollicite.
     switch_with_value(command_line, "autoplay-policy", "document-user-activation-required");

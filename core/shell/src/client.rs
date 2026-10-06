@@ -90,6 +90,13 @@ wrap_load_handler! {
                     );
                 }
             }
+            if frame.is_main() == 1 && !is_interface_page(&url) && crate::roundness::enabled() {
+                frame.execute_java_script(
+                    Some(&CefString::from(crate::roundness::SCRIPT)),
+                    Some(&CefString::from("echo://roundness")),
+                    0,
+                );
+            }
             if is_interface_page(&url) {
                 frame.execute_java_script(
                     Some(&CefString::from(crate::bridge::script::BOOTSTRAP)),

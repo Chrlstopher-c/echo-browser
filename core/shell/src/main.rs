@@ -18,6 +18,7 @@ mod overlay;
 mod presence;
 mod selftest;
 mod restart;
+mod roundness;
 mod search;
 mod session;
 mod shortcuts;

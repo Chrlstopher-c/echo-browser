@@ -13,7 +13,7 @@
 - [x] E2.S2 — Bulles d'aide maison sur tous les boutons (couche unique `tooltip-layer.tsx`, 380 ms, raccourci en touche ; barre repliée = bulle système, la vue y est trop étroite) — VERIFY: capture Playwright au survol
 - [x] E2.S3 — Nouvel onglet : suggestions (onglets ouverts, favoris, historique dédoublonné, filtre à la frappe) — VERIFY: capture à 6 lignes + op `suggest` filtrée (fait le 06/10 ; flèches/Entrée écrites mais pas rejouées au clavier réel)
 - [x] E2.S4 — Barre repliée : la page prend toute la fenêtre, la barre (colonne entière, plus de rail) revient par-dessus au bord gauche — VERIFY: `ECHO_BENCH_UI` rejoue repli/survol/dépli, captures (page à x=9 repliée, barre au-dessus au survol) (fait le 06/10)
-- [ ] E2.S5 — Angles arrondis de la page (essayer masque natif, sinon abandon documenté) — VERIFY: capture du coin
+- [x] E2.S5 — Angles arrondis de la page : `clip-path` sur la racine + fond de vue de la teinte fenêtre + barres de défilement en surimpression (`roundness.rs`) — VERIFY: capture des quatre coins sur Wikipédia et Hacker News (fait le 06/10 ; `ECHO_ROUND=0` pour comparer)
 
 ## E3 — Quotidien
 - [x] E3.S1 — Cookies persistants conservés après relance (mécanisme ; la session Google réelle reste à constater par Chris) — VERIFY: serveur local `Set-Cookie: Max-Age`, relance, `document.cookie` le contient (fait le 06/10 ; cookie de session perdu, comme Chrome)
