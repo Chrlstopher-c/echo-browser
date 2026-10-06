@@ -142,7 +142,8 @@ debout à la première requête.
 - [ ] Mise en sourdine d'un onglet
 - [ ] Les extensions déclarées en ligne de commande demandent encore une relance
 - [ ] Mode lecture
-- [ ] Permissions : caméra, micro, notifications, position
+- [x] Permissions : caméra, micro, notifications, position, presse-papiers (06/10)
+- [ ] Écran de gestion des permissions retenues par site (aujourd'hui retenues sans pouvoir les revoir ; `permissions::forget_site` existe)
 - [ ] Empreinte de version sur les fichiers servis à l'interface
 - [ ] Filtres procéduraux : le rapport en compte zéro partout, à confirmer ou corriger
 

@@ -19,7 +19,7 @@
 - [x] E3.S1 — Cookies persistants conservés après relance (mécanisme ; la session Google réelle reste à constater par Chris) — VERIFY: serveur local `Set-Cookie: Max-Age`, relance, `document.cookie` le contient (fait le 06/10 ; cookie de session perdu, comme Chrome)
 - [ ] E3.S2 — Mots de passe = extension Proton Pass (le gestionnaire de Chromium n'existe pas en mode Alloy) : vérifier qu'elle remplit un formulaire — VERIFY: capture de la fenêtre de l'extension sur une page de connexion
 - [ ] E3.S3 — Codecs H.264/AAC — VERIFY: `canPlayType('video/mp4; codecs="avc1.42E01E"')` ≠ "" sur http://127.0.0.1 (page de test). Essai du 06/10 : le `libffmpeg.so` d'Electron (45-alpha.8 et 44.5.1) est sans effet, ce CEF lie ffmpeg en statique. Reste : un CEF compilé `proprietary_codecs=true ffmpeg_branding=Chrome` (gros chantier) ou un build tiers
-- [ ] E3.S4 — Permissions caméra/micro/notifications/position — VERIFY: page de test, invite visible
+- [x] E3.S4 — Permissions caméra/micro/position/notifications/presse-papiers : question dans la barre (affichée même repliée), décision retenue par site (table `permissions`) — VERIFY: page de test locale : notifications accordées, position refusée, micro accordé ; capture de la question (fait le 06/10)
 
 ## E4 — Claude Code dans le navigateur
 - [x] E4.S1 — Terminal Claude Code dans un onglet (`core/terminal` PTY + xterm.js, bouton `>_` de la barre) — VERIFY: `cargo test -p echo-terminal` + capture de la fenêtre avec Claude Code (fait le 06/10)

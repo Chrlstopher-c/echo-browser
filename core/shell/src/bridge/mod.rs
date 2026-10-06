@@ -104,6 +104,7 @@ fn apply(request: UiRequest) {
         }
         UiRequest::SelectTab { id } => select_tab(id),
         UiRequest::OpenTerminal => open_terminal(),
+        UiRequest::AnswerPermission { id, allow, remember } => crate::permissions::answer(id, allow, remember),
         UiRequest::SleepTab { id } => sleep_tab(id),
         UiRequest::CloseTab { id } => close_tab(id),
         UiRequest::SetChromeWidth { pixels } => {

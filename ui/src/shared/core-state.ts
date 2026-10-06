@@ -45,6 +45,14 @@ export interface CoreState {
   /** Raison de la relance en cours, ou null tant que le navigateur tourne normalement. */
   restarting: string | null
   notice: Notice | null
+  /** Demandes de permission en attente de reponse, la plus ancienne d'abord. */
+  permissions: PermissionRequest[]
+}
+
+export interface PermissionRequest {
+  id: number
+  origin: string
+  kinds: string[]
 }
 
 export const EMPTY_CORE_STATE: CoreState = {
@@ -65,6 +73,7 @@ export const EMPTY_CORE_STATE: CoreState = {
   addressFocusToken: 0,
   restarting: null,
   notice: null,
+  permissions: [],
 }
 
 function withShield(state: CoreState, id: TabId, view: ShieldView): CoreState {
@@ -103,6 +112,10 @@ export function reduceCore(state: CoreState, event: CoreEvent): CoreState {
       return { ...state, restarting: event.reason }
     case 'notice':
       return { ...state, notice: { level: event.level, message: event.message, at: Date.now() } }
+    case 'permissionRequested':
+      return { ...state, permissions: [...state.permissions, { id: event.id, origin: event.origin, kinds: event.kinds }] }
+    case 'permissionResolved':
+      return { ...state, permissions: state.permissions.filter((request) => request.id !== event.id) }
   }
 }
 

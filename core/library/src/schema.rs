@@ -4,7 +4,7 @@ use rusqlite::Connection;
 use tracing::info;
 
 /// Version du schema. A incrementer en ajoutant la migration correspondante.
-const VERSION: i32 = 1;
+const VERSION: i32 = 2;
 
 /// Prepare la base : cree ce qui manque, met a niveau ce qui est ancien.
 pub fn prepare(connection: &Connection) -> rusqlite::Result<()> {
@@ -46,6 +46,12 @@ pub fn prepare(connection: &Connection) -> rusqlite::Result<()> {
          CREATE TABLE IF NOT EXISTS settings (
             key   TEXT PRIMARY KEY,
             value TEXT NOT NULL
+         );
+         CREATE TABLE IF NOT EXISTS permissions (
+            origin TEXT NOT NULL,
+            kind   TEXT NOT NULL,
+            allow  INTEGER NOT NULL,
+            PRIMARY KEY (origin, kind)
          );",
     )?;
     connection.pragma_update(None, "user_version", VERSION)?;

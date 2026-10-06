@@ -24,6 +24,8 @@ export type UiRequest =
   | { kind: 'revealSidebar'; reveal: boolean }
   | { kind: 'openDevTools'; id: TabId }
   | { kind: 'openTerminal' }
+  /** Reponse a une demande de permission d'un site. */
+  | { kind: 'answerPermission'; id: number; allow: boolean; remember: boolean }
   /** Sort du plein ecran, quand l'utilisateur le demande depuis l'interface. */
   | { kind: 'exitFullscreen' }
   // --- Mise en page ---
@@ -99,6 +101,9 @@ export type CoreEvent =
   /** Le navigateur va se relancer : l'interface montre son ecran d'attente. */
   | { kind: 'restarting'; reason: string }
   | { kind: 'notice'; level: NoticeLevel; message: string }
+  /** Un site demande une permission : l'interface pose la question. */
+  | { kind: 'permissionRequested'; id: number; origin: string; kinds: string[] }
+  | { kind: 'permissionResolved'; id: number }
 
 /** L'etat d'un onglet tel que l'interface l'affiche. */
 export interface TabView {

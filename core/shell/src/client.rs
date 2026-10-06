@@ -49,6 +49,10 @@ wrap_client! {
             Some(crate::transfers::Transfers::new(()))
         }
 
+        fn permission_handler(&self) -> Option<PermissionHandler> {
+            Some(crate::permissions::EchoPermissions::new(()))
+        }
+
         fn keyboard_handler(&self) -> Option<KeyboardHandler> {
             Some(crate::shortcuts::BrowserShortcuts::new(()))
         }

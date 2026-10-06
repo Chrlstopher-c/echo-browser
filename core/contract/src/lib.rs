@@ -31,6 +31,8 @@ pub enum UiRequest {
     OpenDevTools { id: TabId },
     /// Ouvre le terminal de Claude Code, ou y revient s'il est deja ouvert.
     OpenTerminal,
+    /// Reponse a une demande de permission d'un site (camera, micro, position…).
+    AnswerPermission { id: u64, allow: bool, remember: bool },
     /// Sort du plein ecran, quand l'utilisateur le demande depuis l'interface.
     ExitFullscreen,
 
@@ -130,6 +132,10 @@ pub enum CoreEvent {
     /// Le navigateur va se relancer : l'interface montre son ecran d'attente.
     Restarting { reason: String },
     Notice { level: NoticeLevel, message: String },
+    /// Un site demande une permission : l'interface pose la question a l'utilisateur.
+    PermissionRequested { id: u64, origin: String, kinds: Vec<String> },
+    /// La question n'a plus lieu d'etre (repondue, ou page partie).
+    PermissionResolved { id: u64 },
 }
 
 /// L'etat d'un onglet tel que l'interface l'affiche.

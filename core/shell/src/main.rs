@@ -15,6 +15,7 @@ mod identity;
 mod injection;
 mod menu;
 mod overlay;
+mod permissions;
 mod presence;
 mod selftest;
 mod restart;
