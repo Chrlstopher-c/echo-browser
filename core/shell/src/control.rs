@@ -141,6 +141,18 @@ fn run(job: Job) {
                 .map(|h| cef::ImplBrowserHost::has_dev_tools(&h) == 1);
             let _ = reply.send(json!({"ok": true, "open": open}));
         }
+        Some("layout") => {
+            let page = crate::session::with(|s| s.tabs.host())
+                .flatten()
+                .map(|host| cef::ImplView::bounds(&cef::View::from(&host)));
+            let page = page.map(|b| json!({"x": b.x, "y": b.y, "width": b.width, "height": b.height}));
+            let _ = reply.send(json!({"ok": true, "page": page, "dock": crate::window::docked_width()}));
+        }
+        Some("ui") => {
+            let kind = request.get("request").cloned().unwrap_or(Value::Null);
+            crate::bridge::submit(kind.to_string().as_bytes());
+            let _ = reply.send(json!({"ok": true}));
+        }
         Some("menu") => {
             let _ = reply.send(json!({"ok": true, "open": crate::overlay::menu_open()}));
         }

@@ -42,7 +42,7 @@ static DOCK_ANIMATING: AtomicBool = AtomicBool::new(false);
 /// Intervalle entre deux images de l'animation d'ouverture ou de fermeture de la barre.
 const DOCK_TICK_MS: i64 = 16;
 
-fn docked_width() -> i32 {
+pub fn docked_width() -> i32 {
     DOCK_NOW.load(Ordering::Relaxed)
 }
 
