@@ -4,9 +4,9 @@
 
 Ordre voulu par Chris : angles → favicons → mémoire → décodeur vidéo. Puis clic droit, fermeture, dossiers, comptes.
 
-1. **Faits** : texte centré / séparation adresse-onglets · session conservée entre deux lancements · tests isolés (plus jamais
+1. **Faits** : favicons · fermeture Super+Q instantanée · texte centré / séparation adresse-onglets · session conservée entre deux lancements · tests isolés (plus jamais
    l'instance de Chris tuée) · angles de page (masques) · identité Chrome 154 cohérente (captcha) · neumorphisme clair/sombre.
-2. **À vérifier / finir** : animation de la barre repliée + page repoussée (E6.S6) · favicons (E6.S7) · fermeture Super+Q (E6.S8).
+2. **À vérifier / finir** : animation de la barre repliée + page repoussée (E6.S6). (Favicons E6.S7 et fermeture Super+Q E6.S8 : faits et vérifiés.)
 3. **Clic droit** (E6.S9–S11) : ne marche PAS dans les pages réelles (Google, liens) ; barre : pas de « nouvel onglet », « nouveau dossier »,
    « fermer » ; pas de dossiers d'onglets.
 4. **DevTools complets sur F12** (E6.S10) : éléments, console, réseau, mémoire, performances. Chercher un kit existant plutôt que tout refaire.

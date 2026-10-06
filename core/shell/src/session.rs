@@ -45,6 +45,11 @@ impl Session {
     }
 }
 
+/// Rend l'etat vivant (onglets, vues) : a appeler avant l'arret de Chromium.
+pub fn release() {
+    SESSION.with(|cell| *cell.borrow_mut() = None);
+}
+
 /// Installe la session sur le thread courant. A appeler une seule fois, au demarrage.
 pub fn install(session: Session) {
     SESSION.with(|cell| *cell.borrow_mut() = Some(session));

@@ -144,7 +144,7 @@ fn tabs() -> Value {
         .iter()
         .map(|t| {
             json!({"id": t.id, "title": t.title, "url": t.url, "active": active == Some(t.id),
-                   "asleep": t.asleep, "loading": t.loading})
+                   "asleep": t.asleep, "loading": t.loading, "favicon": t.favicon, "pinned": t.pinned})
         })
         .collect();
     json!({"ok": true, "tabs": list})

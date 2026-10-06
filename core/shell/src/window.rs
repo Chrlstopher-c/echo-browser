@@ -195,6 +195,23 @@ pub fn reveal_chrome(reveal: bool, chrome: Option<&BrowserView>) {
 
 const EDGE_PAGE: &str = "echo://ui/bord.html";
 
+/// Rend toutes les vues et surimpressions que ce module garde, avant l'arret de Chromium.
+pub fn release_views() {
+    EDGE_STRIP.with(|slot| {
+        if let Some(strip) = slot.borrow_mut().take() {
+            strip.close();
+        }
+    });
+    CHROME_OVERLAY.with(|slot| {
+        if let Some(controller) = slot.borrow_mut().take() {
+            if controller.is_valid() == 1 {
+                controller.destroy();
+            }
+        }
+    });
+    SPACER.with(|slot| *slot.borrow_mut() = None);
+}
+
 wrap_panel_delegate! {
     struct ChromeSpacerDelegate {
         marker: (),

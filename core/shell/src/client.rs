@@ -169,7 +169,7 @@ wrap_display_handler! {
         /// L'icone du site : la premiere adresse annoncee par la page, que l'onglet affiche.
         fn on_favicon_urlchange(&self, browser: Option<&mut Browser>, icon_urls: Option<&mut CefStringList>) {
             let (Some(browser), Some(icon_urls)) = (browser, icon_urls) else { return };
-            if let Some(icon) = icon_urls.clone().into_iter().next() {
+            if let Some(icon) = first_icon(icon_urls) {
                 crate::bridge::set_tab_favicon(browser.identifier(), &icon);
             }
         }
@@ -305,4 +305,21 @@ fn read_click(params: &ContextMenuParams) -> crate::menu::Click {
 /// schema, est une page d'onglet comme une autre (chargement, titre, veille).
 fn is_interface_page(url: &str) -> bool {
     url.starts_with("echo://ui/") && url != crate::search::HOME && url != crate::terminal::PAGE
+}
+
+/// La premiere adresse d'icone de la liste que Chromium prete pour le rappel.
+fn first_icon(list: &mut CefStringList) -> Option<String> {
+    let raw: *mut cef::sys::_cef_string_list_t = list.into();
+    if raw.is_null() {
+        return None;
+    }
+    // SAFETY : `raw` designe la liste que Chromium garde vivante pendant ce rappel ; on ne fait que la lire.
+    unsafe {
+        if cef::sys::cef_string_list_size(raw) == 0 {
+            return None;
+        }
+        let mut value = std::mem::zeroed();
+        (cef::sys::cef_string_list_value(raw, 0, &mut value) > 0)
+            .then(|| CefString::from(std::ptr::from_ref(&value)).to_string())
+    }
 }
