@@ -27,7 +27,9 @@ static QUEUE: Mutex<VecDeque<Job>> = Mutex::new(VecDeque::new());
 /// Chemin de la prise, dans le dossier d'execution de l'utilisateur.
 pub fn socket_path() -> Option<PathBuf> {
     let runtime = std::env::var_os("XDG_RUNTIME_DIR")?;
-    Some(PathBuf::from(runtime).join("echo-browser").join("control.sock"))
+    // `ECHO_CONTROL_NAME` donne a une instance de test sa propre prise, sans toucher a celle du navigateur de l'utilisateur.
+    let name = std::env::var("ECHO_CONTROL_NAME").unwrap_or_else(|_| "control".to_string());
+    Some(PathBuf::from(runtime).join("echo-browser").join(format!("{name}.sock")))
 }
 
 /// Ouvre la prise, sauf `ECHO_CONTROL=0`.

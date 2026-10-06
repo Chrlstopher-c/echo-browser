@@ -44,6 +44,7 @@ pub fn defaults() -> Vec<(&'static str, Value)> {
         ("privacy.send_do_not_track", Value::Flag(true)),
         ("privacy.clear_on_exit", Value::Flag(false)),
         ("appearance.shell", Value::Text("#222326".into())),
+        ("session.restore", Value::Flag(true)),
         ("tabs.sleepEnabled", Value::Flag(true)),
         ("tabs.sleepAfterMinutes", Value::Number(5.0)),
     ]

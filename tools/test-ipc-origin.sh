@@ -3,6 +3,9 @@
 # Reussit si l'onglet « pwned » n'apparait pas ET que le refus est journalise.
 set -euo pipefail
 cd "$(dirname "$0")/.."
+# Instance de test isolee : jamais le navigateur de l'utilisateur (son pid, son journal, sa prise).
+export ECHO_RUN_DIR="$(mktemp -d)"
+export ECHO_CONTROL_NAME="test-$$"
 WWW="$(mktemp -d)"
 cat > "$WWW/csrf.html" <<'HTML'
 <title>csrf</title><script>
@@ -18,7 +21,7 @@ sleep 1
 ECHO_DATA_DIR="$(mktemp -d)" ECHO_SLEEP_AFTER_S=99999 ECHO_BENCH_WAKE_AT_S=12 \
   ECHO_BENCH_URLS="http://127.0.0.1:18931/csrf.html" ./start.sh release >/dev/null
 sleep 28
-LOG="$(sed 's/\x1b\[[0-9;]*m//g' logs/browser.log)"
+LOG="$(sed 's/\x1b\[[0-9;]*m//g' "$ECHO_RUN_DIR/browser.log")"
 grep -q "demande de pilotage refusee" <<<"$LOG" || { echo "ECHEC : refus non journalise"; exit 1; }
 if grep -q "Example Domain" <<<"$LOG"; then echo "ECHEC : la page a ouvert un onglet"; exit 1; fi
 echo "OK : pilotage depuis une page web refuse"

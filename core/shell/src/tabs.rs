@@ -272,6 +272,28 @@ impl Tabs {
         Detached { view: tab.view, host: self.host.clone(), remaining: self.entries.len() }
     }
 
+    /// Ajoute un onglet endormi, restitue sans etre charge : il se recharge quand on le selectionne.
+    pub fn adopt_asleep(&mut self, snapshot: &crate::restart::TabSnapshot) {
+        let Some(url) = snapshot.current() else { return };
+        let id = self.next_id;
+        self.next_id += 1;
+        self.entries.push(Tab {
+            id,
+            view: None,
+            asleep: true,
+            dirty: false,
+            last_active: Instant::now(),
+            title: if snapshot.title.is_empty() { url.to_string() } else { snapshot.title.clone() },
+            url: url.to_string(),
+            loading: false,
+            history: snapshot.history.clone(),
+            position: snapshot.position.min(snapshot.history.len().saturating_sub(1)),
+            pinned: snapshot.pinned,
+            zoom: 1.0,
+            audible: false,
+        });
+    }
+
     /// Rend visible l'onglet actif. A appeler apres un detachement.
     pub fn refresh_visibility(&self) {
         for tab in &self.entries {
@@ -313,6 +335,8 @@ impl Tabs {
                 .map(|tab| crate::restart::TabSnapshot {
                     history: tab.history.clone(),
                     position: tab.position,
+                    pinned: tab.pinned,
+                    title: tab.title.clone(),
                 })
                 .collect(),
             active,

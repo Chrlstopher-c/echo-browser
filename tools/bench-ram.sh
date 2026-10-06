@@ -4,6 +4,9 @@
 # Usage : tools/bench-ram.sh echo|chrome [attente_s]
 set -euo pipefail
 cd "$(dirname "$0")/.."
+# Instance de test isolee : jamais le navigateur de l'utilisateur (son pid, son journal, sa prise).
+export ECHO_RUN_DIR="$(mktemp -d)"
+export ECHO_CONTROL_NAME="test-$$"
 TARGET="${1:?echo ou chrome}"
 WAIT="${2:-70}"
 URLS="${BENCH_URLS:-https://fr.wikipedia.org/wiki/Linux https://github.com/torvalds/linux https://www.lemonde.fr https://www.reddit.com https://news.ycombinator.com https://www.youtube.com https://developer.mozilla.org/fr/ https://stackoverflow.com https://www.bbc.com/news https://www.twitch.tv}"
@@ -34,7 +37,7 @@ trap cleanup EXIT
 
 if [ "$TARGET" = "echo" ]; then
   ECHO_DATA_DIR="$(mktemp -d)" ECHO_BENCH_URLS="$URLS" ./start.sh release >/dev/null
-  ROOT=$(cat logs/browser.pid)
+  ROOT=$(cat "$ECHO_RUN_DIR/browser.pid")
 else
   PROFILE="$(mktemp -d)"
   setsid google-chrome-stable --user-data-dir="$PROFILE" --no-first-run --no-default-browser-check \

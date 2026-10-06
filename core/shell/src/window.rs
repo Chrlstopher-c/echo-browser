@@ -35,8 +35,62 @@ static REVEALED: AtomicBool = AtomicBool::new(false);
 const EDGE_WIDTH: i32 = 6;
 
 /// La place que la barre reserve dans la disposition : aucune une fois repliee.
+/// Place reservee a la barre a cet instant : elle glisse vers `target_dock` au fil des images.
+static DOCK_NOW: AtomicI32 = AtomicI32::new(CHROME_WIDTH);
+static DOCK_ANIMATING: AtomicBool = AtomicBool::new(false);
+
+/// Intervalle entre deux images de l'animation d'ouverture ou de fermeture de la barre.
+const DOCK_TICK_MS: i64 = 16;
+
 fn docked_width() -> i32 {
-    if COLLAPSED.load(Ordering::Relaxed) { 0 } else { CHROME_WIDTH_NOW.load(Ordering::Relaxed) }
+    DOCK_NOW.load(Ordering::Relaxed)
+}
+
+/// La place que la barre doit finir par reserver : toute sa largeur, sauf repliee et non montree.
+fn target_dock() -> i32 {
+    if COLLAPSED.load(Ordering::Relaxed) && !REVEALED.load(Ordering::Relaxed) {
+        0
+    } else {
+        CHROME_WIDTH_NOW.load(Ordering::Relaxed)
+    }
+}
+
+/// Lance le glissement de la barre vers sa place cible. La page suit : elle est repoussee, pas recouverte.
+fn animate_dock() {
+    if !DOCK_ANIMATING.swap(true, Ordering::Relaxed) {
+        schedule_dock_tick();
+    }
+}
+
+fn schedule_dock_tick() {
+    let mut task = DockTickTask::new(());
+    post_delayed_task(ThreadId::UI, Some(&mut task), DOCK_TICK_MS);
+}
+
+wrap_task! {
+    struct DockTickTask {
+        marker: (),
+    }
+
+    impl Task {
+        fn execute(&self) {
+            let target = target_dock();
+            let current = DOCK_NOW.load(Ordering::Relaxed);
+            let remaining = target - current;
+            // Ralentit en approchant du but ; au moins un pixel par image pour ne jamais s'arreter en route.
+            let step = ((remaining as f32 * 0.3).round() as i32).clamp(-remaining.abs(), remaining.abs());
+            let next = if remaining.abs() <= 3 { target } else { current + if step == 0 { remaining.signum() } else { step } };
+            DOCK_NOW.store(next, Ordering::Relaxed);
+            if let Some(window) = SPACER.with(|slot| slot.borrow().as_ref().and_then(|p| View::from(p).window())) {
+                relayout(&window);
+            }
+            if next == target {
+                DOCK_ANIMATING.store(false, Ordering::Relaxed);
+            } else {
+                schedule_dock_tick();
+            }
+        }
+    }
 }
 
 thread_local! {
@@ -67,17 +121,19 @@ fn place_chrome(window: &Window) {
     let size = View::from(window).bounds();
     let width = CHROME_WIDTH_NOW.load(Ordering::Relaxed);
     let collapsed = COLLAPSED.load(Ordering::Relaxed);
-    let shown = width > 0 && (!collapsed || REVEALED.load(Ordering::Relaxed));
+    let dock = DOCK_NOW.load(Ordering::Relaxed).min(width);
+    let shown = width > 0 && dock > 0;
     EDGE_STRIP.with(|slot| {
         if let Some(strip) = slot.borrow().as_ref() {
             strip.set_bounds(Rect { x: 0, y: 0, width: EDGE_WIDTH, height: size.height });
-            strip.set_visible(collapsed && !shown);
+            strip.set_visible(collapsed && !shown && !REVEALED.load(Ordering::Relaxed));
         }
     });
     CHROME_OVERLAY.with(|slot| {
         let Some(controller) = slot.borrow().clone() else { return };
         let bounds = Rect {
-            x: 0,
+            // La barre glisse depuis le bord gauche : sa partie cachee sort de la fenetre.
+            x: dock - width,
             y: CONTENT_INSET,
             width,
             height: (size.height - 2 * CONTENT_INSET).max(0),
@@ -93,6 +149,7 @@ pub fn set_chrome_width(pixels: i32, chrome: Option<&BrowserView>) {
     if CHROME_WIDTH_NOW.swap(clamped, Ordering::Relaxed) == clamped {
         return;
     }
+    DOCK_NOW.store(target_dock(), Ordering::Relaxed);
     if let Some(window) = chrome.and_then(|chrome| View::from(chrome).window()) {
         relayout(&window);
     }
@@ -120,7 +177,8 @@ pub fn set_collapsed(collapsed: bool, chrome: Option<&BrowserView>) {
             _ => {}
         }
     });
-    relayout(&window);
+    animate_dock();
+    place_chrome(&window);
     debug!(collapsed, "barre laterale repliee ou depliee");
 }
 
@@ -132,6 +190,7 @@ pub fn reveal_chrome(reveal: bool, chrome: Option<&BrowserView>) {
     if let Some(window) = chrome.and_then(|chrome| View::from(chrome).window()) {
         place_chrome(&window);
     }
+    animate_dock();
 }
 
 const EDGE_PAGE: &str = "echo://ui/bord.html";

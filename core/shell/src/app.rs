@@ -106,19 +106,47 @@ fn open_library() -> std::sync::Arc<echo_library::Library> {
     }
 }
 
+/// Le reglage « retrouver la session » : actif par defaut.
+fn restore_enabled() -> bool {
+    crate::session::with(|s| {
+        echo_library::settings::all(&s.library)
+            .into_iter()
+            .find(|(key, _)| key == "session.restore")
+            .map(|(_, value)| value != echo_library::settings::Value::Flag(false))
+    })
+    .flatten()
+    .unwrap_or(true)
+}
+
 /// Reprend les onglets laisses par une relance, ou ouvre la page d'accueil.
 fn restore_or_open() {
-    let Some(snapshot) = crate::restart::take(&flags::data_dir()) else {
-        crate::bridge::open_tab(&home_url());
-        return;
+    let data_dir = flags::data_dir();
+    // Une relance voulue reprend tout, en direct ; un demarrage ordinaire reprend la derniere session,
+    // dont seul l'onglet actif est charge (les autres dorment : demarrage rapide, memoire sobre).
+    let (snapshot, live) = match crate::restart::take(&data_dir) {
+        Some(snapshot) => (snapshot, true),
+        None if restore_enabled() => match crate::restart::load_last(&data_dir) {
+            Some(snapshot) => (snapshot, false),
+            None => return crate::bridge::open_tab(&home_url()),
+        },
+        None => return crate::bridge::open_tab(&home_url()),
     };
-    for tab in &snapshot.tabs {
+    for (index, tab) in snapshot.tabs.iter().enumerate() {
         let Some(url) = tab.current() else { continue };
+        if !live && index != snapshot.active {
+            crate::session::with(|s| s.tabs.adopt_asleep(tab));
+            continue;
+        }
         crate::bridge::open_tab(url);
         let opened = crate::session::with(|s| s.tabs.active_id()).flatten();
         if let Some(id) = opened {
-            let (history, position) = (tab.history.clone(), tab.position);
-            crate::session::with(|s| s.tabs.restore_history(id, history, position));
+            let (history, position, pinned) = (tab.history.clone(), tab.position, tab.pinned);
+            crate::session::with(|s| {
+                s.tabs.restore_history(id, history, position);
+                if let Some(entry) = s.tabs.get_mut(id) {
+                    entry.pinned = pinned;
+                }
+            });
         }
     }
     let restored = crate::session::with(|s| {

@@ -2,13 +2,14 @@
 # Arrete Echo Browser par son identifiant enregistre, jamais par motif de nom.
 set -euo pipefail
 cd "$(dirname "$0")"
+RUN_DIR="${ECHO_RUN_DIR:-logs}"
 
-if [ ! -f logs/browser.pid ]; then
+if [ ! -f "$RUN_DIR/browser.pid" ]; then
   echo "aucun identifiant enregistre — rien a arreter"
   exit 0
 fi
 
-PID="$(cat logs/browser.pid)"
+PID="$(cat "$RUN_DIR/browser.pid")"
 if kill -0 "$PID" 2>/dev/null; then
   kill "$PID"
   for _ in $(seq 1 20); do
@@ -20,4 +21,4 @@ if kill -0 "$PID" 2>/dev/null; then
 else
   echo "le processus $PID ne tourne plus"
 fi
-rm -f logs/browser.pid
+rm -f "$RUN_DIR/browser.pid"
