@@ -103,6 +103,22 @@ pub fn publish_tab(browser_id: i32, url: &str, title: &str, loading: bool) {
     publish_tabs();
 }
 
+/// Retient l'icone du site pour l'onglet, et previent l'interface.
+pub fn set_tab_favicon(browser_id: i32, icon: &str) {
+    let changed = session::with(|s| {
+        let tab = s.tabs.by_browser(browser_id)?;
+        let new = Some(icon.to_string());
+        let changed = tab.favicon != new;
+        tab.favicon = new;
+        Some(changed)
+    })
+    .flatten()
+    .unwrap_or(false);
+    if changed {
+        publish_tabs();
+    }
+}
+
 /// Note qu'une page porte une saisie de l'utilisateur, ou qu'elle repart de zero.
 pub fn set_tab_dirty(browser_id: i32, dirty: bool) {
     session::with(|s| {

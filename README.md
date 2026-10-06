@@ -1,75 +1,44 @@
 # echo-browser
 
-Navigateur desktop souverain — Electron + React + bloqueur de pubs natif.
+Navigateur de bureau Linux, souverain et sobre : coque Rust, moteur Chromium (CEF), interface React.
+Barre latérale verticale façon Zen/Arc, bouclier anti-pub natif, veille des onglets pour la mémoire, Claude Code intégré.
+
+Objectifs, dans l'ordre : **design** (neumorphisme clair et sombre), **rendu**, **performance** (RAM par onglet), puis usage quotidien.
+
+## Lancer
+
+```bash
+./start.sh release     # lance (profil dans ~/.local/share/echo-browser) ; journal : logs/browser.log
+./stop.sh              # arrête par identifiant enregistré (jamais par nom de processus)
+```
+
+Première fois sur une machine : `bash tools/fetch-cef.sh` (binaires Chromium, ~1,5 Go), `cd ui && bun install && bun run build`,
+puis `cargo build -p echo-shell --release` (cargo doit être dans le PATH ; `export PATH=$HOME/.cargo/bin:$PATH`).
 
 ## Stack
 
-| Couche | Technologie |
-|--------|-------------|
-| Shell | Electron 33 |
-| UI | React 18 + TypeScript + Tailwind v4 |
-| Ad blocking | @cliqz/adblocker-electron |
-| Build | electron-vite 5 + Bun |
+| Couche | Techno |
+|---|---|
+| Coque, onglets, bouclier, pilotage | Rust (crate `cef` 152, binaires CEF 154) |
+| Interface | React + TypeScript + Tailwind v4 + Framer Motion (Bun) |
+| Données | SQLite (favoris, historique, téléchargements, réglages, permissions) |
+| Terminal Claude Code | PTY Rust + xterm.js, session tmux partagée avec Quart |
 
-## Install
+Ports : sonde de présence `127.0.0.1:4330` (seul port ouvert). Pilotage local : prise Unix `$XDG_RUNTIME_DIR/echo-browser/control.sock`.
 
-```bash
-git clone https://github.com/trinityUwU/echo-browser
-cd echo-browser
-chmod +x install.sh && ./install.sh
-```
+## Tester
 
-Le script installe les dépendances, télécharge le binaire Electron si absent, et build le projet.
+- `./tools/test-control.sh` — prise de pilotage ; `./tools/test-ipc-origin.sh` — une page web ne pilote pas le cœur.
+- `cargo test --workspace --exclude echo-shell` — crates sans Chromium (CI GitHub).
+- `./tools/bench-ram.sh echo|chrome [attente_s]` — mémoire (PSS) sur des pages réelles, comparée à Chrome.
+- **Les scripts de test lancent une instance isolée** (`ECHO_RUN_DIR`, `ECHO_CONTROL_NAME`) : ils ne touchent jamais au navigateur de l'utilisateur.
 
-## Lancement
+## Variables utiles (bancs et diagnostic)
 
-```bash
-./start.sh       # lance l'app
-./stop.sh        # kill le process
-./restart.sh     # stop + start
-```
+`ECHO_DATA_DIR`, `ECHO_RUN_DIR`, `ECHO_LOG=debug`, `ECHO_SLEEP_AFTER_S`, `ECHO_BENCH_URLS`, `ECHO_BENCH_UI`, `ECHO_BENCH_JS`,
+`ECHO_FLAGS`, `ECHO_ROUND=0`, `ECHO_TERM_CMD`, `ECHO_CONTROL=0`.
 
-Ou directement :
-```bash
-bun run dev      # mode dev avec DevTools
-bun run start    # mode prod
-```
+## Documentation
 
-## Fonctionnalités
-
-- **Multi-onglets** avec favicons et indicateur de chargement
-- **Bloqueur de pubs** intégré (toggle shield dans la toolbar)
-- **Blocage popups** cross-domain : modal de confirmation ou blocage silencieux (mode strict)
-- **Auto-blocage** : mémorise les domaines bloqués manuellement
-- **Fullscreen** HTML5 — masquage automatique de la toolbar
-- **Compatibilité Google/YouTube** — Chrome UA + client hints injectés
-
-## Paramètres
-
-Icône engrenage en toolbar :
-- **Mode Standard** — modal de confirmation pour chaque popup externe
-- **Mode Strict** — blocage silencieux sans demande
-- **Mémoriser les bloqués** — plus jamais de modal pour les domaines déjà bloqués
-
-Settings persistés dans `~/.config/echo-browser/settings.json`.
-
-## Architecture
-
-```
-src/
-├── main/
-│   ├── index.ts        # process principal, tabs, IPC, bounds
-│   ├── adBlocker.ts    # setup @cliqz/adblocker-electron
-│   └── settings.ts     # persistance settings JSON
-├── preload/
-│   └── index.ts        # bridge IPC contextBridge
-├── renderer/
-│   ├── App.tsx
-│   └── components/
-│       ├── TabBar.tsx
-│       ├── Toolbar.tsx
-│       ├── PopupModal.tsx
-│       └── SettingsModal.tsx
-└── shared/
-    └── types.ts        # types partagés main/renderer
-```
+`BRIEF.md` (le quoi) · `EPICS.md` (stories, critères exécutables) · `STATE.md` (état, décisions, pièges) ·
+`TODO.md` (backlog) · `ARCHITECTURE.md` (domaines et frontières) · `ARBORESCENCE.md` (carte des fichiers, générée).

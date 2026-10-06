@@ -1,101 +1,216 @@
 # Arborescence
 
-Un fichier par ligne, avec son rôle. Le découpage en domaines et les frontières entre eux
-sont dans `ARCHITECTURE.md` ; ici, c'est la carte plate.
+Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par ligne, avec son role.
 
-```
-echo-browser/
-├── .echoforge.yml                      — fiche lue par le centre de contrôle (type, port de sonde, scripts)
-├── Cargo.toml                          — espace de travail Rust : les cinq caisses ci-dessous
-├── Cargo.lock                          — versions figées
-├── rust-toolchain.toml                 — version du compilateur imposée au dépôt
-├── start.sh / stop.sh / restart.sh     — lancement, arrêt par identifiant enregistré, cycle complet
-├── STATE.md · TODO.md · ARCHITECTURE.md · README.md · ARBORESCENCE.md
-│
-├── core/contract/
-│   ├── Cargo.toml
-│   └── src/lib.rs                      — contrat figé cœur ↔ interface, miroir de ui/src/shared/contract.ts
-│
-├── core/shield/                        — blocage publicitaire, moteur adblock-rust
-│   ├── src/lib.rs                      — façade : charger, décider, traiter une page, basculer un site
-│   ├── src/engine.rs                   — moteur de règles et son cache binaire
-│   ├── src/catalog.rs                  — listes de filtres, abonnements, rafraîchissement
-│   ├── src/resources.rs                — scriptlets et redirections extraits d'uBlock Origin
-│   ├── src/exceptions.rs               — sites où le bouclier est levé
-│   ├── src/verdict.rs                  — verdict rendu par requête
-│   ├── src/tally.rs                    — comptage par onglet et par catégorie
-│   └── examples/rapport.rs             — mesure de parité hors interface
-│
-├── core/extensions/                    — extensions Chromium
-│   ├── src/lib.rs                      — façade : inventaire, installation, activation
-│   ├── src/profile.rs                  — lecture du profil Chromium (source de vérité)
-│   ├── src/catalog.rs                  — extensions connues, métadonnées
-│   ├── src/crx.rs                      — dépaquetage d'une archive CRX
-│   ├── src/store.rs                    — récupération depuis la boutique
-│   └── examples/installer.rs           — installation en ligne de commande
-│
-├── core/library/                       — favoris, historique, téléchargements, réglages (SQLite WAL)
-│   ├── src/lib.rs                      — façade et ouverture de la base
-│   ├── src/schema.rs                   — quatre tables et leurs migrations
-│   ├── src/bookmarks.rs · history.rs · downloads.rs · settings.rs
-│   └── tests/library.rs                — dix cas sur une base réelle
-│
-├── core/shell/                         — la coque : Chromium, fenêtre, onglets, pont
-│   ├── src/main.rs                     — point d'entrée, processus principal et processus enfants
-│   ├── src/app.rs                      — application CEF, schéma echo://
-│   ├── src/flags.rs                    — commutateurs Chromium (dont l'exclusion de Vulkan)
-│   ├── src/window.rs                   — fenêtre, disposition, largeur du bandeau, teinte
-│   ├── src/session.rs                  — état vivant, cantonné au fil de l'interface
-│   ├── src/tabs.rs                     — onglets, trace de navigation, adoption et détachement des vues
-│   ├── src/client.rs                   — rappels Chromium par vue
-│   ├── src/filtering.rs                — branchement du bouclier sur les requêtes
-│   ├── src/injection/mod.rs            — traitement cosmétique et scriptlets
-│   ├── src/injection/filter.rs         — insertion dans le flux HTML, avant le premier script de la page
-│   ├── src/bridge/mod.rs               — réception des demandes de l'interface, publication des états
-│   ├── src/bridge/library.rs           — demandes touchant la bibliothèque
-│   ├── src/bridge/script.rs            — envoi d'évènements vers l'interface
-│   ├── src/transfers.rs                — téléchargements réels et dossier de destination
-│   ├── src/identity.rs                 — empreinte Chrome (en-têtes, langues)
-│   ├── src/search.rs                   — page d'accueil et moteur de recherche
-│   ├── src/shortcuts.rs                — raccourcis clavier
-│   ├── src/restart.rs                  — relance du processus avec restitution des onglets
-│   ├── src/presence.rs                 — sonde de présence : le seul port ouvert, lu par le centre de contrôle
-│   ├── src/assets.rs                   — service des fichiers de l'interface
-│   └── src/selftest.rs                 — scénario rejoué sans interface (ECHO_SELFTEST=1)
-│
-├── ui/                                 — interface, Bun + React + TypeScript + Tailwind
-│   ├── index.html · vite.config.ts · tsconfig.json · package.json · bun.lock
-│   ├── dist/                           — sortie de construction, servie par echo://
-│   └── src/
-│       ├── main.tsx · app.tsx          — montage et assemblage général
-│       ├── shared/contract.ts          — miroir TypeScript du contrat (ne jamais modifier seul)
-│       ├── shared/core-bridge.ts       — envoi des demandes, réception des évènements
-│       ├── shared/core-state.ts        — état reçu du cœur
-│       ├── shared/use-core.ts          — accès au cœur depuis les composants
-│       ├── shared/format.ts · url-shape.ts · local-store.ts
-│       ├── shared/design/              — primitives visuelles (thème, boutons, listes, anneaux, bascules)
-│       ├── shared/fake/                — cœur simulé pour le développement hors navigateur
-│       ├── sidebar/                    — colonne latérale, rail replié, feuilles, raccourcis, géométrie
-│       ├── tabs/                       — liste, grille des épinglés, ligne d'onglet, menu contextuel
-│       ├── address/                    — champ d'adresse, cadenas, progression, rechargement
-│       ├── stage/                      — cadre de la page et barre de développement
-│       ├── shield/                     — bouclier : compteurs, listes de filtres, feuille
-│       ├── library/                    — favoris, historique, téléchargements
-│       ├── extensions/                 — inventaire, installation, activation
-│       ├── settings/                   — catalogue des réglages et leur rendu
-│       ├── spaces/                     — espaces colorés et leur sélecteur
-│       └── restart/                    — écran et bandeau de relance
-│
-├── tools/
-│   ├── fetch-cef.sh                    — récupération de la distribution CEF
-│   └── build-resources.mjs             — extraction des scriptlets et redirections d'uBlock Origin
-│
-├── data/
-│   ├── filter-lists/                   — listes de filtres téléchargées
-│   ├── shield-resources.json           — scriptlets et redirections
-│   ├── shield-engine.bin               — moteur sérialisé, relu au démarrage
-│   └── extensions/                     — extensions dépaquetées, un dossier par identifiant
-│
-├── logs/                               — journal du navigateur, remis à zéro à chaque lancement
-└── target/                             — sortie de compilation Rust
-```
+- `.atelier/BOARD.md`
+- `.echoforge.yml`
+- `.env.example`
+- `.github/workflows/ci.yml`
+- `.gitignore`
+- `ARBORESCENCE.md`
+- `ARCHITECTURE.md`
+- `BRIEF.md`
+- `Cargo.toml`
+- `EPICS.md`
+- `README.md`
+- `STATE.md`
+- `TODO.md`
+- `core/contract/Cargo.toml`
+- `core/contract/src/lib.rs`
+- `core/extensions/Cargo.toml`
+- `core/extensions/examples/installer.rs`
+- `core/extensions/src/action.rs` — ce qu'une extension propose dans la barre — sa fenetre et son icone.
+- `core/extensions/src/catalog.rs` — recuperer une extension depuis le catalogue Chrome.
+- `core/extensions/src/crx.rs` — ouvrir un paquet d'extension Chrome et l'etaler sur le disque.
+- `core/extensions/src/external.rs` — declarer une extension a Chromium pour qu'il l'installe lui-meme.
+- `core/extensions/src/lib.rs`
+- `core/extensions/src/profile.rs` — lire l'inventaire des extensions tenu par Chromium lui-meme.
+- `core/extensions/src/store.rs` — l'inventaire des extensions installees, sur disque et en memoire.
+- `core/library/Cargo.toml`
+- `core/library/src/bookmarks.rs` — les favoris, et l'ordre dans lequel l'utilisateur les a ranges.
+- `core/library/src/downloads.rs` — les telechargements, en cours et passes.
+- `core/library/src/history.rs` — l'historique de navigation, sa recherche et son effacement.
+- `core/library/src/lib.rs`
+- `core/library/src/permissions.rs` — les decisions de permission (camera, micro, position, notifications…) retenues
+- `core/library/src/schema.rs` — la forme de la base et sa mise a niveau.
+- `core/library/src/settings.rs` — les reglages du navigateur, et leurs valeurs par defaut.
+- `core/library/tests/library.rs`
+- `core/shell/Cargo.toml`
+- `core/shell/src/app.rs` — le point de contact avec Chromium — drapeaux au demarrage, creation de la fenetre.
+- `core/shell/src/assets.rs` — servir l'interface du navigateur sous le schema interne `echo://`.
+- `core/shell/src/bridge/context.rs` — le menu contextuel — ce que le clic droit ouvre, et ce qu'il declenche.
+- `core/shell/src/bridge/extensions.rs` — les demandes de l'interface qui touchent aux extensions —
+- `core/shell/src/bridge/library.rs` — les demandes qui touchent la bibliotheque, et ce qu'elle renvoie.
+- `core/shell/src/bridge/mod.rs` — le canal entre l'interface et le coeur, dans les deux sens.
+- `core/shell/src/bridge/navigation.rs` — la navigation demandee par l'interface ou le clavier — onglets
+- `core/shell/src/bridge/publish.rs` — ce que le coeur pousse vers l'interface — etat de depart, onglets,
+- `core/shell/src/bridge/script.rs` — le code injecte dans la page d'interface pour lui donner `window.echo`.
+- `core/shell/src/client.rs` — le client CEF — ce que Chromium rappelle pendant la vie d'un navigateur.
+- `core/shell/src/control.rs` — la prise de pilotage locale — un outil (MCP de Claude, script) y liste,
+- `core/shell/src/filtering.rs` — soumettre chaque requete du navigateur au bouclier, et appliquer sa decision.
+- `core/shell/src/flags.rs` — les drapeaux Chromium imposes au demarrage, et pourquoi chacun est la.
+- `core/shell/src/identity.rs` — ce que le navigateur declare de lui-meme aux sites qu'il visite.
+- `core/shell/src/injection/filter.rs` — glisser le traitement du bouclier dans le flux HTML de la page,
+- `core/shell/src/injection/mod.rs` — appliquer dans la page ce que le blocage reseau ne peut pas faire —
+- `core/shell/src/main.rs`
+- `core/shell/src/menu.rs` — ce que le clic droit propose, selon ce qui est sous le curseur.
+- `core/shell/src/overlay.rs` — les vues posees **au-dessus** de la page.
+- `core/shell/src/permissions.rs` — les demandes de permission des sites (camera, micro, position, notifications,
+- `core/shell/src/persist.rs` — sauvegarder les onglets au fil de l'eau, pour les retrouver apres une fermeture
+- `core/shell/src/presence.rs`
+- `core/shell/src/restart.rs` — relancer le navigateur sans perdre ce qui etait ouvert.
+- `core/shell/src/roundness.rs` — les angles arrondis de la page. Une vue web est un rectangle natif que Chromium ne sait
+- `core/shell/src/search.rs` — le moteur de recherche et la page d'accueil.
+- `core/shell/src/selftest.rs` — rejouer sans main les manipulations d'onglets, pour verifier
+- `core/shell/src/session.rs` — l'etat vivant du navigateur — les onglets, l'interface, le bouclier.
+- `core/shell/src/shortcuts.rs` — les raccourcis clavier du navigateur, interceptes avant la page.
+- `core/shell/src/sleep.rs` — endormir periodiquement les onglets inactifs pour rendre leur memoire.
+- `core/shell/src/suggest.rs` — les suggestions de la page « nouvel onglet » — onglets ouverts, favoris et
+- `core/shell/src/tabs.rs` — les onglets — creation, bascule, fermeture, et la vue qui leur sert de scene.
+- `core/shell/src/terminal.rs` — le terminal de Claude Code — la commande lancee, et les routes
+- `core/shell/src/transfers.rs` — suivre les telechargements de Chromium et les rendre a la bibliotheque.
+- `core/shell/src/window.rs` — la fenetre du navigateur et la place respective de l'interface et du contenu.
+- `core/shield/Cargo.toml`
+- `core/shield/examples/rapport.rs`
+- `core/shield/src/catalog.rs` — quelles listes de filtres le navigateur souscrit, ou les telecharger, comment les rafraichir.
+- `core/shield/src/engine.rs` — construire et interroger le moteur de filtrage, et le recharger vite au demarrage.
+- `core/shield/src/exceptions.rs` — retenir les sites ou l'utilisateur a desactive le bouclier.
+- `core/shield/src/lib.rs`
+- `core/shield/src/resources.rs` — charger les scriptlets et ressources de remplacement — sans eux, les filtres `+js(...)` ne font rien.
+- `core/shield/src/tally.rs` — compter ce que le bouclier a bloque, globalement et par onglet.
+- `core/shield/src/verdict.rs` — ce qu'il faut faire d'une requete ou d'une page, exprime sans dependre du moteur.
+- `core/terminal/Cargo.toml`
+- `core/terminal/src/lib.rs` — un pseudo-terminal qui survit a la page qui l'affiche.
+- `mcp/echo_browser_mcp.py`
+- `mcp/requirements-mcp.txt`
+- `restart.sh`
+- `rust-toolchain.toml`
+- `start.sh`
+- `stop.sh`
+- `tools/bench-ram.sh`
+- `tools/build-resources.mjs`
+- `tools/fetch-cef.sh`
+- `tools/test-control.sh`
+- `tools/test-ipc-origin.sh`
+- `ui/.gitignore`
+- `ui/README.md`
+- `ui/bun.lock`
+- `ui/index.html`
+- `ui/menu.html`
+- `ui/package.json`
+- `ui/public/bord.css`
+- `ui/public/bord.html`
+- `ui/public/bord.js`
+- `ui/public/essai-surimpression.html`
+- `ui/public/nouvel-onglet.css`
+- `ui/public/nouvel-onglet.html`
+- `ui/public/nouvel-onglet.js`
+- `ui/public/terminal.css`
+- `ui/public/terminal.html`
+- `ui/public/terminal.js`
+- `ui/public/theme.js`
+- `ui/src/address/address-field.tsx` — champ d'adresse compact — l'hote seul au repos, l'URL complete a la saisie,
+- `ui/src/address/load-progress.tsx` — trait de progression au bas du champ d'adresse. Il suit l'avancement reel ;
+- `ui/src/address/reload-button.tsx` — bouton recharger qui devient arreter pendant le chargement — l'icone tourne pour
+- `ui/src/address/security-mark.tsx` — indicateur de securite du champ d'adresse, d'apres l'etat que le coeur connait.
+- `ui/src/address/top-controls.tsx` — rangee de controles compacts — precedent, suivant, rechargement, repli de la barre.
+- `ui/src/address/use-address-field.ts` — etat du champ d'adresse — brouillon de saisie, focus, selection, validation.
+- `ui/src/app.tsx` — composition de la fenetre — la barre, l'ecran de relance, l'effacement en plein
+- `ui/src/context-menu/main.tsx` — point d'entree du menu contextuel, page a part servie au-dessus du contenu.
+- `ui/src/context-menu/menu-panel.tsx` — le menu contextuel de la page — une liste d'entrees, posee au-dessus du
+- `ui/src/context-menu/read-payload.ts` — lire ce que le coeur a mis dans le fragment de l'adresse du menu.
+- `ui/src/extensions/extension-bar.tsx` — la rangee d'icones des extensions, et l'ouverture de leur fenetre.
+- `ui/src/extensions/extension-detail.tsx` — le detail d'une extension deplie sous sa ligne — ce qu'elle fait, ce qu'elle
+- `ui/src/extensions/extension-menu.tsx` — le menu contextuel d'une icone d'extension — ouvrir, regler, desactiver, retirer.
+- `ui/src/extensions/extension-model.ts` — lecture du modele d'extension — libelles et derivations, sans etat ni rendu.
+- `ui/src/extensions/extension-row.tsx` — une extension dans la liste — icone, etat, interrupteur, detail depliable,
+- `ui/src/extensions/extension-source.ts` — lire ce que l'utilisateur colle dans le champ d'installation, et le refuser
+- `ui/src/extensions/extensions-sheet.tsx` — feuille des extensions — installation, inventaire, gestion complete.
+- `ui/src/extensions/install-field.tsx` — champ d'installation d'une extension — saisie, refus lisible, ouverture du catalogue.
+- `ui/src/extensions/use-extensions.ts` — commandes du panneau des extensions — installation par le catalogue, bascule,
+- `ui/src/library/bookmarks/bookmarks-panel.tsx` — panneau des favoris — ajout de la page courante, liste reordonnable, retrait au survol.
+- `ui/src/library/bookmarks/use-bookmarks.ts` — commandes des favoris — ajout depuis l'onglet courant, retrait, reordonnancement.
+- `ui/src/library/downloads/download-badge.tsx` — badge des telechargements en cours sur le bouton bibliotheque — un anneau qui avance.
+- `ui/src/library/downloads/download-reading.ts` — lecture d'un telechargement — progression, libelle d'etat, agregat pour le badge.
+- `ui/src/library/downloads/downloads-panel.tsx` — panneau des telechargements — progression en direct, ouverture, dossier, annulation, oubli.
+- `ui/src/library/downloads/use-downloads.ts` — commandes des telechargements — ouvrir, reveler, annuler, oublier.
+- `ui/src/library/history/history-panel.tsx` — panneau de l'historique — recherche, journees, retrait d'une visite, effacement.
+- `ui/src/library/history/use-history.ts` — commandes de l'historique — recherche differee, regroupement par jour, retrait,
+- `ui/src/library/library-sheet.tsx` — feuille de la bibliotheque — trois sections sous un selecteur, le contenu glisse entre elles.
+- `ui/src/library/use-library.ts` — modele de la bibliotheque — section affichee (persistee), favoris, historique, telechargements.
+- `ui/src/main.tsx` — point d'entree de l'interface.
+- `ui/src/restart/restart-screen.tsx` — ecran d'attente plein cadre pendant la relance du navigateur. Il vit quelques
+- `ui/src/restart/restart-strip.tsx` — bande de relance — propose le redemarrage sans l'imposer, jamais bloquante.
+- `ui/src/settings/setting-catalogue.ts` — habillage des reglages — pour chaque cle que le coeur livre, un groupe, un libelle
+- `ui/src/settings/setting-row.tsx` — une ligne de reglage — libelle, explication, et le controle qui va avec son type.
+- `ui/src/settings/settings-sheet.tsx` — feuille des reglages — apparence tenue par l'interface, puis les reglages du coeur par theme.
+- `ui/src/settings/use-settings.ts` — reglages groupes par theme d'apres le catalogue, et envoi des modifications au coeur.
+- `ui/src/shared/contract.ts` — miroir TypeScript du contrat d'echange avec le coeur Rust.
+- `ui/src/shared/core-bridge.ts` — resoudre le pont vers le coeur — le vrai s'il est injecte, sinon le faux de developpement.
+- `ui/src/shared/core-state.ts` — etat de l'interface derive des evenements du coeur. Reducteur pur, sans effet de bord.
+- `ui/src/shared/design/confirm-strip.tsx` — confirmation en place d'une action destructrice — pas de boite modale, la ligne
+- `ui/src/shared/design/empty-state.tsx` — etat vide d'un panneau — pas d'illustration, une phrase et un motif discret.
+- `ui/src/shared/design/icon-button.tsx` — bouton icone — unique forme cliquable des rangees de controle de la barre.
+- `ui/src/shared/design/icons.tsx` — jeu d'icones du chrome. Traits de 1.5px, grille 16, aucun remplissage sauf mention.
+- `ui/src/shared/design/list-row.tsx` — ligne standard d'une liste de feuille — icone, contenu, actions au survol.
+- `ui/src/shared/design/motion.ts` — rythme du mouvement — une seule courbe, des durees courtes, jamais de rebond.
+- `ui/src/shared/design/progress-ring.tsx` — anneau de progression — un arc qui suit une valeur reelle de 0 a 1, sans a-coup.
+- `ui/src/shared/design/push-button.tsx` — bouton texte compact — actions nommees des feuilles (rafraichir, relancer, effacer).
+- `ui/src/shared/design/search-field.tsx` — champ de recherche d'une feuille — loupe, saisie, effacement.
+- `ui/src/shared/design/section-label.tsx` — intitule de section d'une feuille — petites capitales, appendice optionnel a droite.
+- `ui/src/shared/design/segmented.tsx` — selecteur a segments — un seul choix, le fond actif glisse d'un segment a l'autre.
+- `ui/src/shared/design/site-mark.tsx` — marque d'un site — favicon s'il existe, sinon l'initiale de l'hote, sinon un globe.
+- `ui/src/shared/design/stepper.tsx` — reglage numerique — moins, valeur, plus. La valeur est bornee et affichee avec son unite.
+- `ui/src/shared/design/text-field.tsx` — champ texte d'un reglage — modifie en place, valide sur Entree ou a la perte du focus,
+- `ui/src/shared/design/theme.css` — systeme de design d'Echo Browser — jetons semantiques. Les couleurs sont
+- `ui/src/shared/design/toggle.tsx` — interrupteur binaire du systeme de design. Vert « garde » a l'etat actif.
+- `ui/src/shared/design/tooltip-layer.tsx` — bulles d'aide maison. Une seule couche ecoute le survol de toute la fenetre et
+- `ui/src/shared/fake/fake-core.ts` — faux coeur en memoire pour le developpement de l'interface — assemble les volets
+- `ui/src/shared/fake/fake-downloads.ts` — volet telechargements du faux coeur — progression en direct, fin, annulation, oubli.
+- `ui/src/shared/fake/fake-extensions.ts` — volet extensions du faux coeur — inventaire, bascule, retrait, relance.
+- `ui/src/shared/fake/fake-library.ts` — volet bibliotheque du faux coeur — favoris et historique, avec recherche.
+- `ui/src/shared/fake/fake-settings.ts` — volet reglages du faux coeur — un jeu de cles typees, modifiables, rien de persiste.
+- `ui/src/shared/fake/fake-shield.ts` — volet bouclier du faux coeur — compteurs par onglet, interrupteurs, listes de filtres.
+- `ui/src/shared/fake/fake-tabs.ts` — volet onglets du faux coeur — ouverture, navigation, chargement simule, epinglage,
+- `ui/src/shared/format.ts` — mise en forme lisible des nombres, tailles et dates de l'interface, en francais.
+- `ui/src/shared/local-store.ts` — lecture et ecriture d'une preference locale. Ne jette jamais : sans stockage
+- `ui/src/shared/url-shape.ts` — lecture d'une URL pour l'affichage — hote, schema, sortie du champ d'adresse.
+- `ui/src/shared/use-core.ts` — brancher React sur le coeur — abonnement aux evenements, envoi des requetes.
+- `ui/src/shield/filter-lists.tsx` — les listes de filtres du bouclier — nom, nombre de regles, interrupteur, et le
+- `ui/src/shield/shield-button.tsx` — bouton bouclier de la rangee d'outils — etat lisible d'un coup d'oeil, compteur.
+- `ui/src/shield/shield-reading.ts` — lecture du bouclier — mode affiche, libelles.
+- `ui/src/shield/shield-sheet.tsx` — feuille du bouclier — etat, compteurs, interrupteurs global et par site, listes.
+- `ui/src/shield/shield-stat.tsx` — chiffre de blocage — nombre monospace et sa legende complete.
+- `ui/src/shield/use-shield.ts` — commandes du bouclier — interrupteurs, listes de filtres, rafraichissement borne.
+- `ui/src/sidebar/notice-strip.tsx` — message du coeur, pose au-dessus de la rangee d'outils, efface automatiquement.
+- `ui/src/sidebar/permission-strip.tsx` — la question d'un site qui demande une permission (camera, micro, position…).
+- `ui/src/sidebar/sheet-host.tsx` — cadre anime d'une feuille — en-tete avec titre et fermeture, corps defilant.
+- `ui/src/sidebar/sheet.ts` — identite des feuilles qui se posent sur la liste d'onglets.
+- `ui/src/sidebar/sidebar-column.tsx` — contenu de la barre depliee — controles, adresse, onglets, feuilles, outils, espaces.
+- `ui/src/sidebar/sidebar-geometry.ts` — geometrie de la barre laterale — largeurs reclamees au coeur.
+- `ui/src/sidebar/sidebar-sheets.tsx` — choix de la feuille affichee sur la liste d'onglets.
+- `ui/src/sidebar/sidebar.tsx` — la barre laterale — toujours la colonne entiere. Repliee, le coeur la retire de la
+- `ui/src/sidebar/simulation-mark.tsx` — marqueur visible quand le faux coeur de developpement alimente l'interface.
+- `ui/src/sidebar/use-keyboard.ts` — raccourcis clavier quand la barre a le focus. Quand la page l'a, Chromium les
+- `ui/src/sidebar/use-reveal-on-hover.ts` — la barre repliee se cache quand la souris la quitte, apres un court delai
+- `ui/src/sidebar/use-sheet.ts` — feuille ouverte sur la liste d'onglets. Une seule a la fois ; Echap la ferme.
+- `ui/src/sidebar/use-sidebar-width.ts` — repli de la barre. La largeur reclamee au coeur ne change jamais ; le repli
+- `ui/src/sidebar/use-sidebar.ts` — modele complet de la barre — coeur, gestes, largeur, feuilles, espace, domaines.
+- `ui/src/sidebar/utility-row.tsx` — rangee d'outils au bas de la barre — bouclier, bibliotheque, extensions, reglages.
+- `ui/src/spaces/apply-space.ts` — poser les jetons d'un espace sur le document. Les utilitaires Tailwind lisent
+- `ui/src/spaces/space-palette.ts` — les espaces — une teinte (graphite, sable…) dans l'un des deux schemas, clair ou sombre.
+- `ui/src/spaces/space-picker.tsx` — choix de l'espace dans les reglages — une pastille par teinte, la courante cochee.
+- `ui/src/spaces/space-strip.tsx` — bande des espaces au pied de la barre — un point par teinte (le courant etire en trait) et
+- `ui/src/spaces/use-space.ts` — espace courant (teinte + schema clair/sombre) — choix persistes, jetons poses sur le
+- `ui/src/stage/dev-toolbar.tsx` — leviers de simulation poses sur la scene — son, sommeil, telechargement, plein ecran.
+- `ui/src/stage/page-stage.tsx` — scene de developpement — la place de la page, dans un cadre flottant aux coins
+- `ui/src/tabs/pinned-grid.tsx` — les onglets epingles — pastilles sans texte en tete de barre, une colonne en rail.
+- `ui/src/tabs/tab-list.tsx` — liste verticale des onglets libres, reordonnable, et bouton de nouvel onglet.
+- `ui/src/tabs/tab-mark.tsx` — la marque d'un onglet — favicon au repos, anneau de progression pendant le
+- `ui/src/tabs/tab-menu.tsx` — le menu contextuel d'un onglet — epingler, favori, zoom, recharger, fermer.
+- `ui/src/tabs/tab-row.tsx` — un onglet de la liste — marque, titre tronque, son, fermeture au survol.
+- `ui/src/tabs/tabs-area.tsx` — la zone des onglets — epingles au-dessus, liste en dessous, menu contextuel commun.
+- `ui/src/tabs/use-tab-actions.ts` — traduire les gestes sur les onglets en requetes du contrat.
+- `ui/src/tabs/use-tab-menu.ts` — menu contextuel d'un onglet — ouverture au clic droit, fermeture au clic ailleurs
+- `ui/tsconfig.json`
+- `ui/vite.config.ts`

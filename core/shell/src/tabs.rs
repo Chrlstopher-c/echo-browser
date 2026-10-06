@@ -17,6 +17,8 @@ pub struct Tab {
     pub asleep: bool,
     /// Vrai quand l'utilisateur a saisi quelque chose dans la page : l'endormir perdrait sa saisie.
     pub dirty: bool,
+    /// Adresse de l'icone du site, quand la page en a declare une.
+    pub favicon: Option<String>,
     /// Dernier moment ou l'onglet a ete l'onglet actif.
     pub last_active: Instant,
     pub title: String,
@@ -87,7 +89,7 @@ impl Tab {
             progress: if self.loading { 0.4 } else { 1.0 },
             can_go_back,
             can_go_forward,
-            favicon: None,
+            favicon: self.favicon.clone(),
             security: security_of(&self.url),
             pinned: self.pinned,
             zoom: self.zoom,
@@ -168,6 +170,7 @@ impl Tabs {
             view: Some(view),
             asleep: false,
             dirty: false,
+            favicon: None,
             last_active: Instant::now(),
             title: url.to_string(),
             url: url.to_string(),
@@ -287,6 +290,7 @@ impl Tabs {
             view: None,
             asleep: true,
             dirty: false,
+            favicon: snapshot.favicon.clone(),
             last_active: Instant::now(),
             title: if snapshot.title.is_empty() { url.to_string() } else { snapshot.title.clone() },
             url: url.to_string(),
@@ -342,6 +346,7 @@ impl Tabs {
                     position: tab.position,
                     pinned: tab.pinned,
                     title: tab.title.clone(),
+                    favicon: tab.favicon.clone(),
                 })
                 .collect(),
             active,

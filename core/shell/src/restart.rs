@@ -31,6 +31,8 @@ pub struct TabSnapshot {
     /// Titre connu, pour afficher l'onglet sans le charger.
     #[serde(default)]
     pub title: String,
+    #[serde(default)]
+    pub favicon: Option<String>,
 }
 
 impl TabSnapshot {

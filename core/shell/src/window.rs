@@ -281,21 +281,19 @@ wrap_window_delegate! {
         }
 
         fn on_window_destroyed(&self, _window: Option<&mut Window>) {
+            crate::persist::flush();
             *self.chrome_view.borrow_mut() = None;
             *self.content_host.borrow_mut() = None;
             info!("fenetre fermee, arret du navigateur");
             quit_message_loop();
         }
 
+        /// Toute demande de fermeture de la fenetre (raccourci du gestionnaire de fenetres, bouton, signal) ferme
+        /// l'application entiere, quelle que soit la vue qui avait le focus. Fermer seulement la vue de l'interface
+        /// la laissait grise et la fenetre ouverte. Les onglets sont enregistres avant.
         fn can_close(&self, _window: Option<&mut Window>) -> i32 {
-            let chrome = self.chrome_view.borrow();
-            let Some(browser) = chrome.as_ref().and_then(|view| view.browser()) else {
-                return 1;
-            };
-            match browser.host() {
-                Some(host) => host.try_close_browser(),
-                None => 1,
-            }
+            crate::persist::flush();
+            1
         }
 
         /// Sans ces trois-la, la fenetre se declare non redimensionnable : un gestionnaire

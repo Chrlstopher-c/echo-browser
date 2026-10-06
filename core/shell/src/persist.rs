@@ -19,6 +19,14 @@ pub fn schedule() {
     post_delayed_task(ThreadId::UI, Some(&mut task), DEBOUNCE_MS);
 }
 
+/// Enregistre tout de suite, sans attendre le regroupement : avant de fermer la fenetre.
+pub fn flush() {
+    PENDING.store(false, Ordering::Relaxed);
+    if let Some(snapshot) = crate::session::with(|s| s.tabs.to_snapshot()) {
+        crate::restart::save_last(&crate::flags::data_dir(), &snapshot);
+    }
+}
+
 wrap_task! {
     struct SaveTask {
         marker: (),

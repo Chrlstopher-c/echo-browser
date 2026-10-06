@@ -166,6 +166,14 @@ wrap_display_handler! {
     }
 
     impl DisplayHandler {
+        /// L'icone du site : la premiere adresse annoncee par la page, que l'onglet affiche.
+        fn on_favicon_urlchange(&self, browser: Option<&mut Browser>, icon_urls: Option<&mut CefStringList>) {
+            let (Some(browser), Some(icon_urls)) = (browser, icon_urls) else { return };
+            if let Some(icon) = icon_urls.clone().into_iter().next() {
+                crate::bridge::set_tab_favicon(browser.identifier(), &icon);
+            }
+        }
+
         /// Le vrai titre de la page, celui que l'onglet et l'historique affichent.
         fn on_title_change(&self, browser: Option<&mut Browser>, title: Option<&CefString>) {
             let Some(browser) = browser else { return };
