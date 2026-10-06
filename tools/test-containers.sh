@@ -57,6 +57,10 @@ cookies("/set", "pro")
 assert "compte=alice" in cookies("/", "pro"), "le cookie n'est pas rendu au meme conteneur"
 assert "compte=alice" not in cookies("/", "perso"), "le cookie fuit vers un autre conteneur"
 assert "compte=alice" not in cookies("/", None), "le cookie fuit vers le contexte commun"
+call(op="open", url="echo://ui/nouvel-onglet.html", container="perso")
+time.sleep(3)
+home = [t for t in call(op="tabs")["tabs"] if t["container"] == "perso" and t["url"].startswith("echo://")]
+assert home and home[-1]["title"] == "Nouvel onglet", f"page d'accueil KO dans un conteneur : {home}"
 print("isolation ok")
 PY
 ./stop.sh >/dev/null; sleep 3

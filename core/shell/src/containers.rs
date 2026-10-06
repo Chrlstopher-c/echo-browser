@@ -62,6 +62,7 @@ pub fn context_for(id: &str) -> Option<RequestContext> {
     };
     let mut handler = ReadyHandler::new(id.to_string());
     let context = request_context_create_context(Some(&settings), Some(&mut handler))?;
+    crate::assets::install_factory_in(&context);
     CONTEXTS.with(|map| map.borrow_mut().insert(id.to_string(), context.clone()));
     Some(context)
 }

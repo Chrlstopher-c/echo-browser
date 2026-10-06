@@ -45,6 +45,22 @@ pub fn register(registrar: Option<&mut SchemeRegistrar>) {
 }
 
 /// Branche la fabrique qui repondra aux requetes `echo://`. A appeler une fois le contexte pret.
+/// Branche les adresses `echo://` dans le contexte d'un conteneur : sans cela, la page « Nouvel onglet »
+/// d'un conteneur repond ERR_UNKNOWN_URL_SCHEME (la fabrique globale ne couvre que le contexte commun).
+pub fn install_factory_in(context: &RequestContext) {
+    for host in [UI_HOST, ICON_HOST] {
+        let mut factory = UiSchemeFactory::new(ui_root());
+        let ok = context.register_scheme_handler_factory(
+            Some(&CefString::from(SCHEME)),
+            Some(&CefString::from(host)),
+            Some(&mut factory),
+        );
+        if ok != 1 {
+            warn!(%host, "adresses echo:// non branchees dans un conteneur");
+        }
+    }
+}
+
 pub fn install_factory() {
     let mut factory = UiSchemeFactory::new(ui_root());
     let installed = register_scheme_handler_factory(
