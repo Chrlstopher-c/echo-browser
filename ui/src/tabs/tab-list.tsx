@@ -26,10 +26,10 @@ function NewTabRow({ compact, onNew }: { compact: boolean; onNew: () => void }):
       aria-label="Nouvel onglet"
       title="Nouvel onglet (Ctrl+T)"
       className={`flex h-8 items-center gap-2.5 rounded-row text-ink-faint transition-colors duration-100
-        hover:bg-hover hover:text-ink-muted ${compact ? 'justify-center' : 'px-2.5'}`}
+        hover:bg-hover hover:text-ink-muted ${compact ? 'justify-center' : 'pl-4 pr-2.5'}`}
     >
       <IconPlus size={14} />
-      {!compact && <span className="text-[12.5px]">Nouvel onglet</span>}
+      {!compact && <span className="text-[12.5px] leading-none">Nouvel onglet</span>}
     </button>
   )
 }

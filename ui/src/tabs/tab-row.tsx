@@ -49,7 +49,7 @@ function CloseAction({ onClose }: { onClose: () => void }): ReactElement {
 function RowBody({ tab, title, onClose }: { tab: TabView; title: string; onClose: () => void }): ReactElement {
   return (
     <>
-      <span className={`min-w-0 flex-1 truncate text-[12.5px] ${tab.asleep ? 'text-ink-faint' : ''}`}>
+      <span className={`min-w-0 flex-1 truncate text-[12.5px] leading-none ${tab.asleep ? 'text-ink-faint' : ''}`}>
         {title}
       </span>
       {tab.audible && !tab.asleep && (
@@ -64,8 +64,9 @@ function RowBody({ tab, title, onClose }: { tab: TabView; title: string; onClose
 
 function ActiveBackdrop(): ReactElement {
   return (
-    <motion.span layoutId="onglet-actif" transition={PANEL}
-      className="absolute inset-0 -z-10 rounded-row shadow-pressed" />
+    <motion.span layoutId="onglet-actif" transition={PANEL} className="absolute inset-0 -z-10 rounded-row shadow-card">
+      <span className="absolute top-1/2 left-1.5 h-3.5 w-[3px] -translate-y-1/2 rounded-full bg-tint" />
+    </motion.span>
   )
 }
 
@@ -89,8 +90,8 @@ export function TabRow(props: TabRowProps): ReactElement {
       onPointerDown={onPointerDown}
       onContextMenu={onContextMenu}
       title={title}
-      className={`group relative isolate flex items-center gap-2.5 overflow-hidden rounded-row
-        ${compact ? 'justify-center px-0' : 'pr-1.5 pl-2.5'}
+      className={`group relative isolate flex items-center gap-2.5 rounded-row
+        ${compact ? 'justify-center px-0' : 'pr-1.5 pl-4'}
         ${active ? 'text-ink' : 'text-ink-muted hover:bg-hover hover:text-ink'}`}
     >
       {active && <ActiveBackdrop />}

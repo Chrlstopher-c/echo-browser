@@ -2,7 +2,7 @@
 
 import type { ReactElement } from 'react'
 import type { Security } from '../shared/contract'
-import { IconGlobe, IconLock, IconLockOpen, IconWarning, type IconComponent } from '../shared/design/icons'
+import { IconLock, IconLockOpen, IconSearch, IconWarning, type IconComponent } from '../shared/design/icons'
 
 export type SecurityReading = Security | 'blank'
 
@@ -17,8 +17,8 @@ const READING: Record<SecurityReading, Reading> = {
   mixed: { label: 'Connexion chiffrée, contenu mixte', tone: 'text-warn', Icon: IconWarning },
   invalid: { label: 'Certificat invalide', tone: 'text-danger', Icon: IconWarning },
   insecure: { label: 'Connexion non chiffrée', tone: 'text-warn', Icon: IconLockOpen },
-  local: { label: 'Page interne du navigateur', tone: 'text-ink-faint', Icon: IconGlobe },
-  blank: { label: 'Aucune page chargée', tone: 'text-ink-faint', Icon: IconGlobe },
+  local: { label: 'Page interne du navigateur', tone: 'text-ink-faint', Icon: IconSearch },
+  blank: { label: 'Rechercher ou saisir une adresse', tone: 'text-ink-faint', Icon: IconSearch },
 }
 
 export function SecurityMark({ security, size = 13 }: { security: SecurityReading; size?: number }): ReactElement {

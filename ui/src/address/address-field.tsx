@@ -22,7 +22,7 @@ export interface AddressFieldProps {
 function RestingHost({ url }: { url: string }): ReactElement {
   const shape = readUrl(url)
   if (shape.host.length === 0) {
-    return <span className="text-ink-faint">Rechercher ou saisir une adresse</span>
+    return <span className="truncate whitespace-nowrap text-ink-faint">Rechercher ou saisir une URL</span>
   }
   return (
     <span className="truncate">
@@ -62,7 +62,7 @@ export function AddressField({ tab, onSubmit, onResetZoom, focusToken }: Address
   const security = tab === null || tab.url.length === 0 || tab.url === 'about:blank' ? 'blank' : tab.security
   return (
     <div
-      className={`relative flex h-8 min-w-0 items-center gap-2 overflow-hidden rounded-row bg-field px-2.5
+      className={`relative flex h-9 min-w-0 items-center gap-2 overflow-hidden rounded-full bg-field px-3.5
         shadow-field transition-colors duration-100 ${field.editing ? 'ring-1 ring-guard/60' : 'hover:bg-hover'}`}
     >
       <SecurityMark security={security} />
@@ -72,7 +72,7 @@ export function AddressField({ tab, onSubmit, onResetZoom, focusToken }: Address
         spellCheck={false}
         autoComplete="off"
         aria-label="Adresse"
-        placeholder={field.editing ? 'Rechercher ou saisir une adresse' : undefined}
+        placeholder={field.editing ? 'Rechercher ou saisir une URL' : undefined}
         onChange={(event) => field.onChange(event.target.value)}
         onFocus={field.onFocus}
         onBlur={field.onBlur}
@@ -81,8 +81,8 @@ export function AddressField({ tab, onSubmit, onResetZoom, focusToken }: Address
           placeholder:text-ink-faint ${field.editing ? 'text-ink' : 'text-transparent'}`}
       />
       {!field.editing && (
-        <div className="pointer-events-none absolute inset-y-0 right-2.5 left-[31px] flex items-center
-          overflow-hidden text-[12.5px]">
+        <div className="pointer-events-none absolute inset-y-0 right-3.5 left-[39px] flex items-center
+          overflow-hidden text-[12.5px] leading-none">
           <RestingHost url={tab?.url ?? ''} />
         </div>
       )}
