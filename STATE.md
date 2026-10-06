@@ -91,6 +91,9 @@
   blanche. Toute la gestion doit être la nôtre.
 
 ## Pièges vérifiés, à ne pas réintroduire
+- **La barre est une surimpression, pas un enfant de la disposition** (`window.rs`) : un espaceur réserve sa place.
+  Une vue de **largeur nulle sort de la disposition** et garde son ancienne taille (largeur ≥ 1) ; la taille préférée de
+  l'espaceur est mise en cache, il faut invalider *l'espaceur* (pas seulement la fenêtre).
 - **Ne jamais tenir l'accès à l'état pendant un appel à Chromium** : il rappelle le programme au milieu.
   A causé un arrêt brutal à l'ouverture d'onglet, puis un figeage à la fermeture.
 - **Ne pas fermer explicitement le navigateur d'un onglet** : la demande remonte à la fenêtre et la ferme.

@@ -48,6 +48,10 @@ impl Overlay {
         Some(Self { controller, view })
     }
 
+    pub fn set_visible(&self, visible: bool) {
+        self.controller.set_visible(i32::from(visible));
+    }
+
     /// Deplace et redimensionne la surimpression.
     pub fn set_bounds(&self, bounds: Rect) {
         self.controller.set_bounds(Some(&bounds));

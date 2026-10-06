@@ -3,7 +3,7 @@
 // Les macros `wrap_*` de CEF exigent les traits `Impl*` et `Wrap*` dans la portee : import global impose.
 use cef::*;
 use std::cell::RefCell;
-use std::sync::atomic::{AtomicI32, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicI32, Ordering};
 use tracing::{debug, info};
 
 /// Largeur de la barre laterale au repos.
@@ -22,20 +22,131 @@ const CONTENT_INSET: i32 = 8;
 /// depuis un rappel de Chromium, hors de tout acces a l'etat.
 static CHROME_WIDTH_NOW: AtomicI32 = AtomicI32::new(CHROME_WIDTH);
 
+/// Barre repliee : elle ne reserve plus de place, la page prend toute la fenetre.
+static COLLAPSED: AtomicBool = AtomicBool::new(false);
+
+/// Barre repliee mais montree par-dessus la page (la souris longe le bord gauche).
+static REVEALED: AtomicBool = AtomicBool::new(false);
+
+/// Largeur du liseré qui detecte la souris au bord gauche quand la barre est repliee.
+const EDGE_WIDTH: i32 = 6;
+
+/// La place que la barre reserve dans la disposition : aucune une fois repliee.
+fn docked_width() -> i32 {
+    if COLLAPSED.load(Ordering::Relaxed) { 0 } else { CHROME_WIDTH_NOW.load(Ordering::Relaxed) }
+}
+
+thread_local! {
+    /// L'espaceur qui reserve la place de la barre : sa taille preferee est mise en cache, il faut
+    /// l'invalider lui-meme pour que la disposition la relise.
+    static SPACER: RefCell<Option<Panel>> = const { RefCell::new(None) };
+
+    /// Le liseré de detection du bord gauche, present seulement quand la barre est repliee.
+    static EDGE_STRIP: RefCell<Option<crate::overlay::Overlay>> = const { RefCell::new(None) };
+
+    /// La barre laterale est une surimpression ancree a gauche : elle flotte au-dessus de la
+    /// fenetre au lieu de pousser la page, ce qui permet de la replier sans deplacer le contenu.
+    static CHROME_OVERLAY: RefCell<Option<OverlayController>> = const { RefCell::new(None) };
+}
+
+fn relayout(window: &Window) {
+    SPACER.with(|slot| {
+        if let Some(spacer) = slot.borrow().as_ref() {
+            View::from(spacer).invalidate_layout();
+        }
+    });
+    window.invalidate_layout();
+    place_chrome(window);
+}
+
+/// Recale la surimpression de la barre sur la hauteur de la fenetre et la largeur courante.
+fn place_chrome(window: &Window) {
+    let size = View::from(window).bounds();
+    let width = CHROME_WIDTH_NOW.load(Ordering::Relaxed);
+    let collapsed = COLLAPSED.load(Ordering::Relaxed);
+    let shown = width > 0 && (!collapsed || REVEALED.load(Ordering::Relaxed));
+    EDGE_STRIP.with(|slot| {
+        if let Some(strip) = slot.borrow().as_ref() {
+            strip.set_bounds(Rect { x: 0, y: 0, width: EDGE_WIDTH, height: size.height });
+            strip.set_visible(collapsed && !shown);
+        }
+    });
+    CHROME_OVERLAY.with(|slot| {
+        let Some(controller) = slot.borrow().clone() else { return };
+        let bounds = Rect {
+            x: 0,
+            y: CONTENT_INSET,
+            width,
+            height: (size.height - 2 * CONTENT_INSET).max(0),
+        };
+        controller.set_bounds(Some(&bounds));
+        controller.set_visible(i32::from(shown));
+    });
+}
+
 /// Fixe la largeur reclamee par la barre laterale et relance la disposition.
 pub fn set_chrome_width(pixels: i32, chrome: Option<&BrowserView>) {
     let clamped = pixels.clamp(MIN_CHROME_WIDTH, MAX_CHROME_WIDTH);
     if CHROME_WIDTH_NOW.swap(clamped, Ordering::Relaxed) == clamped {
         return;
     }
-    if let Some(chrome) = chrome {
-        let view = View::from(chrome);
-        view.invalidate_layout();
-        if let Some(parent) = view.parent_view() {
-            parent.invalidate_layout();
-        }
+    if let Some(window) = chrome.and_then(|chrome| View::from(chrome).window()) {
+        relayout(&window);
     }
     debug!(largeur = clamped, "largeur de la barre laterale");
+}
+
+// Reserve a gauche la place de la barre, qui flotte par-dessus : la page commence apres elle.
+/// Replie ou deplie la barre. Repliee, elle ne pousse plus la page et ne revient que par le bord gauche.
+pub fn set_collapsed(collapsed: bool, chrome: Option<&BrowserView>) {
+    if COLLAPSED.swap(collapsed, Ordering::Relaxed) == collapsed {
+        return;
+    }
+    REVEALED.store(false, Ordering::Relaxed);
+    let Some(chrome) = chrome else { return };
+    let Some(window) = View::from(chrome).window() else { return };
+    EDGE_STRIP.with(|slot| {
+        let mut slot = slot.borrow_mut();
+        match (collapsed, slot.is_some()) {
+            (true, false) => *slot = crate::overlay::Overlay::open(chrome, EDGE_PAGE, Rect { x: 0, y: 0, width: EDGE_WIDTH, height: 1 }),
+            (false, true) => {
+                if let Some(strip) = slot.take() {
+                    strip.close();
+                }
+            }
+            _ => {}
+        }
+    });
+    relayout(&window);
+    debug!(collapsed, "barre laterale repliee ou depliee");
+}
+
+/// Montre ou cache la barre repliee, selon que la souris est au bord gauche ou la quitte.
+pub fn reveal_chrome(reveal: bool, chrome: Option<&BrowserView>) {
+    if !COLLAPSED.load(Ordering::Relaxed) || REVEALED.swap(reveal, Ordering::Relaxed) == reveal {
+        return;
+    }
+    if let Some(window) = chrome.and_then(|chrome| View::from(chrome).window()) {
+        place_chrome(&window);
+    }
+}
+
+const EDGE_PAGE: &str = "echo://ui/bord.html";
+
+wrap_panel_delegate! {
+    struct ChromeSpacerDelegate {
+        marker: (),
+    }
+
+    impl ViewDelegate {
+        fn preferred_size(&self, _view: Option<&mut View>) -> Size {
+            // Hauteur nulle : la disposition ignore alors la vue, et la page glisse sous la barre.
+            // Au moins 1 : une vue de largeur nulle sort de la disposition et garde son ancienne taille.
+            Size { width: docked_width().max(1), height: 1 }
+        }
+    }
+
+    impl PanelDelegate {}
 }
 
 /// Titre porte par la fenetre. Le nom du projet ne s'affiche nulle part dans l'application.
@@ -61,6 +172,12 @@ wrap_window_delegate! {
         fn preferred_size(&self, _view: Option<&mut View>) -> Size {
             Size { width: INITIAL_WIDTH, height: INITIAL_HEIGHT }
         }
+
+        fn on_layout_changed(&self, view: Option<&mut View>, _new_bounds: Option<&Rect>) {
+            if let Some(window) = view.and_then(|view| view.window()) {
+                place_chrome(&window);
+            }
+        }
     }
 
     impl PanelDelegate {}
@@ -76,8 +193,14 @@ wrap_window_delegate! {
             // Disposition verticale : la bande d'interface en haut a sa hauteur preferee,
             // la vue web dessous prend tout le reste (flex 1).
             let layout = window.set_to_box_layout(Some(&side_by_side_layout()));
+            let mut spacer_delegate = ChromeSpacerDelegate::new(());
+            if let Some(spacer) = panel_create(Some(&mut spacer_delegate)) {
+                window.add_child_view(Some(&mut View::from(&spacer)));
+                SPACER.with(|slot| *slot.borrow_mut() = Some(spacer));
+            }
             let mut chrome_view = View::from(chrome);
-            window.add_child_view(Some(&mut chrome_view));
+            let controller = window.add_overlay_view(Some(&mut chrome_view), DockingMode::CUSTOM, 1);
+            CHROME_OVERLAY.with(|slot| *slot.borrow_mut() = controller);
 
             let host = self.content_host.borrow().clone();
             if let Some(host) = host.as_ref() {
@@ -90,6 +213,7 @@ wrap_window_delegate! {
 
             View::from(&*window).set_background_color(DEFAULT_SHELL);
             window.set_title(Some(&CefString::from(WINDOW_TITLE)));
+            place_chrome(window);
             window.show();
             info!(contenu = host.is_some(), "fenetre du navigateur affichee");
         }

@@ -1,8 +1,7 @@
-// Responsabilite : repli de la barre et largeur reclamee au coeur. Au repli, le coeur est
-// prevenu apres l'animation (la barre retrecit dans sa fenetre) ; au depli, avant (la fenetre
-// s'elargit puis la barre s'y deploie). La page ne chevauche jamais la barre.
+// Responsabilite : repli de la barre. La largeur reclamee au coeur ne change jamais ; le repli
+// retire seulement la place reservee a la barre, qui revient par-dessus la page au bord gauche.
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { UiRequest } from '../shared/contract'
 import { readLocal, writeLocal } from '../shared/local-store'
 import { widthFor } from './sidebar-geometry'
@@ -14,8 +13,6 @@ export interface SidebarWidth {
   width: number
   toggle: () => void
   expand: () => void
-  /** A appeler quand l'animation de largeur se termine. */
-  onSettled: () => void
 }
 
 function readStored(): boolean {
@@ -24,10 +21,10 @@ function readStored(): boolean {
 
 export function useSidebarWidth(send: (request: UiRequest) => void): SidebarWidth {
   const [collapsed, setCollapsed] = useState<boolean>(readStored)
-  const pendingClaim = useRef<number | null>(null)
 
   useEffect(() => {
-    send({ kind: 'setChromeWidth', pixels: widthFor(readStored()) })
+    send({ kind: 'setChromeWidth', pixels: widthFor() })
+    send({ kind: 'setSidebarCollapsed', collapsed: readStored() })
   }, [send])
 
   const apply = useCallback(
@@ -35,29 +32,13 @@ export function useSidebarWidth(send: (request: UiRequest) => void): SidebarWidt
       setCollapsed(next)
       writeLocal(STORE_KEY, next)
       send({ kind: 'setSidebarCollapsed', collapsed: next })
-      const pixels = widthFor(next)
-      pendingClaim.current = next ? pixels : null
-      if (!next) send({ kind: 'setChromeWidth', pixels })
     },
     [send],
   )
 
-  const onSettled = useCallback((): void => {
-    if (pendingClaim.current === null) return
-    send({ kind: 'setChromeWidth', pixels: pendingClaim.current })
-    pendingClaim.current = null
-  }, [send])
-
-  return useGestures(collapsed, apply, onSettled)
-}
-
-function useGestures(collapsed: boolean, apply: (next: boolean) => void, onSettled: () => void): SidebarWidth {
   const toggle = useCallback((): void => apply(!collapsed), [apply, collapsed])
   const expand = useCallback((): void => {
     if (collapsed) apply(false)
   }, [apply, collapsed])
-  return useMemo(
-    () => ({ collapsed, width: widthFor(collapsed), toggle, expand, onSettled }),
-    [collapsed, toggle, expand, onSettled],
-  )
+  return useMemo(() => ({ collapsed, width: widthFor(), toggle, expand }), [collapsed, toggle, expand])
 }

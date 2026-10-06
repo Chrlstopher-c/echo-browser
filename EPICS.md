@@ -12,7 +12,7 @@
 - [x] E2.S1 — Marge et gouttière de la teinte de la barre — VERIFY: capture, pixels de la gouttière = teinte `shell`
 - [x] E2.S2 — Bulles d'aide maison sur tous les boutons (couche unique `tooltip-layer.tsx`, 380 ms, raccourci en touche ; barre repliée = bulle système, la vue y est trop étroite) — VERIFY: capture Playwright au survol
 - [x] E2.S3 — Nouvel onglet : suggestions (onglets ouverts, favoris, historique dédoublonné, filtre à la frappe) — VERIFY: capture à 6 lignes + op `suggest` filtrée (fait le 06/10 ; flèches/Entrée écrites mais pas rejouées au clavier réel)
-- [ ] E2.S4 — Barre repliée : page pleine largeur, rail en surimpression au bord gauche — VERIFY: largeur de la vue = fenêtre
+- [x] E2.S4 — Barre repliée : la page prend toute la fenêtre, la barre (colonne entière, plus de rail) revient par-dessus au bord gauche — VERIFY: `ECHO_BENCH_UI` rejoue repli/survol/dépli, captures (page à x=9 repliée, barre au-dessus au survol) (fait le 06/10)
 - [ ] E2.S5 — Angles arrondis de la page (essayer masque natif, sinon abandon documenté) — VERIFY: capture du coin
 
 ## E3 — Quotidien

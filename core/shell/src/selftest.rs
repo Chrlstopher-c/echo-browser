@@ -12,6 +12,7 @@ use tracing::info;
 pub fn schedule() {
     schedule_bench();
     schedule_wake_check();
+    schedule_ui_requests();
     if std::env::var_os("ECHO_SELFTEST").is_none() {
         return;
     }
@@ -45,6 +46,30 @@ fn schedule_wake_check() {
     for (phase, delay) in [(0, at * 1000), (1, at * 1000 + 10_000)] {
         let mut task = BenchWakeTask::new(phase);
         post_delayed_task(ThreadId::UI, Some(&mut task), delay);
+    }
+}
+
+/// `ECHO_BENCH_UI="12:{json};18:{json}"` : joue des demandes d'interface a ces secondes, comme un clic.
+fn schedule_ui_requests() {
+    let Ok(plan) = std::env::var("ECHO_BENCH_UI") else { return };
+    for entry in plan.split(';') {
+        let Some((seconds, json)) = entry.split_once(':') else { continue };
+        let Ok(seconds) = seconds.trim().parse::<i64>() else { continue };
+        let mut task = BenchUiTask::new(json.trim().to_string());
+        post_delayed_task(ThreadId::UI, Some(&mut task), seconds * 1000);
+    }
+}
+
+wrap_task! {
+    struct BenchUiTask {
+        json: String,
+    }
+
+    impl Task {
+        fn execute(&self) {
+            info!(json = %self.json, "banc : demande d'interface");
+            crate::bridge::submit(self.json.as_bytes());
+        }
     }
 }
 

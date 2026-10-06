@@ -110,6 +110,14 @@ fn apply(request: UiRequest) {
             let chrome = session::with(|s| s.chrome.clone()).flatten();
             crate::window::set_chrome_width(pixels as i32, chrome.as_ref());
         }
+        UiRequest::SetSidebarCollapsed { collapsed } => {
+            let chrome = session::with(|s| s.chrome.clone()).flatten();
+            crate::window::set_collapsed(collapsed, chrome.as_ref());
+        }
+        UiRequest::RevealSidebar { reveal } => {
+            let chrome = session::with(|s| s.chrome.clone()).flatten();
+            crate::window::reveal_chrome(reveal, chrome.as_ref());
+        }
         UiRequest::SetAccent { color } => {
             let host = session::with(|s| s.tabs.host()).flatten();
             crate::window::set_accent(&color, host.as_ref());

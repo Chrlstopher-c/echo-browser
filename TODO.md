@@ -51,7 +51,7 @@ L'infobulle est celle du système : rectangle gris, police par défaut, appariti
 
 - [x] Bulles maison sur tous les boutons (06/10, `ui/src/shared/design/tooltip-layer.tsx`) : matière, délai, apparition animée
 - [x] Le raccourci clavier affiché à côté du libellé
-- [ ] Barre repliée : la vue (56 px) est trop étroite, la bulle système reste — attend la surimpression (E2.S4)
+- [x] Barre repliée : plus de rail de 56 px, les bulles maison fonctionnent partout
 - [ ] Positionnement qui évite les bords
 
 ## 5. La barre repliée
@@ -59,9 +59,9 @@ L'infobulle est celle du système : rectangle gris, police par défaut, appariti
 Repliée, la barre laisse un rail de 56 px qui pousse toujours la page. Attendu : la page prend
 toute la fenêtre, et le rail revient en surimpression quand la souris longe le bord.
 
-- [ ] Largeur réelle zéro une fois repliée
-- [ ] Rail en surimpression au-dessus de la page, révélé au bord gauche
-- [ ] Retour animé, pas d'à-coup sur la page
+- [x] Largeur réelle quasi nulle une fois repliée (1 px d'espaceur)
+- [x] Barre en surimpression au-dessus de la page, révélée au bord gauche (liseré de 6 px `bord.html`)
+- [ ] Retour animé de la barre (aujourd'hui elle apparaît d'un coup)
 
 ## 6. Les bords de la fenêtre
 

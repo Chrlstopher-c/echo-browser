@@ -38,6 +38,8 @@ pub enum UiRequest {
     /// L'interface reclame une largeur : le coeur repositionne la vue du contenu a sa droite.
     SetChromeWidth { pixels: u32 },
     SetSidebarCollapsed { collapsed: bool },
+    /// La souris longe le bord gauche (ou quitte la barre) : montre ou cache la barre repliee.
+    RevealSidebar { reveal: bool },
     /// Teinte dominante de l'espace courant, appliquee au cadre autour de la page.
     SetAccent { color: String },
 
