@@ -14,6 +14,8 @@ export type UiRequest =
   /** Deplace un onglet a une nouvelle position dans la liste. */
   | { kind: 'moveTab'; id: TabId; to: number }
   | { kind: 'pinTab'; id: TabId; pinned: boolean }
+  /** Range un onglet dans un dossier, ou l'en sort (null). */
+  | { kind: 'setTabFolder'; id: TabId; folder: string | null }
   | { kind: 'navigate'; id: TabId; input: string }
   | { kind: 'goBack'; id: TabId }
   | { kind: 'goForward'; id: TabId }
@@ -119,6 +121,8 @@ export interface TabView {
   favicon: string | null
   security: Security
   pinned: boolean
+  /** Identifiant du dossier d'onglets, ou null. */
+  folder: string | null
   zoom: number
   /** Vrai si la page joue du son. */
   audible: boolean

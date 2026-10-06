@@ -262,12 +262,20 @@ wrap_context_menu_handler! {
         fn run_context_menu(
             &self,
             _browser: Option<&mut Browser>,
-            _frame: Option<&mut Frame>,
+            frame: Option<&mut Frame>,
             params: Option<&mut ContextMenuParams>,
             _model: Option<&mut MenuModel>,
             callback: Option<&mut RunContextMenuCallback>,
         ) -> i32 {
             let Some(params) = params else { return 0 };
+            // La barre a ses propres menus (page) : celui des sites n'a rien a y faire.
+            let url = frame.map(|f| CefString::from(&f.url()).to_string()).unwrap_or_default();
+            if is_interface_page(&url) {
+                if let Some(callback) = callback {
+                    callback.cancel();
+                }
+                return 1;
+            }
             let click = read_click(params);
             let (x, y) = (params.xcoord(), params.ycoord());
             // Le rappel se referme tout de suite : notre menu ne passe pas par lui, et

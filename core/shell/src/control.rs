@@ -156,7 +156,7 @@ fn tabs() -> Value {
         .iter()
         .map(|t| {
             json!({"id": t.id, "title": t.title, "url": t.url, "active": active == Some(t.id),
-                   "asleep": t.asleep, "loading": t.loading, "favicon": t.favicon, "pinned": t.pinned})
+                   "asleep": t.asleep, "loading": t.loading, "favicon": t.favicon, "pinned": t.pinned, "folder": t.folder})
         })
         .collect();
     json!({"ok": true, "tabs": list})
@@ -189,7 +189,7 @@ fn with_id(request: &Value, reply: &Sender<Value>, action: fn(u32)) {
     }
 }
 
-/// Clic simule dans la page active (x, y dans la page ; `button` : left, right) : sert aux essais.
+/// Clic simule dans la page active ou, avec `target: chrome`, dans la barre (`button` : left, right) : sert aux essais.
 fn click(request: &Value, reply: &Sender<Value>) {
     use cef::{ImplBrowser, ImplBrowserHost, MouseButtonType, MouseEvent};
     let coord = |key: &str| request.get(key).and_then(Value::as_i64).and_then(|v| i32::try_from(v).ok()).unwrap_or(0);
@@ -197,7 +197,11 @@ fn click(request: &Value, reply: &Sender<Value>) {
         Some("right") => MouseButtonType::from(cef::sys::cef_mouse_button_type_t::MBT_RIGHT),
         _ => MouseButtonType::from(cef::sys::cef_mouse_button_type_t::MBT_LEFT),
     };
-    let browser = crate::session::with(|s| s.tabs.active().and_then(|tab| tab.browser())).flatten();
+    let browser = if request.get("target").and_then(Value::as_str) == Some("chrome") {
+        crate::session::with(|s| s.chrome.as_ref().and_then(|view| view.browser())).flatten()
+    } else {
+        crate::session::with(|s| s.tabs.active().and_then(|tab| tab.browser())).flatten()
+    };
     let Some(host) = browser.and_then(|b| b.host()) else { return fail(reply, "aucune page active") };
     let event = MouseEvent { x: coord("x"), y: coord("y"), modifiers: 0 };
     host.send_mouse_move_event(Some(&event), 0);

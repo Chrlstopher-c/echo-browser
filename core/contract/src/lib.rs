@@ -21,6 +21,8 @@ pub enum UiRequest {
     /// Deplace un onglet a une nouvelle position dans la liste.
     MoveTab { id: TabId, to: usize },
     PinTab { id: TabId, pinned: bool },
+    /// Range un onglet dans un dossier, ou l'en sort (`None`).
+    SetTabFolder { id: TabId, folder: Option<String> },
     Navigate { id: TabId, input: String },
     GoBack { id: TabId },
     GoForward { id: TabId },
@@ -154,6 +156,8 @@ pub struct TabView {
     pub favicon: Option<String>,
     pub security: Security,
     pub pinned: bool,
+    /// Identifiant du dossier d'onglets, s'il y en a un.
+    pub folder: Option<String>,
     pub zoom: f32,
     /// Vrai si la page joue du son.
     pub audible: bool,

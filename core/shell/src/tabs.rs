@@ -33,6 +33,8 @@ pub struct Tab {
     /// Position courante dans `history`.
     pub position: usize,
     pub pinned: bool,
+    /// Dossier d'onglets ou l'onglet est range (identifiant).
+    pub folder: Option<String>,
     /// Facteur de zoom, 1.0 etant la taille naturelle.
     pub zoom: f32,
     /// Vrai quand la page joue du son.
@@ -92,6 +94,7 @@ impl Tab {
             favicon: self.favicon.clone(),
             security: security_of(&self.url),
             pinned: self.pinned,
+            folder: self.folder.clone(),
             zoom: self.zoom,
             audible: self.audible,
             asleep: self.asleep,
@@ -178,6 +181,7 @@ impl Tabs {
             history: vec![url.to_string()],
             position: 0,
             pinned: false,
+            folder: None,
             zoom: 1.0,
             audible: false,
         });
@@ -298,6 +302,7 @@ impl Tabs {
             history: snapshot.history.clone(),
             position: snapshot.position.min(snapshot.history.len().saturating_sub(1)),
             pinned: snapshot.pinned,
+            folder: snapshot.folder.clone(),
             zoom: 1.0,
             audible: false,
         });
@@ -345,6 +350,7 @@ impl Tabs {
                     history: tab.history.clone(),
                     position: tab.position,
                     pinned: tab.pinned,
+                    folder: tab.folder.clone(),
                     title: tab.title.clone(),
                     favicon: tab.favicon.clone(),
                 })

@@ -141,10 +141,12 @@ fn restore_or_open() {
         let opened = crate::session::with(|s| s.tabs.active_id()).flatten();
         if let Some(id) = opened {
             let (history, position, pinned) = (tab.history.clone(), tab.position, tab.pinned);
+            let folder = tab.folder.clone();
             crate::session::with(|s| {
                 s.tabs.restore_history(id, history, position);
                 if let Some(entry) = s.tabs.get_mut(id) {
                     entry.pinned = pinned;
+                    entry.folder = folder;
                 }
             });
         }

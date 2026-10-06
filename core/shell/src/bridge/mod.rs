@@ -208,6 +208,14 @@ fn apply(request: UiRequest) {
             });
             publish_tabs();
         }
+        UiRequest::SetTabFolder { id, folder } => {
+            session::with(|s| {
+                if let Some(tab) = s.tabs.get_mut(id) {
+                    tab.folder = folder;
+                }
+            });
+            publish_tabs();
+        }
         UiRequest::SetZoom { id, factor } => set_zoom(id, factor),
         UiRequest::MoveTab { id, to } => {
             session::with(|s| s.tabs.move_to(id, to));

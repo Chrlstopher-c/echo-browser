@@ -47,6 +47,7 @@ pub fn defaults() -> Vec<(&'static str, Value)> {
         ("session.restore", Value::Flag(true)),
         ("tabs.sleepEnabled", Value::Flag(true)),
         ("tabs.sleepAfterMinutes", Value::Number(5.0)),
+        ("tabs.folders", Value::Text("[]".into())),
     ]
 }
 

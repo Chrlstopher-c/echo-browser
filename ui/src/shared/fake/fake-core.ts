@@ -126,6 +126,9 @@ class FakeCore implements CoreBridge {
       case 'pinTab':
         this.tabs.pin(request.id, request.pinned)
         return true
+      case 'setTabFolder':
+        this.tabs.setFolder(request.id, request.folder)
+        return true
       case 'navigate':
         this.shield.resetSite(request.id)
         this.tabs.navigate(request.id, request.input)

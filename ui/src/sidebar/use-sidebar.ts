@@ -11,6 +11,7 @@ import { useCore, type CoreConnection } from '../shared/use-core'
 import { useShield, type ShieldController } from '../shield/use-shield'
 import { useSpace, type SpaceController } from '../spaces/use-space'
 import { useTabActions, type TabActions } from '../tabs/use-tab-actions'
+import { useFolders, type FolderActions } from '../tabs/use-folders'
 import { useTabMenu, type TabMenuController } from '../tabs/use-tab-menu'
 import { useKeyboard } from './use-keyboard'
 import { useSheet, type SheetController } from './use-sheet'
@@ -27,6 +28,7 @@ export interface SidebarModel extends SidebarDomains {
   core: CoreConnection
   tabs: TabActions
   menu: TabMenuController
+  folders: FolderActions
   /** Menu de gestion d'une extension, ouvert au clic droit sur son icone. */
   extensionMenu: ExtensionMenuController
   width: SidebarWidth
@@ -53,6 +55,7 @@ export function useSidebar(): SidebarModel {
   const { state, send } = core
   const tabs = useTabActions(send, state.activeId)
   const menu = useTabMenu()
+  const folders = useFolders(send, state.settings)
   const extensionMenu = useExtensionMenu()
   const width = useSidebarWidth(send)
   const sheet = useSheet()
@@ -75,7 +78,7 @@ export function useSidebar(): SidebarModel {
   useKeyboard({ tabs, activeId: state.activeId, space, focusAddress })
 
   return {
-    ...domains, core, tabs, menu, extensionMenu, width, sheet, space,
+    ...domains, core, tabs, menu, folders, extensionMenu, width, sheet, space,
     addressFocusToken: localFocus + state.addressFocusToken,
     focusAddress,
   }

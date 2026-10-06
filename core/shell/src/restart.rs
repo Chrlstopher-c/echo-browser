@@ -33,6 +33,9 @@ pub struct TabSnapshot {
     pub title: String,
     #[serde(default)]
     pub favicon: Option<String>,
+    /// Dossier d'onglets, par identifiant.
+    #[serde(default)]
+    pub folder: Option<String>,
 }
 
 impl TabSnapshot {

@@ -1,11 +1,16 @@
-// Responsabilite : menu contextuel d'un onglet — ouverture au clic droit, fermeture au clic ailleurs
-// ou sur Echap, position ramenee dans la fenetre.
+// Responsabilite : menu contextuel de la zone des onglets — ouvert au clic droit sur un onglet, un dossier
+// ou le fond de la liste ; ferme au clic ailleurs ou sur Echap, position ramenee dans la fenetre.
 
 import { useCallback, useEffect, useState, type MouseEvent } from 'react'
 import type { TabId } from '../shared/contract'
 
+export type MenuTarget =
+  | { kind: 'tab'; id: TabId }
+  | { kind: 'folder'; id: string }
+  | { kind: 'area' }
+
 export interface TabMenuState {
-  id: TabId
+  target: MenuTarget
   x: number
   y: number
 }
@@ -13,11 +18,14 @@ export interface TabMenuState {
 export interface TabMenuController {
   menu: TabMenuState | null
   openFor: (id: TabId) => (event: MouseEvent) => void
+  openFolder: (id: string) => (event: MouseEvent) => void
+  /** Clic droit sur le fond de la liste : seulement si aucun onglet ou dossier ne l'a pris avant. */
+  openArea: (event: MouseEvent) => void
   close: () => void
 }
 
-const MENU_WIDTH = 196
-const MENU_HEIGHT = 212
+const MENU_WIDTH = 224
+const MENU_HEIGHT = 300
 const MARGIN = 8
 
 function clampToViewport(x: number, y: number): { x: number; y: number } {
@@ -55,15 +63,14 @@ function useDismiss(open: boolean, close: () => void): void {
 export function useTabMenu(): TabMenuController {
   const [menu, setMenu] = useState<TabMenuState | null>(null)
   const close = useCallback((): void => setMenu(null), [])
-  const openFor = useCallback(
-    (id: TabId) =>
-      (event: MouseEvent): void => {
-        event.preventDefault()
-        event.stopPropagation()
-        setMenu({ id, ...clampToViewport(event.clientX, event.clientY) })
-      },
-    [],
-  )
+  const open = useCallback((target: MenuTarget) => (event: MouseEvent): void => {
+    event.preventDefault()
+    event.stopPropagation()
+    setMenu({ target, ...clampToViewport(event.clientX, event.clientY) })
+  }, [])
+  const openFor = useCallback((id: TabId) => open({ kind: 'tab', id }), [open])
+  const openFolder = useCallback((id: string) => open({ kind: 'folder', id }), [open])
+  const openArea = useCallback((event: MouseEvent): void => open({ kind: 'area' })(event), [open])
   useDismiss(menu !== null, close)
-  return { menu, openFor, close }
+  return { menu, openFor, openFolder, openArea, close }
 }

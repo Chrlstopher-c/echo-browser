@@ -57,6 +57,7 @@ function blankTab(id: TabId, url: string): TabView {
     favicon: null,
     security: securityOf(url),
     pinned: false,
+    folder: null,
     zoom: 1,
     audible: false,
     asleep: false,
@@ -135,6 +136,11 @@ export class FakeTabs {
 
   public pin(id: TabId, pinned: boolean): void {
     this.patch(id, { pinned })
+    this.emitTabs()
+  }
+
+  public setFolder(id: TabId, folder: string | null): void {
+    this.patch(id, { folder })
     this.emitTabs()
   }
 

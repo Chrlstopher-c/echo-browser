@@ -20,8 +20,11 @@ export interface SettingsController {
   update: (key: string, value: SettingValue) => void
 }
 
+/** Reglages geres par leur propre ecran, jamais listes dans la feuille de reglages. */
+const HIDDEN = new Set(['tabs.folders'])
+
 export function groupSettings(settings: SettingView[]): SettingSection[] {
-  const entries: SettingEntry[] = settings.map((item) => ({
+  const entries: SettingEntry[] = settings.filter((item) => !HIDDEN.has(item.key)).map((item) => ({
     key: item.key,
     value: item.value,
     definition: definitionOf(item.key, item.value),
