@@ -269,6 +269,11 @@ impl Tabs {
         targets
     }
 
+    /// Nombre d'onglets dont la page est chargee en memoire.
+    pub fn live_count(&self) -> usize {
+        self.entries.iter().filter(|tab| !tab.asleep).count()
+    }
+
     /// Les onglets inactifs depuis au moins `idle`, bons a endormir.
     pub fn sleep_candidates(&self, idle: Duration) -> Vec<TabId> {
         self.entries

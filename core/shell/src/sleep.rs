@@ -40,6 +40,16 @@ fn idle_delay() -> Option<Duration> {
     enabled.then(|| Duration::from_secs((minutes.max(1.0) * 60.0) as u64))
 }
 
+/// Au-dela de ce nombre de pages en memoire, la veille se hate.
+const PRESSURE_TABS: usize = 4;
+const PRESSURE_IDLE: Duration = Duration::from_secs(60);
+
+/// Beaucoup d'onglets ouverts : on n'attend plus le delai complet pour rendre la memoire.
+fn under_pressure(idle: Duration) -> Duration {
+    let live = crate::session::with(|s| s.tabs.live_count()).unwrap_or(0);
+    if live > PRESSURE_TABS { idle.min(PRESSURE_IDLE) } else { idle }
+}
+
 /// Delai avant de purger la memoire JavaScript d'une page d'arriere-plan (`ECHO_TRIM_AFTER_S`, 0 = jamais).
 fn trim_delay() -> Option<Duration> {
     let secs = std::env::var("ECHO_TRIM_AFTER_S").ok().and_then(|v| v.parse().ok()).unwrap_or(30);
@@ -67,7 +77,7 @@ wrap_task! {
             if let Some(idle) = trim_delay() {
                 crate::bridge::trim_idle_tabs(idle);
             }
-            let slept = idle_delay().map_or(0, crate::bridge::sleep_idle_tabs);
+            let slept = idle_delay().map(under_pressure).map_or(0, crate::bridge::sleep_idle_tabs);
             if slept > 0 {
                 info!(onglets = slept, "onglets inactifs endormis");
             }

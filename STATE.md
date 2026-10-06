@@ -147,3 +147,4 @@ Autotest des onglets : `ECHO_SELFTEST=1 ./start.sh release`
 - Démarrage : fenêtre affichée 0,3 s après le lancement, bouclier opérationnel à ~1,2 s.
 - Pilotage de test : ops `click` (target chrome|page, button), `wheel`, `layout`, `ui`, `menu`, `devtools`. Tests : `tools/test-{contextmenu,folders,containers,sleep-scroll,sidebar-anim}.sh`.
 - Build CEF avec codecs : sources en téléchargement dans `/mnt/backup/cef-build` (`build.sh`, BUILD=1 pour compiler, nice 19).
+- Veille sous pression : au-delà de 4 pages en mémoire, délai ramené à 60 s (`sleep.rs::under_pressure`). 10 pages, 130 s : 1527 → 1032 Mo (4 pages gardées vivantes + onglet actif). Les onglets audibles, en chargement ou avec saisie ne dorment jamais.
