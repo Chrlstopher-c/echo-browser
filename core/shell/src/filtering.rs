@@ -55,6 +55,11 @@ wrap_resource_request_handler! {
                 return None;
             }
             let url = CefString::from(&request.url()).to_string();
+            // Les pages du navigateur (DevTools, echo://) ne recoivent rien : leurs fichiers internes servis
+            // en text/html (traductions des DevTools) etaient sinon corrompus par l'injection.
+            if est_interne(&url) {
+                return None;
+            }
             let script = crate::injection::page_script(&url, &self.shield)?;
             Some(crate::injection::filter::new_filter(script))
         }

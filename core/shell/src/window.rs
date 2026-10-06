@@ -405,10 +405,10 @@ wrap_browser_view_delegate! {
             popup_browser_view: Option<&mut BrowserView>,
             is_devtools: i32,
         ) -> i32 {
+            let Some(popup) = popup_browser_view else { return 0 };
             if is_devtools == 1 || self.is_chrome == 1 {
                 return 0;
             }
-            let Some(popup) = popup_browser_view else { return 0 };
             i32::from(crate::bridge::adopt_popup(popup.clone()))
         }
     }

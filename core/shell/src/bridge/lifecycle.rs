@@ -97,6 +97,9 @@ pub fn sleep_tab(id: TabId) {
 /// Active un onglet, en le reveillant d'abord s'il dort.
 pub fn select_tab(id: TabId) {
     dismiss_overlays();
+    if session::with(|s| s.tabs.active_id()).flatten() != Some(id) {
+        crate::devtools::undock();
+    }
     if session::with(|s| s.tabs.is_asleep(id)).unwrap_or(false) {
         wake_tab(id);
     }
@@ -224,6 +227,11 @@ pub fn adopt_popup(view: BrowserView) -> bool {
 /// Une page demande sa propre fermeture (`window.close()`) : on ferme son onglet, pas la fenetre.
 /// Vrai si le navigateur est celui d'un onglet (le traitement est alors differe d'un tour de boucle).
 pub fn page_asks_close(browser_id: i32) -> bool {
+    // Les outils de developpement ancres : leur fermeture retire leur vue, jamais la fenetre.
+    if crate::devtools::owns(browser_id) {
+        crate::containers::later(crate::devtools::undock);
+        return true;
+    }
     if crate::window::CLOSING.load(std::sync::atomic::Ordering::Relaxed) {
         return false;
     }

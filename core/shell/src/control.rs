@@ -137,11 +137,10 @@ fn run(job: Job) {
         Some("drag") => drag(&request, &reply),
         Some("devtools") => {
             crate::bridge::context::toggle_devtools();
-            let open = crate::session::with(|s| s.tabs.active().and_then(|t| t.browser()))
-                .flatten()
-                .and_then(|b| cef::ImplBrowser::host(&b))
-                .map(|h| cef::ImplBrowserHost::has_dev_tools(&h) == 1);
-            let _ = reply.send(json!({"ok": true, "open": open}));
+            let _ = reply.send(json!({"ok": true}));
+        }
+        Some("devtools_open") => {
+            let _ = reply.send(json!({"ok": true, "open": crate::devtools::is_open()}));
         }
         Some("layout") => {
             let page = crate::session::with(|s| s.tabs.host())

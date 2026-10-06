@@ -86,6 +86,9 @@ pub fn apply(process_type: &str, command_line: &mut CommandLine) {
     // Sans identifiant d'application, le gestionnaire de fenetres ne sait pas ranger la
     // fenetre et la laisse flotter. C'est aussi ce qui porte l'icone dans la barre des taches.
     switch_with_value(command_line, "class", APP_ID);
+    // Les outils de developpement ancres se connectent au port de debogage local : seule leur origine est
+    // admise, aucune page web ne peut s'y brancher.
+    switch_with_value(command_line, "remote-allow-origins", "devtools://devtools");
 
     // Banc : `ECHO_FLAGS="--a --b=1"` ajoute des drapeaux Chromium pour mesurer leur effet.
     for flag in std::env::var("ECHO_FLAGS").unwrap_or_default().split_whitespace() {

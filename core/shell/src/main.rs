@@ -9,6 +9,7 @@ mod assets;
 mod bridge;
 mod client;
 mod containers;
+mod devtools;
 mod control;
 mod filtering;
 mod flags;
@@ -94,6 +95,8 @@ fn browser_settings() -> Settings {
         // regler qu'ici. Une adresse francaise qui reclame ses pages en anglais est un
         // signal d'automate, et vaut un captcha.
         accept_language_list: identity::ACCEPT_LANGUAGE.into(),
+        // Port de debogage local (127.0.0.1) : il relie les outils de developpement ancres a leur onglet.
+        remote_debugging_port: i32::from(devtools::port()),
         root_cache_path: data_dir.join("profile").to_string_lossy().as_ref().into(),
         resources_dir_path: cef_dir.to_string_lossy().as_ref().into(),
         locales_dir_path: cef_dir.join("locales").to_string_lossy().as_ref().into(),

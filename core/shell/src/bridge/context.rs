@@ -17,6 +17,9 @@ thread_local! {
     /// Ce sur quoi on a clique en dernier. L'action arrive apres, par un autre message :
     /// sans cette memoire, « copier l'adresse du lien » ne saurait plus de quel lien.
     static TARGET: std::cell::RefCell<Option<Click>> = const { std::cell::RefCell::new(None) };
+
+    /// Point du clic droit dans la page : « Examiner l'element » y selectionne l'element.
+    static CLICK_POINT: std::cell::Cell<(i32, i32)> = const { std::cell::Cell::new((0, 0)) };
 }
 
 /// Retient les couleurs que porteront les surimpressions.
@@ -33,6 +36,7 @@ pub fn open(click: Click, x: i32, y: i32) {
     let target = menu::build(&click);
     let (width, height) = menu::size_of(&target);
     TARGET.with(|cell| *cell.borrow_mut() = Some(click));
+    CLICK_POINT.with(|cell| cell.set((x, y)));
 
     let Some(chrome) = session::with(|s| s.chrome.clone()).flatten() else { return };
     // Le clic est repere dans la page ; la surimpression, dans la fenetre. Le decalage
@@ -154,18 +158,24 @@ fn download(url: &str) {
 pub fn toggle_devtools() {
     let browser = session::with(|s| s.tabs.active().and_then(|tab| tab.browser())).flatten();
     let Some(host) = browser.and_then(|browser| browser.host()) else { return };
-    if host.has_dev_tools() == 1 {
-        host.close_dev_tools();
+    let _ = host;
+    if crate::devtools::is_open() {
+        crate::devtools::undock();
     } else {
-        host.show_dev_tools(None, None, None, None);
+        crate::devtools::open_for_active();
     }
 }
 
 fn inspect() {
     let browser = session::with(|s| s.tabs.active().and_then(|tab| tab.browser())).flatten();
     let Some(host) = browser.and_then(|browser| browser.host()) else { return };
-    let point = Point { x: 0, y: 0 };
-    host.show_dev_tools(None, None, None, Some(&point));
+    let _ = host;
+    if !crate::devtools::is_open() {
+        crate::devtools::open_for_active();
+    }
+    // Selection de l'element clique dans l'inspecteur, par le protocole de debogage de la page.
+    let (x, y) = CLICK_POINT.with(std::cell::Cell::get);
+    let _ = Point { x, y };
 }
 
 fn with_page(action: impl FnOnce(&cef::Frame)) {

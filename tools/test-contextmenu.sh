@@ -4,7 +4,7 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 export ECHO_RUN_DIR="$(mktemp -d)"
 export ECHO_CONTROL_NAME="test-$$"
-trap 'cp "$ECHO_RUN_DIR/browser.log" /tmp/claude-1000/ctx.log 2>/dev/null; ./stop.sh >/dev/null 2>&1 || true' EXIT
+trap 'cp "$ECHO_RUN_DIR/browser.log" /tmp/claude-1000/dt.log 2>/dev/null; ./stop.sh >/dev/null 2>&1 || true' EXIT
 ECHO_DATA_DIR="$(mktemp -d)" ./start.sh release >/dev/null
 sleep 12
 python3 - <<'PY'
@@ -21,8 +21,23 @@ assert not call(op="menu")["open"]
 assert call(op="click", x=300, y=200, button="right")["ok"]
 time.sleep(1.5)
 assert call(op="menu")["open"], "le menu contextuel ne s'ouvre pas sur la page"
-assert call(op="devtools")["open"], "F12 : devtools non ouverts"
-time.sleep(2)
-assert not call(op="devtools")["open"], "F12 : devtools non refermes"
+import subprocess
+def windows():
+    pid = int(open(os.environ["ECHO_RUN_DIR"] + "/browser.pid").read())
+    def tree(p):
+        out = [p]
+        for c in subprocess.run(["pgrep", "-P", str(p)], capture_output=True, text=True).stdout.split():
+            out += tree(int(c))
+        return out
+    pids = set(tree(pid))
+    return [c for c in json.loads(subprocess.check_output(["hyprctl", "clients", "-j"])) if c["pid"] in pids]
+call(op="devtools"); time.sleep(3)
+assert call(op="devtools_open")["open"], "F12 : devtools non ouverts"
+assert len(windows()) == 1, f"devtools hors de la fenetre : {len(windows())} fenetres"
+call(op="devtools"); time.sleep(2)
+assert not call(op="devtools_open")["open"], "F12 : devtools non refermes"
+assert call(op="tabs")["ok"] and len(windows()) == 1, "fermer les devtools a ferme Echo"
+call(op="devtools"); time.sleep(3)
+assert call(op="devtools_open")["open"], "reouverture des devtools"
 print("OK : clic droit + devtools")
 PY
