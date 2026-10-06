@@ -15,6 +15,9 @@
 - [x] E2.S4 — Barre repliée : la page prend toute la fenêtre, la barre (colonne entière, plus de rail) revient par-dessus au bord gauche — VERIFY: `ECHO_BENCH_UI` rejoue repli/survol/dépli, captures (page à x=9 repliée, barre au-dessus au survol) (fait le 06/10)
 - [x] E2.S5 — Angles arrondis de la page : `clip-path` sur la racine + fond de vue de la teinte fenêtre + barres de défilement en surimpression (`roundness.rs`) — VERIFY: capture des quatre coins sur Wikipédia et Hacker News (fait le 06/10 ; `ECHO_ROUND=0` pour comparer)
 
+- [x] E2.S6 — Neumorphisme clair ET sombre (consigne de Chris, 06/10) : une matière, double ombrage, 5 teintes × 2 schémas, bascule soleil/lune, pages statiques et angles suivent le thème — VERIFY: captures réelles dark/light (sidebar, accueil, angles) (fait le 06/10)
+- [ ] E2.S7 — Affiner le neumorphisme : menus contextuels/extensions (surimpressions opaques, pas d'ombre extérieure), contraste du sombre, feuilles bibliothèque/réglages — VERIFY: captures de chaque feuille dans les deux thèmes
+
 ## E3 — Quotidien
 - [x] E3.S1 — Cookies persistants conservés après relance (mécanisme ; la session Google réelle reste à constater par Chris) — VERIFY: serveur local `Set-Cookie: Max-Age`, relance, `document.cookie` le contient (fait le 06/10 ; cookie de session perdu, comme Chrome)
 - [ ] E3.S2 — Mots de passe = extension Proton Pass (le gestionnaire de Chromium n'existe pas en mode Alloy) : vérifier qu'elle remplit un formulaire — VERIFY: capture de la fenêtre de l'extension sur une page de connexion

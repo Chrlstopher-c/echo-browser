@@ -13,6 +13,7 @@ pub fn schedule() {
     schedule_bench();
     schedule_wake_check();
     schedule_ui_requests();
+    schedule_ui_scripts();
     if std::env::var_os("ECHO_SELFTEST").is_none() {
         return;
     }
@@ -57,6 +58,32 @@ fn schedule_ui_requests() {
         let Ok(seconds) = seconds.trim().parse::<i64>() else { continue };
         let mut task = BenchUiTask::new(json.trim().to_string());
         post_delayed_task(ThreadId::UI, Some(&mut task), seconds * 1000);
+    }
+}
+
+/// `ECHO_BENCH_JS="12:code"` : execute du JavaScript dans la page de l'interface (bascule de theme, par exemple).
+fn schedule_ui_scripts() {
+    let Ok(plan) = std::env::var("ECHO_BENCH_JS") else { return };
+    for entry in plan.split(";;") {
+        let Some((seconds, code)) = entry.split_once(':') else { continue };
+        let Ok(seconds) = seconds.trim().parse::<i64>() else { continue };
+        let mut task = BenchScriptTask::new(code.to_string());
+        post_delayed_task(ThreadId::UI, Some(&mut task), seconds * 1000);
+    }
+}
+
+wrap_task! {
+    struct BenchScriptTask {
+        code: String,
+    }
+
+    impl Task {
+        fn execute(&self) {
+            let frame = crate::session::with(|s| s.chrome_frame()).flatten();
+            if let Some(frame) = frame {
+                frame.execute_java_script(Some(&CefString::from(self.code.as_str())), Some(&CefString::from("echo://bench")), 0);
+            }
+        }
     }
 }
 

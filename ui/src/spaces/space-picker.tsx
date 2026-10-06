@@ -2,17 +2,19 @@
 
 import type { ReactElement } from 'react'
 import { IconCheck } from '../shared/design/icons'
-import { SPACES, type SpaceId } from './space-palette'
+import { buildSpace, HUES, type Scheme, type SpaceId } from './space-palette'
 
 export interface SpacePickerProps {
   current: SpaceId
+  scheme: Scheme
   onSelect: (id: SpaceId) => void
 }
 
-export function SpacePicker({ current, onSelect }: SpacePickerProps): ReactElement {
+export function SpacePicker({ current, scheme, onSelect }: SpacePickerProps): ReactElement {
   return (
     <div className="grid grid-cols-6 gap-2 px-2 py-1">
-      {SPACES.map((space) => {
+      {HUES.map((hue) => {
+        const space = buildSpace(hue.id, scheme)
         const active = space.id === current
         return (
           <button

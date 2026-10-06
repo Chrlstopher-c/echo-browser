@@ -37,7 +37,7 @@ export function Stepper(props: StepperProps): ReactElement {
   const clamp = (next: number): number => Math.min(max, Math.max(min, Math.round(next / step) * step))
   const text = render !== undefined ? render(value) : `${value}${unit.length > 0 ? ` ${unit}` : ''}`
   return (
-    <div className="flex h-7 shrink-0 items-center gap-0.5 rounded-row bg-field px-0.5 shadow-card">
+    <div className="flex h-7 shrink-0 items-center gap-0.5 rounded-row bg-field px-0.5 shadow-field">
       <StepButton label={`${label} : moins`} disabled={value <= min} onClick={() => onChange(clamp(value - step))}>
         <IconMinus size={12} />
       </StepButton>

@@ -52,7 +52,7 @@ function ExtensionIcon({ extension, open, onOpen, onMenu }: ExtensionIconProps):
       onClick={click}
       onContextMenu={onMenu}
       className={`relative flex size-7 shrink-0 items-center justify-center rounded-row text-ink-muted
-        transition-colors duration-100 hover:bg-hover hover:text-ink ${open ? 'bg-card text-ink shadow-card' : ''}`}
+        transition-colors duration-100 hover:bg-hover hover:text-ink ${open ? 'text-ink shadow-pressed' : ''}`}
     >
       {extension.icon === null || failed ? (
         <IconPuzzle size={15} />

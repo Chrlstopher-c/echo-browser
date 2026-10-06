@@ -1,42 +1,52 @@
-// Responsabilite : espace courant — choix persiste, jetons poses sur le document, teinte envoyee
-// au coeur pour le cadre autour de la page.
+// Responsabilite : espace courant (teinte + schema clair/sombre) — choix persistes, jetons poses sur le
+// document, couleurs envoyees au coeur pour le cadre autour de la page et les surimpressions.
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { OverlayTheme, UiRequest } from '../shared/contract'
 import { readLocal, writeLocal } from '../shared/local-store'
 import { applySpace } from './apply-space'
 import {
+  buildSpace,
+  DEFAULT_SCHEME,
   DEFAULT_SPACE,
+  HUES,
+  isScheme,
   isSpaceId,
   SCHEME_TOKENS,
-  SPACES,
-  spaceOf,
+  type Scheme,
   type Space,
   type SpaceId,
 } from './space-palette'
 
-const STORE_KEY = 'echo.space'
+const SPACE_KEY = 'echo.space'
+const SCHEME_KEY = 'echo.scheme'
 
 export interface SpaceController {
   space: Space
   select: (id: SpaceId) => void
   /** Passe a l'espace suivant ou precedent, en boucle. */
   cycle: (direction: 1 | -1) => void
+  toggleScheme: () => void
 }
 
-/** Les quelques couleurs dont une surimpression a besoin pour se fondre dans l'espace. */
+/** Les couleurs dont une surimpression a besoin pour se fondre dans l'espace. */
 function overlayTheme(space: Space): OverlayTheme {
-  const { shell, card, hover, hairline, ink, inkMuted, inkFaint } = space.tokens
-  return { shell, card, hover, hairline, ink, inkMuted, inkFaint, danger: SCHEME_TOKENS[space.scheme].danger }
+  const { shell, card, hover, hairline, ink, inkMuted, inkFaint, hi, lo, tint } = space.tokens
+  return { shell, card, hover, hairline, ink, inkMuted, inkFaint, hi, lo, tint, danger: SCHEME_TOKENS[space.scheme].danger }
 }
 
 function readStoredSpace(): SpaceId {
-  return readLocal(STORE_KEY, (raw) => (typeof raw === 'string' && isSpaceId(raw) ? raw : null)) ?? DEFAULT_SPACE
+  return readLocal(SPACE_KEY, (raw) => (typeof raw === 'string' && isSpaceId(raw) ? raw : null)) ?? DEFAULT_SPACE
+}
+
+function readStoredScheme(): Scheme {
+  return readLocal(SCHEME_KEY, (raw) => (typeof raw === 'string' && isScheme(raw) ? raw : null)) ?? DEFAULT_SCHEME
 }
 
 export function useSpace(send: (request: UiRequest) => void): SpaceController {
   const [id, setId] = useState<SpaceId>(readStoredSpace)
-  const space = spaceOf(id)
+  const [scheme, setScheme] = useState<Scheme>(readStoredScheme)
+  const space = useMemo(() => buildSpace(id, scheme), [id, scheme])
 
   useEffect(() => {
     applySpace(space)
@@ -48,17 +58,25 @@ export function useSpace(send: (request: UiRequest) => void): SpaceController {
 
   const select = useCallback((next: SpaceId): void => {
     setId(next)
-    writeLocal(STORE_KEY, next)
+    writeLocal(SPACE_KEY, next)
+  }, [])
+
+  const toggleScheme = useCallback((): void => {
+    setScheme((current) => {
+      const next: Scheme = current === 'dark' ? 'light' : 'dark'
+      writeLocal(SCHEME_KEY, next)
+      return next
+    })
   }, [])
 
   const cycle = useCallback(
     (direction: 1 | -1): void => {
-      const index = SPACES.findIndex((candidate) => candidate.id === id)
-      const next = SPACES[(index + direction + SPACES.length) % SPACES.length]
+      const index = HUES.findIndex((candidate) => candidate.id === id)
+      const next = HUES[(index + direction + HUES.length) % HUES.length]
       if (next !== undefined) select(next.id)
     },
     [id, select],
   )
 
-  return { space, select, cycle }
+  return { space, select, cycle, toggleScheme }
 }

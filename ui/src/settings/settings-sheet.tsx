@@ -22,7 +22,7 @@ function AppearanceSection({ space }: { space: SpaceController }): ReactElement 
       <SectionLabel aside={<span className="text-[10.5px] text-ink-faint">{space.space.name}</span>}>
         Espace
       </SectionLabel>
-      <SpacePicker current={space.space.id} onSelect={space.select} />
+      <SpacePicker current={space.space.id} scheme={space.space.scheme} onSelect={space.select} />
       <p className="px-2 pt-1 text-[11px] leading-snug text-ink-faint">
         Teinte de la barre et du cadre autour de la page. Le choix est propre à cet ordinateur.
       </p>

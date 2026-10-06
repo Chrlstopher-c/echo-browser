@@ -59,7 +59,7 @@ export function TextField({ value, label, placeholder = '', mono = false, onComm
       onChange={(event) => field.setDraft(event.target.value)}
       onBlur={field.commit}
       onKeyDown={onKeyDown}
-      className={`h-7 w-full min-w-0 rounded-row bg-field px-2 text-[11.5px] text-ink shadow-card outline-none
+      className={`h-7 w-full min-w-0 rounded-row bg-field px-2 text-[11.5px] text-ink shadow-field outline-none
         select-text placeholder:text-ink-faint focus:ring-1 focus:ring-guard/60 ${mono ? 'numerique' : ''}`}
     />
   )

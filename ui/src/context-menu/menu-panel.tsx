@@ -15,7 +15,7 @@ function Separator(): ReactElement {
 }
 
 function Item({ entry, onRun }: { entry: MenuEntry; onRun: (kind: MenuItemKind) => void }): ReactElement {
-  const tone = entry.enabled ? 'text-ink hover:bg-hover' : 'text-ink-faint/60 cursor-default'
+  const tone = entry.enabled ? 'text-ink hover:shadow-field' : 'text-ink-faint/60 cursor-default'
   return (
     <button
       type="button"

@@ -4,8 +4,8 @@
   font-weight: 100 800;
 }
 
-html, body { height: 100%; margin: 0; background: #141517; overflow: hidden; }
+html, body { height: 100%; margin: 0; background: var(--shell, #222326); overflow: hidden; }
 #terminal { height: 100%; }
 /* Le calcul de taille retranche le remplissage de .xterm, pas celui du conteneur. */
 .xterm { padding: 12px 8px 8px 14px; }
-.xterm-viewport { background-color: transparent !important; scrollbar-width: thin; scrollbar-color: #2a2d33 transparent; }
+.xterm-viewport { background-color: transparent !important; scrollbar-width: thin; scrollbar-color: var(--hairline, #34363b) transparent; }

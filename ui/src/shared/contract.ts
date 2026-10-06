@@ -155,6 +155,10 @@ export interface OverlayTheme {
   ink: string
   inkMuted: string
   inkFaint: string
+  /** Lumiere et ombre du relief neumorphique. */
+  hi: string
+  lo: string
+  tint: string
   danger: string
 }
 

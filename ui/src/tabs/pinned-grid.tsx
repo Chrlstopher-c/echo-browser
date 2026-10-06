@@ -39,7 +39,7 @@ function PinnedTile(props: {
     >
       {active && (
         <motion.span layoutId="onglet-actif" transition={PANEL}
-          className="absolute inset-0 -z-10 rounded-tile bg-card shadow-card" />
+          className="absolute inset-0 -z-10 rounded-tile shadow-pressed" />
       )}
       <TabMark tab={tab} size={compact ? 16 : 18} />
       {tab.audible && !tab.asleep && (

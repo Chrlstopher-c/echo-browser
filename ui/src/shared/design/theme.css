@@ -42,9 +42,12 @@
   --radius-tile: 12px;
   --radius-frame: 12px;
 
-  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.35), 0 0 0 1px rgb(255 255 255 / 0.05);
-  --shadow-lift: 0 8px 24px -8px rgb(0 0 0 / 0.6), 0 0 0 1px rgb(255 255 255 / 0.07);
-  --shadow-frame: 0 16px 48px -16px rgb(0 0 0 / 0.55), 0 0 0 1px rgb(0 0 0 / 0.25);
+  /* Neumorphisme : une lumiere en haut a gauche, une ombre en bas a droite. Poses a l'execution par l'espace. */
+  --shadow-card: -3px -3px 7px rgba(255, 255, 255, 0.055), 3px 3px 8px rgba(0, 0, 0, 0.6);
+  --shadow-lift: -8px -8px 20px rgba(255, 255, 255, 0.055), 10px 10px 24px rgba(0, 0, 0, 0.6);
+  --shadow-pressed: inset -3px -3px 7px rgba(255, 255, 255, 0.055), inset 3px 3px 8px rgba(0, 0, 0, 0.6);
+  --shadow-field: inset -2px -2px 5px rgba(255, 255, 255, 0.055), inset 2px 2px 6px rgba(0, 0, 0, 0.6);
+  --shadow-frame: var(--shadow-lift);
 
   --ease-chrome: cubic-bezier(0.22, 0.61, 0.36, 1);
 }

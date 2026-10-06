@@ -21,7 +21,7 @@ export interface SegmentedProps<T extends string> {
 
 export function Segmented<T extends string>({ segments, value, onChange, name }: SegmentedProps<T>): ReactElement {
   return (
-    <div role="tablist" className="flex h-7 items-stretch gap-0.5 rounded-row bg-field p-0.5 shadow-card">
+    <div role="tablist" className="flex h-7 items-stretch gap-0.5 rounded-row bg-field p-0.5 shadow-field">
       {segments.map((segment) => {
         const active = segment.id === value
         return (

@@ -65,7 +65,7 @@ function RowBody({ tab, title, onClose }: { tab: TabView; title: string; onClose
 function ActiveBackdrop(): ReactElement {
   return (
     <motion.span layoutId="onglet-actif" transition={PANEL}
-      className="absolute inset-0 -z-10 rounded-row bg-card shadow-card" />
+      className="absolute inset-0 -z-10 rounded-row shadow-pressed" />
   )
 }
 

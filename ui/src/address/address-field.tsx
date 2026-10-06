@@ -63,7 +63,7 @@ export function AddressField({ tab, onSubmit, onResetZoom, focusToken }: Address
   return (
     <div
       className={`relative flex h-8 min-w-0 items-center gap-2 overflow-hidden rounded-row bg-field px-2.5
-        shadow-card transition-colors duration-100 ${field.editing ? 'ring-1 ring-guard/60' : 'hover:bg-hover'}`}
+        shadow-field transition-colors duration-100 ${field.editing ? 'ring-1 ring-guard/60' : 'hover:bg-hover'}`}
     >
       <SecurityMark security={security} />
       <input

@@ -19,7 +19,7 @@ function SourceInput({ install }: { install: InstallFieldState }): ReactElement 
   }
   const frame = install.error === null ? 'focus-within:ring-1 focus-within:ring-guard/60' : 'ring-1 ring-danger/60'
   return (
-    <div className={`flex h-8 items-center gap-1.5 rounded-row bg-field pr-1 pl-2.5 shadow-card ${frame}`}>
+    <div className={`flex h-8 items-center gap-1.5 rounded-row bg-field pr-1 pl-2.5 shadow-field ${frame}`}>
       <input
         value={install.value}
         spellCheck={false}

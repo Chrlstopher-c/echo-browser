@@ -38,7 +38,7 @@ export function IconButton(props: IconButtonProps): ReactElement {
       disabled={disabled}
       onClick={onClick}
       className={`${shape} ${state} relative flex shrink-0 items-center rounded-row transition-colors
-        duration-100 ${active ? 'bg-card shadow-card' : ''}`}
+        duration-100 ${active ? 'shadow-pressed' : ''}`}
     >
       {children}
       {trailing}

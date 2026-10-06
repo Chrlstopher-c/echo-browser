@@ -3,6 +3,7 @@
 // sans un aller-retour pendant lequel le menu s'afficherait vide.
 
 import type { ContextTarget, OverlayTheme } from '../shared/contract'
+import { reliefShadows } from '../spaces/space-palette'
 
 export interface MenuPayload {
   target: ContextTarget
@@ -12,8 +13,9 @@ export interface MenuPayload {
 const EMPTY: MenuPayload = {
   target: { entries: [], link: '', selection: '' },
   theme: {
-    shell: '#141517', card: '#24272c', hover: '#1e2126', hairline: '#2a2d33',
-    ink: '#e8e6e3', inkMuted: '#9b9a97', inkFaint: '#6b6a68', danger: '#e5484d',
+    shell: '#212226', card: '#212226', hover: '#25262b', hairline: '#313339',
+    ink: '#ebeced', inkMuted: '#a3a6ae', inkFaint: '#6c707a', hi: 'rgba(255, 255, 255, 0.075)',
+    lo: 'rgba(0, 0, 0, 0.7)', tint: '#8f96a3', danger: '#e5484d',
   },
 }
 
@@ -45,4 +47,8 @@ export function applyTheme(theme: OverlayTheme): void {
   root.style.setProperty('--color-ink-muted', theme.inkMuted)
   root.style.setProperty('--color-ink-faint', theme.inkFaint)
   root.style.setProperty('--color-danger', theme.danger)
+  root.style.setProperty('--color-tint', theme.tint)
+  const shadows = reliefShadows(theme)
+  root.style.setProperty('--shadow-field', shadows.field)
+  root.style.setProperty('--shadow-pressed', shadows.pressed)
 }

@@ -228,19 +228,26 @@ pub struct OverlayTheme {
     pub ink: String,
     pub ink_muted: String,
     pub ink_faint: String,
+    /// Lumiere et ombre du relief neumorphique, et teinte de l'espace.
+    pub hi: String,
+    pub lo: String,
+    pub tint: String,
     pub danger: String,
 }
 
 impl Default for OverlayTheme {
     fn default() -> Self {
         Self {
-            shell: "#141517".to_string(),
-            card: "#24272c".to_string(),
-            hover: "#1e2126".to_string(),
-            hairline: "#2a2d33".to_string(),
-            ink: "#e8e6e3".to_string(),
-            ink_muted: "#9b9a97".to_string(),
-            ink_faint: "#6b6a68".to_string(),
+            shell: "#222326".to_string(),
+            card: "#222326".to_string(),
+            hover: "#27282c".to_string(),
+            hairline: "#34363b".to_string(),
+            ink: "#ebeced".to_string(),
+            ink_muted: "#a3a6ae".to_string(),
+            ink_faint: "#6c707a".to_string(),
+            hi: "rgba(255, 255, 255, 0.075)".to_string(),
+            lo: "rgba(0, 0, 0, 0.7)".to_string(),
+            tint: "#8f96a3".to_string(),
             danger: "#e5484d".to_string(),
         }
     }

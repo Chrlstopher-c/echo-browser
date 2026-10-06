@@ -47,6 +47,12 @@ wrap_browser_process_handler! {
             let shield = load_shield();
             *self.client.borrow_mut() = Some(EchoClient::new(Default::default(), shield.clone()));
             let mut client = self.client.borrow().clone();
+            let library = open_library();
+            if let Some((_, echo_library::settings::Value::Text(shell))) =
+                echo_library::settings::all(&library).into_iter().find(|(key, _)| key == "appearance.shell")
+            {
+                window::restore_accent(&shell);
+            }
             let chrome_view = window::create_chrome_view(client.as_mut(), &url);
             let mut tabs = crate::tabs::Tabs::default();
             let host = tabs.host();
@@ -57,7 +63,7 @@ wrap_browser_process_handler! {
                 extensions: echo_extensions::Extensions::new(flags::extensions_dir())
                     .with_profile(echo_extensions::profile::default_profile(&flags::data_dir())),
                 shield: shield.clone(),
-                library: open_library(),
+                library,
             });
             crate::selftest::schedule();
             crate::sleep::start();

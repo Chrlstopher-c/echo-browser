@@ -49,6 +49,15 @@
 - Routes `echo://ui/term/{read,write,resize}`, refusées à toute page qui n'est pas en `echo://`.
 - Un onglet terminal endormi se recharge et rejoue la sortie récente (tampon 512 Ko côté cœur).
 
+## Design : neumorphisme clair et sombre (06/10, consigne de Chris)
+- `ui/src/spaces/space-palette.ts` : 5 teintes × 2 schémas, tous les jetons déduits de la teinte ; une seule matière
+  (`shell`), le relief vient de deux ombres (`hi` en haut à gauche, `lo` en bas à droite). Ombres : `shadow-card` (relief),
+  `shadow-pressed` (enfoncé : onglet actif, bouton actif), `shadow-field` (champs), `shadow-lift` (flottant).
+- Bascule soleil/lune au pied de la barre ; choix dans le stockage local (`echo.scheme`, `echo.space`), jetons recopiés
+  dans `echo.theme` pour les pages statiques (`ui/public/theme.js` : accueil, terminal, liseré).
+- Le cœur retient la teinte de la fenêtre (`appearance.shell`) : fenêtre et angles de page justes dès le démarrage.
+  Une page déjà ouverte garde l'ancienne teinte dans ses angles jusqu'au rechargement.
+
 ## Pilotage par outil (06/10)
 - Prise Unix `$XDG_RUNTIME_DIR/echo-browser/control.sock` (dossier 0700, prise 0600, `ECHO_CONTROL=0` la coupe) :
   une ligne JSON par demande — `tabs`, `read`, `open`, `navigate`, `activate`, `close`. Aucun port TCP.

@@ -1,16 +1,17 @@
-// Responsabilite : les espaces — chaque teinte est un jeu complet de jetons, source unique de la
-// palette. Le systeme de design (theme.css) ne porte que les noms et l'espace par defaut.
+// Responsabilite : les espaces — une teinte (graphite, sable…) dans l'un des deux schemas, clair ou sombre.
+// Le style est neumorphique : une seule matiere (`shell`), le relief vient d'un double ombrage — une
+// lumiere (`hi`) en haut a gauche, une ombre (`lo`) en bas a droite. Tous les jetons se deduisent de la teinte.
 
-export type SpaceId = 'graphite' | 'sable' | 'rose' | 'foret' | 'ardoise' | 'lin'
+export type SpaceId = 'graphite' | 'sable' | 'rose' | 'foret' | 'ardoise'
 
 export type Scheme = 'dark' | 'light'
 
 export interface SpaceTokens {
-  /** Couleur plate de la barre et du cadre autour de la page. */
+  /** Couleur plate de la barre, du cadre autour de la page, et de chaque element en relief. */
   shell: string
   /** Lueur en haut a gauche de la barre. */
   glow: string
-  /** Carte posee : onglet actif, pastille active. */
+  /** Surface d'un element en relief : la meme matiere que la barre. */
   card: string
   hover: string
   field: string
@@ -18,8 +19,11 @@ export interface SpaceTokens {
   ink: string
   inkMuted: string
   inkFaint: string
-  /** Teinte propre a l'espace : pastille du selecteur, liseré de l'onglet actif. */
+  /** Teinte propre a l'espace : pastille du selecteur, accent des elements actifs. */
   tint: string
+  /** Lumiere et ombre du relief. */
+  hi: string
+  lo: string
 }
 
 export interface Space {
@@ -30,97 +34,109 @@ export interface Space {
 }
 
 export const DEFAULT_SPACE: SpaceId = 'graphite'
+export const DEFAULT_SCHEME: Scheme = 'dark'
 
-export const SPACES: readonly Space[] = [
-  {
-    id: 'graphite',
-    name: 'Graphite',
-    scheme: 'dark',
-    tokens: {
-      shell: '#141517', glow: '#23262b', card: '#24272c', hover: '#1e2126', field: '#1b1d21',
-      hairline: '#2a2d33', ink: '#e7e8ea', inkMuted: '#9a9fa7', inkFaint: '#63686f', tint: '#8f96a3',
-    },
-  },
-  {
-    id: 'sable',
-    name: 'Sable',
-    scheme: 'dark',
-    tokens: {
-      shell: '#1b1712', glow: '#3d2f1d', card: '#2d2519', hover: '#251f16', field: '#221c15',
-      hairline: '#362c20', ink: '#ece4d6', inkMuted: '#a89b86', inkFaint: '#6f6555', tint: '#d0a468',
-    },
-  },
-  {
-    id: 'rose',
-    name: 'Rose',
-    scheme: 'dark',
-    tokens: {
-      shell: '#1b1417', glow: '#3e2230', card: '#2e1f26', hover: '#26191e', field: '#221820',
-      hairline: '#382630', ink: '#eee0e4', inkMuted: '#ab949b', inkFaint: '#705d64', tint: '#d4849c',
-    },
-  },
-  {
-    id: 'foret',
-    name: 'Forêt',
-    scheme: 'dark',
-    tokens: {
-      shell: '#121916', glow: '#1f3629', card: '#1e2c25', hover: '#18241e', field: '#16201b',
-      hairline: '#243329', ink: '#e1ebe4', inkMuted: '#93a89a', inkFaint: '#5e7066', tint: '#6fbf93',
-    },
-  },
-  {
-    id: 'ardoise',
-    name: 'Ardoise',
-    scheme: 'dark',
-    tokens: {
-      shell: '#13161c', glow: '#212c3e', card: '#212834', hover: '#1b212b', field: '#181d26',
-      hairline: '#28303d', ink: '#e3e7ee', inkMuted: '#969eac', inkFaint: '#626a78', tint: '#7ea2dc',
-    },
-  },
-  {
-    id: 'lin',
-    name: 'Lin',
-    scheme: 'light',
-    tokens: {
-      shell: '#ebe5d9', glow: '#faf6ee', card: '#fbf9f4', hover: '#e1dacb', field: '#f5f0e7',
-      hairline: '#d6cebf', ink: '#2a2620', inkMuted: '#6f675b', inkFaint: '#a39a8b', tint: '#b8905a',
-    },
-  },
+interface Hue {
+  id: SpaceId
+  name: string
+  /** Teinte en degres et saturation de fond (0 a 1) : tres faible, la matiere reste presque neutre. */
+  h: number
+  s: number
+  /** Saturation de l'accent. */
+  accent: number
+}
+
+export const HUES: readonly Hue[] = [
+  { id: 'graphite', name: 'Graphite', h: 222, s: 0.06, accent: 0.14 },
+  { id: 'sable', name: 'Sable', h: 36, s: 0.16, accent: 0.5 },
+  { id: 'rose', name: 'Rose', h: 340, s: 0.14, accent: 0.45 },
+  { id: 'foret', name: 'Forêt', h: 150, s: 0.14, accent: 0.4 },
+  { id: 'ardoise', name: 'Ardoise', h: 215, s: 0.2, accent: 0.5 },
 ]
+
+/** Teinte, saturation et luminosite (0 a 100) vers `#rrggbb`. */
+function hsl(h: number, s: number, l: number): string {
+  const light = l / 100
+  const a = s * Math.min(light, 1 - light)
+  const channel = (n: number): string => {
+    const k = (n + h / 30) % 12
+    const value = light - a * Math.max(-1, Math.min(k - 3, 9 - k, 1))
+    return Math.round(value * 255).toString(16).padStart(2, '0')
+  }
+  return `#${channel(0)}${channel(8)}${channel(4)}`
+}
+
+function rgba(h: number, s: number, l: number, alpha: number): string {
+  const hex = hsl(h, s, l)
+  const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16))
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`
+}
+
+function darkTokens({ h, s, accent }: Hue): SpaceTokens {
+  return {
+    shell: hsl(h, s, 14),
+    glow: hsl(h, s, 18),
+    card: hsl(h, s, 14),
+    hover: hsl(h, s, 16),
+    field: hsl(h, s, 12.5),
+    hairline: hsl(h, s, 20),
+    ink: hsl(h, s * 0.5, 92),
+    inkMuted: hsl(h, s * 0.6, 66),
+    inkFaint: hsl(h, s * 0.6, 46),
+    tint: hsl(h, accent, 66),
+    hi: 'rgba(255, 255, 255, 0.075)',
+    lo: 'rgba(0, 0, 0, 0.7)',
+  }
+}
+
+function lightTokens({ h, s, accent }: Hue): SpaceTokens {
+  return {
+    shell: hsl(h, s * 1.4, 89),
+    glow: hsl(h, s * 1.4, 94),
+    card: hsl(h, s * 1.4, 89),
+    hover: hsl(h, s * 1.4, 86.5),
+    field: hsl(h, s * 1.4, 91),
+    hairline: hsl(h, s * 1.2, 80),
+    ink: hsl(h, s * 2, 14),
+    inkMuted: hsl(h, s * 1.6, 36),
+    inkFaint: hsl(h, s * 1.4, 56),
+    tint: hsl(h, accent, 40),
+    hi: 'rgba(255, 255, 255, 0.9)',
+    lo: rgba(h, Math.max(s * 2.5, 0.15), 38, 0.3),
+  }
+}
+
+export function buildSpace(id: SpaceId, scheme: Scheme): Space {
+  const hue = HUES.find((candidate) => candidate.id === id) ?? HUES[0]!
+  return { id: hue.id, name: hue.name, scheme, tokens: scheme === 'dark' ? darkTokens(hue) : lightTokens(hue) }
+}
 
 /** Jetons qui dependent du schema clair/sombre, pas de la teinte. */
 export interface SchemeTokens {
   guard: string
   warn: string
   danger: string
-  shadowCard: string
-  shadowLift: string
-  shadowFrame: string
 }
 
 export const SCHEME_TOKENS: Record<Scheme, SchemeTokens> = {
-  dark: {
-    guard: '#55b98d',
-    warn: '#d2a056',
-    danger: '#d5564c',
-    shadowCard: '0 1px 2px rgb(0 0 0 / 0.35), 0 0 0 1px rgb(255 255 255 / 0.05)',
-    shadowLift: '0 8px 24px -8px rgb(0 0 0 / 0.6), 0 0 0 1px rgb(255 255 255 / 0.07)',
-    shadowFrame: '0 16px 48px -16px rgb(0 0 0 / 0.55), 0 0 0 1px rgb(0 0 0 / 0.25)',
-  },
-  light: {
-    guard: '#2f8f66',
-    warn: '#a4712a',
-    danger: '#b8423a',
-    shadowCard: '0 1px 2px rgb(0 0 0 / 0.08), 0 0 0 1px rgb(0 0 0 / 0.04)',
-    shadowLift: '0 8px 24px -8px rgb(40 30 10 / 0.25), 0 0 0 1px rgb(0 0 0 / 0.05)',
-    shadowFrame: '0 16px 48px -20px rgb(40 30 10 / 0.35), 0 0 0 1px rgb(0 0 0 / 0.06)',
-  },
+  dark: { guard: '#55b98d', warn: '#d2a056', danger: '#d5564c' },
+  light: { guard: '#2f8f66', warn: '#a4712a', danger: '#b8423a' },
 }
 
-export function spaceOf(id: SpaceId): Space {
-  return SPACES.find((space) => space.id === id) ?? SPACES[0]!
+/** Les ombres du relief, construites sur la lumiere et l'ombre de l'espace. */
+export function reliefShadows({ hi, lo }: Pick<SpaceTokens, 'hi' | 'lo'>): Record<'card' | 'lift' | 'pressed' | 'field', string> {
+  return {
+    card: `-3px -3px 7px ${hi}, 3px 3px 8px ${lo}`,
+    lift: `-8px -8px 20px ${hi}, 10px 10px 24px ${lo}`,
+    pressed: `inset -3px -3px 7px ${hi}, inset 3px 3px 8px ${lo}`,
+    field: `inset -2px -2px 5px ${hi}, inset 2px 2px 6px ${lo}`,
+  }
 }
 
 export function isSpaceId(value: string): value is SpaceId {
-  return SPACES.some((space) => space.id === value)
+  return HUES.some((hue) => hue.id === value)
+}
+
+export function isScheme(value: string): value is Scheme {
+  return value === 'dark' || value === 'light'
 }

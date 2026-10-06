@@ -396,3 +396,12 @@ export function IconWrench(props: IconProps): ReactElement {
     </Glyph>
   )
 }
+
+export function IconSun(props: IconProps): ReactElement {
+  return (
+    <Glyph {...props}>
+      <circle cx="8" cy="8" r="2.6" />
+      <path d="M8 2v1.4M8 12.6V14M2 8h1.4M12.6 8H14M3.8 3.8l1 1M11.2 11.2l1 1M12.2 3.8l-1 1M4.8 11.2l-1 1" />
+    </Glyph>
+  )
+}

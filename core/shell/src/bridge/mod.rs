@@ -122,6 +122,9 @@ fn apply(request: UiRequest) {
         UiRequest::SetAccent { color } => {
             let host = session::with(|s| s.tabs.host()).flatten();
             crate::window::set_accent(&color, host.as_ref());
+            session::with(|s| {
+                echo_library::settings::set(&s.library, "appearance.shell", &echo_library::settings::Value::Text(color.clone()))
+            });
         }
         UiRequest::InstallExtension { source } => extensions::install_extension(&source),
         UiRequest::OpenCatalog => extensions::open_store(""),

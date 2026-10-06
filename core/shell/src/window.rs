@@ -22,6 +22,9 @@ const CONTENT_INSET: i32 = 8;
 /// depuis un rappel de Chromium, hors de tout acces a l'etat.
 static CHROME_WIDTH_NOW: AtomicI32 = AtomicI32::new(CHROME_WIDTH);
 
+/// Teinte courante de la fenetre : c'est elle qui apparait dans les angles arrondis de la page.
+static ACCENT_NOW: std::sync::atomic::AtomicU32 = std::sync::atomic::AtomicU32::new(DEFAULT_SHELL);
+
 /// Barre repliee : elle ne reserve plus de place, la page prend toute la fenetre.
 static COLLAPSED: AtomicBool = AtomicBool::new(false);
 
@@ -155,7 +158,7 @@ const WINDOW_TITLE: &str = "Navigateur";
 /// Teinte posee avant que l'interface ne se charge : sans elle, la marge autour de la page
 /// est noire pendant tout le demarrage, puis saute a la couleur de l'espace. C'est la valeur
 /// plate de l'espace par defaut (`shell` de « graphite », ui/src/spaces/space-palette.ts).
-const DEFAULT_SHELL: u32 = 0xFF14_1517;
+const DEFAULT_SHELL: u32 = 0xFF22_2326;
 
 const INITIAL_WIDTH: i32 = 1440;
 const INITIAL_HEIGHT: i32 = 900;
@@ -211,7 +214,7 @@ wrap_window_delegate! {
                 }
             }
 
-            View::from(&*window).set_background_color(DEFAULT_SHELL);
+            View::from(&*window).set_background_color(ACCENT_NOW.load(Ordering::Relaxed));
             window.set_title(Some(&CefString::from(WINDOW_TITLE)));
             place_chrome(window);
             window.show();
@@ -313,11 +316,19 @@ wrap_browser_view_delegate! {
 /// Peindre le seul conteneur ne se voyait donc nulle part, et la gouttiere restait noire —
 /// deux blocs poses cote a cote au lieu d'une fenetre. Mesure le 2026-09-10, capture a
 /// l'appui.
+/// Reprend la teinte de la derniere session, avant que la fenetre n'existe.
+pub fn restore_accent(color: &str) {
+    if let Some(argb) = parse_hex_color(color) {
+        ACCENT_NOW.store(argb, Ordering::Relaxed);
+    }
+}
+
 pub fn set_accent(color: &str, host: Option<&Panel>) {
     let Some(argb) = parse_hex_color(color) else {
         debug!(%color, "teinte illisible, ignoree");
         return;
     };
+    ACCENT_NOW.store(argb, Ordering::Relaxed);
     let Some(host) = host else { return };
     let view = View::from(host);
     view.set_background_color(argb);
@@ -365,7 +376,9 @@ fn side_by_side_layout() -> BoxLayoutSettings {
 pub fn create_view(client: Option<&mut Client>, url: &str, is_chrome: i32) -> Option<BrowserView> {
     let mut delegate = ChromeViewDelegate::new(RuntimeStyle::ALLOY, is_chrome);
     let settings = if is_chrome == 0 && crate::roundness::enabled() {
-        BrowserSettings { background_color: DEFAULT_SHELL, ..Default::default() }
+        // La teinte des angles arrondis est celle de la fenetre au moment ou la vue est creee : un fond
+        // transparent laisserait apparaitre du blanc. Une page deja ouverte garde l'ancienne teinte jusqu'a son rechargement.
+        BrowserSettings { background_color: ACCENT_NOW.load(Ordering::Relaxed), ..Default::default() }
     } else {
         BrowserSettings::default()
     };

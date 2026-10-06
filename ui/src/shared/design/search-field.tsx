@@ -12,7 +12,7 @@ export interface SearchFieldProps {
 
 export function SearchField({ value, placeholder, onChange, autoFocus = false }: SearchFieldProps): ReactElement {
   return (
-    <div className="flex h-8 items-center gap-2 rounded-row bg-field pr-1 pl-2.5 shadow-card
+    <div className="flex h-8 items-center gap-2 rounded-row bg-field pr-1 pl-2.5 shadow-field
       focus-within:ring-1 focus-within:ring-guard/60">
       <IconSearch size={13} className="shrink-0 text-ink-faint" />
       <input
