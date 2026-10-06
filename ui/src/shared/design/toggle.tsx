@@ -12,7 +12,8 @@ export interface ToggleProps {
 }
 
 export function Toggle({ checked, onChange, label, disabled = false }: ToggleProps): ReactElement {
-  const track = checked ? 'bg-guard' : 'bg-hairline'
+  // Piste en creux, bouton en relief : la matiere reste la meme, seul le bouton prend la couleur « garde ».
+  const knob = checked ? 'bg-guard' : 'bg-card'
   return (
     <button
       type="button"
@@ -21,14 +22,13 @@ export function Toggle({ checked, onChange, label, disabled = false }: TogglePro
       aria-label={label}
       disabled={disabled}
       onClick={() => onChange(!checked)}
-      className={`relative h-[18px] w-8 shrink-0 rounded-full transition-colors duration-150
-        ${disabled ? 'bg-hairline/40 cursor-default' : track}`}
+      className={`relative h-[22px] w-10 shrink-0 rounded-full bg-field shadow-field transition-shadow duration-150
+        ${disabled ? 'opacity-50 cursor-default' : ''}`}
     >
       <motion.span
-        animate={{ x: checked ? 14 : 0 }}
+        animate={{ x: checked ? 18 : 0 }}
         transition={QUICK}
-        className={`absolute top-[2px] left-[2px] size-[14px] rounded-full bg-ink shadow-sm
-          ${disabled ? 'opacity-50' : ''}`}
+        className={`absolute top-[3px] left-[3px] size-[16px] rounded-full shadow-card ${knob}`}
       />
     </button>
   )

@@ -1,7 +1,6 @@
 // Responsabilite : choix de l'espace dans les reglages — une pastille par teinte, la courante cochee.
 
 import type { ReactElement } from 'react'
-import { IconCheck } from '../shared/design/icons'
 import { buildSpace, HUES, type Scheme, type SpaceId } from './space-palette'
 
 export interface SpacePickerProps {
@@ -24,15 +23,11 @@ export function SpacePicker({ current, scheme, onSelect }: SpacePickerProps): Re
             aria-label={`Espace ${space.name}`}
             aria-pressed={active}
             onClick={() => onSelect(space.id)}
-            style={{
-              backgroundImage: `linear-gradient(135deg, ${space.tokens.glow}, ${space.tokens.shell})`,
-              color: space.tokens.ink,
-              boxShadow: active ? `0 0 0 1.5px ${space.tokens.tint}` : undefined,
-            }}
-            className={`grid aspect-square place-items-center rounded-full ring-1 transition-[transform,box-shadow]
-              duration-150 ${active ? 'ring-transparent' : 'ring-hairline hover:scale-105'}`}
+            style={{ color: space.tokens.tint }}
+            className={`grid aspect-square place-items-center rounded-full bg-card transition-shadow duration-150
+              ${active ? 'shadow-pressed' : 'shadow-card'}`}
           >
-            {active && <IconCheck size={12} />}
+            <span className="size-2.5 rounded-full" style={{ backgroundColor: space.tokens.tint, opacity: active ? 1 : 0.55 }} />
           </button>
         )
       })}
