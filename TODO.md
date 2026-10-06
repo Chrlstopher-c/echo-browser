@@ -6,15 +6,16 @@ Ordre voulu par Chris : angles → favicons → mémoire → décodeur vidéo. P
 
 1. **Faits** : favicons · fermeture Super+Q instantanée · texte centré / séparation adresse-onglets · session conservée entre deux lancements · tests isolés (plus jamais
    l'instance de Chris tuée) · angles de page (masques) · identité Chrome 154 cohérente (captcha) · neumorphisme clair/sombre.
-2. **À vérifier / finir** : animation de la barre repliée + page repoussée (E6.S6). (Favicons E6.S7 et fermeture Super+Q E6.S8 : faits et vérifiés.)
-3. **Clic droit** (E6.S9–S11) : ne marche PAS dans les pages réelles (Google, liens) ; barre : pas de « nouvel onglet », « nouveau dossier »,
-   « fermer » ; pas de dossiers d'onglets.
-4. **DevTools complets sur F12** (E6.S10) : éléments, console, réseau, mémoire, performances. Chercher un kit existant plutôt que tout refaire.
-5. **Un compte par onglet / conteneurs** (E6.S13) : plusieurs comptes indépendants du même site côte à côte (cookies isolés).
-6. **MÉMOIRE RADICALE** (E6.S14) : « c'est plus possible » qu'un navigateur prenne 300–400 Mo pour un onglet ou mette 45 s à charger ;
-   viser mieux que Chrome, Firefox et Zen, même avec une solution jamais vue ailleurs. Idées de Chris : micro-fichiers de sauvegarde,
-   faire passer hors de la RAM. Garder l'état global (où on en était dans chaque onglet).
-7. **Décodeur H.264/AAC** (E6.S16). **Build CEF avec codecs** : disque libre sur `/mnt/backup` (752 Go) ; `automate-git.py`
+2. **Faits cette nuit (tests dans `tools/test-*.sh`)** : animation barre repliée (page repoussée, 14 étapes) · clic droit réel dans les pages ·
+   F12 / Ctrl+Maj+I/J (DevTools complets) · clic droit barre (onglet, dossier, fond de liste) · dossiers d'onglets persistés · conteneurs
+   (cookies isolés, persistés) · défilement restitué au réveil · purge V8 des onglets d'arrière-plan (-9 %) · démarrage 0,3 s.
+3. **Mémoire** : drapeaux Chromium testés, aucun > 4 % (voir STATE.md) ; le levier est la veille. Piste restante : état des onglets endormis
+   sur disque (déjà : fiche + défilement), délai de veille plus court, extensions par conteneur.
+4. **Reste** : renommer/supprimer dossiers au glisser-déposer d'onglets vers un dossier ; extensions dans les conteneurs ; menu contextuel
+   des sites aux couleurs neumorphiques (aujourd'hui sombre plat) ; retour animé des permissions retenues.
+5. **Moteur avec codecs** : téléchargement en cours (`/mnt/backup/cef-build/logs/download.log`). Quand `src/` est complet, lancer
+   `BUILD=1 /mnt/backup/cef-build/build.sh` (nice 19, 8-12 h), puis remplacer `~/.local/share/cef` et recompiler la coque.
+6. **Décodeur H.264/AAC** (E6.S16). **Build CEF avec codecs** : disque libre sur `/mnt/backup` (752 Go) ; `automate-git.py`
    (depot_tools) branche Chromium 154 = **8037** (CEF 154.0.33, Chromium 154.0.8037.94) ; `GN_DEFINES="proprietary_codecs=true
    ffmpeg_branding=Chrome is_official_build=false symbol_level=0 is_component_build=false"` ; ninja `nice -n 19`, ~8–12 h ; ensuite remplacer
    `~/.local/share/cef` et recompiler la coque (crate `cef` 152 compile contre CEF 154 : OK à ce jour).

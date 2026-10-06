@@ -46,6 +46,7 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `core/shell/src/bridge/publish.rs` — ce que le coeur pousse vers l'interface — etat de depart, onglets,
 - `core/shell/src/bridge/script.rs` — le code injecte dans la page d'interface pour lui donner `window.echo`.
 - `core/shell/src/client.rs` — le client CEF — ce que Chromium rappelle pendant la vie d'un navigateur.
+- `core/shell/src/containers.rs` — les conteneurs d'onglets. Chacun a son propre contexte Chromium — cookies,
 - `core/shell/src/control.rs` — la prise de pilotage locale — un outil (MCP de Claude, script) y liste,
 - `core/shell/src/filtering.rs` — soumettre chaque requete du navigateur au bouclier, et appliquer sa decision.
 - `core/shell/src/flags.rs` — les drapeaux Chromium imposes au demarrage, et pourquoi chacun est la.
@@ -90,8 +91,14 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `tools/bench-ram.sh`
 - `tools/build-resources.mjs`
 - `tools/fetch-cef.sh`
+- `tools/gen-arborescence.py`
+- `tools/test-containers.sh`
+- `tools/test-contextmenu.sh`
 - `tools/test-control.sh`
+- `tools/test-folders.sh`
 - `tools/test-ipc-origin.sh`
+- `tools/test-sidebar-anim.sh`
+- `tools/test-sleep-scroll.sh`
 - `ui/.gitignore`
 - `ui/README.md`
 - `ui/bun.lock`
@@ -141,6 +148,7 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `ui/src/main.tsx` — point d'entree de l'interface.
 - `ui/src/restart/restart-screen.tsx` — ecran d'attente plein cadre pendant la relance du navigateur. Il vit quelques
 - `ui/src/restart/restart-strip.tsx` — bande de relance — propose le redemarrage sans l'imposer, jamais bloquante.
+- `ui/src/settings/containers-section.tsx` — conteneurs dans les reglages — nom et retrait ; l'ouverture se fait depuis la liste d'onglets.
 - `ui/src/settings/setting-catalogue.ts` — habillage des reglages — pour chaque cle que le coeur livre, un groupe, un libelle
 - `ui/src/settings/setting-row.tsx` — une ligne de reglage — libelle, explication, et le controle qui va avec son type.
 - `ui/src/settings/settings-sheet.tsx` — feuille des reglages — apparence tenue par l'interface, puis les reglages du coeur par theme.
@@ -204,13 +212,18 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `ui/src/spaces/use-space.ts` — espace courant (teinte + schema clair/sombre) — choix persistes, jetons poses sur le
 - `ui/src/stage/dev-toolbar.tsx` — leviers de simulation poses sur la scene — son, sommeil, telechargement, plein ecran.
 - `ui/src/stage/page-stage.tsx` — scene de developpement — la place de la page, dans un cadre flottant aux coins
+- `ui/src/tabs/folder-section.tsx` — un dossier d'onglets dans la barre — en-tete (plier, renommer) et onglets rangés dedans.
+- `ui/src/tabs/menu-item.tsx` — une ligne de menu contextuel de la barre, et son separateur.
 - `ui/src/tabs/pinned-grid.tsx` — les onglets epingles — pastilles sans texte en tete de barre, une colonne en rail.
 - `ui/src/tabs/tab-list.tsx` — liste verticale des onglets libres, reordonnable, et bouton de nouvel onglet.
 - `ui/src/tabs/tab-mark.tsx` — la marque d'un onglet — favicon au repos, anneau de progression pendant le
-- `ui/src/tabs/tab-menu.tsx` — le menu contextuel d'un onglet — epingler, favori, zoom, recharger, fermer.
+- `ui/src/tabs/tab-menu-bodies.tsx` — le contenu du menu contextuel selon la cible — un onglet, un dossier, le fond de la liste.
+- `ui/src/tabs/tab-menu.tsx` — le menu contextuel de la zone des onglets (onglet, dossier, fond de liste).
 - `ui/src/tabs/tab-row.tsx` — un onglet de la liste — marque, titre tronque, son, fermeture au survol.
 - `ui/src/tabs/tabs-area.tsx` — la zone des onglets — epingles au-dessus, liste en dessous, menu contextuel commun.
+- `ui/src/tabs/use-containers.ts` — les conteneurs d'onglets. Un conteneur = des cookies et des comptes a part : deux onglets
+- `ui/src/tabs/use-folders.ts` — les dossiers d'onglets. La liste (nom, plie ou deplie) vit dans le reglage `tabs.folders` ;
 - `ui/src/tabs/use-tab-actions.ts` — traduire les gestes sur les onglets en requetes du contrat.
-- `ui/src/tabs/use-tab-menu.ts` — menu contextuel d'un onglet — ouverture au clic droit, fermeture au clic ailleurs
+- `ui/src/tabs/use-tab-menu.ts` — menu contextuel de la zone des onglets — ouvert au clic droit sur un onglet, un dossier
 - `ui/tsconfig.json`
 - `ui/vite.config.ts`
