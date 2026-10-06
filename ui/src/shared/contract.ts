@@ -19,6 +19,8 @@ export type UiRequest =
   | { kind: 'moveTab'; id: TabId; to: number }
   | { kind: 'pinTab'; id: TabId; pinned: boolean }
   /** Range un onglet dans un dossier, ou l'en sort (null). */
+  /** Oublie une decision de permission retenue : la question sera reposee. */
+  | { kind: 'forgetPermission'; origin: string; permission: string }
   | { kind: 'setTabFolder'; id: TabId; folder: string | null }
   | { kind: 'navigate'; id: TabId; input: string }
   | { kind: 'goBack'; id: TabId }
@@ -110,6 +112,8 @@ export type CoreEvent =
   /** Un site demande une permission : l'interface pose la question. */
   | { kind: 'permissionRequested'; id: number; origin: string; kinds: string[] }
   | { kind: 'permissionResolved'; id: number }
+  /** Les decisions de permission retenues, par site. */
+  | { kind: 'permissionsChanged'; grants: PermissionGrantView[] }
 
 /** L'etat d'un onglet tel que l'interface l'affiche. */
 export interface TabView {
@@ -293,4 +297,11 @@ declare global {
   interface Window {
     echo?: CoreBridge
   }
+}
+
+/** Une decision de permission retenue pour un site. */
+export interface PermissionGrantView {
+  origin: string
+  kind: string
+  allow: boolean
 }

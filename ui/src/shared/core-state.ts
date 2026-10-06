@@ -8,6 +8,7 @@ import type {
   FilterListView,
   HistoryEntryView,
   NoticeLevel,
+  PermissionGrantView,
   SettingView,
   ShieldView,
   TabId,
@@ -47,6 +48,8 @@ export interface CoreState {
   notice: Notice | null
   /** Demandes de permission en attente de reponse, la plus ancienne d'abord. */
   permissions: PermissionRequest[]
+  /** Decisions de permission retenues par site. */
+  grants: PermissionGrantView[]
 }
 
 export interface PermissionRequest {
@@ -74,6 +77,7 @@ export const EMPTY_CORE_STATE: CoreState = {
   restarting: null,
   notice: null,
   permissions: [],
+  grants: [],
 }
 
 function withShield(state: CoreState, id: TabId, view: ShieldView): CoreState {
@@ -82,12 +86,45 @@ function withShield(state: CoreState, id: TabId, view: ShieldView): CoreState {
   return { ...state, shields }
 }
 
+type PermissionEvent = Extract<CoreEvent, { kind: 'permissionRequested' | 'permissionsChanged' | 'permissionResolved' }>
+
+function reducePermissions(state: CoreState, event: PermissionEvent): CoreState {
+  switch (event.kind) {
+    case 'permissionRequested': {
+      const request = { id: event.id, origin: event.origin, kinds: event.kinds }
+      return { ...state, permissions: [...state.permissions, request] }
+    }
+    case 'permissionsChanged':
+      return { ...state, grants: event.grants }
+    case 'permissionResolved':
+      return { ...state, permissions: state.permissions.filter((request) => request.id !== event.id) }
+  }
+}
+
+type LibraryEvent = Extract<
+  CoreEvent,
+  { kind: 'bookmarksChanged' | 'historyChanged' | 'downloadsChanged' | 'settingsChanged' }
+>
+
+function reduceLibrary(state: CoreState, event: LibraryEvent): CoreState {
+  switch (event.kind) {
+    case 'bookmarksChanged':
+      return { ...state, bookmarks: event.bookmarks }
+    case 'historyChanged':
+      return { ...state, history: event.entries, historyTotal: event.total }
+    case 'downloadsChanged':
+      return { ...state, downloads: event.downloads }
+    case 'settingsChanged':
+      return { ...state, settings: event.settings }
+  }
+}
+
 export function reduceCore(state: CoreState, event: CoreEvent): CoreState {
   switch (event.kind) {
     case 'tabsChanged':
       return { ...state, tabs: event.tabs, activeId: event.active }
     case 'tabUpdated':
-      return { ...state, tabs: state.tabs.map((tab) => (tab.id === event.tab.id ? event.tab : tab)) }
+      return { ...state, tabs: state.tabs.map((t) => (t.id === event.tab.id ? event.tab : t)) }
     case 'shieldUpdated':
       return withShield(state, event.id, event.state)
     case 'filterListsChanged':
@@ -97,13 +134,10 @@ export function reduceCore(state: CoreState, event: CoreEvent): CoreState {
     case 'extensionPopupChanged':
       return { ...state, extensionPopupId: event.id }
     case 'bookmarksChanged':
-      return { ...state, bookmarks: event.bookmarks }
     case 'historyChanged':
-      return { ...state, history: event.entries, historyTotal: event.total }
     case 'downloadsChanged':
-      return { ...state, downloads: event.downloads }
     case 'settingsChanged':
-      return { ...state, settings: event.settings }
+      return reduceLibrary(state, event)
     case 'fullscreenChanged':
       return { ...state, fullscreen: event.active }
     case 'focusAddressRequested':
@@ -113,9 +147,9 @@ export function reduceCore(state: CoreState, event: CoreEvent): CoreState {
     case 'notice':
       return { ...state, notice: { level: event.level, message: event.message, at: Date.now() } }
     case 'permissionRequested':
-      return { ...state, permissions: [...state.permissions, { id: event.id, origin: event.origin, kinds: event.kinds }] }
+    case 'permissionsChanged':
     case 'permissionResolved':
-      return { ...state, permissions: state.permissions.filter((request) => request.id !== event.id) }
+      return reducePermissions(state, event)
   }
 }
 

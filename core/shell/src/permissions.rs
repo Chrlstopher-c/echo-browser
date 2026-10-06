@@ -125,6 +125,9 @@ pub fn answer(id: u64, allow: bool, remember: bool) {
     }
     resolve(pending.reply, allow);
     crate::bridge::publish(&CoreEvent::PermissionResolved { id });
+    if remember {
+        crate::bridge::publish_permissions();
+    }
     reveal_sidebar(false);
 }
 

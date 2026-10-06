@@ -17,6 +17,7 @@ pub fn publish_initial_state() {
     library::publish_history("");
     library::publish_downloads();
     library::publish_settings();
+    library::publish_permissions();
     publish_filter_lists();
 }
 

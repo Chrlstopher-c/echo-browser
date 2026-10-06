@@ -21,6 +21,16 @@ pub fn publish_bookmarks() {
     super::publish(&CoreEvent::BookmarksChanged { bookmarks });
 }
 
+/// Diffuse les permissions retenues.
+pub fn publish_permissions() {
+    let Some(list) = session::with(|s| echo_library::permissions::list(&s.library)) else { return };
+    let grants = list
+        .into_iter()
+        .map(|(origin, kind, allow)| echo_contract::PermissionGrantView { origin, kind, allow })
+        .collect();
+    super::publish(&CoreEvent::PermissionsChanged { grants });
+}
+
 /// Diffuse l'historique, filtre par `terms`.
 pub fn publish_history(terms: &str) {
     let Some((found, total)) = session::with(|s| history::search(&s.library, terms)) else {

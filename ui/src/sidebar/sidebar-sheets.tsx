@@ -19,6 +19,8 @@ function SheetBody({ model }: { model: SidebarModel }): ReactElement | null {
       return <ExtensionsSheet controller={model.extensions} />
     case 'settings':
       return <SettingsSheet settings={model.settings} space={model.space} containers={model.containers}
+        grants={core.state.grants}
+        onForgetGrant={(origin, permission) => core.send({ kind: 'forgetPermission', origin, permission })}
         onDevTools={model.tabs.devTools} />
     case null:
       return null

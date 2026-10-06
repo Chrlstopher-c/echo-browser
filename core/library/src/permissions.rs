@@ -30,6 +30,24 @@ pub fn set(library: &Library, origin: &str, kind: &str, allow: bool) -> bool {
         .is_some()
 }
 
+/// Toutes les decisions retenues : (site, permission, autorisee).
+pub fn list(library: &Library) -> Vec<(String, String, bool)> {
+    library
+        .with(|db| {
+            let mut stmt = db.prepare("SELECT origin, kind, allow FROM permissions ORDER BY origin, kind")?;
+            let rows = stmt.query_map([], |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?)))?;
+            rows.collect::<Result<Vec<_>, _>>()
+        })
+        .unwrap_or_default()
+}
+
+/// Oublie une decision : la question sera reposee a la prochaine demande.
+pub fn forget(library: &Library, origin: &str, kind: &str) -> bool {
+    library
+        .with(|db| db.execute("DELETE FROM permissions WHERE origin = ?1 AND kind = ?2", params![origin, kind]))
+        .is_some()
+}
+
 /// Oublie toutes les decisions d'un site.
 pub fn forget_site(library: &Library, origin: &str) -> bool {
     library.with(|db| db.execute("DELETE FROM permissions WHERE origin = ?1", params![origin])).is_some()
@@ -51,6 +69,10 @@ mod tests {
         assert_eq!(get(&lib, "https://a.test", "camera"), Some(true));
         assert!(set(&lib, "https://a.test", "camera", false));
         assert_eq!(get(&lib, "https://a.test", "camera"), Some(false));
+        assert_eq!(list(&lib), vec![("https://a.test".into(), "camera".into(), false)]);
+        assert!(forget(&lib, "https://a.test", "camera"));
+        assert!(list(&lib).is_empty());
+        assert!(set(&lib, "https://a.test", "mic", true));
         assert!(forget_site(&lib, "https://a.test"));
         assert_eq!(get(&lib, "https://a.test", "camera"), None);
     }
