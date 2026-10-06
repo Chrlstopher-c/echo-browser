@@ -4,6 +4,7 @@ import { Reorder } from 'framer-motion'
 import { useState, type KeyboardEvent, type ReactElement } from 'react'
 import type { TabId, TabView } from '../shared/contract'
 import { IconChevron, IconFolder } from '../shared/design/icons'
+import { folderAt } from './drop-target'
 import { TabRow } from './tab-row'
 import type { Folder, FolderActions } from './use-folders'
 import type { TabActions } from './use-tab-actions'
@@ -49,6 +50,7 @@ function Header(props: FolderSectionProps): ReactElement {
   return (
     <div
       role="button"
+      data-folder-id={folder.id}
       tabIndex={0}
       aria-expanded={!folder.collapsed}
       onClick={() => !editing && folders.toggle(folder.id)}
@@ -73,9 +75,9 @@ function Header(props: FolderSectionProps): ReactElement {
 }
 
 export function FolderSection(props: FolderSectionProps): ReactElement {
-  const { folder, members, activeId, actions, menu } = props
+  const { folder, members, activeId, actions, folders, menu } = props
   return (
-    <div className="flex flex-col gap-0.5">
+    <div data-folder-id={folder.id} className="flex flex-col gap-0.5">
       <Header {...props} />
       {!folder.collapsed && (
         <Reorder.Group axis="y" values={members} onReorder={() => undefined} className="flex flex-col gap-0.5 pl-3">
@@ -89,7 +91,10 @@ export function FolderSection(props: FolderSectionProps): ReactElement {
               onClose={() => actions.close(tab.id)}
               onWarm={() => actions.warm(tab.id)}
               onContextMenu={menu.openFor(tab.id)}
-              onDragEnd={() => undefined}
+              onDragEnd={(point) => {
+                const target = folderAt(point)
+                if (target !== undefined && target !== folder.id) folders.assign(tab.id, target)
+              }}
             />
           ))}
         </Reorder.Group>

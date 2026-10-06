@@ -2,10 +2,11 @@
 // L'ordre local suit le coeur ; pendant un glisser, il vit ici, puis `moveTab` part au relachement.
 
 import { AnimatePresence, Reorder } from 'framer-motion'
-import { useEffect, useRef, useState, type ReactElement } from 'react'
+import { useEffect, useState, type ReactElement } from 'react'
 import type { TabId, TabView } from '../shared/contract'
 import { IconPlus } from '../shared/design/icons'
-import { TabRow } from './tab-row'
+import { folderAt } from './drop-target'
+import { TabRow, type DropPoint } from './tab-row'
 import { targetIndex, type TabActions } from './use-tab-actions'
 import type { TabMenuController } from './use-tab-menu'
 
@@ -16,6 +17,8 @@ export interface TabListProps {
   compact: boolean
   actions: TabActions
   menu: TabMenuController
+  /** Onglet lache sur un dossier. */
+  onFolder: (id: TabId, folder: string) => void
 }
 
 function NewTabRow({ compact, onNew }: { compact: boolean; onNew: () => void }): ReactElement {
@@ -41,20 +44,26 @@ function useLocalOrder(loose: TabView[]): [TabView[], (next: TabView[]) => void]
   return [order, setOrder]
 }
 
-export function TabList(props: TabListProps): ReactElement {
-  const { all, loose, activeId, compact, actions, menu } = props
-  const [order, setOrder] = useLocalOrder(loose)
-  const dragged = useRef<TabId | null>(null)
+/** Lacher d'un onglet libre : sur un dossier il y entre, sinon il prend sa nouvelle place dans la liste. */
+function dropTab(drop: {
+  id: TabId; point: DropPoint; all: TabView[]; order: TabView[]; actions: TabActions
+  onFolder: (id: TabId, folder: string) => void
+}): void {
+  const { id, point, all, order, actions, onFolder } = drop
+  const folder = folderAt(point)
+  if (typeof folder === 'string') return onFolder(id, folder)
+  const to = targetIndex(all, order, id)
+  const from = all.findIndex((tab) => tab.id === id)
+  if (to !== -1 && to !== from) actions.move(id, to)
+}
 
-  const onDragEnd = (id: TabId) => (): void => {
-    dragged.current = null
-    const to = targetIndex(all, order, id)
-    const from = all.findIndex((tab) => tab.id === id)
-    if (to !== -1 && to !== from) actions.move(id, to)
-  }
+export function TabList(props: TabListProps): ReactElement {
+  const { all, loose, activeId, compact, actions, menu, onFolder } = props
+  const [order, setOrder] = useLocalOrder(loose)
+  const onDragEnd = (id: TabId) => (point: DropPoint): void => dropTab({ id, point, all, order, actions, onFolder })
 
   return (
-    <div className="flex flex-col gap-0.5">
+    <div data-loose-tabs className="flex flex-col gap-0.5">
       <Reorder.Group axis="y" values={order} onReorder={setOrder} className="flex flex-col gap-0.5">
         <AnimatePresence initial={false}>
           {order.map((tab) => (

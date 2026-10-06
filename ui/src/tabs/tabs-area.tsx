@@ -21,6 +21,25 @@ export interface TabsAreaProps {
   compact: boolean
 }
 
+function Folders(props: Omit<TabsAreaProps, 'containers' | 'compact'>): ReactElement {
+  const { tabs, activeId, actions, menu, folders } = props
+  return (
+    <>
+      {folders.folders.map((folder) => (
+        <FolderSection
+          key={folder.id}
+          folder={folder}
+          members={tabs.filter((tab) => !tab.pinned && tab.folder === folder.id)}
+          activeId={activeId}
+          actions={actions}
+          folders={folders}
+          menu={menu}
+        />
+      ))}
+    </>
+  )
+}
+
 export function TabsArea({ tabs, activeId, actions, menu, folders, containers, compact }: TabsAreaProps): ReactElement {
   const pinned = useMemo(() => tabs.filter((tab) => tab.pinned), [tabs])
   const known = useMemo(() => new Set(folders.folders.map((folder) => folder.id)), [folders.folders])
@@ -39,18 +58,9 @@ export function TabsArea({ tabs, activeId, actions, menu, folders, containers, c
       />
       {pinned.length > 0 && loose.length > 0 && <div className="mx-1 border-t border-hairline" />}
       {!compact && <p className="intitule px-4">Onglets</p>}
-      {!compact && folders.folders.map((folder) => (
-        <FolderSection
-          key={folder.id}
-          folder={folder}
-          members={tabs.filter((tab) => !tab.pinned && tab.folder === folder.id)}
-          activeId={activeId}
-          actions={actions}
-          folders={folders}
-          menu={menu}
-        />
-      ))}
-      <TabList all={tabs} loose={loose} activeId={activeId} compact={compact} actions={actions} menu={menu} />
+      {!compact && <Folders tabs={tabs} activeId={activeId} actions={actions} menu={menu} folders={folders} />}
+      <TabList onFolder={folders.assign} all={tabs} loose={loose} activeId={activeId} compact={compact}
+        actions={actions} menu={menu} />
       <TabMenu
         tabs={tabs}
         controller={menu}

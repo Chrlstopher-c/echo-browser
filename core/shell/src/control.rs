@@ -134,6 +134,7 @@ fn run(job: Job) {
         Some("sleep") => with_id(&request, &reply, crate::bridge::sleep_tab),
         Some("click") => click(&request, &reply),
         Some("wheel") => wheel(&request, &reply),
+        Some("drag") => drag(&request, &reply),
         Some("devtools") => {
             crate::bridge::context::toggle_devtools();
             let open = crate::session::with(|s| s.tabs.active().and_then(|t| t.browser()))
@@ -222,6 +223,34 @@ fn click(request: &Value, reply: &Sender<Value>) {
     host.send_mouse_move_event(Some(&event), 0);
     host.send_mouse_click_event(Some(&event), button, 0, 1);
     host.send_mouse_click_event(Some(&event), button, 1, 1);
+    let _ = reply.send(json!({"ok": true}));
+}
+
+/// Glisser-deposer simule dans la barre (`target: chrome`) ou la page : `from` et `to` = [x, y].
+fn drag(request: &Value, reply: &Sender<Value>) {
+    use cef::{ImplBrowser, ImplBrowserHost, MouseButtonType, MouseEvent};
+    let point = |key: &str| -> Option<(i32, i32)> {
+        let pair = request.get(key)?.as_array()?;
+        Some((i32::try_from(pair.first()?.as_i64()?).ok()?, i32::try_from(pair.get(1)?.as_i64()?).ok()?))
+    };
+    let (Some(from), Some(to)) = (point("from"), point("to")) else { return fail(reply, "from et to requis") };
+    let browser = if request.get("target").and_then(Value::as_str) == Some("chrome") {
+        crate::session::with(|s| s.chrome.as_ref().and_then(|view| view.browser())).flatten()
+    } else {
+        crate::session::with(|s| s.tabs.active().and_then(|tab| tab.browser())).flatten()
+    };
+    let Some(host) = browser.and_then(|b| b.host()) else { return fail(reply, "aucune page") };
+    let left = MouseButtonType::from(cef::sys::cef_mouse_button_type_t::MBT_LEFT);
+    const LEFT_DOWN: u32 = 1 << 4;
+    host.send_mouse_move_event(Some(&MouseEvent { x: from.0, y: from.1, modifiers: 0 }), 0);
+    host.send_mouse_click_event(Some(&MouseEvent { x: from.0, y: from.1, modifiers: 0 }), left, 0, 1);
+    for step in 1..=12 {
+        let x = from.0 + (to.0 - from.0) * step / 12;
+        let y = from.1 + (to.1 - from.1) * step / 12;
+        host.send_mouse_move_event(Some(&MouseEvent { x, y, modifiers: LEFT_DOWN }), 0);
+        std::thread::sleep(std::time::Duration::from_millis(16));
+    }
+    host.send_mouse_click_event(Some(&MouseEvent { x: to.0, y: to.1, modifiers: LEFT_DOWN }), left, 1, 1);
     let _ = reply.send(json!({"ok": true}));
 }
 

@@ -9,6 +9,11 @@ import { PANEL, QUICK } from '../shared/design/motion'
 import { fallbackTitle } from '../shared/url-shape'
 import { AudioBars, TabMark } from './tab-mark'
 
+export interface DropPoint {
+  x: number
+  y: number
+}
+
 export interface TabRowProps {
   tab: TabView
   active: boolean
@@ -18,13 +23,15 @@ export interface TabRowProps {
   /** Survol prolonge d'un onglet endormi : on le reveille d'avance. */
   onWarm: () => void
   onContextMenu: (event: MouseEvent) => void
-  onDragEnd: () => void
+  /** Fin du glisser, avec le point de lacher (coordonnees de la fenetre). */
+  onDragEnd: (point: DropPoint) => void
 }
 
 /** Delai de survol avant de reveiller un onglet endormi : assez court pour gagner du temps, assez long pour ignorer un passage. */
 const WARM_DELAY_MS = 220
 
 const ROW_MOTION = {
+  transition: QUICK,
   initial: { opacity: 0, height: 0 },
   animate: { opacity: 1, height: 32 },
   exit: { opacity: 0, height: 0 },
@@ -75,13 +82,20 @@ function ActiveBackdrop(): ReactElement {
   )
 }
 
+/** Survol prolonge d'un onglet endormi : il se reveille d'avance. */
+function useWarm(asleep: boolean, onWarm: () => void): { start: () => void; stop: () => void } {
+  const timer = useRef(0)
+  return {
+    start: () => {
+      if (asleep) timer.current = window.setTimeout(onWarm, WARM_DELAY_MS)
+    },
+    stop: () => window.clearTimeout(timer.current),
+  }
+}
+
 export function TabRow(props: TabRowProps): ReactElement {
   const { tab, active, compact, onSelect, onClose, onWarm, onContextMenu, onDragEnd } = props
-  const warmTimer = useRef(0)
-  const stopWarm = (): void => window.clearTimeout(warmTimer.current)
-  const startWarm = (): void => {
-    if (tab.asleep) warmTimer.current = window.setTimeout(onWarm, WARM_DELAY_MS)
-  }
+  const warm = useWarm(tab.asleep, onWarm)
   const title = tab.title.length > 0 ? tab.title : fallbackTitle(tab.url)
   const controls = useDragControls()
   const onPointerDown = (event: PointerEvent): void => {
@@ -94,12 +108,11 @@ export function TabRow(props: TabRowProps): ReactElement {
       value={tab}
       dragListener={false}
       dragControls={controls}
-      onDragEnd={onDragEnd}
+      onDragEnd={(_, info) => onDragEnd({ x: info.point.x - window.scrollX, y: info.point.y - window.scrollY })}
       {...ROW_MOTION}
-      transition={QUICK}
       onPointerDown={onPointerDown}
-      onPointerEnter={startWarm}
-      onPointerLeave={stopWarm}
+      onPointerEnter={warm.start}
+      onPointerLeave={warm.stop}
       onContextMenu={onContextMenu}
       title={title}
       className={`group relative isolate flex items-center gap-2.5 rounded-row
