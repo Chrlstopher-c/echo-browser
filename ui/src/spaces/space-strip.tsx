@@ -14,32 +14,38 @@ export interface SpaceStripProps {
   onToggleScheme: () => void
 }
 
+function HueDot(props: {
+  id: SpaceId; name: string; active: boolean; scheme: Scheme; onSelect: (id: SpaceId) => void
+}): ReactElement {
+  const { id, name, active, scheme, onSelect } = props
+  return (
+    <button
+      type="button"
+      role="radio"
+      aria-checked={active}
+      title={name}
+      aria-label={`Espace ${name}`}
+      onClick={() => onSelect(id)}
+      className="grid h-4 place-items-center px-0.5"
+    >
+      <motion.span
+        layout
+        transition={PANEL}
+        style={{ backgroundColor: active ? buildSpace(id, scheme).tokens.tint : undefined }}
+        className={`block h-1.5 rounded-full ${active ? 'w-4' : 'w-1.5 bg-ink/20 hover:bg-ink/40'}`}
+      />
+    </button>
+  )
+}
+
 export function SpaceStrip({ current, scheme, onSelect, onToggleScheme }: SpaceStripProps): ReactElement {
   return (
     <div className="flex h-7 items-center justify-between">
       <div role="radiogroup" aria-label="Espaces" className="flex h-5 items-center gap-1.5">
-        {HUES.map((hue) => {
-          const active = hue.id === current
-          return (
-            <button
-              key={hue.id}
-              type="button"
-              role="radio"
-              aria-checked={active}
-              title={hue.name}
-              aria-label={`Espace ${hue.name}`}
-              onClick={() => onSelect(hue.id)}
-              className="grid h-4 place-items-center px-0.5"
-            >
-              <motion.span
-                layout
-                transition={PANEL}
-                style={{ backgroundColor: active ? buildSpace(hue.id, scheme).tokens.tint : undefined }}
-                className={`block h-1.5 rounded-full ${active ? 'w-4' : 'w-1.5 bg-ink/20 hover:bg-ink/40'}`}
-              />
-            </button>
-          )
-        })}
+        {HUES.map((hue) => (
+          <HueDot key={hue.id} id={hue.id} name={hue.name} active={hue.id === current} scheme={scheme}
+            onSelect={onSelect} />
+        ))}
       </div>
       <button
         type="button"

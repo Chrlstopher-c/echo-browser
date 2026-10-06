@@ -79,6 +79,23 @@ function useKeepInside(tip: Tip | null) {
   return ref
 }
 
+function TipBubble({ tip }: { tip: Tip }): ReactElement {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: tip.above ? 3 : -3 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0 }}
+      transition={QUICK}
+      className="flex items-center gap-2 rounded-row bg-card px-2.5 py-1.5 text-[12px] text-ink shadow-lift"
+    >
+      <span>{tip.text}</span>
+      {tip.shortcut !== null && (
+        <kbd className="numerique rounded-[5px] bg-field px-1.5 py-px text-[10.5px] text-ink-muted">{tip.shortcut}</kbd>
+      )}
+    </motion.div>
+  )
+}
+
 export function TooltipLayer(): ReactElement {
   const tip = useTip()
   const ref = useKeepInside(tip)
@@ -96,20 +113,7 @@ export function TooltipLayer(): ReactElement {
             maxWidth: window.innerWidth - EDGE * 2,
           }}
         >
-          <motion.div
-            initial={{ opacity: 0, y: tip.above ? 3 : -3 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
-            transition={QUICK}
-            className="flex items-center gap-2 rounded-row bg-card px-2.5 py-1.5 text-[12px] text-ink shadow-lift"
-          >
-            <span>{tip.text}</span>
-            {tip.shortcut !== null && (
-              <kbd className="numerique rounded-[5px] bg-field px-1.5 py-px text-[10.5px] text-ink-muted">
-                {tip.shortcut}
-              </kbd>
-            )}
-          </motion.div>
+          <TipBubble tip={tip} />
         </div>
       )}
     </AnimatePresence>

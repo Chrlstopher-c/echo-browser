@@ -15,8 +15,30 @@ import { SimulationMark } from './simulation-mark'
 import { UtilityRow } from './utility-row'
 import type { SidebarModel } from './use-sidebar'
 
+function Extensions({ model }: { model: SidebarModel }): ReactElement {
+  const { extensions } = model
+  return (
+    <>
+      <ExtensionBar
+        extensions={extensions.extensions}
+        openId={extensions.popupId}
+        onOpen={extensions.openPopup}
+        onMenu={model.extensionMenu.openFor}
+      />
+      <ExtensionMenu
+        controller={extensions}
+        menu={model.extensionMenu}
+        onAskRemove={(id) => {
+          extensions.askRemove(id)
+          model.sheet.open('extensions')
+        }}
+      />
+    </>
+  )
+}
+
 function ColumnHeader({ model }: { model: SidebarModel }): ReactElement {
-  const { core, tabs, width, extensions } = model
+  const { core, tabs, width } = model
   const active = core.activeTab
   return (
     <header className="flex shrink-0 flex-col gap-2">
@@ -37,20 +59,7 @@ function ColumnHeader({ model }: { model: SidebarModel }): ReactElement {
         }}
         focusToken={model.addressFocusToken}
       />
-      <ExtensionBar
-        extensions={extensions.extensions}
-        openId={extensions.popupId}
-        onOpen={extensions.openPopup}
-        onMenu={model.extensionMenu.openFor}
-      />
-      <ExtensionMenu
-        controller={extensions}
-        menu={model.extensionMenu}
-        onAskRemove={(id) => {
-          extensions.askRemove(id)
-          model.sheet.open('extensions')
-        }}
-      />
+      <Extensions model={model} />
     </header>
   )
 }

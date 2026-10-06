@@ -43,11 +43,8 @@ function readStoredScheme(): Scheme {
   return readLocal(SCHEME_KEY, (raw) => (typeof raw === 'string' && isScheme(raw) ? raw : null)) ?? DEFAULT_SCHEME
 }
 
-export function useSpace(send: (request: UiRequest) => void): SpaceController {
-  const [id, setId] = useState<SpaceId>(readStoredSpace)
-  const [scheme, setScheme] = useState<Scheme>(readStoredScheme)
-  const space = useMemo(() => buildSpace(id, scheme), [id, scheme])
-
+/** Applique l'espace a l'interface et le transmet au coeur (cadre, pages, surimpressions). */
+function usePublishSpace(space: Space, send: (request: UiRequest) => void): void {
   useEffect(() => {
     applySpace(space)
     send({ kind: 'setAccent', color: space.tokens.shell })
@@ -56,6 +53,14 @@ export function useSpace(send: (request: UiRequest) => void): SpaceController {
     // nos jetons, le coeur les lui transmet.
     send({ kind: 'setOverlayTheme', theme: overlayTheme(space) })
   }, [space, send])
+}
+
+export function useSpace(send: (request: UiRequest) => void): SpaceController {
+  const [id, setId] = useState<SpaceId>(readStoredSpace)
+  const [scheme, setScheme] = useState<Scheme>(readStoredScheme)
+  const space = useMemo(() => buildSpace(id, scheme), [id, scheme])
+
+  usePublishSpace(space, send)
 
   const select = useCallback((next: SpaceId): void => {
     setId(next)
