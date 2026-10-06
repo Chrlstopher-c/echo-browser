@@ -49,6 +49,7 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `core/shell/src/client.rs` — le client CEF — ce que Chromium rappelle pendant la vie d'un navigateur.
 - `core/shell/src/containers.rs` — les conteneurs d'onglets. Chacun a son propre contexte Chromium — cookies,
 - `core/shell/src/control.rs` — la prise de pilotage locale — un outil (MCP de Claude, script) y liste,
+- `core/shell/src/devtools.rs` — les outils de developpement ancres a droite de la page, dans la fenetre d'Echo.
 - `core/shell/src/filtering.rs` — soumettre chaque requete du navigateur au bouclier, et appliquer sa decision.
 - `core/shell/src/flags.rs` — les drapeaux Chromium imposes au demarrage, et pourquoi chacun est la.
 - `core/shell/src/identity.rs` — ce que le navigateur declare de lui-meme aux sites qu'il visite.
@@ -63,6 +64,7 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `core/shell/src/presence.rs`
 - `core/shell/src/restart.rs` — relancer le navigateur sans perdre ce qui etait ouvert.
 - `core/shell/src/roundness.rs` — les angles arrondis de la page. Une vue web est un rectangle natif que Chromium ne sait
+- `core/shell/src/scheme.rs` — le theme clair ou sombre que les pages voient (`prefers-color-scheme`). Il suit celui
 - `core/shell/src/search.rs` — le moteur de recherche et la page d'accueil.
 - `core/shell/src/selftest.rs` — rejouer sans main les manipulations d'onglets, pour verifier
 - `core/shell/src/session.rs` — l'etat vivant du navigateur — les onglets, l'interface, le bouclier.
@@ -98,10 +100,14 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `tools/test-containers.sh`
 - `tools/test-contextmenu.sh`
 - `tools/test-control.sh`
+- `tools/test-drag-folder.sh`
 - `tools/test-folders.sh`
 - `tools/test-ipc-origin.sh`
 - `tools/test-never-sleep.sh`
 - `tools/test-occlusion.sh`
+- `tools/test-popup.sh`
+- `tools/test-scheme.sh`
+- `tools/test-shield-toggle.sh`
 - `tools/test-sidebar-anim.sh`
 - `tools/test-sleep-scroll.sh`
 - `tools/test-warm.sh`
@@ -118,6 +124,11 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `ui/public/nouvel-onglet.css`
 - `ui/public/nouvel-onglet.html`
 - `ui/public/nouvel-onglet.js`
+- `ui/public/outils-barre.html`
+- `ui/public/outils-barre.js`
+- `ui/public/outils-poignee.html`
+- `ui/public/outils-poignee.js`
+- `ui/public/outils.css`
 - `ui/public/terminal.css`
 - `ui/public/terminal.html`
 - `ui/public/terminal.js`
@@ -219,6 +230,7 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `ui/src/spaces/use-space.ts` — espace courant (teinte + schema clair/sombre) — choix persistes, jetons poses sur le
 - `ui/src/stage/dev-toolbar.tsx` — leviers de simulation poses sur la scene — son, sommeil, telechargement, plein ecran.
 - `ui/src/stage/page-stage.tsx` — scene de developpement — la place de la page, dans un cadre flottant aux coins
+- `ui/src/tabs/drop-target.ts` — savoir sur quel dossier un onglet a ete lache, d'apres le point de lacher.
 - `ui/src/tabs/folder-section.tsx` — un dossier d'onglets dans la barre — en-tete (plier, renommer) et onglets rangés dedans.
 - `ui/src/tabs/menu-item.tsx` — une ligne de menu contextuel de la barre, et son separateur.
 - `ui/src/tabs/pinned-grid.tsx` — les onglets epingles — pastilles sans texte en tete de barre, une colonne en rail.
