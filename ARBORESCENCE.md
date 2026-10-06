@@ -153,6 +153,7 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `ui/src/restart/restart-screen.tsx` — ecran d'attente plein cadre pendant la relance du navigateur. Il vit quelques
 - `ui/src/restart/restart-strip.tsx` — bande de relance — propose le redemarrage sans l'imposer, jamais bloquante.
 - `ui/src/settings/containers-section.tsx` — conteneurs dans les reglages — nom et retrait ; l'ouverture se fait depuis la liste d'onglets.
+- `ui/src/settings/grants-section.tsx` — les autorisations retenues par site (camera, micro, position…) et leur retrait.
 - `ui/src/settings/setting-catalogue.ts` — habillage des reglages — pour chaque cle que le coeur livre, un groupe, un libelle
 - `ui/src/settings/setting-row.tsx` — une ligne de reglage — libelle, explication, et le controle qui va avec son type.
 - `ui/src/settings/settings-sheet.tsx` — feuille des reglages — apparence tenue par l'interface, puis les reglages du coeur par theme.
