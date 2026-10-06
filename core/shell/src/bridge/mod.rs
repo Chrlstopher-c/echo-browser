@@ -372,6 +372,19 @@ pub fn sleep_idle_tabs(idle: std::time::Duration) -> usize {
     slept
 }
 
+/// Purge la memoire JavaScript des pages d'arriere-plan inactives depuis `idle`. Renvoie leur nombre.
+pub fn trim_idle_tabs(idle: std::time::Duration) -> usize {
+    use cef::{ImplBrowser, ImplBrowserHost};
+    let targets = session::with(|s| s.tabs.take_trim_targets(idle)).unwrap_or_default();
+    let message = serde_json::json!({"id": 1, "method": "Memory.forciblyPurgeJavaScriptMemory"}).to_string();
+    for browser in &targets {
+        if let Some(host) = browser.host() {
+            host.send_dev_tools_message(Some(message.as_bytes()));
+        }
+    }
+    targets.len()
+}
+
 /// Ferme un onglet. Comme pour l'ouverture, les appels a Chromium se font hors de
 /// l'acces a l'etat, sinon la fermeture fige le navigateur.
 pub fn close_tab(id: TabId) {

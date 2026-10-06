@@ -25,6 +25,8 @@ pub struct Tab {
     pub favicon: Option<String>,
     /// Dernier moment ou l'onglet a ete l'onglet actif.
     pub last_active: Instant,
+    /// La memoire JavaScript de la page a deja ete purgee depuis qu'elle est passee en arriere-plan.
+    pub trimmed: bool,
     pub title: String,
     pub url: String,
     pub loading: bool,
@@ -184,6 +186,7 @@ impl Tabs {
             pending_scroll: None,
             favicon: None,
             last_active: Instant::now(),
+            trimmed: false,
             title: url.to_string(),
             url: url.to_string(),
             loading: true,
@@ -209,6 +212,7 @@ impl Tabs {
         self.active = Some(id);
         if let Some(tab) = self.get_mut(id) {
             tab.last_active = Instant::now();
+            tab.trimmed = false;
         }
         self.refresh_visibility();
     }
@@ -247,6 +251,22 @@ impl Tabs {
         tab.asleep = true;
         debug!(id, url = %tab.url, "onglet endormi");
         Some(Detached { view: Some(view), host, remaining: self.entries.len() })
+    }
+
+    /// Les pages d'arriere-plan inactives depuis `idle` dont la memoire n'a pas encore ete purgee.
+    pub fn take_trim_targets(&mut self, idle: Duration) -> Vec<cef::Browser> {
+        let active = self.active;
+        let mut targets = Vec::new();
+        for tab in self.entries.iter_mut() {
+            if Some(tab.id) == active || tab.asleep || tab.trimmed || tab.last_active.elapsed() < idle {
+                continue;
+            }
+            if let Some(browser) = tab.browser() {
+                tab.trimmed = true;
+                targets.push(browser);
+            }
+        }
+        targets
     }
 
     /// Les onglets inactifs depuis au moins `idle`, bons a endormir.
@@ -313,6 +333,7 @@ impl Tabs {
             pending_scroll: None,
             favicon: snapshot.favicon.clone(),
             last_active: Instant::now(),
+            trimmed: false,
             title: if snapshot.title.is_empty() { url.to_string() } else { snapshot.title.clone() },
             url: url.to_string(),
             loading: false,

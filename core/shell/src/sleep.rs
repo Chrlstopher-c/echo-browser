@@ -40,6 +40,12 @@ fn idle_delay() -> Option<Duration> {
     enabled.then(|| Duration::from_secs((minutes.max(1.0) * 60.0) as u64))
 }
 
+/// Delai avant de purger la memoire JavaScript d'une page d'arriere-plan (`ECHO_TRIM_AFTER_S`, 0 = jamais).
+fn trim_delay() -> Option<Duration> {
+    let secs = std::env::var("ECHO_TRIM_AFTER_S").ok().and_then(|v| v.parse().ok()).unwrap_or(30);
+    (secs > 0).then(|| Duration::from_secs(secs))
+}
+
 /// Arme la verification periodique.
 pub fn start() {
     info!("veille des onglets armee");
@@ -58,6 +64,9 @@ wrap_task! {
 
     impl Task {
         fn execute(&self) {
+            if let Some(idle) = trim_delay() {
+                crate::bridge::trim_idle_tabs(idle);
+            }
             let slept = idle_delay().map_or(0, crate::bridge::sleep_idle_tabs);
             if slept > 0 {
                 info!(onglets = slept, "onglets inactifs endormis");
