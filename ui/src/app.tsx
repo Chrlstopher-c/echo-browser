@@ -5,6 +5,7 @@ import { AnimatePresence, motion, MotionConfig } from 'framer-motion'
 import type { ReactElement } from 'react'
 import { RestartScreen } from './restart/restart-screen'
 import { QUICK } from './shared/design/motion'
+import { TooltipLayer } from './shared/design/tooltip-layer'
 import { Sidebar } from './sidebar/sidebar'
 import { useSidebar } from './sidebar/use-sidebar'
 import { PageStage } from './stage/page-stage'
@@ -34,6 +35,7 @@ export function App(): ReactElement {
           />
         )}
       </div>
+      <TooltipLayer />
     </MotionConfig>
   )
 }

@@ -6,12 +6,19 @@
 // Les macros `wrap_*` de CEF exigent les traits `Impl*` et `Wrap*` dans la portee : import global impose.
 use cef::*;
 use echo_contract::{Security, TabId, TabView};
+use std::time::{Duration, Instant};
 use tracing::{debug, warn};
 
 /// Un onglet et la vue qui l'affiche.
 pub struct Tab {
     pub id: TabId,
-    pub view: BrowserView,
+    /// `None` quand l'onglet dort : le navigateur est detruit, seule la fiche reste.
+    pub view: Option<BrowserView>,
+    pub asleep: bool,
+    /// Vrai quand l'utilisateur a saisi quelque chose dans la page : l'endormir perdrait sa saisie.
+    pub dirty: bool,
+    /// Dernier moment ou l'onglet a ete l'onglet actif.
+    pub last_active: Instant,
     pub title: String,
     pub url: String,
     pub loading: bool,
@@ -31,6 +38,10 @@ pub struct Tab {
 }
 
 impl Tab {
+    pub fn browser(&self) -> Option<Browser> {
+        self.view.as_ref()?.browser()
+    }
+
     /// Enregistre une page atteinte. Ignore un rechargement de la meme adresse.
     pub fn record_visit(&mut self, url: &str) {
         if url.is_empty() || self.history.get(self.position).map(String::as_str) == Some(url) {
@@ -63,7 +74,6 @@ impl Tab {
 impl Tab {
     fn to_view(&self) -> TabView {
         let (native_back, native_forward) = self
-            .view
             .browser()
             .map(|browser| (browser.can_go_back() == 1, browser.can_go_forward() == 1))
             .unwrap_or((false, false));
@@ -82,13 +92,13 @@ impl Tab {
             pinned: self.pinned,
             zoom: self.zoom,
             audible: self.audible,
-            asleep: false,
+            asleep: self.asleep,
         }
     }
 
     /// Vrai si cette vue porte le navigateur donne.
     pub fn owns(&self, browser_id: i32) -> bool {
-        self.view.browser().map(|b| b.identifier()) == Some(browser_id)
+        self.browser().map(|b| b.identifier()) == Some(browser_id)
     }
 }
 
@@ -155,7 +165,10 @@ impl Tabs {
         self.next_id += 1;
         self.entries.push(Tab {
             id,
-            view,
+            view: Some(view),
+            asleep: false,
+            dirty: false,
+            last_active: Instant::now(),
             title: url.to_string(),
             url: url.to_string(),
             loading: true,
@@ -177,9 +190,71 @@ impl Tabs {
             return;
         }
         self.active = Some(id);
-        for tab in &self.entries {
-            View::from(&tab.view).set_visible(i32::from(tab.id == id));
+        if let Some(tab) = self.get_mut(id) {
+            tab.last_active = Instant::now();
         }
+        self.refresh_visibility();
+    }
+
+    pub fn exists(&self, id: TabId) -> bool {
+        self.entries.iter().any(|tab| tab.id == id)
+    }
+
+    pub fn find_by_url(&self, url: &str) -> Option<TabId> {
+        self.entries.iter().find(|tab| tab.url == url).map(|tab| tab.id)
+    }
+
+    pub fn is_asleep(&self, id: TabId) -> bool {
+        self.entries.iter().any(|tab| tab.id == id && tab.asleep)
+    }
+
+    /// Detruit le navigateur d'un onglet inactif pour rendre sa memoire, en gardant la fiche.
+    ///
+    /// Refuse l'onglet actif, celui qui joue du son et celui qui charge. Le detachement se
+    /// fait hors de l'acces a l'etat, comme pour une fermeture.
+    pub fn put_to_sleep(&mut self, id: TabId) -> Option<Detached> {
+        if self.active == Some(id) {
+            return None;
+        }
+        let host = self.host.clone();
+        let tab = self.entries.iter_mut().find(|tab| tab.id == id)?;
+        if tab.audible || tab.loading || tab.asleep || tab.dirty {
+            return None;
+        }
+        let view = tab.view.take()?;
+        tab.asleep = true;
+        debug!(id, url = %tab.url, "onglet endormi");
+        Some(Detached { view: Some(view), host, remaining: self.entries.len() })
+    }
+
+    /// Les onglets inactifs depuis au moins `idle`, bons a endormir.
+    pub fn sleep_candidates(&self, idle: Duration) -> Vec<TabId> {
+        self.entries
+            .iter()
+            .filter(|tab| {
+                !tab.asleep
+                    && Some(tab.id) != self.active
+                    && !tab.audible
+                    && !tab.dirty
+                    && !tab.loading
+                    && tab.last_active.elapsed() >= idle
+            })
+            .map(|tab| tab.id)
+            .collect()
+    }
+
+    /// L'adresse a recharger au reveil d'un onglet.
+    pub fn wake_url(&self, id: TabId) -> Option<String> {
+        self.entries.iter().find(|tab| tab.id == id).map(|tab| tab.url.clone())
+    }
+
+    /// Rend une vue neuve a un onglet endormi.
+    pub fn wake_with(&mut self, id: TabId, view: BrowserView) {
+        let Some(tab) = self.get_mut(id) else { return };
+        tab.view = Some(view);
+        tab.asleep = false;
+        tab.loading = true;
+        debug!(id, url = %tab.url, "onglet reveille");
     }
 
     /// Retire un onglet de la liste et renvoie sa vue, sans toucher a Chromium.
@@ -194,13 +269,15 @@ impl Tabs {
         if self.active == Some(id) {
             self.active = self.entries.get(index).or_else(|| self.entries.last()).map(|t| t.id);
         }
-        Detached { view: Some(tab.view), host: self.host.clone(), remaining: self.entries.len() }
+        Detached { view: tab.view, host: self.host.clone(), remaining: self.entries.len() }
     }
 
     /// Rend visible l'onglet actif. A appeler apres un detachement.
     pub fn refresh_visibility(&self) {
         for tab in &self.entries {
-            View::from(&tab.view).set_visible(i32::from(Some(tab.id) == self.active));
+            if let Some(view) = &tab.view {
+                View::from(view).set_visible(i32::from(Some(tab.id) == self.active));
+            }
         }
     }
 

@@ -184,6 +184,15 @@ export function IconLibrary(props: IconProps): ReactElement {
   )
 }
 
+export function IconTerminal(props: IconProps): ReactElement {
+  return (
+    <Glyph {...props}>
+      <path d="m3.5 4.8 3.2 3.2-3.2 3.2" />
+      <path d="M8.6 11.6h4" />
+    </Glyph>
+  )
+}
+
 export function IconPuzzle(props: IconProps): ReactElement {
   return (
     <Glyph {...props}>

@@ -36,7 +36,10 @@ Le clic sur « Nouvel onglet » ouvre une page nue. Il doit ouvrir une palette c
 de recherche, et en dessous les dernières adresses consultées, les onglets déjà ouverts
 (« aller à cet onglet »), et l'adresse présente dans le presse-papiers.
 
-- [ ] Palette centrée sur la page, champ actif au clavier
+- [x] Page locale `ui/public/nouvel-onglet.*` (06/10) : champ centré, actif au clavier, sans framework ;
+      c'est la page d'accueil (`search::HOME`) — gain mesuré : repos 536 → 460 Mo, et chaque nouvel onglet ne
+      coûte plus un rendu Google (~100 Mo). Moteur de recherche dupliqué dans le JS : à rapprocher de `search.rs`
+- [ ] Palette : suggestions ci-dessous (nécessite un pont page → cœur pour lire historique/onglets)
 - [ ] Suggestions : historique récent, onglets ouverts, presse-papiers, favoris
 - [ ] Chaque ligne porte son favicon et son action à droite
 - [ ] Navigation entière au clavier, entrée pour valider, échap pour fermer
@@ -46,8 +49,9 @@ de recherche, et en dessous les dernières adresses consultées, les onglets dé
 
 L'infobulle est celle du système : rectangle gris, police par défaut, apparition sèche.
 
-- [ ] Bulles maison sur tous les boutons : matière, délai, apparition et disparition animées
-- [ ] Le raccourci clavier affiché à côté du libellé
+- [x] Bulles maison sur tous les boutons (06/10, `ui/src/shared/design/tooltip-layer.tsx`) : matière, délai, apparition animée
+- [x] Le raccourci clavier affiché à côté du libellé
+- [ ] Barre repliée : la vue (56 px) est trop étroite, la bulle système reste — attend la surimpression (E2.S4)
 - [ ] Positionnement qui évite les bords
 
 ## 5. La barre repliée
@@ -129,7 +133,13 @@ debout à la première requête.
 ## Reste du chantier, hors retour du jour
 
 - [ ] Pagination de l'historique (`searchHistory` sans décalage : soixante entrées au plus)
-- [ ] Mise en sourdine et mise en veille d'un onglet — l'état est affiché, pas pilotable
+- [x] Veille automatique des onglets inactifs (06/10) — 1 145 → 408 Mo sur 10 onglets
+- [ ] Veille : réglage du délai (réglages), mise en veille manuelle (clic droit sur l'onglet), exclure les onglets
+      (fait le 06/10 : saisie utilisateur détectée par la page → onglet jamais endormi)
+- [ ] **Mémoire — plancher fixe** : interface React ~80–100 Mo, accueil ~100 Mo, principal ~150–190 Mo ;
+      viser un plancher sous Chrome. Pistes : accueil sans renderer dédié, limite de processus de rendu, UI allégée
+- [ ] Codecs H.264/AAC : construire/obtenir un CEF avec codecs propriétaires (Twitch, Netflix, Spotify)
+- [ ] Mise en sourdine d'un onglet
 - [ ] Les extensions déclarées en ligne de commande demandent encore une relance
 - [ ] Mode lecture
 - [ ] Permissions : caméra, micro, notifications, position
@@ -146,3 +156,9 @@ debout à la première requête.
 - [x] Empreinte Chrome de bureau français, vérifiée côté serveur
 - [x] Relance du processus avec restitution des onglets
 - [x] Fiche `.echoforge.yml` et sonde de présence pour le centre de contrôle
+
+## Notes du 06/10 (terminal et pages internes)
+- [ ] Le champ d'adresse affiche « ui » pour les pages `echo://` (accueil, terminal) : afficher vide ou le titre
+- [ ] Raccourci clavier pour le terminal (ex. Ctrl+Maj+K) et mention dans la bulle
+- [ ] Terminal : sélection/copie (Ctrl+Maj+C/V), liens cliquables, redimensionnement vérifié sous tmux
+- [ ] `ECHO_TERM_CMD` ne gère pas les guillemets (découpe sur les espaces)

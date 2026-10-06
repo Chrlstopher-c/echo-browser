@@ -6,6 +6,7 @@ members = [
     "core/library",
     "core/shell",
     "core/shield",
+    "core/terminal",
 ]
 
 [workspace.package]
@@ -19,6 +20,7 @@ echo-shield     = { path = "core/shield" }
 echo-tabs       = { path = "core/tabs" }
 echo-extensions = { path = "core/extensions" }
 echo-library    = { path = "core/library" }
+echo-terminal   = { path = "core/terminal" }
 echo-settings   = { path = "core/settings" }
 
 anyhow     = "1"

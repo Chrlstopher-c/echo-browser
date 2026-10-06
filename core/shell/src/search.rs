@@ -4,7 +4,7 @@
 //! reglage le jour ou l'interface en proposera un.
 
 /// Page ouverte a chaque nouvel onglet.
-pub const HOME: &str = "https://www.google.com/";
+pub const HOME: &str = "echo://ui/nouvel-onglet.html";
 
 /// Modele de recherche. `{q}` recoit les termes, deja encodes.
 const QUERY_TEMPLATE: &str = "https://www.google.com/search?q={q}";

@@ -3,7 +3,7 @@
 use super::{navigation, notify_error, open_tab, publish, session};
 use crate::menu::{self, Click};
 use cef::{
-    Browser, CefString, ImplBrowser, ImplBrowserHost, ImplBrowserView, ImplFrame, Point, Rect,
+    Browser, CefString, ImplBrowser, ImplBrowserHost, ImplFrame, Point, Rect,
 };
 use echo_contract::{ContextTarget, CoreEvent, MenuItemKind};
 use tracing::{debug, warn};
@@ -143,7 +143,7 @@ fn download(url: &str) {
     if url.is_empty() {
         return;
     }
-    let browser = session::with(|s| s.tabs.active().and_then(|tab| tab.view.browser())).flatten();
+    let browser = session::with(|s| s.tabs.active().and_then(|tab| tab.browser())).flatten();
     match browser.and_then(|browser| browser.host()) {
         Some(host) => host.start_download(Some(&CefString::from(url))),
         None => notify_error("téléchargement impossible : aucune page active"),
@@ -151,7 +151,7 @@ fn download(url: &str) {
 }
 
 fn inspect() {
-    let browser = session::with(|s| s.tabs.active().and_then(|tab| tab.view.browser())).flatten();
+    let browser = session::with(|s| s.tabs.active().and_then(|tab| tab.browser())).flatten();
     let Some(host) = browser.and_then(|browser| browser.host()) else { return };
     let point = Point { x: 0, y: 0 };
     host.show_dev_tools(None, None, None, Some(&point));
@@ -165,7 +165,7 @@ fn with_page(action: impl FnOnce(&cef::Frame)) {
 }
 
 fn with_browser_host(action: impl FnOnce(&Browser)) {
-    let browser = session::with(|s| s.tabs.active().and_then(|tab| tab.view.browser())).flatten();
+    let browser = session::with(|s| s.tabs.active().and_then(|tab| tab.browser())).flatten();
     match browser {
         Some(browser) => action(&browser),
         None => warn!("aucune page active : action de menu sans effet"),

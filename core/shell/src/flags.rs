@@ -40,9 +40,21 @@ pub fn apply(process_type: &str, command_line: &mut CommandLine) {
         return;
     }
     switch_with_value(command_line, "disable-features", DISABLED_FEATURES);
+    // Comme Chrome : pas de lecture automatique tant que l'utilisateur n'a pas touche la page.
+    // Mesure le 06/10 sur YouTube : 155 Mo de moins, et plus de son non sollicite.
+    switch_with_value(command_line, "autoplay-policy", "document-user-activation-required");
     // Sans identifiant d'application, le gestionnaire de fenetres ne sait pas ranger la
     // fenetre et la laisse flotter. C'est aussi ce qui porte l'icone dans la barre des taches.
     switch_with_value(command_line, "class", APP_ID);
+
+    // Banc : `ECHO_FLAGS="--a --b=1"` ajoute des drapeaux Chromium pour mesurer leur effet.
+    for flag in std::env::var("ECHO_FLAGS").unwrap_or_default().split_whitespace() {
+        let flag = flag.trim_start_matches("--");
+        match flag.split_once('=') {
+            Some((name, value)) => switch_with_value(command_line, name, value),
+            None => command_line.append_switch(Some(&CefString::from(flag))),
+        }
+    }
 
     if aucun_proxy_declare() {
         command_line.append_switch(Some(&CefString::from("no-proxy-server")));

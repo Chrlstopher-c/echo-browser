@@ -1,9 +1,9 @@
 //! Responsabilite : la navigation demandee par l'interface ou le clavier — onglets
 //! parcourus, adresses ouvertes, zoom, retour et avance.
 
-use super::publish::{publish_shield, publish_tabs};
+use super::publish::publish_tabs;
 use super::{close_tab, open_tab, publish, session};
-use cef::{Browser, CefString, ImplBrowser, ImplBrowserHost, ImplBrowserView, ImplFrame};
+use cef::{Browser, CefString, ImplBrowser, ImplBrowserHost, ImplFrame};
 use echo_contract::CoreEvent;
 use tracing::{debug, warn};
 
@@ -16,7 +16,7 @@ pub(super) fn set_zoom(id: echo_contract::TabId, factor: f32) {
         if let Some(tab) = s.tabs.get_mut(id) {
             tab.zoom = clamped;
         }
-        s.tabs.get_mut(id).and_then(|tab| tab.view.browser()).and_then(|b| b.host())
+        s.tabs.get_mut(id).and_then(|tab| tab.browser()).and_then(|b| b.host())
     })
     .flatten();
     if let Some(host) = host {
@@ -44,8 +44,7 @@ pub fn perform(action: crate::shortcuts::Action) {
         Action::SelectTab(index) => {
             let target = session::with(|s| s.tabs.snapshot().get(index).map(|t| t.id)).flatten();
             if let Some(id) = target {
-                session::with(|s| s.tabs.select(id));
-                publish_tabs();
+                super::select_tab(id);
             }
         }
         Action::Reload { bypass_cache } => with_browser(|browser| {
@@ -76,16 +75,14 @@ pub(super) fn cycle_tab(step: isize) {
     }
     let current = active.and_then(|id| ids.iter().position(|&x| x == id)).unwrap_or(0);
     let next = (current as isize + step).rem_euclid(ids.len() as isize) as usize;
-    session::with(|s| s.tabs.select(ids[next]));
-    publish_tabs();
-    publish_shield();
+    super::select_tab(ids[next]);
 }
 
 /// Recule ou avance dans l'onglet actif. Passe par Chromium quand il le peut, sinon
 /// rejoue notre propre fil — c'est le cas apres une relance, ou son historique est neuf.
 pub(super) fn travel(forward: bool) {
     let plan = session::with(|s| {
-        let browser = s.tabs.active().and_then(|tab| tab.view.browser());
+        let browser = s.tabs.active().and_then(|tab| tab.browser());
         let native = browser
             .map(|b| if forward { b.can_go_forward() == 1 } else { b.can_go_back() == 1 })
             .unwrap_or(false);
@@ -116,7 +113,7 @@ pub(super) fn travel(forward: bool) {
 }
 
 pub(super) fn with_browser(action: impl FnOnce(&Browser)) {
-    let browser = session::with(|s| s.tabs.active().and_then(|tab| tab.view.browser())).flatten();
+    let browser = session::with(|s| s.tabs.active().and_then(|tab| tab.browser())).flatten();
     match browser {
         Some(browser) => action(&browser),
         None => warn!("aucune vue de contenu : demande sans effet"),

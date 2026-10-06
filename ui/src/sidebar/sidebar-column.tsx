@@ -67,6 +67,7 @@ function ColumnFooter({ model }: { model: SidebarModel }): ReactElement {
         restartPending={extensions.restartPending}
         downloads={library.downloads.summary}
         onToggle={sheet.toggle}
+        onOpenTerminal={() => core.send({ kind: 'openTerminal' })}
       />
       <SpaceStrip current={space.space.id} onSelect={space.select} />
     </footer>

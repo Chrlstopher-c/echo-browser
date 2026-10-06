@@ -160,6 +160,9 @@ class FakeCore implements CoreBridge {
       case 'openDevTools':
         this.emit({ kind: 'notice', level: 'info', message: 'DevTools indisponibles en développement.' })
         return
+      case 'openTerminal':
+        this.emit({ kind: 'notice', level: 'info', message: 'Le terminal de Claude Code est absent en développement.' })
+        return
       case 'exitFullscreen':
         this.setFullscreen(false)
         return

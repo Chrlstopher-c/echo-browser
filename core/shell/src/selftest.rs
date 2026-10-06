@@ -10,6 +10,8 @@ use tracing::info;
 
 /// Programme la sequence si la variable d'environnement le demande.
 pub fn schedule() {
+    schedule_bench();
+    schedule_wake_check();
     if std::env::var_os("ECHO_SELFTEST").is_none() {
         return;
     }
@@ -20,6 +22,65 @@ pub fn schedule() {
     plan(15_000, Step::Report);
     if std::env::var_os("ECHO_SELFTEST_RESTART").is_some() {
         plan(18_000, Step::Restart);
+    }
+}
+
+/// Banc memoire : `ECHO_BENCH_URLS` (adresses separees par des espaces) ouvre un onglet toutes les 5 s.
+fn schedule_bench() {
+    let Some(urls) = std::env::var("ECHO_BENCH_URLS").ok() else {
+        return;
+    };
+    for (i, url) in urls.split_whitespace().enumerate() {
+        info!(url, "banc : onglet programme");
+        let mut task = BenchTask::new(url.to_string());
+        post_delayed_task(ThreadId::UI, Some(&mut task), 6_000 + 5_000 * i as i64);
+    }
+}
+
+/// `ECHO_BENCH_WAKE_AT_S` : reveille a cette date le premier onglet endormi, puis rapporte l'etat 10 s apres.
+fn schedule_wake_check() {
+    let Some(at) = std::env::var("ECHO_BENCH_WAKE_AT_S").ok().and_then(|v| v.parse::<i64>().ok()) else {
+        return;
+    };
+    for (phase, delay) in [(0, at * 1000), (1, at * 1000 + 10_000)] {
+        let mut task = BenchWakeTask::new(phase);
+        post_delayed_task(ThreadId::UI, Some(&mut task), delay);
+    }
+}
+
+wrap_task! {
+    struct BenchWakeTask {
+        phase: i32,
+    }
+
+    impl Task {
+        fn execute(&self) {
+            if self.phase == 0 {
+                let target = crate::session::with(|s| s.tabs.snapshot().iter().find(|t| t.asleep).map(|t| t.id)).flatten();
+                info!(?target, "banc : reveil de l'onglet endormi");
+                if let Some(id) = target {
+                    crate::bridge::select_tab(id);
+                }
+            } else {
+                let tabs = crate::session::with(|s| s.tabs.snapshot()).unwrap_or_default();
+                for t in &tabs {
+                    info!(id = t.id, asleep = t.asleep, loading = t.loading, title = %t.title, "banc : etat final");
+                }
+            }
+        }
+    }
+}
+
+wrap_task! {
+    struct BenchTask {
+        url: String,
+    }
+
+    impl Task {
+        fn execute(&self) {
+            crate::bridge::open_tab(&self.url);
+            crate::bridge::publish_tabs();
+        }
     }
 }
 

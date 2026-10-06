@@ -5,7 +5,7 @@ import type { ShieldView } from '../shared/contract'
 import { DownloadBadge } from '../library/downloads/download-badge'
 import type { DownloadsSummary } from '../library/downloads/download-reading'
 import { IconButton } from '../shared/design/icon-button'
-import { IconLibrary, IconPuzzle, IconSettings } from '../shared/design/icons'
+import { IconLibrary, IconPuzzle, IconSettings, IconTerminal } from '../shared/design/icons'
 import { ShieldButton } from '../shield/shield-button'
 import type { SheetId } from './sheet'
 
@@ -17,6 +17,7 @@ export interface UtilityRowProps {
   restartPending: boolean
   downloads: DownloadsSummary
   onToggle: (sheet: SheetId) => void
+  onOpenTerminal: () => void
 }
 
 function PendingDot(): ReactElement {
@@ -24,11 +25,14 @@ function PendingDot(): ReactElement {
 }
 
 export function UtilityRow(props: UtilityRowProps): ReactElement {
-  const { shield, open, compact, restartPending, downloads, onToggle } = props
+  const { shield, open, compact, restartPending, downloads, onToggle, onOpenTerminal } = props
   return (
     <div className={`flex items-center gap-0.5 ${compact ? 'flex-col' : ''}`}>
       <ShieldButton shield={shield} open={open === 'shield'} compact={compact} onClick={() => onToggle('shield')} />
       {!compact && <span className="flex-1" />}
+      <IconButton label="Claude Code" onClick={onOpenTerminal}>
+        <IconTerminal size={15} />
+      </IconButton>
       <IconButton label="Bibliothèque" onClick={() => onToggle('library')} active={open === 'library'}>
         <IconLibrary size={15} />
         <DownloadBadge summary={downloads} />

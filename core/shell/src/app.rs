@@ -60,6 +60,8 @@ wrap_browser_process_handler! {
                 library: open_library(),
             });
             crate::selftest::schedule();
+            crate::sleep::start();
+            crate::control::start();
             crate::overlay::arm_test();
 
             let mut delegate = window::BrowserWindowDelegate::new(

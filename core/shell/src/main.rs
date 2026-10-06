@@ -8,6 +8,7 @@ mod app;
 mod assets;
 mod bridge;
 mod client;
+mod control;
 mod filtering;
 mod flags;
 mod identity;
@@ -20,7 +21,9 @@ mod restart;
 mod search;
 mod session;
 mod shortcuts;
+mod sleep;
 mod tabs;
+mod terminal;
 mod transfers;
 mod window;
 

@@ -27,6 +27,8 @@ pub enum UiRequest {
     /// Facteur de zoom de la page, 1.0 etant la taille naturelle.
     SetZoom { id: TabId, factor: f32 },
     OpenDevTools { id: TabId },
+    /// Ouvre le terminal de Claude Code, ou y revient s'il est deja ouvert.
+    OpenTerminal,
     /// Sort du plein ecran, quand l'utilisateur le demande depuis l'interface.
     ExitFullscreen,
 

@@ -56,6 +56,7 @@ export function SidebarRail({ model }: { model: SidebarModel }): ReactElement {
           restartPending={model.extensions.restartPending}
           downloads={model.library.downloads.summary}
           onToggle={openSheet}
+          onOpenTerminal={() => core.send({ kind: 'openTerminal' })}
         />
       </footer>
     </div>

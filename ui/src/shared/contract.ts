@@ -21,6 +21,7 @@ export type UiRequest =
   /** Facteur de zoom de la page, 1.0 etant la taille naturelle. */
   | { kind: 'setZoom'; id: TabId; factor: number }
   | { kind: 'openDevTools'; id: TabId }
+  | { kind: 'openTerminal' }
   /** Sort du plein ecran, quand l'utilisateur le demande depuis l'interface. */
   | { kind: 'exitFullscreen' }
   // --- Mise en page ---

@@ -72,13 +72,25 @@ wrap_load_handler! {
         /// Injecte le pont dans la page d'interface avant que ses scripts ne s'executent.
         fn on_load_start(
             &self,
-            _browser: Option<&mut Browser>,
+            browser: Option<&mut Browser>,
             frame: Option<&mut Frame>,
             _transition: TransitionType,
         ) {
             let Some(frame) = frame else { return };
             let url = CefString::from(&frame.url()).to_string();
-            if url.starts_with("echo://ui/") {
+            if frame.is_main() == 1 {
+                if let Some(browser) = browser {
+                    crate::bridge::set_tab_dirty(browser.identifier(), false);
+                }
+                if url.starts_with("http") {
+                    frame.execute_java_script(
+                        Some(&CefString::from(crate::sleep::DIRTY_WATCHER)),
+                        Some(&CefString::from("echo://sleep")),
+                        0,
+                    );
+                }
+            }
+            if is_interface_page(&url) {
                 frame.execute_java_script(
                     Some(&CefString::from(crate::bridge::script::BOOTSTRAP)),
                     Some(&CefString::from("echo://bridge")),
@@ -110,7 +122,7 @@ wrap_load_handler! {
         fn on_load_end(&self, _browser: Option<&mut Browser>, frame: Option<&mut Frame>, _status: i32) {
             let Some(frame) = frame else { return };
             let url = CefString::from(&frame.url()).to_string();
-            if !url.starts_with("echo://ui/") {
+            if !is_interface_page(&url) {
                 return;
             }
             crate::bridge::publish_initial_state();
@@ -128,7 +140,7 @@ wrap_load_handler! {
             let Some(url) = browser.main_frame().map(|f| CefString::from(&f.url()).to_string()) else {
                 return;
             };
-            if url.starts_with("echo://ui/") {
+            if is_interface_page(&url) {
                 return;
             }
             crate::bridge::publish_tab(browser_id, &url, &url, is_loading == 1);
@@ -159,13 +171,19 @@ wrap_display_handler! {
         /// se traduit par une fenetre blanche et aucune trace.
         fn on_console_message(
             &self,
-            _browser: Option<&mut Browser>,
+            browser: Option<&mut Browser>,
             level: LogSeverity,
             message: Option<&CefString>,
             source: Option<&CefString>,
             line: i32,
         ) -> i32 {
             let message = message.map(CefString::to_string).unwrap_or_default();
+            if message == crate::sleep::DIRTY_MARKER {
+                if let Some(browser) = browser {
+                    crate::bridge::set_tab_dirty(browser.identifier(), true);
+                }
+                return 1;
+            }
             let source = source.map(CefString::to_string).unwrap_or_default();
             match level {
                 LogSeverity::ERROR | LogSeverity::FATAL => {
@@ -249,7 +267,7 @@ wrap_context_menu_handler! {
 /// Traduit ce que Chromium rapporte du clic en ce dont le menu a besoin.
 fn read_click(params: &ContextMenuParams) -> crate::menu::Click {
     let text = |value: CefStringUserfree| CefString::from(&value).to_string();
-    let browser = crate::session::with(|s| s.tabs.active().and_then(|tab| tab.view.browser())).flatten();
+    let browser = crate::session::with(|s| s.tabs.active().and_then(|tab| tab.browser())).flatten();
     crate::menu::Click {
         link: text(params.link_url()),
         image: if params.has_image_contents() == 1 { text(params.source_url()) } else { String::new() },
@@ -259,4 +277,10 @@ fn read_click(params: &ContextMenuParams) -> crate::menu::Click {
         can_go_back: browser.as_ref().map(|b| b.can_go_back() == 1).unwrap_or(false),
         can_go_forward: browser.as_ref().map(|b| b.can_go_forward() == 1).unwrap_or(false),
     }
+}
+
+/// Vrai pour les pages de l'interface elle-meme ; la page d'accueil, servie par le meme
+/// schema, est une page d'onglet comme une autre (chargement, titre, veille).
+fn is_interface_page(url: &str) -> bool {
+    url.starts_with("echo://ui/") && url != crate::search::HOME && url != crate::terminal::PAGE
 }

@@ -34,7 +34,7 @@ impl Session {
 
     /// La frame de la page affichee dans l'onglet actif.
     pub fn active_frame(&self) -> Option<Frame> {
-        self.tabs.active()?.view.browser()?.main_frame()
+        self.tabs.active()?.browser()?.main_frame()
     }
 
     /// L'adresse affichee dans l'onglet actif.

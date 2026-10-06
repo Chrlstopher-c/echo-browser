@@ -77,15 +77,30 @@ wrap_scheme_handler_factory! {
         fn create(
             &self,
             _browser: Option<&mut Browser>,
-            _frame: Option<&mut Frame>,
+            frame: Option<&mut Frame>,
             _scheme_name: Option<&CefString>,
             request: Option<&mut Request>,
         ) -> Option<ResourceHandler> {
             let request = request?;
             let url = CefString::from(&request.url()).to_string();
             if is_ipc(&url) {
+                // Une page web peut POSTer vers ce schema sans pouvoir lire la reponse : la demande
+                // partirait quand meme. Seules les pages d'echo:// pilotent le coeur.
+                // Mesure le 06/10 : une page http ouvrait un onglet de cette facon.
+                if !comes_from_interface(frame.as_deref()) {
+                    warn!(%url, "demande de pilotage refusee : l'appelant n'est pas l'interface");
+                    return Some(StaticResource::new(Vec::new(), "application/json".into(), StdRc::new(Cell::new(0))));
+                }
                 crate::bridge::submit(&post_body(request));
                 return Some(StaticResource::new(b"[]".to_vec(), "application/json".into(), StdRc::new(Cell::new(0))));
+            }
+            if let Some(route) = url.strip_prefix("echo://ui/term/") {
+                if !comes_from_interface(frame.as_deref()) {
+                    warn!(%url, "terminal refuse : l'appelant n'est pas l'interface");
+                    return Some(StaticResource::new(Vec::new(), "application/octet-stream".into(), StdRc::new(Cell::new(0))));
+                }
+                let body = crate::terminal::handle(route, &post_body(request));
+                return Some(StaticResource::new(body, "application/octet-stream".into(), StdRc::new(Cell::new(0))));
             }
             if let Some(id) = url.strip_prefix("echo://icones/") {
                 let (body, mime) = load_icon(id.split(['?', '#']).next().unwrap_or(""));
@@ -153,6 +168,11 @@ wrap_resource_handler! {
             i32::from(count > 0)
         }
     }
+}
+
+/// Vrai quand la page qui emet la requete est une page de l'interface (`echo://`).
+fn comes_from_interface(frame: Option<&Frame>) -> bool {
+    frame.is_some_and(|frame| CefString::from(&frame.url()).to_string().starts_with("echo://"))
 }
 
 /// Chemin reserve aux demandes de l'interface.

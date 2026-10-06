@@ -11,6 +11,7 @@ pub mod library;
 pub mod publish;
 
 pub use publish::{
+    set_tab_dirty,
     publish_filter_lists, publish_initial_state, publish_shield, publish_tab, publish_tabs,
     set_fullscreen, set_tab_title,
 };
@@ -101,12 +102,8 @@ fn apply(request: UiRequest) {
             open_tab(&target);
             publish_tabs();
         }
-        UiRequest::SelectTab { id } => {
-            dismiss_overlays();
-            session::with(|s| s.tabs.select(id));
-            publish_tabs();
-            publish_shield();
-        }
+        UiRequest::SelectTab { id } => select_tab(id),
+        UiRequest::OpenTerminal => open_terminal(),
         UiRequest::CloseTab { id } => close_tab(id),
         UiRequest::SetChromeWidth { pixels } => {
             let chrome = session::with(|s| s.chrome.clone()).flatten();
@@ -226,6 +223,61 @@ pub fn open_tab(url: &str) {
         host.add_child_view(Some(&mut child));
     }
     session::with(|s| s.tabs.adopt(view, url));
+}
+
+/// Ouvre le terminal de Claude Code, ou revient a l'onglet qui le porte deja.
+pub fn open_terminal() {
+    match session::with(|s| s.tabs.find_by_url(crate::terminal::PAGE)).flatten() {
+        Some(id) => select_tab(id),
+        None => {
+            open_tab(crate::terminal::PAGE);
+            publish_tabs();
+        }
+    }
+}
+
+/// Active un onglet, en le reveillant d'abord s'il dort.
+pub fn select_tab(id: TabId) {
+    dismiss_overlays();
+    if session::with(|s| s.tabs.is_asleep(id)).unwrap_or(false) {
+        wake_tab(id);
+    }
+    session::with(|s| s.tabs.select(id));
+    publish_tabs();
+    publish_shield();
+}
+
+/// Recree le navigateur d'un onglet endormi et recharge sa page.
+fn wake_tab(id: TabId) {
+    let Some((mut client, host, url)) =
+        session::with(|s| Some((s.client.clone(), s.tabs.host(), s.tabs.wake_url(id)?))).flatten()
+    else {
+        return;
+    };
+    let Some(view) = crate::window::create_view(client.as_mut(), &url, 0) else {
+        warn!(id, %url, "vue de reveil non creee");
+        return;
+    };
+    if let Some(host) = host {
+        host.add_child_view(Some(&mut View::from(&view)));
+    }
+    session::with(|s| s.tabs.wake_with(id, view));
+}
+
+/// Endort les onglets inactifs depuis `idle`. Renvoie leur nombre.
+pub fn sleep_idle_tabs(idle: std::time::Duration) -> usize {
+    let ids = session::with(|s| s.tabs.sleep_candidates(idle)).unwrap_or_default();
+    let mut slept = 0;
+    for id in ids {
+        if let Some(detached) = session::with(|s| s.tabs.put_to_sleep(id)).flatten() {
+            detached.dispose();
+            slept += 1;
+        }
+    }
+    if slept > 0 {
+        publish_tabs();
+    }
+    slept
 }
 
 /// Ferme un onglet. Comme pour l'ouverture, les appels a Chromium se font hors de

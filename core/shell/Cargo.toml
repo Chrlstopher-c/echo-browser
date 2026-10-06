@@ -15,6 +15,7 @@ echo-contract.workspace = true
 echo-shield.workspace = true
 echo-extensions.workspace = true
 echo-library.workspace = true
+echo-terminal.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 anyhow.workspace = true

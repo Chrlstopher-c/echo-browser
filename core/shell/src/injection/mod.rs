@@ -11,9 +11,14 @@ use echo_shield::verdict::PageTreatment;
 use echo_shield::Shield;
 use tracing::debug;
 
+/// Banc : `ECHO_BENCH_NO_INJECT=1` coupe masquage et scriptlets pour mesurer leur cout memoire.
+fn bench_sans_injection() -> bool {
+    std::env::var_os("ECHO_BENCH_NO_INJECT").is_some()
+}
+
 /// Le code a poser dans le document d'une page, ou `None` s'il n'y a rien a y faire.
 pub fn page_script(url: &str, shield: &Shield) -> Option<String> {
-    if url.is_empty() || url.starts_with("echo://") || url.starts_with("about:") {
+    if url.is_empty() || url.starts_with("echo://") || url.starts_with("about:") || bench_sans_injection() {
         return None;
     }
     let treatment = shield.treat_page(url);
@@ -36,7 +41,7 @@ pub fn page_script(url: &str, shield: &Shield) -> Option<String> {
 /// anti-bloqueur, a temps pour le masquage.
 pub fn treat_page(frame: &Frame, shield: &Shield) {
     let url = CefString::from(&frame.url()).to_string();
-    if url.is_empty() || url.starts_with("echo://") || url.starts_with("about:") {
+    if url.is_empty() || url.starts_with("echo://") || url.starts_with("about:") || bench_sans_injection() {
         return;
     }
     let treatment = shield.treat_page(&url);

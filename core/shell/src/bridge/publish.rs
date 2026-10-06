@@ -103,6 +103,15 @@ pub fn publish_tab(browser_id: i32, url: &str, title: &str, loading: bool) {
     publish_tabs();
 }
 
+/// Note qu'une page porte une saisie de l'utilisateur, ou qu'elle repart de zero.
+pub fn set_tab_dirty(browser_id: i32, dirty: bool) {
+    session::with(|s| {
+        if let Some(tab) = s.tabs.by_browser(browser_id) {
+            tab.dirty = dirty;
+        }
+    });
+}
+
 /// Note le titre rendu par la page, et le repercute dans l'historique.
 pub fn set_tab_title(browser_id: i32, title: &str) {
     if title.is_empty() {
