@@ -34,7 +34,9 @@ pub fn prepare_environment() {
             std::env::set_var("MALLOC_TRIM_THRESHOLD_", "65536");
         }
     }
-    if hardware_decoding() && std::env::var_os("LIBVA_DRIVER_NAME").is_none() {
+    // Le pilote NVIDIA ne se pose que sur une machine NVIDIA : ailleurs, VA-API choisit le sien (AMD, Intel).
+    let nvidia = std::path::Path::new("/proc/driver/nvidia/version").exists();
+    if hardware_decoding() && nvidia && std::env::var_os("LIBVA_DRIVER_NAME").is_none() {
         // SAFETY : appele au tout debut de `main`, avant tout autre fil d'execution.
         unsafe {
             std::env::set_var("LIBVA_DRIVER_NAME", "nvidia");
