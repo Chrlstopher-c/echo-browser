@@ -6,7 +6,7 @@
 - [x] E1.S3 — Autoplay bloqué, accueil local — VERIFY: repos < 470 Mo
 - [x] E1.S4 — Veille manuelle (menu de l'onglet « Endormir », op `sleep`) + réglages `tabs.sleepEnabled` / `tabs.sleepAfterMinutes` (5 min par défaut) — VERIFY: réglage à 1 min → onglets endormis, désactivé → aucun ; op `sleep` sur la prise (fait le 06/10)
 - [x] E1.S5 — Ne jamais endormir un onglet avec saisie non envoyée — VERIFY: page qui émet `echo:dirty`, veille 15 s, onglet resté éveillé (fait ; la frappe réelle `isTrusted` n'est pas encore rejouée automatiquement)
-- [ ] E1.S6 — Plancher : processus principal et interface sous Chrome — VERIFY: repos ≤ 360 Mo (Chrome 351)
+- [~] E1.S6 — Plancher : repos ~430 Mo contre ~380 pour Chrome (écart ~13 %), onglets éveillés +30 % (≈50 Mo/onglet contre ≈32). Essayé sans gain notable : `--renderer-process-limit=6` (−4 %, isolation perdue), `BackForwardCache` coupé (−1 %), `--no-sandbox` n'est pas en cause, bouclier hors de cause, onglets masqués bien signalés `hidden`. Piste restante : purge mémoire des renderers en arrière-plan. — VERIFY: `tools/bench-ram.sh`
 
 ## E2 — Design
 - [x] E2.S1 — Marge et gouttière de la teinte de la barre — VERIFY: capture, pixels de la gouttière = teinte `shell`
