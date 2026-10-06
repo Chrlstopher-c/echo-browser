@@ -52,6 +52,8 @@ pub enum UiRequest {
     RevealSidebar { reveal: bool },
     /// Teinte dominante de l'espace courant, appliquee au cadre autour de la page.
     SetAccent { color: String },
+    /// Theme clair ou sombre d'Echo : les pages le recoivent comme `prefers-color-scheme`.
+    SetColorScheme { dark: bool },
 
     // --- Bouclier ---
     ToggleShieldForSite { id: TabId },

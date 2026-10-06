@@ -42,6 +42,8 @@ export type UiRequest =
   | { kind: 'setSidebarCollapsed'; collapsed: boolean }
   /** Teinte dominante de l'espace courant, appliquee au cadre autour de la page. */
   | { kind: 'setAccent'; color: string }
+  /** Theme d'Echo, transmis aux pages comme `prefers-color-scheme`. */
+  | { kind: 'setColorScheme'; dark: boolean }
   // --- Bouclier ---
   | { kind: 'toggleShieldForSite'; id: TabId }
   | { kind: 'setShieldEnabled'; enabled: boolean }

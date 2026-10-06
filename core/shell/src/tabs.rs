@@ -43,6 +43,8 @@ pub struct Tab {
     pub folder: Option<String>,
     /// Conteneur de l'onglet (cookies et comptes a part), `None` pour le contexte commun.
     pub container: Option<String>,
+    /// Onglet qui a ouvert celui-ci par `window.open` (connexion Google…) : on y revient a la fermeture.
+    pub opener: Option<TabId>,
     /// Facteur de zoom, 1.0 etant la taille naturelle.
     pub zoom: f32,
     /// Vrai quand la page joue du son.
@@ -195,6 +197,7 @@ impl Tabs {
             pinned: false,
             folder: None,
             container: None,
+            opener: None,
             zoom: 1.0,
             audible: false,
         });
@@ -226,6 +229,10 @@ impl Tabs {
     }
 
     /// Les pages chargees de tous les onglets vivants.
+    pub fn browsers(&self) -> Vec<Browser> {
+        self.entries.iter().filter_map(Tab::browser).collect()
+    }
+
     pub fn main_frames(&self) -> Vec<Frame> {
         self.entries.iter().filter_map(|tab| tab.browser()?.main_frame()).collect()
     }
@@ -348,6 +355,7 @@ impl Tabs {
             pinned: snapshot.pinned,
             folder: snapshot.folder.clone(),
             container: snapshot.container.clone(),
+            opener: None,
             zoom: 1.0,
             audible: false,
         });

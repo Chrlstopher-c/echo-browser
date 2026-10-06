@@ -211,6 +211,12 @@ wrap_display_handler! {
                 }
                 return 1;
             }
+            let source_text = source.map(CefString::to_string).unwrap_or_default();
+            if source_text.contains("/gsi/") && message.contains("reading 'postMessage'") {
+                if let Some(browser) = browser.as_deref() {
+                    crate::bridge::finish_orphan_signin(browser.identifier());
+                }
+            }
             if message == crate::sleep::DIRTY_MARKER {
                 if let Some(browser) = browser {
                     crate::bridge::set_tab_dirty(browser.identifier(), true);
@@ -239,6 +245,7 @@ wrap_life_span_handler! {
         fn on_after_created(&self, browser: Option<&mut Browser>) {
             if let Some(browser) = browser.as_deref() {
                 crate::identity::emulate(browser);
+                crate::scheme::apply(browser);
             }
             self.live.opened();
         }

@@ -201,9 +201,9 @@ pub fn close_tab(id: TabId) {
 
 /// Range dans les onglets une fenetre ouverte par une page. Faux si la scene n'existe pas encore.
 pub fn adopt_popup(view: BrowserView) -> bool {
-    let Some((host, container)) = session::with(|s| {
+    let Some((host, container, opener)) = session::with(|s| {
         let container = s.tabs.active().and_then(|tab| tab.container.clone());
-        Some((s.tabs.host()?, container))
+        Some((s.tabs.host()?, container, s.tabs.active_id()))
     })
     .flatten() else {
         return false;
@@ -213,6 +213,7 @@ pub fn adopt_popup(view: BrowserView) -> bool {
         let id = s.tabs.adopt(view, "about:blank");
         if let Some(tab) = s.tabs.get_mut(id) {
             tab.container = container;
+            tab.opener = opener;
         }
         s.tabs.refresh_visibility();
     });
@@ -229,6 +230,31 @@ pub fn page_asks_close(browser_id: i32) -> bool {
     let Some(id) = session::with(|s| s.tabs.by_browser(browser_id).map(|tab| tab.id)).flatten() else {
         return false;
     };
-    crate::containers::later(move || close_tab(id));
+    crate::containers::later(move || close_popup(id, false));
     true
+}
+
+/// Ferme un onglet ouvert par une page et revient sur celle-ci ; `reload` la recharge (connexion faite).
+fn close_popup(id: TabId, reload: bool) {
+    let opener = session::with(|s| s.tabs.get_mut(id).and_then(|tab| tab.opener)).flatten();
+    close_tab(id);
+    let Some(opener) = opener.filter(|o| session::with(|s| s.tabs.exists(*o)).unwrap_or(false)) else { return };
+    super::select_tab(opener);
+    if reload {
+        let browser = session::with(|s| s.tabs.get_mut(opener).and_then(|tab| tab.browser())).flatten();
+        if let Some(browser) = browser {
+            browser.reload();
+        }
+    }
+}
+
+/// La popup de connexion Google n'a pas pu rendre la main a sa page (lien coupe par le site, en-tete COOP) :
+/// la connexion est faite, mais la popup resterait blanche. On la ferme et on recharge la page d'origine.
+pub fn finish_orphan_signin(browser_id: i32) {
+    let Some(id) = session::with(|s| s.tabs.by_browser(browser_id).filter(|t| t.opener.is_some()).map(|t| t.id)).flatten()
+    else {
+        return;
+    };
+    tracing::info!(id, "popup de connexion orpheline : fermee, page d'origine rechargee");
+    crate::containers::later(move || close_popup(id, true));
 }

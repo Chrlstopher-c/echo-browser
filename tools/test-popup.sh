@@ -15,6 +15,17 @@ cat > "$ECHO_RUN_DIR/popup.html" <<'H'
 setTimeout(() => { window.opener.postMessage('connecte', '*'); window.close() }, 2500)
 </script>
 H
+mkdir -p "$ECHO_RUN_DIR/gsi"
+cat > "$ECHO_RUN_DIR/orphan-opener.html" <<'H'
+<title>origine2</title><body style="margin:0;height:100vh"><p id=p></p><script>
+const n = Number(sessionStorage.n || 0) + 1; sessionStorage.n = n; p.textContent = 'chargements=' + n
+document.addEventListener('click', () => window.open('gsi/select.html', '_blank', 'noopener'))
+</script>
+H
+cat > "$ECHO_RUN_DIR/gsi/select.html" <<'H'
+<title>gsi</title><p>connexion</p><script src="relay.js"></script>
+H
+echo "setTimeout(() => window.opener.postMessage('jeton', '*'), 1500)" > "$ECHO_RUN_DIR/gsi/relay.js"
 trap 'cp "$ECHO_RUN_DIR/browser.log" /tmp/claude-1000/popup.log 2>/dev/null; ./stop.sh >/dev/null 2>&1 || true' EXIT
 ./start.sh release >/dev/null; sleep 14
 python3 - <<'PY'
@@ -43,5 +54,14 @@ time.sleep(4)
 tabs = call(op="tabs")["tabs"]
 assert not any("popup" in t["title"] for t in tabs), "la popup ne s'est pas refermee"
 assert "recu:connecte" in call(op="read", id=o)["text"], "le message n'est pas revenu a la page d'origine"
-print("OK : popup en onglet, opener garde, fermeture propre")
+# Popup coupee de sa page (COOP, cas de LinkedIn + Google) : fermee, page d'origine rechargee.
+o2 = call(op="open", url="file://" + os.environ["ECHO_RUN_DIR"] + "/orphan-opener.html")["id"]
+time.sleep(2)
+call(op="click", x=300, y=300)
+time.sleep(5)
+tabs = call(op="tabs")["tabs"]
+assert not any(t["title"] == "gsi" for t in tabs), f"popup orpheline restee ouverte : {[t['title'] for t in tabs]}"
+assert [t for t in tabs if t["id"] == o2][0]["active"], "retour sur la page d'origine attendu"
+assert "chargements=2" in call(op="read", id=o2)["text"], call(op="read", id=o2)["text"]
+print("OK : popup en onglet, opener garde, fermeture propre, popup orpheline refermee + origine rechargee")
 PY

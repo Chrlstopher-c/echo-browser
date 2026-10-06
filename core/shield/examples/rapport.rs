@@ -25,6 +25,10 @@ const REQUESTS: &[(&str, &str, &str, bool)] = &[
     ("https://www.youtube.com/s/player/base.js", "https://www.youtube.com/", "script", false),
     ("https://github.com/assets/app.js", "https://github.com/", "script", false),
     ("https://api.stripe.com/v1/tokens", "https://boutique.example.com/", "xhr", false),
+    // Connexion « Continuer avec Google » (GSI) : le bouton et le relais de la popup sont des cadres.
+    ("https://accounts.google.com/gsi/client", "https://www.linkedin.com/login/fr", "script", false),
+    ("https://accounts.google.com/gsi/button?type=standard&client_id=x", "https://www.linkedin.com/login/fr", "sub_frame", false),
+    ("https://accounts.google.com/gsi/iframe/select?client_id=x&ux_mode=popup", "https://www.linkedin.com/login/fr", "sub_frame", false),
 ];
 
 const PAGES: &[&str] = &[

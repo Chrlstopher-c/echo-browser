@@ -51,6 +51,7 @@ export function useSpace(send: (request: UiRequest) => void): SpaceController {
   useEffect(() => {
     applySpace(space)
     send({ kind: 'setAccent', color: space.tokens.shell })
+    send({ kind: 'setColorScheme', dark: space.scheme === 'dark' })
     // Ce qui s'affiche au-dessus de la page est une page a part : elle ne partage pas
     // nos jetons, le coeur les lui transmet.
     send({ kind: 'setOverlayTheme', theme: overlayTheme(space) })

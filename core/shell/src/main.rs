@@ -23,6 +23,7 @@ mod presence;
 mod selftest;
 mod restart;
 mod roundness;
+mod scheme;
 mod search;
 mod session;
 mod shortcuts;
