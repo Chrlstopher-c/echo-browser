@@ -15,6 +15,7 @@ mod flags;
 mod identity;
 mod injection;
 mod menu;
+mod occlusion;
 mod overlay;
 mod permissions;
 mod persist;
@@ -61,6 +62,7 @@ fn main() -> anyhow::Result<()> {
     anyhow::ensure!(started == 1, "Chromium n'a pas demarre");
 
     presence::ouvrir();
+    occlusion::watch();
 
     info!("boucle de messages lancee");
     run_message_loop();

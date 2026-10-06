@@ -1,6 +1,6 @@
 //! Responsabilite : le menu contextuel — ce que le clic droit ouvre, et ce qu'il declenche.
 
-use super::{navigation, notify_error, open_tab, publish, session};
+use super::{navigation, notify_error, publish, session};
 use crate::menu::{self, Click};
 use cef::{
     Browser, CefString, ImplBrowser, ImplBrowserHost, ImplFrame, Point, Rect,

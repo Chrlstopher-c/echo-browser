@@ -357,7 +357,8 @@ impl Tabs {
     pub fn refresh_visibility(&self) {
         for tab in &self.entries {
             if let Some(view) = &tab.view {
-                View::from(view).set_visible(i32::from(Some(tab.id) == self.active));
+                let shown = Some(tab.id) == self.active && !WINDOW_HIDDEN.load(std::sync::atomic::Ordering::Relaxed);
+                View::from(view).set_visible(i32::from(shown));
             }
         }
     }
@@ -435,3 +436,7 @@ fn host_listed(url: &str, hosts: &[String]) -> bool {
     let host = url.split("://").nth(1).and_then(|rest| rest.split(['/', '?', '#', ':']).next()).unwrap_or("");
     hosts.iter().any(|entry| host == entry || host.ends_with(&format!(".{entry}")))
 }
+
+/// La fenetre n'est plus affichee (autre espace de travail) : aucune page ne l'est non plus, pour que
+/// Chromium bride ses minuteries et ses animations.
+pub static WINDOW_HIDDEN: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
