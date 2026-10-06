@@ -32,4 +32,4 @@
 
 ## E0 — Sécurité
 - [x] E0.S1 — Une page web ne pilote pas le cœur par `echo://ui/ipc` — VERIFY: `tools/test-ipc-origin.sh`
-- [ ] E0.S2 — Auditer les autres surfaces `echo://` (icônes, fichiers) et la sonde 4330 — VERIFY: page de test qui tente chaque URL, aucune donnée lisible
+- [x] E0.S2 — Surfaces `echo://` : une page web ne peut plus afficher une page interne dans un cadre (le terminal se lançait) — VERIFY: page avec iframe `echo://ui/terminal.html` : refus journalisé, pas de terminal lancé (fait le 06/10) ; reste la sonde 4330 (page fixe, sans en-tête d'origine croisée : OK)

@@ -83,6 +83,12 @@ wrap_scheme_handler_factory! {
         ) -> Option<ResourceHandler> {
             let request = request?;
             let url = CefString::from(&request.url()).to_string();
+            // Aucune page de l'interface dans un cadre : un site pourrait l'afficher sous un faux bouton
+            // (le terminal, par exemple, se lance des qu'une de ses pages s'ouvre).
+            if frame.as_deref().is_some_and(|frame| frame.is_main() == 0) {
+                warn!(%url, "page interne refusee dans un cadre");
+                return Some(StaticResource::new(Vec::new(), "text/plain".into(), StdRc::new(Cell::new(0))));
+            }
             if is_ipc(&url) {
                 // Une page web peut POSTer vers ce schema sans pouvoir lire la reponse : la demande
                 // partirait quand meme. Seules les pages d'echo:// pilotent le coeur.
