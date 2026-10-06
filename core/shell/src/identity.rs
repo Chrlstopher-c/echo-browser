@@ -21,6 +21,10 @@ const GREASE_VERSION: &str = "99";
 pub const ACCEPT_LANGUAGE: &str = "fr-FR,fr,en-US,en";
 
 /// Aligne les en-tetes d'identification sur ceux d'un Chrome de bureau.
+///
+/// On ne fait que CORRIGER les en-tetes que Chromium envoie deja : Chrome n'envoie d'emblee que
+/// `sec-ch-ua`, `-mobile` et `-platform`, et les autres (version complete, architecture…) seulement aux
+/// sites qui les demandent. Les ajouter partout donnait une signature d'automate : captcha Google (06/10).
 pub fn apply(request: &Request) {
     let brands = format!(
         r#""Chromium";v="{CHROME_VERSION}", "Google Chrome";v="{CHROME_VERSION}", "{GREASE_BRAND}";v="{GREASE_VERSION}""#
@@ -40,6 +44,10 @@ pub fn apply(request: &Request) {
 }
 
 fn set(request: &Request, name: &str, value: &str) {
+    let present = !CefString::from(&request.header_by_name(Some(&CefString::from(name)))).to_string().is_empty();
+    if !present {
+        return;
+    }
     request.set_header_by_name(
         Some(&CefString::from(name)),
         Some(&CefString::from(value)),
