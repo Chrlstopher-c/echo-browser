@@ -382,6 +382,11 @@ pub fn restore_accent(color: &str) {
     }
 }
 
+/// La teinte courante de la fenetre, en ARGB.
+pub fn accent_now() -> u32 {
+    ACCENT_NOW.load(Ordering::Relaxed)
+}
+
 pub fn set_accent(color: &str, host: Option<&Panel>) {
     let Some(argb) = parse_hex_color(color) else {
         debug!(%color, "teinte illisible, ignoree");
@@ -434,17 +439,10 @@ fn side_by_side_layout() -> BoxLayoutSettings {
 /// Cree une vue navigateur en style Alloy, seul style compatible avec une fenetre sur mesure.
 pub fn create_view(client: Option<&mut Client>, url: &str, is_chrome: i32) -> Option<BrowserView> {
     let mut delegate = ChromeViewDelegate::new(RuntimeStyle::ALLOY, is_chrome);
-    let settings = if is_chrome == 0 && crate::roundness::enabled() {
-        // La teinte des angles arrondis est celle de la fenetre au moment ou la vue est creee : un fond
-        // transparent laisserait apparaitre du blanc. Une page deja ouverte garde l'ancienne teinte jusqu'a son rechargement.
-        BrowserSettings { background_color: ACCENT_NOW.load(Ordering::Relaxed), ..Default::default() }
-    } else {
-        BrowserSettings::default()
-    };
     browser_view_create(
         client,
         Some(&CefString::from(url)),
-        Some(&settings),
+        Some(&BrowserSettings::default()),
         None,
         None,
         Some(&mut delegate),

@@ -96,7 +96,7 @@ wrap_load_handler! {
             }
             if frame.is_main() == 1 && !is_interface_page(&url) && crate::roundness::enabled() {
                 frame.execute_java_script(
-                    Some(&CefString::from(crate::roundness::SCRIPT)),
+                    Some(&CefString::from(crate::roundness::install_script(crate::window::accent_now()).as_str())),
                     Some(&CefString::from("echo://roundness")),
                     0,
                 );
@@ -214,7 +214,10 @@ wrap_life_span_handler! {
     }
 
     impl LifeSpanHandler {
-        fn on_after_created(&self, _browser: Option<&mut Browser>) {
+        fn on_after_created(&self, browser: Option<&mut Browser>) {
+            if let Some(browser) = browser.as_deref() {
+                crate::identity::emulate(browser);
+            }
             self.live.opened();
         }
 

@@ -122,6 +122,13 @@ fn apply(request: UiRequest) {
         UiRequest::SetAccent { color } => {
             let host = session::with(|s| s.tabs.host()).flatten();
             crate::window::set_accent(&color, host.as_ref());
+            if crate::roundness::enabled() {
+                let script = crate::roundness::recolor_script(crate::window::accent_now());
+                let frames = session::with(|s| s.tabs.main_frames()).unwrap_or_default();
+                for frame in frames {
+                    frame.execute_java_script(Some(&CefString::from(script.as_str())), Some(&CefString::from("echo://roundness")), 0);
+                }
+            }
             session::with(|s| {
                 echo_library::settings::set(&s.library, "appearance.shell", &echo_library::settings::Value::Text(color.clone()))
             });

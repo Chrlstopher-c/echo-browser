@@ -204,6 +204,11 @@ impl Tabs {
         self.entries.iter().find(|tab| tab.url == url).map(|tab| tab.id)
     }
 
+    /// Les pages chargees de tous les onglets vivants.
+    pub fn main_frames(&self) -> Vec<Frame> {
+        self.entries.iter().filter_map(|tab| tab.browser()?.main_frame()).collect()
+    }
+
     pub fn is_asleep(&self, id: TabId) -> bool {
         self.entries.iter().any(|tab| tab.id == id && tab.asleep)
     }
