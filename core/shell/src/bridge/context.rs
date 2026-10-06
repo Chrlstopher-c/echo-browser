@@ -87,7 +87,8 @@ pub fn run(action: MenuItemKind) {
                 host.print();
             }
         }),
-        MenuItemKind::ViewSource => with_page(|frame| frame.view_source()),
+        // `view_source` de CEF ouvre une fenetre a part : le code source s'affiche dans un onglet.
+        MenuItemKind::ViewSource => open_and_show(&format!("view-source:{}", click.page)),
         MenuItemKind::Inspect => inspect(),
         MenuItemKind::Bookmark => {
             let active = session::with(|s| s.tabs.active_id()).flatten();

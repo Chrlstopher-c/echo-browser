@@ -112,6 +112,11 @@ fn apply(request: UiRequest) {
         }
         UiRequest::SetTabContainer { id, container } => move_to_container(id, container),
         UiRequest::WarmTab { id } => warm_tab(id),
+        UiRequest::OpenDevTools { .. } => {
+            if !crate::devtools::is_open() {
+                crate::devtools::open_for_active();
+            }
+        }
         UiRequest::ForgetPermission { origin, permission } => {
             session::with(|s| echo_library::permissions::forget(&s.library, &origin, &permission));
             publish_permissions();

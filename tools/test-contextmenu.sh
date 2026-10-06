@@ -39,5 +39,11 @@ assert not call(op="devtools_open")["open"], "F12 : devtools non refermes"
 assert call(op="tabs")["ok"] and len(windows()) == 1, "fermer les devtools a ferme Echo"
 call(op="devtools"); time.sleep(3)
 assert call(op="devtools_open")["open"], "reouverture des devtools"
-print("OK : clic droit + devtools")
+call(op="devtools"); time.sleep(1)
+call(op="click", x=300, y=200, button="right"); time.sleep(1)
+call(op="ui", request={"kind": "runContextMenu", "action": "viewSource"}); time.sleep(2)
+src = [t for t in call(op="tabs")["tabs"] if t["title"].startswith("view-source:")]
+assert src, f"code source non ouvert en onglet : {[(t['title'], t['url']) for t in call(op='tabs')['tabs']]}"
+assert len(windows()) == 1, "code source ouvert hors de la fenetre"
+print("OK : clic droit + devtools + code source")
 PY
