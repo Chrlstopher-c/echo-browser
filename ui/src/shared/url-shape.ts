@@ -17,6 +17,8 @@ export function readUrl(raw: string): UrlShape {
   if (raw.trim().length === 0) return { host: '', path: '', safety: 'blank' }
   try {
     const parsed = new URL(raw)
+    // Pages internes (accueil, terminal) : rien a montrer, le champ reste une invite.
+    if (parsed.protocol === 'echo:') return { host: '', path: '', safety: 'local' }
     if (LOCAL_SCHEMES.has(parsed.protocol)) {
       return { host: parsed.host || parsed.pathname, path: '', safety: 'local' }
     }

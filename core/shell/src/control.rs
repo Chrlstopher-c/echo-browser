@@ -84,7 +84,7 @@ fn converse(stream: UnixStream) {
     }
 }
 
-fn call_ui(request: Value) -> Value {
+pub fn call_ui(request: Value) -> Value {
     let (reply, wait) = mpsc::channel();
     QUEUE.lock().push_back(Job { request, reply });
     let mut task = DrainTask::new(());
@@ -121,6 +121,10 @@ fn run(job: Job) {
             let _ = reply.send(tabs());
         }
         Some("read") => read(&request, reply),
+        Some("suggest") => {
+            let query = request.get("q").and_then(Value::as_str).unwrap_or("");
+            let _ = reply.send(crate::suggest::suggest(query));
+        }
         Some("open") => open(&request, &reply),
         Some("navigate") => navigate(&request, &reply),
         Some("activate") => with_id(&request, &reply, crate::bridge::select_tab),

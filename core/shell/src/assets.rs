@@ -102,6 +102,14 @@ wrap_scheme_handler_factory! {
                 let body = crate::terminal::handle(route, &post_body(request));
                 return Some(StaticResource::new(body, "application/octet-stream".into(), StdRc::new(Cell::new(0))));
             }
+            if let Some(route) = url.strip_prefix("echo://ui/data/suggest") {
+                if !comes_from_interface(frame.as_deref()) {
+                    return Some(StaticResource::new(Vec::new(), "application/json".into(), StdRc::new(Cell::new(0))));
+                }
+                let query = route.strip_prefix("?q=").map(percent_decode).unwrap_or_default();
+                let reply = crate::control::call_ui(serde_json::json!({"op": "suggest", "q": query}));
+                return Some(StaticResource::new(reply.to_string().into_bytes(), "application/json".into(), StdRc::new(Cell::new(0))));
+            }
             if let Some(id) = url.strip_prefix("echo://icones/") {
                 let (body, mime) = load_icon(id.split(['?', '#']).next().unwrap_or(""));
                 return Some(StaticResource::new(body, mime, StdRc::new(Cell::new(0))));
@@ -168,6 +176,31 @@ wrap_resource_handler! {
             i32::from(count > 0)
         }
     }
+}
+
+/// Decode une chaine de requete (`%XX`, `+`).
+fn percent_decode(raw: &str) -> String {
+    let bytes = raw.as_bytes();
+    let mut out = Vec::with_capacity(bytes.len());
+    let mut i = 0;
+    while i < bytes.len() {
+        match bytes[i] {
+            b'+' => out.push(b' '),
+            b'%' if bytes.len() >= i + 3 => {
+                let hex = std::str::from_utf8(&bytes[i + 1..i + 3]).ok().and_then(|h| u8::from_str_radix(h, 16).ok());
+                match hex {
+                    Some(byte) => {
+                        out.push(byte);
+                        i += 2;
+                    }
+                    None => out.push(b'%'),
+                }
+            }
+            other => out.push(other),
+        }
+        i += 1;
+    }
+    String::from_utf8_lossy(&out).into_owned()
 }
 
 /// Vrai quand la page qui emet la requete est une page de l'interface (`echo://`).

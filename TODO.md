@@ -158,7 +158,7 @@ debout à la première requête.
 - [x] Fiche `.echoforge.yml` et sonde de présence pour le centre de contrôle
 
 ## Notes du 06/10 (terminal et pages internes)
-- [ ] Le champ d'adresse affiche « ui » pour les pages `echo://` (accueil, terminal) : afficher vide ou le titre
+- [x] Le champ d'adresse n'affiche plus « ui » pour les pages `echo://` : il reste une invite
 - [ ] Raccourci clavier pour le terminal (ex. Ctrl+Maj+K) et mention dans la bulle
 - [ ] Terminal : sélection/copie (Ctrl+Maj+C/V), liens cliquables, redimensionnement vérifié sous tmux
 - [ ] `ECHO_TERM_CMD` ne gère pas les guillemets (découpe sur les espaces)

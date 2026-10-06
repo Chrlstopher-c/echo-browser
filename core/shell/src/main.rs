@@ -22,6 +22,7 @@ mod search;
 mod session;
 mod shortcuts;
 mod sleep;
+mod suggest;
 mod tabs;
 mod terminal;
 mod transfers;

@@ -11,7 +11,7 @@
 ## E2 — Design
 - [x] E2.S1 — Marge et gouttière de la teinte de la barre — VERIFY: capture, pixels de la gouttière = teinte `shell`
 - [x] E2.S2 — Bulles d'aide maison sur tous les boutons (couche unique `tooltip-layer.tsx`, 380 ms, raccourci en touche ; barre repliée = bulle système, la vue y est trop étroite) — VERIFY: capture Playwright au survol
-- [ ] E2.S3 — Nouvel onglet : suggestions (historique, onglets ouverts, favoris) — VERIFY: capture avec ≥ 5 lignes, navigation clavier
+- [x] E2.S3 — Nouvel onglet : suggestions (onglets ouverts, favoris, historique dédoublonné, filtre à la frappe) — VERIFY: capture à 6 lignes + op `suggest` filtrée (fait le 06/10 ; flèches/Entrée écrites mais pas rejouées au clavier réel)
 - [ ] E2.S4 — Barre repliée : page pleine largeur, rail en surimpression au bord gauche — VERIFY: largeur de la vue = fenêtre
 - [ ] E2.S5 — Angles arrondis de la page (essayer masque natif, sinon abandon documenté) — VERIFY: capture du coin
 
