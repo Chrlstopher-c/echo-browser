@@ -16,7 +16,7 @@
 - [x] E2.S5 — Angles arrondis de la page : `clip-path` sur la racine + fond de vue de la teinte fenêtre + barres de défilement en surimpression (`roundness.rs`) — VERIFY: capture des quatre coins sur Wikipédia et Hacker News (fait le 06/10 ; `ECHO_ROUND=0` pour comparer)
 
 - [x] E2.S6 — Neumorphisme clair ET sombre (consigne de Chris, 06/10) : une matière, double ombrage, 5 teintes × 2 schémas, bascule soleil/lune, pages statiques et angles suivent le thème — VERIFY: captures réelles dark/light (sidebar, accueil, angles) (fait le 06/10)
-- [ ] E2.S7 — Affiner le neumorphisme : menus contextuels/extensions (surimpressions opaques, pas d'ombre extérieure), contraste du sombre, feuilles bibliothèque/réglages — VERIFY: captures de chaque feuille dans les deux thèmes
+- [x] E2.S7 — Neumorphisme appliqué aux feuilles (réglages : champs en creux, interrupteurs, pastilles de teinte), au menu contextuel (thème clair vérifié) ; les surimpressions restent plates (opaques, pas d'ombre extérieure possible) — VERIFY: captures réglages + menu en clair (fait le 06/10)
 
 ## E3 — Quotidien
 - [x] E3.S1 — Cookies persistants conservés après relance (mécanisme ; la session Google réelle reste à constater par Chris) — VERIFY: serveur local `Set-Cookie: Max-Age`, relance, `document.cookie` le contient (fait le 06/10 ; cookie de session perdu, comme Chrome)
