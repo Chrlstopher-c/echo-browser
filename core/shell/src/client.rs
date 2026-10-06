@@ -243,6 +243,11 @@ wrap_life_span_handler! {
             self.live.opened();
         }
 
+        /// Sans ce rappel, une page qui appelle `window.close()` ferme la fenetre entiere d'Echo.
+        fn do_close(&self, browser: Option<&mut Browser>) -> i32 {
+            browser.map_or(0, |b| i32::from(crate::bridge::page_asks_close(b.identifier())))
+        }
+
         fn on_before_close(&self, _browser: Option<&mut Browser>) {
             // Ne jamais quitter ici : fermer un onglet detruit plusieurs vues en cascade
             // et le compteur passe par zero alors que la fenetre est toujours la.

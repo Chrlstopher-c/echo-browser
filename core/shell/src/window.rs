@@ -309,6 +309,7 @@ wrap_window_delegate! {
         /// l'application entiere, quelle que soit la vue qui avait le focus. Fermer seulement la vue de l'interface
         /// la laissait grise et la fenetre ouverte. Les onglets sont enregistres avant.
         fn can_close(&self, _window: Option<&mut Window>) -> i32 {
+            CLOSING.store(true, Ordering::Relaxed);
             crate::persist::flush();
             1
         }
@@ -379,8 +380,27 @@ wrap_browser_view_delegate! {
         fn browser_runtime_style(&self) -> RuntimeStyle {
             self.runtime_style
         }
+
+        /// Une page ouvre une fenetre (`window.open`, connexion Google…) : elle devient un onglet d'Echo au
+        /// lieu d'une fenetre a part. Le lien avec la page d'origine (`window.opener`) est garde : la
+        /// connexion revient bien sur l'onglet qui l'a demandee. Les DevTools restent une fenetre.
+        fn on_popup_browser_view_created(
+            &self,
+            _browser_view: Option<&mut BrowserView>,
+            popup_browser_view: Option<&mut BrowserView>,
+            is_devtools: i32,
+        ) -> i32 {
+            if is_devtools == 1 || self.is_chrome == 1 {
+                return 0;
+            }
+            let Some(popup) = popup_browser_view else { return 0 };
+            i32::from(crate::bridge::adopt_popup(popup.clone()))
+        }
     }
 }
+
+/// La fenetre se ferme : chaque navigateur doit alors se fermer normalement.
+pub static CLOSING: AtomicBool = AtomicBool::new(false);
 
 /// Peint le cadre autour de la page avec la teinte de l'espace courant, pour que la
 /// marge se fonde avec la barre laterale au lieu de trancher.

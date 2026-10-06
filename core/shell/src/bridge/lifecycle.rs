@@ -198,3 +198,37 @@ pub fn close_tab(id: TabId) {
     publish_tabs();
     publish_shield();
 }
+
+/// Range dans les onglets une fenetre ouverte par une page. Faux si la scene n'existe pas encore.
+pub fn adopt_popup(view: BrowserView) -> bool {
+    let Some((host, container)) = session::with(|s| {
+        let container = s.tabs.active().and_then(|tab| tab.container.clone());
+        Some((s.tabs.host()?, container))
+    })
+    .flatten() else {
+        return false;
+    };
+    host.add_child_view(Some(&mut View::from(&view)));
+    session::with(|s| {
+        let id = s.tabs.adopt(view, "about:blank");
+        if let Some(tab) = s.tabs.get_mut(id) {
+            tab.container = container;
+        }
+        s.tabs.refresh_visibility();
+    });
+    publish_tabs();
+    true
+}
+
+/// Une page demande sa propre fermeture (`window.close()`) : on ferme son onglet, pas la fenetre.
+/// Vrai si le navigateur est celui d'un onglet (le traitement est alors differe d'un tour de boucle).
+pub fn page_asks_close(browser_id: i32) -> bool {
+    if crate::window::CLOSING.load(std::sync::atomic::Ordering::Relaxed) {
+        return false;
+    }
+    let Some(id) = session::with(|s| s.tabs.by_browser(browser_id).map(|tab| tab.id)).flatten() else {
+        return false;
+    };
+    crate::containers::later(move || close_tab(id));
+    true
+}
