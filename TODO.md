@@ -1,5 +1,28 @@
 # TODO — echo-browser
 
+## RETOURS DE CHRIS DU 06/10 SOIR — liste de reprise (ne rien perdre ; détail et critères dans EPICS.md E6)
+
+Ordre voulu par Chris : angles → favicons → mémoire → décodeur vidéo. Puis clic droit, fermeture, dossiers, comptes.
+
+1. **Faits** : texte centré / séparation adresse-onglets · session conservée entre deux lancements · tests isolés (plus jamais
+   l'instance de Chris tuée) · angles de page (masques) · identité Chrome 154 cohérente (captcha) · neumorphisme clair/sombre.
+2. **À vérifier / finir** : animation de la barre repliée + page repoussée (E6.S6) · favicons (E6.S7) · fermeture Super+Q (E6.S8).
+3. **Clic droit** (E6.S9–S11) : ne marche PAS dans les pages réelles (Google, liens) ; barre : pas de « nouvel onglet », « nouveau dossier »,
+   « fermer » ; pas de dossiers d'onglets.
+4. **DevTools complets sur F12** (E6.S10) : éléments, console, réseau, mémoire, performances. Chercher un kit existant plutôt que tout refaire.
+5. **Un compte par onglet / conteneurs** (E6.S13) : plusieurs comptes indépendants du même site côte à côte (cookies isolés).
+6. **MÉMOIRE RADICALE** (E6.S14) : « c'est plus possible » qu'un navigateur prenne 300–400 Mo pour un onglet ou mette 45 s à charger ;
+   viser mieux que Chrome, Firefox et Zen, même avec une solution jamais vue ailleurs. Idées de Chris : micro-fichiers de sauvegarde,
+   faire passer hors de la RAM. Garder l'état global (où on en était dans chaque onglet).
+7. **Décodeur H.264/AAC** (E6.S16). **Build CEF avec codecs** : disque libre sur `/mnt/backup` (752 Go) ; `automate-git.py`
+   (depot_tools) branche Chromium 154 = **8037** (CEF 154.0.33, Chromium 154.0.8037.94) ; `GN_DEFINES="proprietary_codecs=true
+   ffmpeg_branding=Chrome is_official_build=false symbol_level=0 is_component_build=false"` ; ninja `nice -n 19`, ~8–12 h ; ensuite remplacer
+   `~/.local/share/cef` et recompiler la coque (crate `cef` 152 compile contre CEF 154 : OK à ce jour).
+8. **Règles retenues** : ne jamais arrêter l'instance de Chris (tests isolés) · ne jamais perdre ses onglets · NE PAS toucher à sa souris
+   (captures par `grim` sur fenêtre flottante de test, demandes jouées par `ECHO_BENCH_UI` / `ECHO_BENCH_JS`).
+
+---
+
 Relevé du 10/09/2026, sur retour de Chris capture à l'appui. L'ordre est celui qu'il a donné.
 
 ---

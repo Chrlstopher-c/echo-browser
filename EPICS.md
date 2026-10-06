@@ -36,3 +36,21 @@
 ## E0 — Sécurité
 - [x] E0.S1 — Une page web ne pilote pas le cœur par `echo://ui/ipc` — VERIFY: `tools/test-ipc-origin.sh`
 - [x] E0.S2 — Surfaces `echo://` : une page web ne peut plus afficher une page interne dans un cadre (le terminal se lançait) — VERIFY: page avec iframe `echo://ui/terminal.html` : refus journalisé, pas de terminal lancé (fait le 06/10) ; reste la sonde 4330 (page fixe, sans en-tête d'origine croisée : OK)
+
+## E6 — Retours de Chris du 06/10 soir (nuit 06→07/10) — ne rien oublier
+- [x] E6.S1 — Texte centré dans le champ d'adresse et les onglets ; adresse (pilule en creux) distincte des onglets (section « Onglets », carte active en relief + repère) — VERIFY: capture de la vraie fenêtre
+- [x] E6.S2 — Session conservée : onglets enregistrés au fil de l'eau (`persist.rs`), restitués au démarrage (actif chargé, autres endormis) — VERIFY: lancer, ouvrir 3 pages, fermer, relancer : les onglets sont revenus
+- [x] E6.S3 — Les tests ne touchent jamais au navigateur de l'utilisateur (`ECHO_RUN_DIR`, `ECHO_CONTROL_NAME`, scripts de test isolés) — VERIFY: lancer `tools/test-control.sh` pendant qu'une instance tourne : elle reste vivante
+- [x] E6.S4 — Angles de la page : masques de coin recolorables à chaud (clair et sombre, onglets déjà ouverts compris) — VERIFY: captures des 4 coins avant/après bascule de thème
+- [x] E6.S5 — Identité cohérente pour éviter les captchas Google : version 154 partout, marque « Google Chrome » dans les en-têtes ET `navigator.userAgentData`, `platformVersion` vide — VERIFY: page d'empreinte vs Chrome headless (seule différence : GPU réel) — à confirmer à l'usage (le captcha peut aussi venir de l'IP/IPv6)
+- [ ] E6.S6 — Barre repliée : réapparition ANIMÉE et qui REPOUSSE la page (pas par-dessus) — code fait (`window.rs` : `DOCK_NOW`, `animate_dock`) — VERIFY: mesure image par image de la position de la page pendant l'ouverture (rafale `grim`)
+- [ ] E6.S7 — Favicons dans les onglets (Google compris), conservés en session — code compilé (`on_favicon_urlchange`, `Tab.favicon`) — VERIFY: capture d'un onglet avec son icône
+- [ ] E6.S8 — Fermeture par le gestionnaire de fenêtres (Super+Q) depuis n'importe quelle vue : l'application se ferme entièrement, proprement — `can_close` renvoie 1 après `persist::flush` — VERIFY: `hyprctl dispatch closewindow` sur une instance de test : processus terminé en < 5 s, session enregistrée (PREMIER ESSAI : processus restait vivant → à investiguer)
+- [ ] E6.S9 — Clic droit réel dans les pages (page, lien, image, sélection, champ) : AUJOURD'HUI NE MARCHE PAS pour Chris sur Google — VERIFY: clic droit simulé (`send_mouse_click_event`) ouvre le menu
+- [ ] E6.S10 — F12 / Ctrl+Maj+I : DevTools complets (éléments, console, réseau, mémoire, performances) — VERIFY: la fenêtre DevTools s'ouvre sur l'onglet actif
+- [ ] E6.S11 — Clic droit dans la barre : zone des onglets (nouvel onglet, nouveau dossier, fermer les autres/à droite…), onglet (déjà là), dossiers d'onglets — VERIFY: capture des menus
+- [ ] E6.S12 — Dossiers d'onglets (groupes repliables) persistés en session — VERIFY: créer un dossier, y glisser 2 onglets, relancer
+- [ ] E6.S13 — Un compte par onglet (conteneurs) : cookies indépendants entre conteneurs (plusieurs comptes du même site en même temps) — risque connu : les extensions sont par profil Chromium — VERIFY: cookie posé dans le conteneur A absent du B
+- [ ] E6.S14 — MÉMOIRE RADICALE : battre Chrome, Firefox, Zen. Mesurer par processus, essayer : `--process-per-site`, isolation de site réduite, GPU et réseau dans le processus principal, `MALLOC_ARENA_MAX`, drapeaux V8, désactiver les sous-systèmes inutiles ; hibernation plus fine (délai court, défilement restauré) ; « micro-fichiers » : tout ce qui peut sortir de la RAM (état des onglets endormis sur disque) — VERIFY: `tools/bench-ram.sh` avant/après, 10 pages et repos, vs Chrome
+- [ ] E6.S15 — Démarrage rapide : temps jusqu'à la première page mesuré, < 3 s — VERIFY: horodatages du journal
+- [ ] E6.S16 — Décodeur H.264/AAC : build CEF avec `proprietary_codecs=true ffmpeg_branding=Chrome` (voir TODO « Build CEF avec codecs ») — VERIFY: `canPlayType('video/mp4; codecs="avc1.42E01E"')` ≠ ""
