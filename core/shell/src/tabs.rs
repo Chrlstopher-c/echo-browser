@@ -17,6 +17,10 @@ pub struct Tab {
     pub asleep: bool,
     /// Vrai quand l'utilisateur a saisi quelque chose dans la page : l'endormir perdrait sa saisie.
     pub dirty: bool,
+    /// Defilement vertical de la page, en pixels : rendu a l'onglet quand il se reveille.
+    pub scroll: i32,
+    /// Defilement a rejouer des que la page rechargee a fini de charger.
+    pub pending_scroll: Option<i32>,
     /// Adresse de l'icone du site, quand la page en a declare une.
     pub favicon: Option<String>,
     /// Dernier moment ou l'onglet a ete l'onglet actif.
@@ -176,6 +180,8 @@ impl Tabs {
             view: Some(view),
             asleep: false,
             dirty: false,
+            scroll: 0,
+            pending_scroll: None,
             favicon: None,
             last_active: Instant::now(),
             title: url.to_string(),
@@ -274,6 +280,7 @@ impl Tabs {
         tab.view = Some(view);
         tab.asleep = false;
         tab.loading = true;
+        tab.pending_scroll = (tab.scroll > 0).then_some(tab.scroll);
         debug!(id, url = %tab.url, "onglet reveille");
     }
 
@@ -302,6 +309,8 @@ impl Tabs {
             view: None,
             asleep: true,
             dirty: false,
+            scroll: snapshot.scroll,
+            pending_scroll: None,
             favicon: snapshot.favicon.clone(),
             last_active: Instant::now(),
             title: if snapshot.title.is_empty() { url.to_string() } else { snapshot.title.clone() },
@@ -361,6 +370,7 @@ impl Tabs {
                     pinned: tab.pinned,
                     folder: tab.folder.clone(),
                     container: tab.container.clone(),
+                    scroll: tab.scroll,
                     title: tab.title.clone(),
                     favicon: tab.favicon.clone(),
                 })

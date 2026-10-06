@@ -36,6 +36,9 @@ pub struct TabSnapshot {
     /// Dossier d'onglets, par identifiant.
     #[serde(default)]
     pub folder: Option<String>,
+    /// Defilement de la page au moment de la sauvegarde.
+    #[serde(default)]
+    pub scroll: i32,
     /// Conteneur de l'onglet (comptes a part).
     #[serde(default)]
     pub container: Option<String>,

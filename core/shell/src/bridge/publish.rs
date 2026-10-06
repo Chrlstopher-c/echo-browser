@@ -120,6 +120,30 @@ pub fn set_tab_favicon(browser_id: i32, icon: &str) {
 }
 
 /// Note qu'une page porte une saisie de l'utilisateur, ou qu'elle repart de zero.
+pub fn set_tab_scroll(browser_id: i32, scroll: i32) {
+    session::with(|s| {
+        if let Some(tab) = s.tabs.by_browser(browser_id) {
+            tab.scroll = scroll.max(0);
+        }
+    });
+}
+
+/// Une nouvelle page commence : son defilement repart de zero, sauf si on rend celui d'un reveil.
+pub fn reset_tab_scroll(browser_id: i32) {
+    session::with(|s| {
+        if let Some(tab) = s.tabs.by_browser(browser_id) {
+            if tab.pending_scroll.is_none() {
+                tab.scroll = 0;
+            }
+        }
+    });
+}
+
+/// Le defilement a rejouer pour cet onglet reveille, une seule fois.
+pub fn take_pending_scroll(browser_id: i32) -> Option<i32> {
+    session::with(|s| s.tabs.by_browser(browser_id).and_then(|tab| tab.pending_scroll.take())).flatten()
+}
+
 pub fn set_tab_dirty(browser_id: i32, dirty: bool) {
     session::with(|s| {
         if let Some(tab) = s.tabs.by_browser(browser_id) {

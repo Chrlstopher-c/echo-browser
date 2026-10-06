@@ -133,6 +133,7 @@ fn run(job: Job) {
         Some("close") => with_id(&request, &reply, crate::bridge::close_tab),
         Some("sleep") => with_id(&request, &reply, crate::bridge::sleep_tab),
         Some("click") => click(&request, &reply),
+        Some("wheel") => wheel(&request, &reply),
         Some("devtools") => {
             crate::bridge::context::toggle_devtools();
             let open = crate::session::with(|s| s.tabs.active().and_then(|t| t.browser()))
@@ -156,7 +157,7 @@ fn run(job: Job) {
         Some("menu") => {
             let _ = reply.send(json!({"ok": true, "open": crate::overlay::menu_open()}));
         }
-        _ => fail(&reply, "operation inconnue : tabs, read, open, navigate, activate, sleep, close, click, menu"),
+        _ => fail(&reply, "operation inconnue : tabs, read, open, navigate, activate, sleep, close, click, wheel, menu"),
     }
 }
 
@@ -221,6 +222,16 @@ fn click(request: &Value, reply: &Sender<Value>) {
     host.send_mouse_move_event(Some(&event), 0);
     host.send_mouse_click_event(Some(&event), button, 0, 1);
     host.send_mouse_click_event(Some(&event), button, 1, 1);
+    let _ = reply.send(json!({"ok": true}));
+}
+
+/// Molette dans la page active, `dy` pixels vers le bas (negatif : vers le haut).
+fn wheel(request: &Value, reply: &Sender<Value>) {
+    use cef::{ImplBrowser, ImplBrowserHost, MouseEvent};
+    let dy = request.get("dy").and_then(Value::as_i64).and_then(|v| i32::try_from(v).ok()).unwrap_or(0);
+    let browser = crate::session::with(|s| s.tabs.active().and_then(|tab| tab.browser())).flatten();
+    let Some(host) = browser.and_then(|b| b.host()) else { return fail(reply, "aucune page active") };
+    host.send_mouse_wheel_event(Some(&MouseEvent { x: 400, y: 300, modifiers: 0 }), 0, -dy);
     let _ = reply.send(json!({"ok": true}));
 }
 

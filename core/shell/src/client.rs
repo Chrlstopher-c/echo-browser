@@ -85,6 +85,7 @@ wrap_load_handler! {
             if frame.is_main() == 1 {
                 if let Some(browser) = browser {
                     crate::bridge::set_tab_dirty(browser.identifier(), false);
+                    crate::bridge::reset_tab_scroll(browser.identifier());
                 }
                 if url.starts_with("http") {
                     frame.execute_java_script(
@@ -130,9 +131,16 @@ wrap_load_handler! {
             tracing::warn!(%url, %texte, code = error_code.get_raw(), "chargement en echec");
         }
 
-        fn on_load_end(&self, _browser: Option<&mut Browser>, frame: Option<&mut Frame>, _status: i32) {
+        fn on_load_end(&self, browser: Option<&mut Browser>, frame: Option<&mut Frame>, _status: i32) {
             let Some(frame) = frame else { return };
             let url = CefString::from(&frame.url()).to_string();
+            if frame.is_main() == 1 && url.starts_with("http") {
+                let pending = browser.and_then(|b| crate::bridge::take_pending_scroll(b.identifier()));
+                if let Some(y) = pending {
+                    let script = crate::sleep::restore_script(y);
+                    frame.execute_java_script(Some(&CefString::from(script.as_str())), Some(&CefString::from("echo://sleep")), 0);
+                }
+            }
             if !is_interface_page(&url) {
                 return;
             }
@@ -197,6 +205,12 @@ wrap_display_handler! {
             line: i32,
         ) -> i32 {
             let message = message.map(CefString::to_string).unwrap_or_default();
+            if let Some(y) = message.strip_prefix(crate::sleep::SCROLL_MARKER).and_then(|v| v.parse::<i32>().ok()) {
+                if let Some(browser) = browser {
+                    crate::bridge::set_tab_scroll(browser.identifier(), y);
+                }
+                return 1;
+            }
             if message == crate::sleep::DIRTY_MARKER {
                 if let Some(browser) = browser {
                     crate::bridge::set_tab_dirty(browser.identifier(), true);

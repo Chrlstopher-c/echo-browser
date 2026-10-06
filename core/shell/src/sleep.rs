@@ -11,7 +11,20 @@ pub const DIRTY_MARKER: &str = "echo:dirty";
 
 /// Pose une ecoute des saisies reelles (`isTrusted`) ; la premiere previent le coeur par la console.
 pub const DIRTY_WATCHER: &str = "(()=>{let sent=false;const f=e=>{if(sent||!e.isTrusted)return;sent=true;\
-console.debug('echo:dirty')};addEventListener('input',f,true);addEventListener('change',f,true)})()";
+console.debug('echo:dirty')};addEventListener('input',f,true);addEventListener('change',f,true);\
+let t=0;addEventListener('scroll',()=>{clearTimeout(t);t=setTimeout(()=>{\
+const y=Math.round(document.scrollingElement?document.scrollingElement.scrollTop:0);\
+console.debug('echo:scroll:'+y)},400)},{passive:true,capture:true})})()";
+
+/// Prefixe du message console qui porte le defilement de la page.
+pub const SCROLL_MARKER: &str = "echo:scroll:";
+
+/// Rejoue le defilement d'avant la mise en veille ; renonce si l'utilisateur a deja defile.
+pub fn restore_script(y: i32) -> String {
+    format!(
+        "(()=>{{const go=()=>{{if(scrollY<5)scrollTo(0,{y})}};go();setTimeout(go,300);setTimeout(go,1200)}})()"
+    )
+}
 
 /// Delai d'inactivite avant la mise en veille, ou `None` si la veille est coupee.
 /// `ECHO_SLEEP_AFTER_S` (secondes) l'emporte sur les reglages : c'est le levier des bancs de mesure.
