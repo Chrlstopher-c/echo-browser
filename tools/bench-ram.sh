@@ -18,7 +18,8 @@ tree() { # pids de l'arbre sous $1
 pss_mo() { # PSS cumule en Mo des pids sur stdin
   local sum=0 p v
   while read -r p; do
-    v=$(awk '/^Pss:/{print $2}' "/proc/$p/smaps_rollup" 2>/dev/null || echo 0)
+    # PSS + SwapPss : les pages parties en zram comptent, sinon une mise en swap ressemblerait a un gain.
+    v=$(awk '/^(Pss|SwapPss):/{s+=$2} END{print s+0}' "/proc/$p/smaps_rollup" 2>/dev/null || echo 0)
     sum=$((sum + ${v:-0}))
   done
   echo $((sum / 1024))

@@ -32,6 +32,10 @@ impl Value {
 }
 
 /// Les reglages du navigateur et leur valeur de depart.
+/// Sites dont l'onglet ne dort jamais : ils recoivent des messages en arriere-plan.
+const NEVER_SLEEP: &str = "mail.google.com,outlook.live.com,outlook.office.com,web.whatsapp.com,discord.com,\
+app.slack.com,teams.microsoft.com,messenger.com,web.telegram.org";
+
 pub fn defaults() -> Vec<(&'static str, Value)> {
     vec![
         ("shield.enabled", Value::Flag(true)),
@@ -48,6 +52,7 @@ pub fn defaults() -> Vec<(&'static str, Value)> {
         ("tabs.sleepEnabled", Value::Flag(true)),
         ("tabs.sleepAfterMinutes", Value::Number(5.0)),
         ("tabs.folders", Value::Text("[]".into())),
+        ("tabs.neverSleep", Value::Text(NEVER_SLEEP.into())),
     ]
 }
 

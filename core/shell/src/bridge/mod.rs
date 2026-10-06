@@ -103,6 +103,7 @@ fn apply(request: UiRequest) {
             publish_tabs();
         }
         UiRequest::SetTabContainer { id, container } => move_to_container(id, container),
+        UiRequest::WarmTab { id } => warm_tab(id),
         UiRequest::SelectTab { id } => select_tab(id),
         UiRequest::OpenTerminal => open_terminal(),
         UiRequest::AnswerPermission { id, allow, remember } => crate::permissions::answer(id, allow, remember),
@@ -334,6 +335,21 @@ pub fn select_tab(id: TabId) {
     publish_shield();
 }
 
+/// Reveille un onglet endormi sans l'afficher : la page charge pendant que la souris approche du clic.
+fn warm_tab(id: TabId) {
+    if !session::with(|s| s.tabs.is_asleep(id)).unwrap_or(false) {
+        return;
+    }
+    wake_tab(id);
+    session::with(|s| {
+        s.tabs.refresh_visibility();
+        if let Some(tab) = s.tabs.get_mut(id) {
+            tab.last_active = std::time::Instant::now();
+        }
+    });
+    publish_tabs();
+}
+
 /// Recree le navigateur d'un onglet endormi et recharge sa page.
 fn wake_tab(id: TabId) {
     let container = session::with(|s| s.tabs.container_of(id)).flatten();
@@ -356,9 +372,22 @@ fn wake_tab(id: TabId) {
     session::with(|s| s.tabs.wake_with(id, view));
 }
 
+/// Les sites dont l'onglet ne doit jamais dormir (reglage `tabs.neverSleep`, separes par des virgules).
+fn never_sleep_hosts() -> Vec<String> {
+    use echo_library::settings::Value;
+    let settings = session::with(|s| echo_library::settings::all(&s.library)).unwrap_or_default();
+    match settings.into_iter().find(|(key, _)| key == "tabs.neverSleep") {
+        Some((_, Value::Text(list))) => {
+            list.split(',').map(|h| h.trim().to_lowercase()).filter(|h| !h.is_empty()).collect()
+        }
+        _ => Vec::new(),
+    }
+}
+
 /// Endort les onglets inactifs depuis `idle`. Renvoie leur nombre.
 pub fn sleep_idle_tabs(idle: std::time::Duration) -> usize {
-    let ids = session::with(|s| s.tabs.sleep_candidates(idle)).unwrap_or_default();
+    let never = never_sleep_hosts();
+    let ids = session::with(|s| s.tabs.sleep_candidates(idle, &never)).unwrap_or_default();
     let mut slept = 0;
     for id in ids {
         if let Some(detached) = session::with(|s| s.tabs.put_to_sleep(id)).flatten() {

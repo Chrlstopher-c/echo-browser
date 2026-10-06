@@ -87,6 +87,7 @@ export function FolderSection(props: FolderSectionProps): ReactElement {
               compact={false}
               onSelect={() => actions.select(tab.id)}
               onClose={() => actions.close(tab.id)}
+              onWarm={() => actions.warm(tab.id)}
               onContextMenu={menu.openFor(tab.id)}
               onDragEnd={() => undefined}
             />

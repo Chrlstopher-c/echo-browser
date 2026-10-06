@@ -11,6 +11,8 @@ export type UiRequest =
   /** Rouvre un onglet dans un autre conteneur (cookies et comptes a part), ou dans le commun (null). */
   | { kind: 'setTabContainer'; id: TabId; container: string | null }
   | { kind: 'closeTab'; id: TabId }
+  /** Reveille d'avance un onglet endormi que la souris survole. */
+  | { kind: 'warmTab'; id: TabId }
   | { kind: 'sleepTab'; id: TabId }
   | { kind: 'selectTab'; id: TabId }
   /** Deplace un onglet a une nouvelle position dans la liste. */

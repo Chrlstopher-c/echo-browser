@@ -8,6 +8,8 @@ export interface TabActions {
   select: (id: TabId) => void
   close: (id: TabId) => void
   sleep: (id: TabId) => void
+  /** Reveille d'avance un onglet endormi (survol). */
+  warm: (id: TabId) => void
   pin: (id: TabId, pinned: boolean) => void
   /** Deplace un onglet a une position dans la liste complete (epingles compris). */
   move: (id: TabId, to: number) => void
@@ -37,6 +39,7 @@ function buildActions(send: Send, activeId: TabId | null): TabActions {
     select: (id) => send({ kind: 'selectTab', id }),
     close: (id) => send({ kind: 'closeTab', id }),
     sleep: (id) => send({ kind: 'sleepTab', id }),
+    warm: (id) => send({ kind: 'warmTab', id }),
     pin: (id, pinned) => send({ kind: 'pinTab', id, pinned }),
     move: (id, to) => send({ kind: 'moveTab', id, to }),
     setZoom: (id, factor) => send({ kind: 'setZoom', id, factor }),

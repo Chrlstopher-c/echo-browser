@@ -275,12 +275,13 @@ impl Tabs {
     }
 
     /// Les onglets inactifs depuis au moins `idle`, bons a endormir.
-    pub fn sleep_candidates(&self, idle: Duration) -> Vec<TabId> {
+    pub fn sleep_candidates(&self, idle: Duration, never: &[String]) -> Vec<TabId> {
         self.entries
             .iter()
             .filter(|tab| {
                 !tab.asleep
                     && Some(tab.id) != self.active
+                    && !host_listed(&tab.url, never)
                     && !tab.audible
                     && !tab.dirty
                     && !tab.loading
@@ -427,4 +428,10 @@ impl Tabs {
     pub fn is_empty(&self) -> bool {
         self.entries.is_empty()
     }
+}
+
+/// Vrai si l'adresse appartient a l'un des sites de la liste (le site lui-meme ou un de ses sous-domaines).
+fn host_listed(url: &str, hosts: &[String]) -> bool {
+    let host = url.split("://").nth(1).and_then(|rest| rest.split(['/', '?', '#', ':']).next()).unwrap_or("");
+    hosts.iter().any(|entry| host == entry || host.ends_with(&format!(".{entry}")))
 }

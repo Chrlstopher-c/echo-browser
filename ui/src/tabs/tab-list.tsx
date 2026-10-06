@@ -65,6 +65,7 @@ export function TabList(props: TabListProps): ReactElement {
               compact={compact}
               onSelect={() => actions.select(tab.id)}
               onClose={() => actions.close(tab.id)}
+              onWarm={() => actions.warm(tab.id)}
               onContextMenu={menu.openFor(tab.id)}
               onDragEnd={onDragEnd(tab.id)}
             />

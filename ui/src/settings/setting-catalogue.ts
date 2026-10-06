@@ -112,6 +112,12 @@ export const SETTING_CATALOGUE: Record<string, SettingDefinition> = {
     detail: 'Temps d’inactivité avant qu’un onglet s’endorme.',
     number: { min: 5, max: 240, step: 5, unit: 'min' },
   },
+  'tabs.neverSleep': {
+    group: 'tabs',
+    label: 'Sites qui ne dorment jamais',
+    detail: 'Messageries et courrier, séparés par des virgules : leurs onglets restent éveillés.',
+    mono: true,
+  },
   'tabs.confirmCloseMany': {
     group: 'tabs',
     label: 'Confirmer la fermeture',

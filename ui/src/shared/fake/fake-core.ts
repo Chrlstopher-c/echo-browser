@@ -111,6 +111,9 @@ class FakeCore implements CoreBridge {
       case 'setTabContainer':
         this.tabs.setContainer(request.id, request.container)
         return true
+      case 'warmTab':
+        this.tabs.setAsleep(request.id, false)
+        return true
       case 'sleepTab':
         this.tabs.setAsleep(request.id, true)
         return true

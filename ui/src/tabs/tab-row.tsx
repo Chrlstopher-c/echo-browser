@@ -2,7 +2,7 @@
 // L'onglet actif est une carte posee : le fond glisse d'une ligne a l'autre. Saisi, il se souleve.
 
 import { motion, Reorder, useDragControls } from 'framer-motion'
-import type { MouseEvent, PointerEvent, ReactElement } from 'react'
+import { useRef, type MouseEvent, type PointerEvent, type ReactElement } from 'react'
 import type { TabView } from '../shared/contract'
 import { IconClose } from '../shared/design/icons'
 import { PANEL, QUICK } from '../shared/design/motion'
@@ -15,9 +15,14 @@ export interface TabRowProps {
   compact: boolean
   onSelect: () => void
   onClose: () => void
+  /** Survol prolonge d'un onglet endormi : on le reveille d'avance. */
+  onWarm: () => void
   onContextMenu: (event: MouseEvent) => void
   onDragEnd: () => void
 }
+
+/** Delai de survol avant de reveiller un onglet endormi : assez court pour gagner du temps, assez long pour ignorer un passage. */
+const WARM_DELAY_MS = 220
 
 const ROW_MOTION = {
   initial: { opacity: 0, height: 0 },
@@ -71,7 +76,12 @@ function ActiveBackdrop(): ReactElement {
 }
 
 export function TabRow(props: TabRowProps): ReactElement {
-  const { tab, active, compact, onSelect, onClose, onContextMenu, onDragEnd } = props
+  const { tab, active, compact, onSelect, onClose, onWarm, onContextMenu, onDragEnd } = props
+  const warmTimer = useRef(0)
+  const stopWarm = (): void => window.clearTimeout(warmTimer.current)
+  const startWarm = (): void => {
+    if (tab.asleep) warmTimer.current = window.setTimeout(onWarm, WARM_DELAY_MS)
+  }
   const title = tab.title.length > 0 ? tab.title : fallbackTitle(tab.url)
   const controls = useDragControls()
   const onPointerDown = (event: PointerEvent): void => {
@@ -88,6 +98,8 @@ export function TabRow(props: TabRowProps): ReactElement {
       {...ROW_MOTION}
       transition={QUICK}
       onPointerDown={onPointerDown}
+      onPointerEnter={startWarm}
+      onPointerLeave={stopWarm}
       onContextMenu={onContextMenu}
       title={title}
       className={`group relative isolate flex items-center gap-2.5 rounded-row

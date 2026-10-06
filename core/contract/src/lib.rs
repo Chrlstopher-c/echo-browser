@@ -18,6 +18,8 @@ pub enum UiRequest {
     SetTabContainer { id: TabId, container: Option<String> },
     CloseTab { id: TabId },
     SelectTab { id: TabId },
+    /// Reveille d'avance un onglet endormi que la souris survole : son clic sera instantane.
+    WarmTab { id: TabId },
     /// Endort un onglet inactif : sa page est dechargee, elle se recharge a la selection.
     SleepTab { id: TabId },
     /// Deplace un onglet a une nouvelle position dans la liste.
