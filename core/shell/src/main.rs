@@ -37,6 +37,7 @@ use cef::{api_hash, args::Args, execute_process, initialize, run_message_loop, s
 use tracing::info;
 
 fn main() -> anyhow::Result<()> {
+    flags::prepare_environment();
     // CEF exige que la version de l'API soit fixee avant tout autre appel a la bibliotheque.
     let _ = api_hash(cef::sys::CEF_API_VERSION_LAST, 0);
 

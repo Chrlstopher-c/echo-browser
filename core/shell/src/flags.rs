@@ -8,6 +8,31 @@ use std::path::PathBuf;
 /// Mesure le 2026-09-10 sur RTX 3060 + Wayland.
 const DISABLED_FEATURES: &str = "Vulkan";
 
+/// Decodage video par la carte graphique (NVDEC via VA-API, pilote `libva-nvidia-driver`) : le processeur
+/// n'a plus a decoder la 4K. `ECHO_HWDEC=0` le coupe (artefacts possibles selon le pilote).
+pub fn hardware_decoding() -> bool {
+    std::env::var("ECHO_HWDEC").map(|v| v != "0").unwrap_or(true)
+}
+
+fn enabled_features() -> String {
+    let mut features = vec!["OverlayScrollbar"];
+    if hardware_decoding() {
+        features.extend(["AcceleratedVideoDecodeLinuxGL", "VaapiOnNvidiaGPUs", "VaapiIgnoreDriverChecks"]);
+    }
+    features.join(",")
+}
+
+/// Pose le pilote VA-API avant le lancement de Chromium : ses processus heritent de l'environnement.
+pub fn prepare_environment() {
+    if hardware_decoding() && std::env::var_os("LIBVA_DRIVER_NAME").is_none() {
+        // SAFETY : appele au tout debut de `main`, avant tout autre fil d'execution.
+        unsafe {
+            std::env::set_var("LIBVA_DRIVER_NAME", "nvidia");
+            std::env::set_var("NVD_BACKEND", "direct");
+        }
+    }
+}
+
 /// Identifiant d'application, tel que le gestionnaire de fenetres le voit.
 pub const APP_ID: &str = "echo-browser";
 
@@ -42,7 +67,7 @@ pub fn apply(process_type: &str, command_line: &mut CommandLine) {
     switch_with_value(command_line, "disable-features", DISABLED_FEATURES);
     // Barres de defilement en surimpression : celles de Chromium sont une colonne rectangulaire que le
     // rognage des angles de la page (voir `roundness.rs`) ne peut pas suivre.
-    switch_with_value(command_line, "enable-features", "OverlayScrollbar");
+    switch_with_value(command_line, "enable-features", &enabled_features());
     // Comme Chrome : pas de lecture automatique tant que l'utilisateur n'a pas touche la page.
     // Mesure le 06/10 sur YouTube : 155 Mo de moins, et plus de son non sollicite.
     switch_with_value(command_line, "autoplay-policy", "document-user-activation-required");
