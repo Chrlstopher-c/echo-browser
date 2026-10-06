@@ -133,6 +133,14 @@ fn run(job: Job) {
         Some("close") => with_id(&request, &reply, crate::bridge::close_tab),
         Some("sleep") => with_id(&request, &reply, crate::bridge::sleep_tab),
         Some("click") => click(&request, &reply),
+        Some("devtools") => {
+            crate::bridge::context::toggle_devtools();
+            let open = crate::session::with(|s| s.tabs.active().and_then(|t| t.browser()))
+                .flatten()
+                .and_then(|b| cef::ImplBrowser::host(&b))
+                .map(|h| cef::ImplBrowserHost::has_dev_tools(&h) == 1);
+            let _ = reply.send(json!({"ok": true, "open": open}));
+        }
         Some("menu") => {
             let _ = reply.send(json!({"ok": true, "open": crate::overlay::menu_open()}));
         }

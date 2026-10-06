@@ -13,6 +13,9 @@ mod key {
     pub const ESCAPE: i32 = 0x1B;
     pub const F5: i32 = 0x74;
     pub const F11: i32 = 0x7A;
+    pub const F12: i32 = 0x7B;
+    pub const I: i32 = 0x49;
+    pub const J: i32 = 0x4A;
     pub const L: i32 = 0x4C;
     pub const T: i32 = 0x54;
     pub const W: i32 = 0x57;
@@ -35,6 +38,7 @@ pub enum Action {
     FocusAddress,
     Reload { bypass_cache: bool },
     ToggleFullscreen,
+    ToggleDevTools,
     /// Referme ce qui est pose au-dessus de la page : fenetre d'extension, menu.
     DismissOverlay,
 }
@@ -53,6 +57,7 @@ pub fn resolve(code: i32, modifiers: u32) -> Option<Action> {
         (true, false, key::R) => Some(Action::Reload { bypass_cache: false }),
         (true, true, key::R) => Some(Action::Reload { bypass_cache: true }),
         (false, false, key::F5) => Some(Action::Reload { bypass_cache: false }),
+        (false, false, key::F12) | (true, true, key::I) | (true, true, key::J) => Some(Action::ToggleDevTools),
         (false, false, key::F11) => Some(Action::ToggleFullscreen),
         (false, false, key::ESCAPE) => Some(Action::DismissOverlay),
         (true, false, code) if (key::DIGIT_1..=key::DIGIT_9).contains(&code) => {

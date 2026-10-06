@@ -52,6 +52,7 @@ pub fn perform(action: crate::shortcuts::Action) {
         }),
         Action::FocusAddress => publish(&CoreEvent::FocusAddressRequested),
         Action::DismissOverlay => super::dismiss_overlays(),
+        Action::ToggleDevTools => super::context::toggle_devtools(),
         // F11 ne fait que sortir du plein ecran : c'est la page qui y entre, pas nous.
         Action::ToggleFullscreen => with_browser(|browser| {
             if let Some(host) = browser.host() {

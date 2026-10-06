@@ -150,6 +150,17 @@ fn download(url: &str) {
     }
 }
 
+/// F12 : ouvre les outils de developpement de l'onglet actif, ou les referme.
+pub fn toggle_devtools() {
+    let browser = session::with(|s| s.tabs.active().and_then(|tab| tab.browser())).flatten();
+    let Some(host) = browser.and_then(|browser| browser.host()) else { return };
+    if host.has_dev_tools() == 1 {
+        host.close_dev_tools();
+    } else {
+        host.show_dev_tools(None, None, None, None);
+    }
+}
+
 fn inspect() {
     let browser = session::with(|s| s.tabs.active().and_then(|tab| tab.browser())).flatten();
     let Some(host) = browser.and_then(|browser| browser.host()) else { return };

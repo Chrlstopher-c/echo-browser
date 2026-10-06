@@ -21,5 +21,8 @@ assert not call(op="menu")["open"]
 assert call(op="click", x=300, y=200, button="right")["ok"]
 time.sleep(1.5)
 assert call(op="menu")["open"], "le menu contextuel ne s'ouvre pas sur la page"
-print("OK : clic droit")
+assert call(op="devtools")["open"], "F12 : devtools non ouverts"
+time.sleep(2)
+assert not call(op="devtools")["open"], "F12 : devtools non refermes"
+print("OK : clic droit + devtools")
 PY
