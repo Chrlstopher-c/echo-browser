@@ -384,6 +384,21 @@ wrap_browser_view_delegate! {
         /// Une page ouvre une fenetre (`window.open`, connexion Google…) : elle devient un onglet d'Echo au
         /// lieu d'une fenetre a part. Le lien avec la page d'origine (`window.opener`) est garde : la
         /// connexion revient bien sur l'onglet qui l'a demandee. Les DevTools restent une fenetre.
+        /// La popup recoit le meme delegue : ses propres popups (fenetre ouverte depuis une fenetre ouverte)
+        /// deviennent elles aussi des onglets, au lieu de fenetres a part.
+        fn delegate_for_popup_browser_view(
+            &self,
+            _browser_view: Option<&mut BrowserView>,
+            _settings: Option<&BrowserSettings>,
+            _client: Option<&mut Client>,
+            is_devtools: i32,
+        ) -> Option<BrowserViewDelegate> {
+            if is_devtools == 1 || self.is_chrome == 1 {
+                return None;
+            }
+            Some(ChromeViewDelegate::new(RuntimeStyle::ALLOY, 0))
+        }
+
         fn on_popup_browser_view_created(
             &self,
             _browser_view: Option<&mut BrowserView>,

@@ -26,6 +26,10 @@ cat > "$ECHO_RUN_DIR/gsi/select.html" <<'H'
 <title>gsi</title><p>connexion</p><script src="relay.js"></script>
 H
 echo "setTimeout(() => window.opener.postMessage('jeton', '*'), 1500)" > "$ECHO_RUN_DIR/gsi/relay.js"
+cat > "$ECHO_RUN_DIR/lien.html" <<'H'
+<title>lien</title><body style="margin:0"><a href="cible.html" target="_blank" style="display:block;height:100vh">ouvrir</a>
+H
+echo '<title>cible</title><p>cible</p>' > "$ECHO_RUN_DIR/cible.html"
 trap 'cp "$ECHO_RUN_DIR/browser.log" /tmp/claude-1000/popup.log 2>/dev/null; ./stop.sh >/dev/null 2>&1 || true' EXIT
 ./start.sh release >/dev/null; sleep 14
 python3 - <<'PY'
@@ -63,5 +67,13 @@ tabs = call(op="tabs")["tabs"]
 assert not any(t["title"] == "gsi" for t in tabs), f"popup orpheline restee ouverte : {[t['title'] for t in tabs]}"
 assert [t for t in tabs if t["id"] == o2][0]["active"], "retour sur la page d'origine attendu"
 assert "chargements=2" in call(op="read", id=o2)["text"], call(op="read", id=o2)["text"]
+# Lien target=_blank (pubs, « compléter une tâche »…) : nouvel onglet, jamais une fenetre.
+call(op="open", url="file://" + os.environ["ECHO_RUN_DIR"] + "/lien.html"); time.sleep(2)
+call(op="click", x=300, y=300); time.sleep(2.5)
+titles = [t["title"] for t in call(op="tabs")["tabs"]]
+assert "cible" in titles, f"lien _blank non ouvert en onglet : {titles}"
+wins = [c for c in json.loads(subprocess.check_output(["hyprctl", "clients", "-j"])) if c["pid"] in set(tree(pid))]
+assert len(wins) == 1, f"{len(wins)} fenetres apres un lien _blank"
+print("OK : lien _blank en onglet")
 print("OK : popup en onglet, opener garde, fermeture propre, popup orpheline refermee + origine rechargee")
 PY
