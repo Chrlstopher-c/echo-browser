@@ -4,7 +4,7 @@ import { useMemo } from 'react'
 import type { TabId, TabView, UiRequest } from '../shared/contract'
 
 export interface TabActions {
-  newTab: (url?: string) => void
+  newTab: (url?: string, container?: string) => void
   select: (id: TabId) => void
   close: (id: TabId) => void
   sleep: (id: TabId) => void
@@ -32,7 +32,8 @@ function buildActions(send: Send, activeId: TabId | null): TabActions {
       if (activeId !== null) send(make(activeId))
     }
   return {
-    newTab: (url) => send(url === undefined ? { kind: 'newTab' } : { kind: 'newTab', url }),
+    newTab: (url, container) => send({ kind: 'newTab', ...(url === undefined ? {} : { url }),
+      ...(container === undefined ? {} : { container }) }),
     select: (id) => send({ kind: 'selectTab', id }),
     close: (id) => send({ kind: 'closeTab', id }),
     sleep: (id) => send({ kind: 'sleepTab', id }),

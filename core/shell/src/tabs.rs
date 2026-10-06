@@ -35,6 +35,8 @@ pub struct Tab {
     pub pinned: bool,
     /// Dossier d'onglets ou l'onglet est range (identifiant).
     pub folder: Option<String>,
+    /// Conteneur de l'onglet (cookies et comptes a part), `None` pour le contexte commun.
+    pub container: Option<String>,
     /// Facteur de zoom, 1.0 etant la taille naturelle.
     pub zoom: f32,
     /// Vrai quand la page joue du son.
@@ -95,6 +97,7 @@ impl Tab {
             security: security_of(&self.url),
             pinned: self.pinned,
             folder: self.folder.clone(),
+            container: self.container.clone(),
             zoom: self.zoom,
             audible: self.audible,
             asleep: self.asleep,
@@ -182,6 +185,7 @@ impl Tabs {
             position: 0,
             pinned: false,
             folder: None,
+            container: None,
             zoom: 1.0,
             audible: false,
         });
@@ -260,6 +264,10 @@ impl Tabs {
         self.entries.iter().find(|tab| tab.id == id).map(|tab| tab.url.clone())
     }
 
+    pub fn container_of(&self, id: TabId) -> Option<String> {
+        self.entries.iter().find(|tab| tab.id == id).and_then(|tab| tab.container.clone())
+    }
+
     /// Rend une vue neuve a un onglet endormi.
     pub fn wake_with(&mut self, id: TabId, view: BrowserView) {
         let Some(tab) = self.get_mut(id) else { return };
@@ -303,6 +311,7 @@ impl Tabs {
             position: snapshot.position.min(snapshot.history.len().saturating_sub(1)),
             pinned: snapshot.pinned,
             folder: snapshot.folder.clone(),
+            container: snapshot.container.clone(),
             zoom: 1.0,
             audible: false,
         });
@@ -351,6 +360,7 @@ impl Tabs {
                     position: tab.position,
                     pinned: tab.pinned,
                     folder: tab.folder.clone(),
+                    container: tab.container.clone(),
                     title: tab.title.clone(),
                     favicon: tab.favicon.clone(),
                 })

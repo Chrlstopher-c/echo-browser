@@ -299,6 +299,15 @@ export function IconFolder(props: IconProps): ReactElement {
   )
 }
 
+export function IconUser(props: IconProps): ReactElement {
+  return (
+    <Glyph {...props}>
+      <circle cx="8" cy="5.5" r="2.5" />
+      <path d="M3 13.5c.4-2.6 2.4-4 5-4s4.6 1.4 5 4" />
+    </Glyph>
+  )
+}
+
 export function IconOpen(props: IconProps): ReactElement {
   return (
     <Glyph {...props}>

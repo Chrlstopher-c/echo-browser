@@ -131,13 +131,18 @@ fn restore_or_open() {
         },
         None => return crate::bridge::open_tab(&home_url()),
     };
+    // Les profils des conteneurs s'initialisent de facon asynchrone : on les lance tous des maintenant.
+    for container in snapshot.tabs.iter().filter_map(|tab| tab.container.as_deref()) {
+        crate::containers::context_for(container);
+    }
     for (index, tab) in snapshot.tabs.iter().enumerate() {
         let Some(url) = tab.current() else { continue };
-        if !live && index != snapshot.active {
+        let container_ready = tab.container.as_deref().map(crate::containers::is_ready).unwrap_or(true);
+        if (!live && index != snapshot.active) || !container_ready {
             crate::session::with(|s| s.tabs.adopt_asleep(tab));
             continue;
         }
-        crate::bridge::open_tab(url);
+        crate::bridge::open_tab_in(url, tab.container.as_deref());
         let opened = crate::session::with(|s| s.tabs.active_id()).flatten();
         if let Some(id) = opened {
             let (history, position, pinned) = (tab.history.clone(), tab.position, tab.pinned);
@@ -156,7 +161,7 @@ fn restore_or_open() {
     })
     .flatten();
     if let Some(id) = restored {
-        crate::session::with(|s| s.tabs.select(id));
+        crate::bridge::select_tab(id);
     }
     crate::bridge::publish_tabs();
 }

@@ -7,6 +7,7 @@ import { PinnedGrid } from './pinned-grid'
 import { TabList } from './tab-list'
 import { TabMenu } from './tab-menu'
 import type { TabActions } from './use-tab-actions'
+import type { ContainerActions } from './use-containers'
 import type { FolderActions } from './use-folders'
 import type { TabMenuController } from './use-tab-menu'
 
@@ -16,10 +17,11 @@ export interface TabsAreaProps {
   actions: TabActions
   menu: TabMenuController
   folders: FolderActions
+  containers: ContainerActions
   compact: boolean
 }
 
-export function TabsArea({ tabs, activeId, actions, menu, folders, compact }: TabsAreaProps): ReactElement {
+export function TabsArea({ tabs, activeId, actions, menu, folders, containers, compact }: TabsAreaProps): ReactElement {
   const pinned = useMemo(() => tabs.filter((tab) => tab.pinned), [tabs])
   const known = useMemo(() => new Set(folders.folders.map((folder) => folder.id)), [folders.folders])
   const loose = useMemo(
@@ -49,7 +51,14 @@ export function TabsArea({ tabs, activeId, actions, menu, folders, compact }: Ta
         />
       ))}
       <TabList all={tabs} loose={loose} activeId={activeId} compact={compact} actions={actions} menu={menu} />
-      <TabMenu tabs={tabs} controller={menu} actions={actions} folders={folders} activeId={activeId} />
+      <TabMenu
+        tabs={tabs}
+        controller={menu}
+        actions={actions}
+        folders={folders}
+        containers={containers}
+        activeId={activeId}
+      />
     </div>
   )
 }

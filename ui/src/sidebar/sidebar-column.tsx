@@ -82,7 +82,7 @@ function ColumnFooter({ model }: { model: SidebarModel }): ReactElement {
 }
 
 export function SidebarColumn({ model }: { model: SidebarModel }): ReactElement {
-  const { core, tabs, menu, folders, sheet } = model
+  const { core, tabs, menu, folders, containers, sheet } = model
   return (
     <div className="flex h-full flex-col gap-3 px-3 pt-2 pb-1.5">
       <ColumnHeader model={model} />
@@ -92,7 +92,7 @@ export function SidebarColumn({ model }: { model: SidebarModel }): ReactElement 
           className={`h-full overflow-y-auto ${sheet.current === null ? '' : 'invisible'}`}
         >
           <TabsArea tabs={core.state.tabs} activeId={core.state.activeId} actions={tabs} menu={menu}
-            folders={folders} compact={false} />
+            folders={folders} containers={containers} compact={false} />
         </div>
         <SidebarSheets model={model} />
       </div>

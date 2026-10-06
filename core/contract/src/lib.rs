@@ -13,7 +13,9 @@ pub type DownloadId = u32;
 #[serde(tag = "kind", rename_all = "camelCase", rename_all_fields = "camelCase")]
 pub enum UiRequest {
     // --- Onglets et navigation ---
-    NewTab { url: Option<String> },
+    NewTab { url: Option<String>, container: Option<String> },
+    /// Rouvre un onglet dans un autre conteneur (ses cookies et comptes changent), ou dans le commun (`None`).
+    SetTabContainer { id: TabId, container: Option<String> },
     CloseTab { id: TabId },
     SelectTab { id: TabId },
     /// Endort un onglet inactif : sa page est dechargee, elle se recharge a la selection.
@@ -158,6 +160,8 @@ pub struct TabView {
     pub pinned: bool,
     /// Identifiant du dossier d'onglets, s'il y en a un.
     pub folder: Option<String>,
+    /// Conteneur de l'onglet, s'il n'est pas dans le contexte commun.
+    pub container: Option<String>,
     pub zoom: f32,
     /// Vrai si la page joue du son.
     pub audible: bool,

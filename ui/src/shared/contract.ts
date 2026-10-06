@@ -7,7 +7,9 @@ export type DownloadId = number
 /** Ce que l'interface demande au coeur. */
 export type UiRequest =
   // --- Onglets et navigation ---
-  | { kind: 'newTab'; url?: string }
+  | { kind: 'newTab'; url?: string; container?: string }
+  /** Rouvre un onglet dans un autre conteneur (cookies et comptes a part), ou dans le commun (null). */
+  | { kind: 'setTabContainer'; id: TabId; container: string | null }
   | { kind: 'closeTab'; id: TabId }
   | { kind: 'sleepTab'; id: TabId }
   | { kind: 'selectTab'; id: TabId }
@@ -123,6 +125,8 @@ export interface TabView {
   pinned: boolean
   /** Identifiant du dossier d'onglets, ou null. */
   folder: string | null
+  /** Conteneur de l'onglet, ou null pour le contexte commun. */
+  container: string | null
   zoom: number
   /** Vrai si la page joue du son. */
   audible: boolean

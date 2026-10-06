@@ -8,6 +8,7 @@ import { IconMoon } from '../shared/design/icons'
 import { QUICK } from '../shared/design/motion'
 import { ProgressRing } from '../shared/design/progress-ring'
 import { SiteMark } from '../shared/design/site-mark'
+import { containerColor } from './use-containers'
 
 export interface TabMarkProps {
   tab: TabView
@@ -30,6 +31,16 @@ function SleepBadge({ size }: { size: number }): ReactElement {
   )
 }
 
+function ContainerPip({ id }: { id: string }): ReactElement {
+  return (
+    <span
+      title="Conteneur"
+      style={{ background: containerColor(id) }}
+      className="absolute -top-0.5 -right-0.5 block size-[7px] rounded-full ring-2 ring-shell"
+    />
+  )
+}
+
 export function TabMark({ tab, size }: TabMarkProps): ReactElement {
   const ringSize = size + 6
   return (
@@ -41,6 +52,7 @@ export function TabMark({ tab, size }: TabMarkProps): ReactElement {
       >
         <SiteMark url={tab.url} favicon={tab.favicon} size={size} />
       </motion.span>
+      {tab.container !== null && <ContainerPip id={tab.container} />}
       <AnimatePresence>
         {tab.loading && (
           <motion.span

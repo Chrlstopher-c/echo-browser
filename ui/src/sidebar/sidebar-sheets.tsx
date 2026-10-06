@@ -18,7 +18,8 @@ function SheetBody({ model }: { model: SidebarModel }): ReactElement | null {
     case 'extensions':
       return <ExtensionsSheet controller={model.extensions} />
     case 'settings':
-      return <SettingsSheet settings={model.settings} space={model.space} onDevTools={model.tabs.devTools} />
+      return <SettingsSheet settings={model.settings} space={model.space} containers={model.containers}
+        onDevTools={model.tabs.devTools} />
     case null:
       return null
   }

@@ -7,6 +7,7 @@ import { createPortal } from 'react-dom'
 import type { TabView } from '../shared/contract'
 import { QUICK } from '../shared/design/motion'
 import { AreaBody, FolderBody, TabBody } from './tab-menu-bodies'
+import type { ContainerActions } from './use-containers'
 import type { FolderActions } from './use-folders'
 import type { TabMenuController, TabMenuState } from './use-tab-menu'
 import type { TabActions } from './use-tab-actions'
@@ -16,6 +17,7 @@ export interface TabMenuProps {
   controller: TabMenuController
   actions: TabActions
   folders: FolderActions
+  containers: ContainerActions
   /** L'onglet affiche : on ne l'endort pas. */
   activeId: number | null
 }
@@ -25,8 +27,8 @@ function keyOf(menu: TabMenuState): string {
 }
 
 function Body(props: TabMenuProps & { menu: TabMenuState }): ReactElement | null {
-  const { menu, tabs, actions, folders, activeId, controller } = props
-  const common = { actions, folders, close: controller.close }
+  const { menu, tabs, actions, folders, containers, activeId, controller } = props
+  const common = { actions, folders, containers, close: controller.close }
   const { target } = menu
   if (target.kind === 'area') return <AreaBody {...common} />
   if (target.kind === 'folder') {

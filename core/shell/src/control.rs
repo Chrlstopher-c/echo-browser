@@ -168,7 +168,8 @@ fn tabs() -> Value {
         .iter()
         .map(|t| {
             json!({"id": t.id, "title": t.title, "url": t.url, "active": active == Some(t.id),
-                   "asleep": t.asleep, "loading": t.loading, "favicon": t.favicon, "pinned": t.pinned, "folder": t.folder})
+                   "asleep": t.asleep, "loading": t.loading, "favicon": t.favicon, "pinned": t.pinned, "folder": t.folder,
+                   "container": t.container})
         })
         .collect();
     json!({"ok": true, "tabs": list})
@@ -176,7 +177,8 @@ fn tabs() -> Value {
 
 fn open(request: &Value, reply: &Sender<Value>) {
     let Some(url) = request.get("url").and_then(Value::as_str) else { return fail(reply, "url manquante") };
-    crate::bridge::open_tab(&crate::bridge::normalize(url));
+    let container = request.get("container").and_then(Value::as_str);
+    crate::bridge::open_tab_in(&crate::bridge::normalize(url), container);
     crate::bridge::publish_tabs();
     let id = crate::session::with(|s| s.tabs.active_id()).flatten();
     let _ = reply.send(json!({"ok": true, "id": id}));

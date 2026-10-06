@@ -97,11 +97,12 @@ fn apply(request: UiRequest) {
             session::with(|s| s.shield.toggle_site(&url));
             publish_shield();
         }
-        UiRequest::NewTab { url } => {
+        UiRequest::NewTab { url, container } => {
             let target = url.map(|u| normalize(&u)).unwrap_or_else(|| search::HOME.to_string());
-            open_tab(&target);
+            open_tab_in(&target, container.as_deref());
             publish_tabs();
         }
+        UiRequest::SetTabContainer { id, container } => move_to_container(id, container),
         UiRequest::SelectTab { id } => select_tab(id),
         UiRequest::OpenTerminal => open_terminal(),
         UiRequest::AnswerPermission { id, allow, remember } => crate::permissions::answer(id, allow, remember),
@@ -238,11 +239,31 @@ pub(super) fn dismiss_overlays() {
 }
 
 pub fn open_tab(url: &str) {
+    open_tab_in(url, None);
+}
+
+/// Ouvre un onglet dans le meme conteneur que l'onglet actif : un lien suit le compte de la page d'ou il vient.
+pub fn open_tab_like_active(url: &str) {
+    let container = session::with(|s| s.tabs.active().and_then(|tab| tab.container.clone())).flatten();
+    open_tab_in(url, container.as_deref());
+}
+
+/// Ouvre un onglet dans le conteneur donne (`None` : contexte commun).
+pub fn open_tab_in(url: &str, container: Option<&str>) {
+    if wait_for_container(container, || {
+        let (url, container) = (url.to_string(), container.map(str::to_string));
+        move || {
+            open_tab_in(&url, container.as_deref());
+            publish_tabs();
+        }
+    }) {
+        return;
+    }
     dismiss_overlays();
     let Some((mut client, host)) = session::with(|s| (s.client.clone(), s.tabs.host())) else {
         return;
     };
-    let Some(view) = crate::window::create_view(client.as_mut(), url, 0) else {
+    let Some(view) = crate::window::create_view(client.as_mut(), url, 0, container) else {
         warn!(%url, "vue d'onglet non creee");
         return;
     };
@@ -250,7 +271,37 @@ pub fn open_tab(url: &str) {
         let mut child = View::from(&view);
         host.add_child_view(Some(&mut child));
     }
-    session::with(|s| s.tabs.adopt(view, url));
+    session::with(|s| {
+        let id = s.tabs.adopt(view, url);
+        if let Some(tab) = s.tabs.get_mut(id) {
+            tab.container = container.map(str::to_string);
+        }
+    });
+}
+
+/// Tant que le profil du conteneur n'est pas pret, repousse `job` de quelques instants. Vrai si repousse.
+fn wait_for_container<J: FnOnce() + Send + 'static>(container: Option<&str>, job: impl FnOnce() -> J) -> bool {
+    let Some(id) = container else { return false };
+    if crate::containers::is_ready(id) {
+        return false;
+    }
+    crate::containers::later(job());
+    true
+}
+
+/// Rouvre l'onglet dans un autre conteneur : sa page repart d'une session neuve, l'ancien onglet se ferme.
+fn move_to_container(id: TabId, container: Option<String>) {
+    if wait_for_container(container.as_deref(), || {
+        let container = container.clone();
+        move || move_to_container(id, container)
+    }) {
+        return;
+    }
+    let url = session::with(|s| s.tabs.wake_url(id)).flatten();
+    let Some(url) = url else { return };
+    open_tab_in(&url, container.as_deref());
+    close_tab(id);
+    publish_tabs();
 }
 
 /// Ouvre le terminal de Claude Code, ou revient a l'onglet qui le porte deja.
@@ -285,12 +336,17 @@ pub fn select_tab(id: TabId) {
 
 /// Recree le navigateur d'un onglet endormi et recharge sa page.
 fn wake_tab(id: TabId) {
-    let Some((mut client, host, url)) =
-        session::with(|s| Some((s.client.clone(), s.tabs.host(), s.tabs.wake_url(id)?))).flatten()
-    else {
+    let container = session::with(|s| s.tabs.container_of(id)).flatten();
+    if wait_for_container(container.as_deref(), || move || wake_tab(id)) {
+        return;
+    }
+    let Some((mut client, host, url, container)) = session::with(|s| {
+        Some((s.client.clone(), s.tabs.host(), s.tabs.wake_url(id)?, s.tabs.container_of(id)))
+    })
+    .flatten() else {
         return;
     };
-    let Some(view) = crate::window::create_view(client.as_mut(), &url, 0) else {
+    let Some(view) = crate::window::create_view(client.as_mut(), &url, 0, container.as_deref()) else {
         warn!(id, %url, "vue de reveil non creee");
         return;
     };

@@ -4,9 +4,10 @@ import type { ReactElement } from 'react'
 import type { TabView } from '../shared/contract'
 import { formatZoom } from '../shared/format'
 import {
-  IconClose, IconFolder, IconMoon, IconPin, IconPlus, IconReload, IconStar, IconTrash, IconUnpin,
+  IconClose, IconFolder, IconMoon, IconPin, IconPlus, IconReload, IconStar, IconTrash, IconUnpin, IconUser,
 } from '../shared/design/icons'
 import { Stepper } from '../shared/design/stepper'
+import { containerColor, type ContainerActions } from './use-containers'
 import type { FolderActions } from './use-folders'
 import type { TabActions } from './use-tab-actions'
 import { MenuItem, MenuSeparator } from './menu-item'
@@ -14,6 +15,7 @@ import { MenuItem, MenuSeparator } from './menu-item'
 interface Common {
   actions: TabActions
   folders: FolderActions
+  containers: ContainerActions
   close: () => void
 }
 
@@ -64,8 +66,41 @@ function FolderItems({ tab, folders, close }: FolderItemsProps): ReactElement {
   )
 }
 
+function ContainerDot({ id }: { id: string }): ReactElement {
+  return <span style={{ background: containerColor(id) }} className="ml-0.5 block size-2.5 rounded-full" />
+}
+
+interface ContainerItemsProps {
+  tab: TabView
+  containers: ContainerActions
+  close: () => void
+}
+
+function ContainerItems({ tab, containers, close }: ContainerItemsProps): ReactElement {
+  const run = (action: () => void) => (): void => {
+    action()
+    close()
+  }
+  return (
+    <>
+      {containers.containers
+        .filter((item) => item.id !== tab.container)
+        .map((item) => (
+          <MenuItem key={item.id} icon={<ContainerDot id={item.id} />} label={`Rouvrir dans « ${item.name} »`}
+            onClick={run(() => containers.moveTab(tab.id, item.id))} />
+        ))}
+      {tab.container !== null && (
+        <MenuItem icon={<IconUser size={13} />} label="Rouvrir hors conteneur"
+          onClick={run(() => containers.moveTab(tab.id, null))} />
+      )}
+      <MenuItem icon={<IconUser size={13} />} label="Nouveau conteneur avec cet onglet"
+        onClick={run(() => containers.create(tab.id))} />
+    </>
+  )
+}
+
 export function TabBody(props: Common & { tab: TabView; others: TabView[]; activeId: number | null }): ReactElement {
-  const { tab, others, activeId, actions, folders, close } = props
+  const { tab, others, activeId, actions, folders, containers, close } = props
   const run = (action: () => void) => (): void => {
     action()
     close()
@@ -85,6 +120,8 @@ export function TabBody(props: Common & { tab: TabView; others: TabView[]; activ
       )}
       <MenuSeparator />
       <FolderItems tab={tab} folders={folders} close={close} />
+      <MenuSeparator />
+      <ContainerItems tab={tab} containers={containers} close={close} />
       <MenuSeparator />
       <ZoomRow tab={tab} actions={actions} />
       <MenuSeparator />
@@ -116,7 +153,7 @@ export function FolderBody(props: Common & { id: string; members: TabView[] }): 
   )
 }
 
-export function AreaBody({ actions, folders, close }: Common): ReactElement {
+export function AreaBody({ actions, folders, containers, close }: Common): ReactElement {
   const run = (action: () => void) => (): void => {
     action()
     close()
@@ -125,6 +162,12 @@ export function AreaBody({ actions, folders, close }: Common): ReactElement {
     <>
       <MenuItem icon={<IconPlus size={13} />} label="Nouvel onglet" onClick={run(() => actions.newTab())} />
       <MenuItem icon={<IconFolder size={13} />} label="Nouveau dossier" onClick={run(() => folders.create())} />
+      <MenuSeparator />
+      {containers.containers.map((item) => (
+        <MenuItem key={item.id} icon={<ContainerDot id={item.id} />} label={`Nouvel onglet dans « ${item.name} »`}
+          onClick={run(() => containers.openTab(item.id))} />
+      ))}
+      <MenuItem icon={<IconUser size={13} />} label="Nouveau conteneur" onClick={run(() => containers.create())} />
     </>
   )
 }

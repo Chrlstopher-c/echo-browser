@@ -8,6 +8,7 @@ mod app;
 mod assets;
 mod bridge;
 mod client;
+mod containers;
 mod control;
 mod filtering;
 mod flags;
@@ -66,6 +67,7 @@ fn main() -> anyhow::Result<()> {
     // Lacher nos references aux vues et surimpressions AVANT l'arret de CEF : sinon des observateurs restent
     // enregistres, Chromium echoue une verification a la sortie et passe une dizaine de secondes a ecrire un rapport de plantage.
     window::release_views();
+    containers::release();
     session::release();
     shutdown();
 

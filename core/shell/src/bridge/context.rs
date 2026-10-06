@@ -62,7 +62,7 @@ pub fn run(action: MenuItemKind) {
     };
     match action {
         MenuItemKind::OpenLinkInTab | MenuItemKind::OpenImage => open_and_show(&target_url(&click, action)),
-        MenuItemKind::OpenLinkInBackground => open_tab(&click.link),
+        MenuItemKind::OpenLinkInBackground => super::open_tab_like_active(&click.link),
         MenuItemKind::OpenSelection => open_and_show(&navigation::normalize(&click.selection)),
         MenuItemKind::SearchSelection => open_and_show(&crate::search::query_url(&click.selection)),
         MenuItemKind::CopyLink => copy(&click.link),
@@ -112,7 +112,7 @@ fn open_and_show(url: &str) {
     if url.is_empty() {
         return;
     }
-    open_tab(url);
+    super::open_tab_like_active(url);
     super::publish::publish_tabs();
 }
 

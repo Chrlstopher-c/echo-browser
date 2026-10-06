@@ -452,14 +452,20 @@ fn side_by_side_layout() -> BoxLayoutSettings {
 }
 
 /// Cree une vue navigateur en style Alloy, seul style compatible avec une fenetre sur mesure.
-pub fn create_view(client: Option<&mut Client>, url: &str, is_chrome: i32) -> Option<BrowserView> {
+pub fn create_view(
+    client: Option<&mut Client>,
+    url: &str,
+    is_chrome: i32,
+    container: Option<&str>,
+) -> Option<BrowserView> {
+    let mut context = container.and_then(crate::containers::context_for);
     let mut delegate = ChromeViewDelegate::new(RuntimeStyle::ALLOY, is_chrome);
     browser_view_create(
         client,
         Some(&CefString::from(url)),
         Some(&BrowserSettings::default()),
         None,
-        None,
+        context.as_mut(),
         Some(&mut delegate),
     )
 }
@@ -469,7 +475,7 @@ pub fn create_chrome_view(client: Option<&mut Client>, url: &str) -> Option<Brow
     // Style Alloy impose : une vue en style Chrome ajoutee a une fenetre sur mesure cherche
     // l'infrastructure d'onglets du vrai Chrome et fait planter le processus dans
     // tabs::TabInterface::GetFromContents. Mesure le 2026-09-10, pile a l'appui.
-    create_view(client, url, 1)
+    create_view(client, url, 1, None)
 }
 
 // Delegue des vues posees au-dessus de la page. Leur taille est imposee par l'appelant :

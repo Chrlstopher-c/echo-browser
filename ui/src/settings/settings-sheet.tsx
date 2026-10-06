@@ -7,12 +7,15 @@ import { ListRow } from '../shared/design/list-row'
 import { SectionLabel } from '../shared/design/section-label'
 import { SpacePicker } from '../spaces/space-picker'
 import type { SpaceController } from '../spaces/use-space'
+import type { ContainerActions } from '../tabs/use-containers'
+import { ContainersSection } from './containers-section'
 import { SettingRow } from './setting-row'
 import type { SettingsController } from './use-settings'
 
 export interface SettingsSheetProps {
   settings: SettingsController
   space: SpaceController
+  containers: ContainerActions
   onDevTools: () => void
 }
 
@@ -51,10 +54,11 @@ function CoreSections({ settings }: { settings: SettingsController }): ReactElem
   )
 }
 
-export function SettingsSheet({ settings, space, onDevTools }: SettingsSheetProps): ReactElement {
+export function SettingsSheet({ settings, space, containers, onDevTools }: SettingsSheetProps): ReactElement {
   return (
     <div className="flex flex-col gap-3">
       <AppearanceSection space={space} />
+      <ContainersSection actions={containers} />
       <CoreSections settings={settings} />
       <section>
         <SectionLabel>Outils</SectionLabel>

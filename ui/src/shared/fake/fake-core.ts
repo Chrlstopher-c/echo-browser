@@ -106,7 +106,10 @@ class FakeCore implements CoreBridge {
   private handleTabRequest(request: UiRequest): boolean {
     switch (request.kind) {
       case 'newTab':
-        this.tabs.open(request.url ?? 'about:blank')
+        this.tabs.setContainer(this.tabs.open(request.url ?? 'about:blank'), request.container ?? null)
+        return true
+      case 'setTabContainer':
+        this.tabs.setContainer(request.id, request.container)
         return true
       case 'sleepTab':
         this.tabs.setAsleep(request.id, true)
