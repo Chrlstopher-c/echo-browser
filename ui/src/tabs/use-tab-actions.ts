@@ -7,6 +7,7 @@ export interface TabActions {
   newTab: (url?: string) => void
   select: (id: TabId) => void
   close: (id: TabId) => void
+  sleep: (id: TabId) => void
   pin: (id: TabId, pinned: boolean) => void
   /** Deplace un onglet a une position dans la liste complete (epingles compris). */
   move: (id: TabId, to: number) => void
@@ -34,6 +35,7 @@ function buildActions(send: Send, activeId: TabId | null): TabActions {
     newTab: (url) => send(url === undefined ? { kind: 'newTab' } : { kind: 'newTab', url }),
     select: (id) => send({ kind: 'selectTab', id }),
     close: (id) => send({ kind: 'closeTab', id }),
+    sleep: (id) => send({ kind: 'sleepTab', id }),
     pin: (id, pinned) => send({ kind: 'pinTab', id, pinned }),
     move: (id, to) => send({ kind: 'moveTab', id, to }),
     setZoom: (id, factor) => send({ kind: 'setZoom', id, factor }),

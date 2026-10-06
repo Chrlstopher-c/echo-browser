@@ -9,6 +9,7 @@ export type UiRequest =
   // --- Onglets et navigation ---
   | { kind: 'newTab'; url?: string }
   | { kind: 'closeTab'; id: TabId }
+  | { kind: 'sleepTab'; id: TabId }
   | { kind: 'selectTab'; id: TabId }
   /** Deplace un onglet a une nouvelle position dans la liste. */
   | { kind: 'moveTab'; id: TabId; to: number }

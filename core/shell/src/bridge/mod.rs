@@ -104,6 +104,7 @@ fn apply(request: UiRequest) {
         }
         UiRequest::SelectTab { id } => select_tab(id),
         UiRequest::OpenTerminal => open_terminal(),
+        UiRequest::SleepTab { id } => sleep_tab(id),
         UiRequest::CloseTab { id } => close_tab(id),
         UiRequest::SetChromeWidth { pixels } => {
             let chrome = session::with(|s| s.chrome.clone()).flatten();
@@ -233,6 +234,14 @@ pub fn open_terminal() {
             open_tab(crate::terminal::PAGE);
             publish_tabs();
         }
+    }
+}
+
+/// Endort un onglet a la demande de l'utilisateur.
+pub fn sleep_tab(id: TabId) {
+    if let Some(detached) = session::with(|s| s.tabs.put_to_sleep(id)).flatten() {
+        detached.dispose();
+        publish_tabs();
     }
 }
 

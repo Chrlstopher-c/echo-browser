@@ -43,6 +43,8 @@ pub fn defaults() -> Vec<(&'static str, Value)> {
         ("appearance.sidebar_width", Value::Number(240.0)),
         ("privacy.send_do_not_track", Value::Flag(true)),
         ("privacy.clear_on_exit", Value::Flag(false)),
+        ("tabs.sleepEnabled", Value::Flag(true)),
+        ("tabs.sleepAfterMinutes", Value::Number(5.0)),
     ]
 }
 

@@ -4,8 +4,6 @@ use cef::*;
 use std::time::Duration;
 use tracing::info;
 
-/// Delai d'inactivite avant la mise en veille, sauf `ECHO_SLEEP_AFTER_S`.
-const DEFAULT_IDLE_SECS: u64 = 300;
 const TICK_MS: i64 = 15_000;
 
 /// Message console que la page emet a la premiere saisie de l'utilisateur.
@@ -15,17 +13,23 @@ pub const DIRTY_MARKER: &str = "echo:dirty";
 pub const DIRTY_WATCHER: &str = "(()=>{let sent=false;const f=e=>{if(sent||!e.isTrusted)return;sent=true;\
 console.debug('echo:dirty')};addEventListener('input',f,true);addEventListener('change',f,true)})()";
 
-fn idle_delay() -> Duration {
-    let secs = std::env::var("ECHO_SLEEP_AFTER_S")
-        .ok()
-        .and_then(|v| v.parse().ok())
-        .unwrap_or(DEFAULT_IDLE_SECS);
-    Duration::from_secs(secs)
+/// Delai d'inactivite avant la mise en veille, ou `None` si la veille est coupee.
+/// `ECHO_SLEEP_AFTER_S` (secondes) l'emporte sur les reglages : c'est le levier des bancs de mesure.
+fn idle_delay() -> Option<Duration> {
+    if let Some(secs) = std::env::var("ECHO_SLEEP_AFTER_S").ok().and_then(|v| v.parse().ok()) {
+        return Some(Duration::from_secs(secs));
+    }
+    use echo_library::settings::Value;
+    let settings = crate::session::with(|s| echo_library::settings::all(&s.library))?;
+    let find = |key: &str| settings.iter().find(|(k, _)| k == key).map(|(_, v)| v);
+    let enabled = !matches!(find("tabs.sleepEnabled"), Some(Value::Flag(false)));
+    let Some(Value::Number(minutes)) = find("tabs.sleepAfterMinutes") else { return None };
+    enabled.then(|| Duration::from_secs((minutes.max(1.0) * 60.0) as u64))
 }
 
 /// Arme la verification periodique.
 pub fn start() {
-    info!(apres_s = idle_delay().as_secs(), "veille des onglets armee");
+    info!("veille des onglets armee");
     schedule_tick();
 }
 
@@ -41,7 +45,7 @@ wrap_task! {
 
     impl Task {
         fn execute(&self) {
-            let slept = crate::bridge::sleep_idle_tabs(idle_delay());
+            let slept = idle_delay().map_or(0, crate::bridge::sleep_idle_tabs);
             if slept > 0 {
                 info!(onglets = slept, "onglets inactifs endormis");
             }

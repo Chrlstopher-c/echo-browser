@@ -6,7 +6,7 @@ import type { ReactElement, ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import type { TabView } from '../shared/contract'
 import { formatZoom } from '../shared/format'
-import { IconClose, IconPin, IconReload, IconStar, IconUnpin } from '../shared/design/icons'
+import { IconClose, IconMoon, IconPin, IconReload, IconStar, IconUnpin } from '../shared/design/icons'
 import { QUICK } from '../shared/design/motion'
 import { Stepper } from '../shared/design/stepper'
 import type { TabMenuController } from './use-tab-menu'
@@ -16,6 +16,8 @@ export interface TabMenuProps {
   tabs: TabView[]
   controller: TabMenuController
   actions: TabActions
+  /** L'onglet affiche : on ne l'endort pas. */
+  activeId: number | null
 }
 
 function MenuItem({ icon, label, onClick, danger = false }: {
@@ -54,7 +56,8 @@ function ZoomRow({ tab, actions }: { tab: TabView; actions: TabActions }): React
   )
 }
 
-function MenuBody({ tab, actions, close }: { tab: TabView; actions: TabActions; close: () => void }): ReactElement {
+function MenuBody(props: { tab: TabView; actions: TabActions; close: () => void; activeId: number | null }): ReactElement {
+  const { tab, actions, close, activeId } = props
   const run = (action: () => void) => (): void => {
     action()
     close()
@@ -69,6 +72,9 @@ function MenuBody({ tab, actions, close }: { tab: TabView; actions: TabActions; 
       <MenuItem icon={<IconStar size={13} />} label="Ajouter aux favoris"
         onClick={run(() => actions.addBookmark(tab.id))} />
       <MenuItem icon={<IconReload size={13} />} label="Recharger" onClick={run(() => actions.reload(tab.id))} />
+      {!tab.asleep && tab.id !== activeId && (
+        <MenuItem icon={<IconMoon size={13} />} label="Endormir" onClick={run(() => actions.sleep(tab.id))} />
+      )}
       <div className="my-1 border-t border-hairline" />
       <ZoomRow tab={tab} actions={actions} />
       <div className="my-1 border-t border-hairline" />
@@ -78,7 +84,7 @@ function MenuBody({ tab, actions, close }: { tab: TabView; actions: TabActions; 
   )
 }
 
-export function TabMenu({ tabs, controller, actions }: TabMenuProps): ReactElement {
+export function TabMenu({ tabs, controller, actions, activeId }: TabMenuProps): ReactElement {
   const { menu, close } = controller
   const tab = menu === null ? undefined : tabs.find((candidate) => candidate.id === menu.id)
   return createPortal(
@@ -95,7 +101,7 @@ export function TabMenu({ tabs, controller, actions }: TabMenuProps): ReactEleme
           style={{ left: menu.x, top: menu.y, width: 196 }}
           className="fixed z-50 origin-top-left rounded-tile bg-card p-1 shadow-lift"
         >
-          <MenuBody tab={tab} actions={actions} close={close} />
+          <MenuBody tab={tab} actions={actions} close={close} activeId={activeId} />
         </motion.div>
       )}
     </AnimatePresence>,

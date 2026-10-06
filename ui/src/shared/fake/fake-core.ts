@@ -108,6 +108,9 @@ class FakeCore implements CoreBridge {
       case 'newTab':
         this.tabs.open(request.url ?? 'about:blank')
         return true
+      case 'sleepTab':
+        this.tabs.setAsleep(request.id, true)
+        return true
       case 'closeTab':
         this.tabs.close(request.id)
         this.shield.forget(request.id)

@@ -125,7 +125,8 @@ fn run(job: Job) {
         Some("navigate") => navigate(&request, &reply),
         Some("activate") => with_id(&request, &reply, crate::bridge::select_tab),
         Some("close") => with_id(&request, &reply, crate::bridge::close_tab),
-        _ => fail(&reply, "operation inconnue : tabs, read, open, navigate, activate, close"),
+        Some("sleep") => with_id(&request, &reply, crate::bridge::sleep_tab),
+        _ => fail(&reply, "operation inconnue : tabs, read, open, navigate, activate, sleep, close"),
     }
 }
 

@@ -16,6 +16,8 @@ pub enum UiRequest {
     NewTab { url: Option<String> },
     CloseTab { id: TabId },
     SelectTab { id: TabId },
+    /// Endort un onglet inactif : sa page est dechargee, elle se recharge a la selection.
+    SleepTab { id: TabId },
     /// Deplace un onglet a une nouvelle position dans la liste.
     MoveTab { id: TabId, to: usize },
     PinTab { id: TabId, pinned: bool },

@@ -4,7 +4,7 @@
 - [x] E1.S1 — Banc comparatif Echo/Chrome — VERIFY: `BENCH_URLS=about:blank tools/bench-ram.sh echo 15`
 - [x] E1.S2 — Veille auto des onglets inactifs — VERIFY: `ECHO_SLEEP_AFTER_S=20 tools/bench-ram.sh echo 110` < 500 Mo
 - [x] E1.S3 — Autoplay bloqué, accueil local — VERIFY: repos < 470 Mo
-- [ ] E1.S4 — Veille manuelle (menu de l'onglet) + délai dans les réglages — VERIFY: capture Playwright de l'interface simulée + test selftest
+- [x] E1.S4 — Veille manuelle (menu de l'onglet « Endormir », op `sleep`) + réglages `tabs.sleepEnabled` / `tabs.sleepAfterMinutes` (5 min par défaut) — VERIFY: réglage à 1 min → onglets endormis, désactivé → aucun ; op `sleep` sur la prise (fait le 06/10)
 - [x] E1.S5 — Ne jamais endormir un onglet avec saisie non envoyée — VERIFY: page qui émet `echo:dirty`, veille 15 s, onglet resté éveillé (fait ; la frappe réelle `isTrusted` n'est pas encore rejouée automatiquement)
 - [ ] E1.S6 — Plancher : processus principal et interface sous Chrome — VERIFY: repos ≤ 360 Mo (Chrome 351)
 

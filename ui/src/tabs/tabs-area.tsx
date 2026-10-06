@@ -30,7 +30,7 @@ export function TabsArea({ tabs, activeId, actions, menu, compact }: TabsAreaPro
       />
       {pinned.length > 0 && loose.length > 0 && <div className="mx-1 border-t border-hairline" />}
       <TabList all={tabs} loose={loose} activeId={activeId} compact={compact} actions={actions} menu={menu} />
-      <TabMenu tabs={tabs} controller={menu} actions={actions} />
+      <TabMenu tabs={tabs} controller={menu} actions={actions} activeId={activeId} />
     </div>
   )
 }

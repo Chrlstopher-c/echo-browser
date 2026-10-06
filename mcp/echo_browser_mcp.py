@@ -90,6 +90,13 @@ async def browser_activate(id: int) -> str:
 
 
 @server.tool()
+async def browser_sleep(id: int) -> str:
+    """Endort un onglet inactif pour liberer sa memoire (refuse pour l'onglet actif ou qui joue du son)."""
+    await _call(op="sleep", id=id)
+    return "ok"
+
+
+@server.tool()
 async def browser_close(id: int) -> str:
     """Ferme un onglet."""
     await _call(op="close", id=id)
