@@ -41,6 +41,7 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `core/shell/src/bridge/context.rs` — le menu contextuel — ce que le clic droit ouvre, et ce qu'il declenche.
 - `core/shell/src/bridge/extensions.rs` — les demandes de l'interface qui touchent aux extensions —
 - `core/shell/src/bridge/library.rs` — les demandes qui touchent la bibliotheque, et ce qu'elle renvoie.
+- `core/shell/src/bridge/lifecycle.rs` — la vie des onglets — ouverture (dans un conteneur ou non), selection, veille, reveil,
 - `core/shell/src/bridge/mod.rs` — le canal entre l'interface et le coeur, dans les deux sens.
 - `core/shell/src/bridge/navigation.rs` — la navigation demandee par l'interface ou le clavier — onglets
 - `core/shell/src/bridge/publish.rs` — ce que le coeur pousse vers l'interface — etat de depart, onglets,
@@ -90,6 +91,7 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `start.sh`
 - `stop.sh`
 - `tools/bench-ram.sh`
+- `tools/bench-video.sh`
 - `tools/build-resources.mjs`
 - `tools/fetch-cef.sh`
 - `tools/gen-arborescence.py`
