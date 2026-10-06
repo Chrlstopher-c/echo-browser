@@ -53,6 +53,11 @@ wrap_browser_process_handler! {
             {
                 window::restore_accent(&shell);
             }
+            // La coupure globale du bouclier survit aux relances.
+            let shield_on = !echo_library::settings::all(&library)
+                .into_iter()
+                .any(|(key, value)| key == "shield.enabled" && value == echo_library::settings::Value::Flag(false));
+            shield.set_enabled(shield_on);
             let chrome_view = window::create_chrome_view(client.as_mut(), &url);
             let mut tabs = crate::tabs::Tabs::default();
             let host = tabs.host();

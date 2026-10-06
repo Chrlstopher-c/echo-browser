@@ -52,6 +52,7 @@ pub fn defaults() -> Vec<(&'static str, Value)> {
         ("tabs.sleepEnabled", Value::Flag(true)),
         ("tabs.sleepAfterMinutes", Value::Number(5.0)),
         ("tabs.folders", Value::Text("[]".into())),
+        ("tabs.containers", Value::Text("[]".into())),
         ("tabs.neverSleep", Value::Text(NEVER_SLEEP.into())),
     ]
 }
@@ -100,4 +101,17 @@ pub fn set(library: &Library, key: &str, value: &Value) -> Result<(), String> {
         })
         .map(|_| ())
         .ok_or_else(|| "enregistrement impossible".to_string())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn reglages_ecrits_par_l_interface_existent() {
+        // L'interface ecrit ces cles elle-meme (dossiers, conteneurs, sites eveilles) : absentes, la creation echoue.
+        for key in ["tabs.folders", "tabs.containers", "tabs.neverSleep", "shield.enabled"] {
+            assert!(defaults().iter().any(|(k, _)| *k == key), "reglage manquant : {key}");
+        }
+    }
 }

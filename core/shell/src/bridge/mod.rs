@@ -92,13 +92,18 @@ fn apply(request: UiRequest) {
             publish_shield();
         }
         UiRequest::SetShieldEnabled { enabled } => {
-            session::with(|s| s.shield.set_enabled(enabled));
+            session::with(|s| {
+                s.shield.set_enabled(enabled);
+                let _ = echo_library::settings::set(&s.library, "shield.enabled", &echo_library::settings::Value::Flag(enabled));
+            });
             publish_shield();
+            reload_active();
         }
         UiRequest::ToggleShieldForSite { .. } => {
             let url = current_url();
             session::with(|s| s.shield.toggle_site(&url));
             publish_shield();
+            reload_active();
         }
         UiRequest::NewTab { url, container } => {
             let target = url.map(|u| normalize(&u)).unwrap_or_else(|| search::HOME.to_string());
@@ -307,5 +312,14 @@ pub fn publish(event: &CoreEvent) {
     match frame {
         Some(frame) => frame.execute_java_script(Some(&CefString::from(script.as_str())), None, 0),
         None => debug!("interface pas encore prete, evenement perdu"),
+    }
+}
+
+/// Recharge la page affichee : un changement du bouclier ne vaut qu'au prochain chargement.
+fn reload_active() {
+    let browser = session::with(|s| s.tabs.active().and_then(|tab| tab.browser())).flatten();
+    // Sans cache : une ressource deja chargee reviendrait de la memoire sans repasser par le bouclier.
+    if let Some(browser) = browser {
+        browser.reload_ignore_cache();
     }
 }

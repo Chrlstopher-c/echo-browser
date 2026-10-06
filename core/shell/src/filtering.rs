@@ -61,7 +61,7 @@ wrap_resource_request_handler! {
 
         fn on_before_resource_load(
             &self,
-            _browser: Option<&mut Browser>,
+            browser: Option<&mut Browser>,
             frame: Option<&mut Frame>,
             request: Option<&mut Request>,
             _callback: Option<&mut Callback>,
@@ -69,6 +69,15 @@ wrap_resource_request_handler! {
             let Some(request) = request else { return ReturnValue::CONTINUE };
             let url = CefString::from(&request.url()).to_string();
             if est_interne(&url) {
+                return ReturnValue::CONTINUE;
+            }
+            // Un site mis en exception l'est entierement, cadres externes compris (lecteur, paiement, connexion).
+            let top = browser
+                .and_then(|b| b.main_frame())
+                .map(|f| CefString::from(&f.url()).to_string())
+                .unwrap_or_default();
+            if !top.is_empty() && !self.shield.is_active_for(&top) {
+                crate::identity::apply(request);
                 return ReturnValue::CONTINUE;
             }
             let source = frame
