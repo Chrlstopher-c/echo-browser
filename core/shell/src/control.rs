@@ -132,7 +132,11 @@ fn run(job: Job) {
         Some("activate") => with_id(&request, &reply, crate::bridge::select_tab),
         Some("close") => with_id(&request, &reply, crate::bridge::close_tab),
         Some("sleep") => with_id(&request, &reply, crate::bridge::sleep_tab),
-        _ => fail(&reply, "operation inconnue : tabs, read, open, navigate, activate, sleep, close"),
+        Some("click") => click(&request, &reply),
+        Some("menu") => {
+            let _ = reply.send(json!({"ok": true, "open": crate::overlay::menu_open()}));
+        }
+        _ => fail(&reply, "operation inconnue : tabs, read, open, navigate, activate, sleep, close, click, menu"),
     }
 }
 
@@ -175,6 +179,23 @@ fn with_id(request: &Value, reply: &Sender<Value>, action: fn(u32)) {
         }
         None => fail(reply, "id requis"),
     }
+}
+
+/// Clic simule dans la page active (x, y dans la page ; `button` : left, right) : sert aux essais.
+fn click(request: &Value, reply: &Sender<Value>) {
+    use cef::{ImplBrowser, ImplBrowserHost, MouseButtonType, MouseEvent};
+    let coord = |key: &str| request.get(key).and_then(Value::as_i64).and_then(|v| i32::try_from(v).ok()).unwrap_or(0);
+    let button = match request.get("button").and_then(Value::as_str) {
+        Some("right") => MouseButtonType::from(cef::sys::cef_mouse_button_type_t::MBT_RIGHT),
+        _ => MouseButtonType::from(cef::sys::cef_mouse_button_type_t::MBT_LEFT),
+    };
+    let browser = crate::session::with(|s| s.tabs.active().and_then(|tab| tab.browser())).flatten();
+    let Some(host) = browser.and_then(|b| b.host()) else { return fail(reply, "aucune page active") };
+    let event = MouseEvent { x: coord("x"), y: coord("y"), modifiers: 0 };
+    host.send_mouse_move_event(Some(&event), 0);
+    host.send_mouse_click_event(Some(&event), button, 0, 1);
+    host.send_mouse_click_event(Some(&event), button, 1, 1);
+    let _ = reply.send(json!({"ok": true}));
 }
 
 /// Le texte visible d'un onglet (l'actif par defaut). L'onglet endormi n'a pas de page a lire.

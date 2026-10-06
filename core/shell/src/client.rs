@@ -246,7 +246,7 @@ wrap_context_menu_handler! {
     }
 
     impl ContextMenuHandler {
-        /// Vide le modele de Chromium. Sans cela, son menu s'ouvrirait par-dessus le notre.
+        /// Laisse le modele de Chromium intact : `run_context_menu` le remplace par notre menu.
         fn on_before_context_menu(
             &self,
             _browser: Option<&mut Browser>,
@@ -254,9 +254,8 @@ wrap_context_menu_handler! {
             _params: Option<&mut ContextMenuParams>,
             model: Option<&mut MenuModel>,
         ) {
-            if let Some(model) = model {
-                model.clear();
-            }
+            // Ne pas vider le modele : sans entree, Chromium n'appelle plus `run_context_menu`.
+            let _ = model;
         }
 
         /// Prend la main sur l'affichage. Rendre 1 dit a Chromium que le menu est a nous.
