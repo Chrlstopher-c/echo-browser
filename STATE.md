@@ -58,6 +58,22 @@
 - Le cœur retient la teinte de la fenêtre (`appearance.shell`) : fenêtre et angles de page justes dès le démarrage.
   Une page déjà ouverte garde l'ancienne teinte dans ses angles jusqu'au rechargement.
 
+
+## Session et robustesse (06/10 soir)
+- **Session** : `persist.rs` enregistre les onglets (historique, position, épinglé, titre, icône) dans `last-session.json`, 1,2 s après
+  chaque changement et avant toute fermeture ; au démarrage `app.rs::restore_or_open` les restitue — seul l'actif est chargé, les
+  autres sont **endormis** (démarrage rapide, RAM sobre). Réglage `session.restore` (actif). Une relance voulue (`restart.rs`) reprend tout en direct.
+- **Fermeture** : `can_close` renvoie 1 après `persist::flush` — toute demande de fermeture de la fenêtre ferme l'application entière.
+  (Avant : seule la vue de l'interface se fermait, laissant un fond gris.) Essai `hyprctl dispatch closewindow` : voir EPICS E6.S8.
+- **Tests isolés** : `ECHO_RUN_DIR` (pid + journal) et `ECHO_CONTROL_NAME` (prise) — ne jamais lancer `./stop.sh` par défaut pendant que
+  l'utilisateur utilise le navigateur ; mes tests ont tué son instance le 06/10 et lui ont fait perdre ses onglets.
+- **Identité** (`identity.rs`) : en-têtes `sec-ch-ua*` ET `navigator.userAgentData` (CDP `Emulation.setUserAgentOverride` à chaque
+  navigateur créé) annoncent Chrome 154.0.8037.94 avec la marque « Google Chrome » ; `platformVersion` vide comme Chrome Linux.
+- **Angles** : `roundness.rs` pose 4 masques de coin (div fixes) dans chaque page, couleur = teinte de la fenêtre, recolorés à chaud
+  par `window.__echoCorners` à chaque `setAccent`. Remplace le `clip-path` (qui laissait la teinte de création de la vue).
+- **Barre repliée** : l'espaceur est animé (`DOCK_NOW` → `target_dock`, tick de 16 ms) et la page est repoussée, pas recouverte.
+- **Favicons** : `on_favicon_urlchange` → `Tab.favicon` → `TabView.favicon` (CSP UI : `img-src` https: et http:).
+
 ## Pilotage par outil (06/10)
 - Prise Unix `$XDG_RUNTIME_DIR/echo-browser/control.sock` (dossier 0700, prise 0600, `ECHO_CONTROL=0` la coupe) :
   une ligne JSON par demande — `tabs`, `read`, `open`, `navigate`, `activate`, `close`. Aucun port TCP.
