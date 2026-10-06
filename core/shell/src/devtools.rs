@@ -11,14 +11,26 @@ use std::cell::RefCell;
 use std::io::{Read, Write};
 use std::net::{Ipv4Addr, TcpListener, TcpStream};
 use std::sync::OnceLock;
+use std::sync::atomic::{AtomicI32, Ordering};
 use tracing::{info, warn};
 
-/// Largeur du panneau, en pixels.
-const PANEL_WIDTH: i32 = 560;
+/// Largeur du panneau, en pixels, reglable a la poignee.
+static WIDTH: AtomicI32 = AtomicI32::new(560);
+const MIN_WIDTH: i32 = 300;
+/// Place minimale laissee a la page quand on elargit les outils.
+const MIN_PAGE: i32 = 320;
+const BAR_HEIGHT: i32 = 30;
+const GRIP_WIDTH: i32 = 10;
+
+/// Le panneau ancre : son conteneur (barre + outils), les identifiants de ses navigateurs, la poignee.
+struct Docked {
+    container: Panel,
+    browsers: Vec<i32>,
+    grip: Option<crate::overlay::Overlay>,
+}
 
 thread_local! {
-    /// La vue des outils ancree, et l'identifiant de son navigateur.
-    static DOCKED: RefCell<Option<(BrowserView, i32)>> = const { RefCell::new(None) };
+    static DOCKED: RefCell<Option<Docked>> = const { RefCell::new(None) };
 }
 
 wrap_browser_view_delegate! {
@@ -28,7 +40,7 @@ wrap_browser_view_delegate! {
 
     impl ViewDelegate {
         fn preferred_size(&self, _view: Option<&mut View>) -> Size {
-            Size { width: PANEL_WIDTH, height: 600 }
+            Size { width: WIDTH.load(Ordering::Relaxed), height: 600 }
         }
     }
 
@@ -94,20 +106,61 @@ pub fn open_for_active() {
     });
 }
 
-fn create_and_dock(frontend: &str) {
-    let mut client = crate::session::with(|s| s.client.clone()).flatten();
-    let mut delegate = DevToolsDelegate::new(());
-    let view = browser_view_create(
-        client.as_mut(),
-        Some(&CefString::from(frontend)),
-        Some(&BrowserSettings::default()),
-        None,
-        None,
-        Some(&mut delegate),
-    );
-    if let Some(view) = view {
-        dock(view);
+wrap_panel_delegate! {
+    struct ContainerDelegate {
+        marker: (),
     }
+
+    impl ViewDelegate {
+        fn preferred_size(&self, _view: Option<&mut View>) -> Size {
+            Size { width: WIDTH.load(Ordering::Relaxed), height: 600 }
+        }
+    }
+
+    impl PanelDelegate {}
+}
+
+wrap_browser_view_delegate! {
+    struct BarDelegate {
+        marker: (),
+    }
+
+    impl ViewDelegate {
+        fn preferred_size(&self, _view: Option<&mut View>) -> Size {
+            Size { width: WIDTH.load(Ordering::Relaxed), height: BAR_HEIGHT }
+        }
+    }
+
+    impl BrowserViewDelegate {
+        fn browser_runtime_style(&self) -> RuntimeStyle {
+            RuntimeStyle::ALLOY
+        }
+    }
+}
+
+fn browser_view(url: &str, delegate: &mut BrowserViewDelegate) -> Option<BrowserView> {
+    let mut client = crate::session::with(|s| s.client.clone()).flatten();
+    browser_view_create(client.as_mut(), Some(&CefString::from(url)), Some(&BrowserSettings::default()), None, None, Some(delegate))
+}
+
+fn create_and_dock(frontend: &str) {
+    let (Some(bar), Some(tools)) = (
+        browser_view("echo://ui/outils-barre.html", &mut BarDelegate::new(())),
+        browser_view(frontend, &mut DevToolsDelegate::new(())),
+    ) else {
+        return warn!("vues des outils de developpement non creees");
+    };
+    let Some(container) = panel_create(Some(&mut ContainerDelegate::new(()))) else { return };
+    let settings = BoxLayoutSettings { horizontal: 0, cross_axis_alignment: AxisAlignment::STRETCH, ..Default::default() };
+    let layout = container.set_to_box_layout(Some(&settings));
+    container.add_child_view(Some(&mut View::from(&bar)));
+    let mut tools_view = View::from(&tools);
+    container.add_child_view(Some(&mut tools_view));
+    if let Some(layout) = layout {
+        layout.set_flex_for_view(Some(&mut tools_view), 1);
+    }
+    let browsers = [&bar, &tools].iter().filter_map(|v| v.browser()).map(|b| b.identifier()).collect();
+    dock(container, browsers);
 }
 
 fn window() -> Option<Window> {
@@ -115,27 +168,68 @@ fn window() -> Option<Window> {
     View::from(&chrome).window()
 }
 
-/// Pose la vue des outils a droite de la page. Faux si la fenetre est introuvable.
-pub fn dock(view: BrowserView) -> bool {
+fn dock(container: Panel, browsers: Vec<i32>) {
     undock();
-    let Some(window) = window() else { return false };
-    let id = view.browser().map(|b| b.identifier()).unwrap_or(-1);
-    let mut as_view = View::from(&view);
+    let Some(window) = window() else { return };
+    let mut as_view = View::from(&container);
     window.add_child_view(Some(&mut as_view));
     if let Some(layout) = window.get_layout().and_then(|l| l.as_box_layout()) {
         layout.set_flex_for_view(Some(&mut as_view), 0);
     }
-    View::from(&window).invalidate_layout();
-    DOCKED.with(|slot| *slot.borrow_mut() = Some((view, id)));
+    window.layout();
+    DOCKED.with(|slot| *slot.borrow_mut() = Some(Docked { container, browsers, grip: None }));
+    place();
     info!("outils de developpement ancres dans la fenetre");
-    true
+}
+
+/// Pose la poignee dans l'espace entre la page et les outils. A rappeler a chaque disposition.
+pub fn place() {
+    let Some(bounds) = DOCKED.with(|slot| slot.borrow().as_ref().map(|d| View::from(&d.container).bounds())) else {
+        return;
+    };
+    let rect = Rect { x: bounds.x - GRIP_WIDTH, y: bounds.y, width: GRIP_WIDTH, height: bounds.height };
+    let has_grip = DOCKED.with(|slot| slot.borrow().as_ref().is_some_and(|d| d.grip.is_some()));
+    if has_grip {
+        DOCKED.with(|slot| {
+            if let Some(grip) = slot.borrow().as_ref().and_then(|d| d.grip.as_ref()) {
+                grip.set_bounds(rect);
+            }
+        });
+        return;
+    }
+    let Some(chrome) = crate::session::with(|s| s.chrome.clone()).flatten() else { return };
+    let grip = crate::overlay::Overlay::open(&chrome, "echo://ui/outils-poignee.html", rect);
+    DOCKED.with(|slot| {
+        if let Some(docked) = slot.borrow_mut().as_mut() {
+            docked.grip = grip;
+        }
+    });
+}
+
+/// La poignee a ete tiree de `dx` pixels (vers la gauche : negatif, le panneau s'elargit).
+pub fn resize(dx: i32) {
+    let Some(window) = window() else { return };
+    let available = View::from(&window).bounds().width;
+    let max = (available - MIN_PAGE).max(MIN_WIDTH);
+    let next = (WIDTH.load(Ordering::Relaxed) - dx).clamp(MIN_WIDTH, max);
+    WIDTH.store(next, Ordering::Relaxed);
+    DOCKED.with(|slot| {
+        if let Some(docked) = slot.borrow().as_ref() {
+            View::from(&docked.container).invalidate_layout();
+        }
+    });
+    window.layout();
+    place();
 }
 
 /// Retire le panneau des outils, s'il est ouvert.
 pub fn undock() {
-    let Some((view, _)) = DOCKED.with(|slot| slot.borrow_mut().take()) else { return };
+    let Some(docked) = DOCKED.with(|slot| slot.borrow_mut().take()) else { return };
+    if let Some(grip) = docked.grip {
+        grip.close();
+    }
     if let Some(window) = window() {
-        window.remove_child_view(Some(&mut View::from(&view)));
+        window.remove_child_view(Some(&mut View::from(&docked.container)));
         View::from(&window).invalidate_layout();
     }
 }
@@ -144,7 +238,7 @@ pub fn is_open() -> bool {
     DOCKED.with(|slot| slot.borrow().is_some())
 }
 
-/// Vrai si ce navigateur est celui des outils : sa fermeture ne concerne pas la fenetre.
+/// Vrai si ce navigateur appartient au panneau : sa fermeture ne concerne pas la fenetre.
 pub fn owns(browser_id: i32) -> bool {
-    DOCKED.with(|slot| slot.borrow().as_ref().is_some_and(|(_, id)| *id == browser_id))
+    DOCKED.with(|slot| slot.borrow().as_ref().is_some_and(|d| d.browsers.contains(&browser_id)))
 }

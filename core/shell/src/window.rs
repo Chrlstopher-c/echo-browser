@@ -255,6 +255,7 @@ wrap_window_delegate! {
         fn on_layout_changed(&self, view: Option<&mut View>, _new_bounds: Option<&Rect>) {
             if let Some(window) = view.and_then(|view| view.window()) {
                 place_chrome(&window);
+                crate::devtools::place();
             }
         }
     }

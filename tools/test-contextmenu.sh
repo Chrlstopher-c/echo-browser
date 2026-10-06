@@ -39,7 +39,10 @@ assert not call(op="devtools_open")["open"], "F12 : devtools non refermes"
 assert call(op="tabs")["ok"] and len(windows()) == 1, "fermer les devtools a ferme Echo"
 call(op="devtools"); time.sleep(3)
 assert call(op="devtools_open")["open"], "reouverture des devtools"
-call(op="devtools"); time.sleep(1)
+call(op="ui", request={"kind": "resizeDevTools", "dx": 150}); time.sleep(1)
+call(op="ui", request={"kind": "closeDevTools"}); time.sleep(1)
+assert not call(op="devtools_open")["open"], "la croix ne referme pas les devtools"
+assert call(op="tabs")["ok"] and len(windows()) == 1, "la croix a ferme Echo"
 call(op="click", x=300, y=200, button="right"); time.sleep(1)
 call(op="ui", request={"kind": "runContextMenu", "action": "viewSource"}); time.sleep(2)
 src = [t for t in call(op="tabs")["tabs"] if t["title"].startswith("view-source:")]

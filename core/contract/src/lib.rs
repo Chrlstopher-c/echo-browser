@@ -35,6 +35,10 @@ pub enum UiRequest {
     /// Facteur de zoom de la page, 1.0 etant la taille naturelle.
     SetZoom { id: TabId, factor: f32 },
     OpenDevTools { id: TabId },
+    /// Referme les outils de developpement ancres (croix de leur barre).
+    CloseDevTools,
+    /// La poignee entre la page et les outils a ete tiree de `dx` pixels.
+    ResizeDevTools { dx: i32 },
     /// Ouvre le terminal de Claude Code, ou y revient s'il est deja ouvert.
     OpenTerminal,
     /// Oublie une decision de permission retenue : la question sera reposee.

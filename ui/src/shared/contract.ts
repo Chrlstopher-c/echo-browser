@@ -13,6 +13,10 @@ export type UiRequest =
   | { kind: 'closeTab'; id: TabId }
   /** Reveille d'avance un onglet endormi que la souris survole. */
   | { kind: 'warmTab'; id: TabId }
+  /** Referme les outils de developpement ancres. */
+  | { kind: 'closeDevTools' }
+  /** La poignee des outils a ete tiree de `dx` pixels. */
+  | { kind: 'resizeDevTools'; dx: number }
   | { kind: 'sleepTab'; id: TabId }
   | { kind: 'selectTab'; id: TabId }
   /** Deplace un onglet a une nouvelle position dans la liste. */

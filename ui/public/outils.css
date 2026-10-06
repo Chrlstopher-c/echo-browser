@@ -1,0 +1,16 @@
+:root { --shell: #222326; --ink: #ebeced; --ink-muted: #a3a6ae; --ink-faint: #6c707a; --hover: #27282c; --tint: #8f96a3; }
+html, body { margin: 0; height: 100%; overflow: hidden; background: var(--shell); color: var(--ink); }
+body.barre {
+  display: flex; align-items: center; justify-content: space-between; padding: 0 6px 0 12px; box-sizing: border-box;
+  font: 500 11.5px/1 'Instrument Sans', system-ui, sans-serif; letter-spacing: 0.02em;
+}
+.titre { color: var(--ink-muted); }
+button {
+  display: grid; place-items: center; width: 22px; height: 22px; border: 0; border-radius: 7px;
+  background: transparent; color: var(--ink-muted); cursor: pointer;
+}
+button:hover { background: var(--hover); color: var(--ink); }
+button svg path { stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; fill: none; }
+body.poignee { background: transparent; cursor: col-resize; display: grid; place-items: center; }
+.trait { width: 3px; height: 36px; border-radius: 2px; background: var(--ink-faint); opacity: 0.35; transition: opacity 120ms; }
+body.poignee:hover .trait, body.poignee.actif .trait { opacity: 0.9; background: var(--tint); }

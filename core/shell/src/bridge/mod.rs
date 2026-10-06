@@ -112,6 +112,8 @@ fn apply(request: UiRequest) {
         }
         UiRequest::SetTabContainer { id, container } => move_to_container(id, container),
         UiRequest::WarmTab { id } => warm_tab(id),
+        UiRequest::CloseDevTools => crate::devtools::undock(),
+        UiRequest::ResizeDevTools { dx } => crate::devtools::resize(dx),
         UiRequest::OpenDevTools { .. } => {
             if !crate::devtools::is_open() {
                 crate::devtools::open_for_active();
@@ -244,7 +246,6 @@ fn apply(request: UiRequest) {
             session::with(|s| s.tabs.move_to(id, to));
             publish_tabs();
         }
-        other => debug!(?other, "demande pas encore traitee"),
     }
 }
 
