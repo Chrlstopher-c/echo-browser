@@ -61,9 +61,12 @@ export function TabMark({ tab, size }: TabMarkProps): ReactElement {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0, scale: 1.25 }}
             transition={QUICK}
-            className="absolute inset-0 grid place-items-center text-guard"
+            // Anneau plus grand que l'icone : un centrage par grille le decale (debordement aligne a gauche).
+            // On le pose donc en retrait negatif egal de chaque cote.
+            style={{ inset: -(ringSize - size) / 2 }}
+            className="absolute text-guard"
           >
-            <ProgressRing progress={tab.progress} size={ringSize} stroke={1.5} />
+            <ProgressRing progress={tab.progress} size={ringSize} stroke={1.5} className="block" />
           </motion.span>
         )}
         {tab.asleep && <SleepBadge key="lune" size={Math.round(size * 0.62)} />}
