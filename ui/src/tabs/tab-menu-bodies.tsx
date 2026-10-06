@@ -60,7 +60,7 @@ function FolderItems({ tab, folders, close }: FolderItemsProps): ReactElement {
         <MenuItem icon={<IconFolder size={13} />} label="Sortir du dossier"
           onClick={run(() => folders.assign(tab.id, null))} />
       )}
-      <MenuItem icon={<IconPlus size={13} />} label="Nouveau dossier avec cet onglet"
+      <MenuItem icon={<IconPlus size={13} />} label="Dossier avec cet onglet"
         onClick={run(() => folders.create(undefined, tab.id))} />
     </>
   )
@@ -93,7 +93,7 @@ function ContainerItems({ tab, containers, close }: ContainerItemsProps): ReactE
         <MenuItem icon={<IconUser size={13} />} label="Rouvrir hors conteneur"
           onClick={run(() => containers.moveTab(tab.id, null))} />
       )}
-      <MenuItem icon={<IconUser size={13} />} label="Nouveau conteneur avec cet onglet"
+      <MenuItem icon={<IconUser size={13} />} label="Conteneur avec cet onglet"
         onClick={run(() => containers.create(tab.id))} />
     </>
   )
