@@ -25,6 +25,8 @@ function SheetBody({ model }: { model: SidebarModel }): ReactElement | null {
         onForgetGrant={(origin, permission) => core.send({ kind: 'forgetPermission', origin, permission })}
         codecs={core.state.codecs}
         onCodecs={(action) => core.send(videoRequest(action))}
+        update={core.state.update}
+        onCheckUpdate={() => core.send({ kind: 'checkForUpdates' })}
         onDevTools={model.tabs.devTools} />
     case null:
       return null

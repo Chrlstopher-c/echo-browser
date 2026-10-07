@@ -60,6 +60,8 @@ function Content({ page }: { page: PageId }): ReactElement {
       onForgetGrant={(origin, permission) => send({ kind: 'forgetPermission', origin, permission })}
         codecs={state.codecs}
         onCodecs={(action) => send(videoRequest(action))}
+        update={state.update}
+        onCheckUpdate={() => send({ kind: 'checkForUpdates' })}
       onDevTools={() => send({ kind: 'openDevTools', id: state.activeId ?? 0 })}
     />
   )

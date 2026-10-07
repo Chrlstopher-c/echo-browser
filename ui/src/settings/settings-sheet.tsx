@@ -8,7 +8,8 @@ import { SectionLabel } from '../shared/design/section-label'
 import { SpacePicker } from '../spaces/space-picker'
 import { readStoredScheme, type SpaceController } from '../spaces/use-space'
 import type { ContainerActions } from '../tabs/use-containers'
-import type { PermissionGrantView, VideoCodecsView } from '../shared/contract'
+import type { PermissionGrantView, UpdateView, VideoCodecsView } from '../shared/contract'
+import { AboutSection } from './about-section'
 import { ContainersSection } from './containers-section'
 import { ProfilesSection } from './profiles-section'
 import type { ProfileNames } from '../spaces/use-profile-names'
@@ -27,6 +28,8 @@ export interface SettingsSheetProps {
   onForgetGrant: (origin: string, permission: string) => void
   codecs: VideoCodecsView | null
   onCodecs: (action: VideoAction) => void
+  update: UpdateView | null
+  onCheckUpdate: () => void
   onDevTools: () => void
 }
 
@@ -67,6 +70,7 @@ function CoreSections({ settings }: { settings: SettingsController }): ReactElem
 
 export function SettingsSheet(props: SettingsSheetProps): ReactElement {
   const { settings, space, containers, profiles, grants, onForgetGrant, codecs, onCodecs, onDevTools } = props
+  const { update, onCheckUpdate } = props
   return (
     <div className="flex flex-col gap-3">
       {space !== undefined && <AppearanceSection space={space} />}
@@ -75,6 +79,7 @@ export function SettingsSheet(props: SettingsSheetProps): ReactElement {
       <GrantsSection grants={grants} onForget={onForgetGrant} />
       {codecs !== null && <VideoSection view={codecs} onAction={onCodecs} />}
       <CoreSections settings={settings} />
+      {update !== null && <AboutSection update={update} onCheck={onCheckUpdate} />}
       <section>
         <SectionLabel>Outils</SectionLabel>
         <ListRow onClick={onDevTools}>

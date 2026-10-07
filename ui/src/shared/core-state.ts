@@ -13,6 +13,7 @@ import type {
   ShieldView,
   TabId,
   TabView,
+  UpdateView,
   VideoCodecsView,
 } from './contract'
 
@@ -53,6 +54,8 @@ export interface CoreState {
   grants: PermissionGrantView[]
   /** Decodeur video complet (H.264/AAC), null tant que le coeur n'a rien dit. */
   codecs: VideoCodecsView | null
+  /** Mise a jour de la version installee, null tant que le coeur n'a rien dit. */
+  update: UpdateView | null
 }
 
 export interface PermissionRequest {
@@ -82,6 +85,7 @@ export const EMPTY_CORE_STATE: CoreState = {
   permissions: [],
   grants: [],
   codecs: null,
+  update: null,
 }
 
 function withShield(state: CoreState, id: TabId, view: ShieldView): CoreState {
@@ -156,6 +160,8 @@ export function reduceCore(state: CoreState, event: CoreEvent): CoreState {
       return reducePermissions(state, event)
     case 'videoCodecsChanged':
       return { ...state, codecs: event.codecs }
+    case 'updateChanged':
+      return { ...state, update: event.update }
   }
 }
 

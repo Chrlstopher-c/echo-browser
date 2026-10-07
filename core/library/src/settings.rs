@@ -57,6 +57,7 @@ pub fn defaults() -> Vec<(&'static str, Value)> {
         ("tabs.neverSleep", Value::Text(NEVER_SLEEP.into())),
         ("devtools.width", Value::Number(560.0)),
         ("video.codecsPrompt", Value::Flag(true)),
+        ("updates.auto", Value::Flag(true)),
     ]
 }
 

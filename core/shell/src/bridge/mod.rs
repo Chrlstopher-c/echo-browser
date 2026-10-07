@@ -209,6 +209,7 @@ fn apply(request: UiRequest) {
         UiRequest::InstallVideoCodecs => crate::codecs::install(),
         UiRequest::RemoveVideoCodecs => crate::codecs::remove(),
         UiRequest::DismissVideoCodecs { forever } => crate::codecs::dismiss(forever),
+        UiRequest::CheckForUpdates => crate::update::check(true),
 
         UiRequest::AddBookmark { id } => library::add_bookmark(id),
         UiRequest::RemoveBookmark { url } => library::remove_bookmark(&url),

@@ -54,3 +54,25 @@
 - [x] E6.S14 — MÉMOIRE RADICALE : battre Chrome, Firefox, Zen. Mesurer par processus, essayer : `--process-per-site`, isolation de site réduite, GPU et réseau dans le processus principal, `MALLOC_ARENA_MAX`, drapeaux V8, désactiver les sous-systèmes inutiles ; hibernation plus fine (délai court, défilement restauré) ; « micro-fichiers » : tout ce qui peut sortir de la RAM (état des onglets endormis sur disque) — VERIFY: `tools/bench-ram.sh` avant/après, 10 pages et repos, vs Chrome
 - [x] E6.S15 — Démarrage rapide : temps jusqu'à la première page mesuré, < 3 s — VERIFY: horodatages du journal
 - [ ] E6.S16 — Décodeur H.264/AAC : build CEF avec `proprietary_codecs=true ffmpeg_branding=Chrome` (voir TODO « Build CEF avec codecs ») — VERIFY: `canPlayType('video/mp4; codecs="avc1.42E01E"')` ≠ ""
+
+## E7 — Mise à jour automatique (demande de Chris, 08/10)
+- S1 Echo installé (`~/.local/opt/echo-browser`, marqueur `release.json`) interroge au démarrage puis toutes les 6 h la
+  dernière release GitHub ; version plus récente → état « disponible ». Jamais pour la version de développement.
+  Critère : faux serveur (`ECHO_UPDATE_URL`) annonçant une version plus haute → état disponible ; égale → rien.
+- S2 Téléchargement en arrière-plan, empreinte SHA-256 vérifiée (fichier `.sha256` de la release), extraction dans
+  `~/.local/opt/echo-browser.maj`. Critère : archive altérée → refusée, rien n'est préparé.
+- S3 Bandeau « Echo x.y prêt → Redémarrer » ; au redémarrage, le lanceur bascule les dossiers (l'ancien gardé en
+  `.precedent`) ; si la nouvelle version ne démarre pas, retour à l'ancienne. Critère : après redémarrage, version = x.y,
+  onglets gardés.
+- S4 Réglages → À propos : version, « Vérifier maintenant », mise à jour automatique oui/non.
+
+## E8 — Compte Echo synchronisé (idée de Chris, 08/10)
+- S1 Service gratuit Cloudflare (Worker + D1) : inscription, connexion, jetons de session. Adresse hors dépôt public
+  (`.env.local`, injectée à la fabrication de l'archive). Critère : inscription puis connexion depuis un autre poste.
+- S2 Chiffrement de bout en bout : clé dérivée du mot de passe sur la machine (PBKDF2), séparée en clé d'accès (envoyée,
+  hachée côté serveur) et clé de chiffrement (jamais envoyée) ; données en AES-256-GCM. Critère : le serveur ne stocke
+  aucune donnée lisible.
+- S3 Synchro : réglages, noms de profils, favoris, conteneurs, extensions par profil ; fusion simple (le plus récent
+  gagne, par type). Critère : deux instances, même compte, un favori ajouté sur l'une apparaît sur l'autre.
+- S4 Premier lancement façon Arc : présentation en quelques écrans, puis créer un compte / se connecter / passer.
+- S5 Réglages → Compte : état, synchroniser maintenant, se déconnecter.

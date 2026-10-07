@@ -149,7 +149,10 @@ pub fn requested() -> bool {
 pub fn relaunch() -> std::io::Error {
     use std::os::unix::process::CommandExt;
 
-    let program = std::env::current_exe().unwrap_or_else(|_| PathBuf::from("echo-browser"));
+    // Version installee : on repart par son lanceur, qui applique une mise a jour preparee.
+    let program = crate::update::launcher()
+        .or_else(|| std::env::current_exe().ok())
+        .unwrap_or_else(|| PathBuf::from("echo-browser"));
     let args: Vec<String> = std::env::args().skip(1).collect();
     info!(?program, ?args, "relance du navigateur");
     std::process::Command::new(program).args(args).exec()

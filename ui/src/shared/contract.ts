@@ -107,6 +107,9 @@ export type UiRequest =
   | { kind: 'removeVideoCodecs' }
   /** Ferme la proposition d'installation ; `forever` : ne plus jamais la faire. */
   | { kind: 'dismissVideoCodecs'; forever: boolean }
+  // --- Mise a jour ---
+  /** Verifie la derniere release et la prepare si elle est plus recente. */
+  | { kind: 'checkForUpdates' }
 
 /** Ce que le coeur renvoie a l'interface. */
 export type CoreEvent =
@@ -135,6 +138,25 @@ export type CoreEvent =
   /** Les decisions de permission retenues, par site. */
   | { kind: 'permissionsChanged'; grants: PermissionGrantView[] }
   | { kind: 'videoCodecsChanged'; codecs: VideoCodecsView }
+  | { kind: 'updateChanged'; update: UpdateView }
+
+/** Ou en est la mise a jour de la version installee. */
+export type UpdateStatus =
+  | 'unavailable'
+  | 'upToDate'
+  | 'checking'
+  | 'available'
+  | 'downloading'
+  | 'ready'
+  | 'failed'
+
+export interface UpdateView {
+  current: string
+  status: UpdateStatus
+  /** Derniere version publiee, quand elle est connue. */
+  latest: string | null
+  error: string | null
+}
 
 /** Ou en est le decodeur video complet (H.264/AAC). */
 export type VideoCodecsStatus =

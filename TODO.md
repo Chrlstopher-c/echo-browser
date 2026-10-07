@@ -204,3 +204,15 @@ debout à la première requête.
 - [ ] `ECHO_TERM_CMD` ne gère pas les guillemets (découpe sur les espaces)
 
 - [ ] Angles arrondis : pages en `color-scheme: dark` sans fond déclaré s'affichent en blanc (le fond par défaut est forcé) ; à traiter si ça se voit
+
+## Idée de Chris (08/10) : compte Echo + synchronisation
+Créer un compte Echo au premier lancement (pages de présentation façon Arc : suivant, suivant, créer un compte / se
+connecter), puis synchroniser entre machines : réglages, profils, favoris, historique, onglets, liste d'extensions par
+profil. Serveur gratuit : Cloudflare Worker (authentification) + D1 (SQLite, 5 Go gratuits) ou KV/R2 ; repli possible sur
+une base en ligne gratuite. À cadrer : chiffrement de bout en bout (clé dérivée du mot de passe, le serveur ne voit rien),
+ce qu'on synchronise (jamais les cookies en clair), adresse du Worker hors du dépôt public (.env). Après la mise à jour
+automatique.
+
+## Idées d'innovation (Chris, 08/10)
+Liste complète et avis de Chris : `IDEES.md`. Court terme selon lui : empreinte de comportements, mémoire de structure DOM,
+reprise de session exacte, tableau de bord réseau, bac à sable par domaine avec journal. À cadrer après E7/E8.

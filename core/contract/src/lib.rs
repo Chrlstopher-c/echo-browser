@@ -134,6 +134,10 @@ pub enum UiRequest {
     RemoveVideoCodecs,
     /// Ferme la proposition d'installation ; `forever` : ne plus jamais la faire.
     DismissVideoCodecs { forever: bool },
+
+    // --- Mise a jour ---
+    /// Verifie la derniere release et la prepare si elle est plus recente.
+    CheckForUpdates,
 }
 
 /// Ce que le coeur renvoie a l'interface.
@@ -168,6 +172,33 @@ pub enum CoreEvent {
     /// La question n'a plus lieu d'etre (repondue, ou page partie).
     PermissionResolved { id: u64 },
     VideoCodecsChanged { codecs: VideoCodecsView },
+    UpdateChanged { update: UpdateView },
+}
+
+/// Ou en est la mise a jour de la version installee.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum UpdateStatus {
+    /// Version de developpement : pas de mise a jour automatique.
+    Unavailable,
+    UpToDate,
+    Checking,
+    /// Plus recente, pas encore telechargee (mise a jour automatique coupee).
+    Available,
+    Downloading,
+    /// Preparee : appliquee au prochain demarrage.
+    Ready,
+    Failed,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct UpdateView {
+    pub current: String,
+    pub status: UpdateStatus,
+    /// Derniere version publiee, quand elle est connue.
+    pub latest: Option<String>,
+    pub error: Option<String>,
 }
 
 /// Ou en est le decodeur video complet (H.264/AAC).

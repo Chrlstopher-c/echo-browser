@@ -12,6 +12,7 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `BRIEF.md`
 - `Cargo.toml`
 - `EPICS.md`
+- `IDEES.md`
 - `README.md`
 - `STATE.md`
 - `TODO.md`
@@ -96,6 +97,10 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `core/shell/src/tabs.rs` — les onglets — creation, bascule, fermeture, et la vue qui leur sert de scene.
 - `core/shell/src/terminal.rs` — le terminal de Claude Code — la commande lancee, et les routes
 - `core/shell/src/transfers.rs` — suivre les telechargements de Chromium et les rendre a la bibliotheque.
+- `core/shell/src/update/apply.rs`
+- `core/shell/src/update/github.rs`
+- `core/shell/src/update/mod.rs`
+- `core/shell/src/update/stage.rs`
 - `core/shell/src/window.rs` — la fenetre du navigateur et la place respective de l'interface et du contenu.
 - `core/shield/Cargo.toml`
 - `core/shield/examples/rapport.rs`
@@ -148,6 +153,7 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `tools/test-sidebar-anim.sh`
 - `tools/test-sleep-scroll.sh`
 - `tools/test-trim-alive.sh`
+- `tools/test-update.sh`
 - `tools/test-warm.sh`
 - `ui/.gitignore`
 - `ui/README.md`
@@ -210,6 +216,7 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `ui/src/pages/use-page-theme.ts` — la page prend la teinte et le schema choisis dans la barre (stockage local partage),
 - `ui/src/restart/restart-screen.tsx` — ecran d'attente plein cadre pendant la relance du navigateur. Il vit quelques
 - `ui/src/restart/restart-strip.tsx` — bande de relance — propose le redemarrage sans l'imposer, jamais bloquante.
+- `ui/src/settings/about-section.tsx` — Reglages → A propos — version d'Echo, etat de la mise a jour, verification a la demande.
 - `ui/src/settings/containers-section.tsx` — conteneurs dans les reglages — nom et retrait ; l'ouverture se fait depuis la liste d'onglets.
 - `ui/src/settings/grants-section.tsx` — les autorisations retenues par site (camera, micro, position…) et leur retrait.
 - `ui/src/settings/profiles-section.tsx` — les profils dans les reglages — renommer chacun ; leur couleur est celle de leur pastille.
@@ -265,6 +272,7 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `ui/src/sidebar/sidebar-sheets.tsx` — choix de la feuille affichee sur la liste d'onglets.
 - `ui/src/sidebar/sidebar.tsx` — la barre laterale — toujours la colonne entiere. Repliee, le coeur la retire de la
 - `ui/src/sidebar/simulation-mark.tsx` — marqueur visible quand le faux coeur de developpement alimente l'interface.
+- `ui/src/sidebar/update-strip.tsx` — annoncer qu'une nouvelle version d'Echo est prete, et proposer le redemarrage qui l'applique.
 - `ui/src/sidebar/use-keyboard.ts` — raccourcis clavier quand la barre a le focus. Quand la page l'a, Chromium les
 - `ui/src/sidebar/use-reveal-on-hover.ts` — la barre repliee se cache quand la souris la quitte, apres un court delai
 - `ui/src/sidebar/use-sheet.ts` — feuille ouverte sur la liste d'onglets. Une seule a la fois ; Echap la ferme.

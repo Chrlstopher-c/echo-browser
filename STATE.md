@@ -59,6 +59,14 @@
   Une page déjà ouverte garde l'ancienne teinte dans ses angles jusqu'au rechargement.
 
 
+## Mise à jour automatique (0.5.0, 08/10)
+- `core/shell/src/update/` : archive installée reconnue par `release.json` (version + dépôt, écrit par package-release) ;
+  vérification 30 s après le démarrage puis toutes les 6 h (`ECHO_UPDATE_URL`, `ECHO_UPDATE_DELAY_S` pour les essais) ;
+  téléchargement en flux + SHA-256 (digest GitHub ET fichier `.sha256`, qui doivent concorder), extraction dans
+  `<installation>.maj` ; bandeau « prêt → Redémarrer ». La bascule et le retour en arrière sont dans le LANCEUR
+  (`echo-browser.sh`) : un binaire cassé ne peut pas revenir seul ; la relance interne passe par le lanceur.
+  Version courante = celle de `release.json`. Réglage `updates.auto`. Test : `tools/test-update.sh`.
+
 ## INCIDENT 08/10 : comptes déconnectés (corrigé)
 - Cause : sans `cache_path`, CEF (runtime Chrome) ouvre au démarrage le « dernier profil utilisé » de `Local State`
   (`profile.last_used`) ; une fenêtre Chrome d'extension ouverte dans un conteneur le change → au redémarrage, le contexte

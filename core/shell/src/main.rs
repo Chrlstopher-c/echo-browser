@@ -41,6 +41,7 @@ mod suggest;
 mod tabs;
 mod terminal;
 mod transfers;
+mod update;
 mod window;
 
 use cef::{api_hash, args::Args, execute_process, initialize, run_message_loop, shutdown, ImplCommandLine, Settings};

@@ -37,11 +37,34 @@ cp "$CEF"/locales/*.pak "$STAGE/cef/locales/"
 cp "$FFMPEG_LIBRE" "$STAGE/cef/libffmpeg.so"
 strip --strip-unneeded "$STAGE/cef/libcef.so" "$STAGE/cef/libffmpeg.so"
 
+# Marqueur de l'archive : sa version, et le depot ou chercher les suivantes (mise a jour automatique).
+REPO="$(git remote get-url origin | sed -E 's#(git@github.com:|https://github.com/)##; s#\.git$##')"
+printf '{"version":"%s","repo":"%s"}\n' "$VERSION" "$REPO" > "$STAGE/release.json"
+
 cat > "$STAGE/echo-browser.sh" <<'EOF'
 #!/usr/bin/env bash
 # Lance Echo Browser depuis ce dossier. Profil : ~/.local/share/echo-browser (ECHO_DATA_DIR pour le changer).
 # La commande `echo-browser` est un lien vers ce fichier : on suit le lien pour trouver le dossier.
 here="$(dirname "$(readlink -f "$0")")"
+parent="$(dirname "$here")"; name="$(basename "$here")"
+staged="$parent/$name.maj"; previous="$parent/$name.precedent"; trial="$here/.essai-demarrage"
+# Mise a jour preparee par Echo : bascule (l'ancienne version est gardee), la nouvelle est a l'essai.
+if [ -x "$staged/echo-browser" ] && [ -f "$staged/release.json" ]; then
+  rm -rf "$previous"
+  if mv "$here" "$previous" && mv "$staged" "$here"; then
+    echo 0 > "$here/.essai-demarrage"
+    exec "$here/echo-browser.sh" "$@"
+  fi
+fi
+# Une version a l'essai qui n'a pas demarre deux fois de suite : retour a la precedente.
+if [ -f "$trial" ]; then
+  tries=$(( $(cat "$trial" 2>/dev/null || echo 0) + 1 ))
+  if [ "$tries" -gt 2 ] && [ -x "$previous/echo-browser" ]; then
+    rm -rf "$parent/$name.echec"
+    mv "$here" "$parent/$name.echec" && mv "$previous" "$here" && exec "$here/echo-browser.sh" "$@"
+  fi
+  echo "$tries" > "$trial"
+fi
 export CEF_PATH="$here/cef"
 export LD_LIBRARY_PATH="$here/cef${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
 export ECHO_UI_DIR="$here/ui"
