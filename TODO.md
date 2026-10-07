@@ -11,6 +11,14 @@ Ordre voulu par Chris : angles → favicons → mémoire → décodeur vidéo. P
    (cookies isolés, persistés) · défilement restitué au réveil · purge V8 des onglets d'arrière-plan (-9 %) · démarrage 0,3 s.
 3. **Mémoire** : drapeaux Chromium testés, aucun > 4 % (voir STATE.md) ; le levier est la veille. Piste restante : état des onglets endormis
    sur disque (déjà : fiche + défilement), délai de veille plus court, extensions par conteneur.
+3b. **RETOURS DE CHRIS 07/10 après-midi (ordre de traitement)** :
+   1. Menu clic droit des pages : un clic gauche ailleurs le ferme ; un clic droit ailleurs ferme l'ancien et rouvre au nouvel endroit.
+   2. Téléchargements : ne fonctionnent pas (aucun système visible) — à réparer et vérifier de bout en bout.
+   3. Copier une image (et l'adresse d'une vidéo) au clic droit, pour coller directement ailleurs (Ctrl+V) sans télécharger.
+   4. **Profils façon Arc** : les points en bas de la barre (graphite, sable, rose…) ne changent que la couleur ; ils doivent être des
+      profils/espaces : chacun ses onglets (et ses comptes, via un conteneur), nom modifiable, couleur propre.
+   5. Pubs Twitch : essayer d'intercepter le flux (pas prioritaire).
+   6. Release publique : quand prêt (Chris la délègue).
 4. **Reste (petit)** : extensions dans les conteneurs (Chromium les rattache au profil) ; menu contextuel des sites aux couleurs
    neumorphiques ; « Examiner l'élément » qui sélectionne l'élément cliqué (aujourd'hui : ouvre seulement les DevTools ancrés) ;
    largeur des DevTools mémorisée ; pubs Twitch (insérées côté serveur dans le flux, le bouclier ne les voit pas).
