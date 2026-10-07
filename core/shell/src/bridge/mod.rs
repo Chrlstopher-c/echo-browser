@@ -208,6 +208,8 @@ fn apply(request: UiRequest) {
             }
         }),
         UiRequest::RestartBrowser => restart_browser(),
+        UiRequest::InstallVideoCodecs => crate::codecs::install(),
+        UiRequest::RemoveVideoCodecs => crate::codecs::remove(),
 
         UiRequest::AddBookmark { id } => library::add_bookmark(id),
         UiRequest::RemoveBookmark { url } => library::remove_bookmark(&url),
@@ -287,7 +289,7 @@ pub fn restart_browser() {
         crate::restart::save(&crate::flags::data_dir(), &snapshot);
     }
     publish(&CoreEvent::Restarting {
-        reason: "Application des extensions".to_string(),
+        reason: "Redémarrage d’Echo".to_string(),
     });
     crate::restart::request();
 

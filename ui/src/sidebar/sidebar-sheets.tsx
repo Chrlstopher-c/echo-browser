@@ -4,6 +4,7 @@ import type { ReactElement } from 'react'
 import { ExtensionsSheet } from '../extensions/extensions-sheet'
 import { LibrarySheet } from '../library/library-sheet'
 import { SettingsSheet } from '../settings/settings-sheet'
+import { videoRequest } from '../settings/video-section'
 import { ShieldSheet } from '../shield/shield-sheet'
 import { SheetHost } from './sheet-host'
 import type { SidebarModel } from './use-sidebar'
@@ -22,6 +23,8 @@ function SheetBody({ model }: { model: SidebarModel }): ReactElement | null {
         profiles={model.profiles}
         grants={core.state.grants}
         onForgetGrant={(origin, permission) => core.send({ kind: 'forgetPermission', origin, permission })}
+        codecs={core.state.codecs}
+        onCodecs={(action) => core.send(videoRequest(action))}
         onDevTools={model.tabs.devTools} />
     case null:
       return null

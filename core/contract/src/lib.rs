@@ -125,6 +125,11 @@ pub enum UiRequest {
     // --- Cycle de vie ---
     /// Relance le navigateur. Les onglets ouverts sont retrouves apres la relance.
     RestartBrowser,
+
+    // --- Decodeurs video ---
+    /// Telecharge le decodeur complet (H.264/AAC) depuis un tiers ; actif a la prochaine relance.
+    InstallVideoCodecs,
+    RemoveVideoCodecs,
 }
 
 /// Ce que le coeur renvoie a l'interface.
@@ -158,6 +163,35 @@ pub enum CoreEvent {
     PermissionsChanged { grants: Vec<PermissionGrantView> },
     /// La question n'a plus lieu d'etre (repondue, ou page partie).
     PermissionResolved { id: u64 },
+    VideoCodecsChanged { codecs: VideoCodecsView },
+}
+
+/// Ou en est le decodeur video complet (H.264/AAC).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum VideoCodecsStatus {
+    /// Le moteur embarque deja le decodeur complet.
+    BuiltIn,
+    /// Decodeur libre seul : le complet peut etre telecharge.
+    Missing,
+    Downloading,
+    /// Telecharge, actif a la prochaine relance.
+    PendingRestart,
+    /// Telecharge et charge.
+    Active,
+    /// Retire, le decodeur libre reprend a la prochaine relance.
+    PendingRemoval,
+    /// Decodeur integre au moteur sans emplacement separe : rien a installer.
+    Unavailable,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct VideoCodecsView {
+    pub status: VideoCodecsStatus,
+    /// D'ou vient le decodeur telechargeable.
+    pub source: String,
+    pub error: Option<String>,
 }
 
 /// L'etat d'un onglet tel que l'interface l'affiche.

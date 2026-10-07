@@ -47,7 +47,9 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `core/shell/src/bridge/publish.rs` — ce que le coeur pousse vers l'interface — etat de depart, onglets,
 - `core/shell/src/bridge/script.rs` — le code injecte dans la page d'interface pour lui donner `window.echo`.
 - `core/shell/src/client.rs` — le client CEF — ce que Chromium rappelle pendant la vie d'un navigateur.
-- `core/shell/src/codecs.rs` — décodeur libre détecté : l'AAC n'est plus annoncé aux pages, elles basculent sur Opus
+- `core/shell/src/codecs/mod.rs` — décodeur chargé (libre ou complet), état publié, AAC retiré des annonces avec le décodeur libre
+- `core/shell/src/codecs/pack.rs` — décodeur complet tiers : source, empreinte épinglée, téléchargement, rangement, retrait
+- `core/shell/src/codecs/loader.rs` — relance au démarrage avec le dossier du décodeur installé en tête de `LD_LIBRARY_PATH`
 - `core/shell/src/clipboard.rs` — mettre une image dans le presse-papiers du bureau, pour la coller ailleurs (Ctrl+V)
 - `core/shell/src/containers.rs` — les conteneurs d'onglets. Chacun a son propre contexte Chromium — cookies,
 - `core/shell/src/control.rs` — la prise de pilotage locale — un outil (MCP de Claude, script) y liste,
@@ -116,6 +118,7 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `tools/test-scheme.sh`
 - `tools/test-shield-toggle.sh`
 - `tools/test-sidebar-anim.sh`
+- `tools/test-codecs-install.sh` — release : installer le décodeur complet, redémarrer, lire H.264 + AAC sans GPU
 - `tools/test-trim-alive.sh` — une page d'arrière-plan allégée reste vivante (JavaScript actif, pas de rechargement)
 - `tools/test-sleep-scroll.sh`
 - `tools/test-warm.sh`
@@ -174,6 +177,7 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `ui/src/restart/restart-screen.tsx` — ecran d'attente plein cadre pendant la relance du navigateur. Il vit quelques
 - `ui/src/restart/restart-strip.tsx` — bande de relance — propose le redemarrage sans l'imposer, jamais bloquante.
 - `ui/src/settings/containers-section.tsx` — conteneurs dans les reglages — nom et retrait ; l'ouverture se fait depuis la liste d'onglets.
+- `ui/src/settings/video-section.tsx` — Réglages → Vidéo : décodeur complet, installer / redémarrer / retirer
 - `ui/src/settings/grants-section.tsx` — les autorisations retenues par site (camera, micro, position…) et leur retrait.
 - `ui/src/settings/profiles-section.tsx` — les profils dans les reglages — renommer chacun ; leur couleur est celle de leur pastille.
 - `ui/src/settings/setting-catalogue.ts` — habillage des reglages — pour chaque cle que le coeur livre, un groupe, un libelle

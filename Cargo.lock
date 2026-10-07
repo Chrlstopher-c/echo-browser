@@ -502,7 +502,7 @@ dependencies = [
 
 [[package]]
 name = "echo-contract"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "serde",
  "serde_json",
@@ -510,7 +510,7 @@ dependencies = [
 
 [[package]]
 name = "echo-extensions"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "anyhow",
  "serde",
@@ -524,7 +524,7 @@ dependencies = [
 
 [[package]]
 name = "echo-library"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "anyhow",
  "parking_lot",
@@ -536,7 +536,7 @@ dependencies = [
 
 [[package]]
 name = "echo-shell"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "anyhow",
  "base64 0.22.1",
@@ -550,15 +550,17 @@ dependencies = [
  "parking_lot",
  "serde",
  "serde_json",
+ "sha2",
  "tracing",
  "tracing-subscriber",
  "tungstenite",
  "ureq",
+ "zip",
 ]
 
 [[package]]
 name = "echo-shield"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "adblock",
  "anyhow",
@@ -573,7 +575,7 @@ dependencies = [
 
 [[package]]
 name = "echo-terminal"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "anyhow",
  "parking_lot",
@@ -1605,6 +1607,17 @@ name = "sha1_smol"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bbfa15b3dddfee50a0fff136974b3e1bde555604ba463834a7eb7deb6417705d"
+
+[[package]]
+name = "sha2"
+version = "0.10.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a7507d819769d01a365ab707794a4084392c824f54a7a6a7862f8c3d0892b283"
+dependencies = [
+ "cfg-if",
+ "cpufeatures",
+ "digest",
+]
 
 [[package]]
 name = "sharded-slab"

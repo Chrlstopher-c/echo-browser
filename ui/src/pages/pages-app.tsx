@@ -5,6 +5,7 @@ import { useEffect, type ReactElement } from 'react'
 import { LibrarySheet } from '../library/library-sheet'
 import { useLibrary } from '../library/use-library'
 import { SettingsSheet } from '../settings/settings-sheet'
+import { videoRequest } from '../settings/video-section'
 import { useSettings } from '../settings/use-settings'
 import { IconLibrary, IconPuzzle, IconSettings } from '../shared/design/icons'
 import { ExtensionsSheet } from '../extensions/extensions-sheet'
@@ -57,6 +58,8 @@ function Content({ page }: { page: PageId }): ReactElement {
       profiles={profiles}
       grants={state.grants}
       onForgetGrant={(origin, permission) => send({ kind: 'forgetPermission', origin, permission })}
+        codecs={state.codecs}
+        onCodecs={(action) => send(videoRequest(action))}
       onDevTools={() => send({ kind: 'openDevTools', id: state.activeId ?? 0 })}
     />
   )

@@ -18,6 +18,7 @@ pub fn publish_initial_state() {
     library::publish_downloads();
     library::publish_settings();
     library::publish_permissions();
+    crate::codecs::publish();
     publish_filter_lists();
 }
 

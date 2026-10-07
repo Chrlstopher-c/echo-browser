@@ -99,6 +99,10 @@ export type UiRequest =
   // --- Cycle de vie ---
   /** Relance le navigateur. Les onglets ouverts sont retrouves apres la relance. */
   | { kind: 'restartBrowser' }
+  // --- Decodeurs video ---
+  /** Telecharge le decodeur complet (H.264/AAC) depuis un tiers ; actif a la prochaine relance. */
+  | { kind: 'installVideoCodecs' }
+  | { kind: 'removeVideoCodecs' }
 
 /** Ce que le coeur renvoie a l'interface. */
 export type CoreEvent =
@@ -126,6 +130,24 @@ export type CoreEvent =
   | { kind: 'permissionResolved'; id: number }
   /** Les decisions de permission retenues, par site. */
   | { kind: 'permissionsChanged'; grants: PermissionGrantView[] }
+  | { kind: 'videoCodecsChanged'; codecs: VideoCodecsView }
+
+/** Ou en est le decodeur video complet (H.264/AAC). */
+export type VideoCodecsStatus =
+  | 'builtIn'
+  | 'missing'
+  | 'downloading'
+  | 'pendingRestart'
+  | 'active'
+  | 'pendingRemoval'
+  | 'unavailable'
+
+export interface VideoCodecsView {
+  status: VideoCodecsStatus
+  /** D'ou vient le decodeur telechargeable. */
+  source: string
+  error: string | null
+}
 
 /** L'etat d'un onglet tel que l'interface l'affiche. */
 export interface TabView {

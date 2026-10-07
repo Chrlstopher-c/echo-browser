@@ -21,8 +21,9 @@ Ordre voulu par Chris : angles → favicons → mémoire → décodeur vidéo. P
 5. **Fait 07/10** : moteur CEF compilé avec codecs installé (Twitch/H.264/AAC/HEVC OK, testé par Chris en 1080p). Aucun build lourd
    prévu. À refaire seulement à une montée de version de CEF (pièges et commandes : STATE.md).
 6. **Release publique v0.3.0 (07/10)** : archive `tools/package-release.sh` (moteur + décodeur libre, garde-fou anti-H.264),
-   annonce AAC retirée des pages (`codecs.rs`) ; testée isolée : YouTube AV1+Opus lu sans GPU, H.264 lu via VA-API. Suite :
-   téléchargement à la demande d'un `libffmpeg.so` complet depuis un tiers.
+   annonce AAC retirée des pages (`codecs.rs`) ; testée isolée : YouTube AV1+Opus lu sans GPU, H.264 lu via VA-API. Fait
+   (0.3.1) : Réglages → Vidéo installe le décodeur complet tiers (nwjs-ffmpeg-prebuilt, empreinte épinglée, `codecs/pack.rs`). À
+   chaque montée de CEF : mettre à jour `CHROMIUM_MAJOR`, l'URL et l'empreinte (version NW.js de la même branche Chromium).
 7. **Système (non persistant)** : zram1 10 Go ajouté à chaud ; la config zram (12 Go) prendra effet au prochain redémarrage.
 8. **Règles retenues** : ne jamais arrêter l'instance de Chris (tests isolés) · ne jamais perdre ses onglets · NE PAS toucher à sa souris
    (captures par `grim` sur fenêtre flottante de test, demandes jouées par `ECHO_BENCH_UI` / `ECHO_BENCH_JS`).

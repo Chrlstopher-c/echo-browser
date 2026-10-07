@@ -68,6 +68,11 @@
   n'a aucun chemin matériel, donc `codecs.rs` le retire de `canPlayType`, `MediaSource.isTypeSupported` et `mediaCapabilities`
   (injecté dans le flux HTML, avant les scripts du site). Vérifié : YouTube passe en AV1 + Opus.
 
+- Décodeur complet à la demande (0.3.1) : Réglages → Vidéo → Installer télécharge `libffmpeg.so` de nwjs-ffmpeg-prebuilt (même
+  branche Chromium, ABI vérifiée : symboles + lecture H.264/AAC sans GPU), garde le fichier seulement si son SHA-256 est celui
+  épinglé, le range dans `<données>/codecs/` avec la branche (`chromium`). Au lancement, `codecs::adopt_installed` relance le
+  processus avec ce dossier en tête de `LD_LIBRARY_PATH` (le moteur lie libffmpeg avant `main`). Test : `tools/test-codecs-install.sh`.
+
 ## Session et robustesse (06/10 soir)
 - **Session** : `persist.rs` enregistre les onglets (historique, position, épinglé, titre, icône) dans `last-session.json`, 1,2 s après
   chaque changement et avant toute fermeture ; au démarrage `app.rs::restore_or_open` les restitue — seul l'actif est chargé, les

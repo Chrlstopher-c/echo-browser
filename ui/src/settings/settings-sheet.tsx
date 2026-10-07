@@ -8,11 +8,12 @@ import { SectionLabel } from '../shared/design/section-label'
 import { SpacePicker } from '../spaces/space-picker'
 import { readStoredScheme, type SpaceController } from '../spaces/use-space'
 import type { ContainerActions } from '../tabs/use-containers'
-import type { PermissionGrantView } from '../shared/contract'
+import type { PermissionGrantView, VideoCodecsView } from '../shared/contract'
 import { ContainersSection } from './containers-section'
 import { ProfilesSection } from './profiles-section'
 import type { ProfileNames } from '../spaces/use-profile-names'
 import { GrantsSection } from './grants-section'
+import { VideoSection, type VideoAction } from './video-section'
 import { SettingRow } from './setting-row'
 import type { SettingsController } from './use-settings'
 
@@ -24,6 +25,8 @@ export interface SettingsSheetProps {
   profiles: ProfileNames
   grants: PermissionGrantView[]
   onForgetGrant: (origin: string, permission: string) => void
+  codecs: VideoCodecsView | null
+  onCodecs: (action: VideoAction) => void
   onDevTools: () => void
 }
 
@@ -63,13 +66,14 @@ function CoreSections({ settings }: { settings: SettingsController }): ReactElem
 }
 
 export function SettingsSheet(props: SettingsSheetProps): ReactElement {
-  const { settings, space, containers, profiles, grants, onForgetGrant, onDevTools } = props
+  const { settings, space, containers, profiles, grants, onForgetGrant, codecs, onCodecs, onDevTools } = props
   return (
     <div className="flex flex-col gap-3">
       {space !== undefined && <AppearanceSection space={space} />}
       <ProfilesSection profiles={profiles} scheme={space?.space.scheme ?? readStoredScheme()} />
       <ContainersSection actions={containers} />
       <GrantsSection grants={grants} onForget={onForgetGrant} />
+      {codecs !== null && <VideoSection view={codecs} onAction={onCodecs} />}
       <CoreSections settings={settings} />
       <section>
         <SectionLabel>Outils</SectionLabel>

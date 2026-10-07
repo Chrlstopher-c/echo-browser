@@ -54,8 +54,8 @@ Echo Browser $VERSION — Linux x86-64
 Lancer : ./echo-browser.sh
 
 Vidéo : VP9, AV1, Opus et Vorbis sont lus d'emblée (YouTube, la plupart des sites). Les décodeurs logiciels
-H.264 et AAC (Twitch, certains MP4) ne sont pas inclus : ces formats sont couverts par des brevets. Le H.264
-reste lu si la carte graphique le décode (VA-API).
+H.264 et AAC (Twitch, certains MP4) ne sont pas inclus : ces formats sont couverts par des brevets. Pour les
+lire : Réglages → Vidéo → Installer (téléchargé depuis un tiers, vérifié par empreinte), puis Redémarrer.
 EOF
 
 (cd "$OUT" && tar -cf - "$NAME" | xz -T0 -6 > "$NAME.tar.xz")
