@@ -51,6 +51,8 @@ pub struct Tab {
     pub zoom: f32,
     /// Vrai quand la page joue du son.
     pub audible: bool,
+    /// Vrai quand une video ou un son est en lecture, meme muet : l'onglet ne dort jamais pendant ce temps.
+    pub playing: bool,
 }
 
 impl Tab {
@@ -206,6 +208,7 @@ impl Tabs {
             opener: None,
             zoom: 1.0,
             audible: false,
+            playing: false,
         });
         self.select(id);
         debug!(id, %url, "onglet ouvert");
@@ -271,7 +274,7 @@ impl Tabs {
         }
         let host = self.host.clone();
         let tab = self.entries.iter_mut().find(|tab| tab.id == id)?;
-        if tab.audible || tab.loading || tab.asleep || tab.dirty {
+        if tab.audible || tab.playing || tab.loading || tab.asleep || tab.dirty {
             return None;
         }
         let view = tab.view.take()?;
@@ -285,7 +288,7 @@ impl Tabs {
         let active = self.active;
         let mut targets = Vec::new();
         for tab in self.entries.iter_mut() {
-            if Some(tab.id) == active || tab.asleep || tab.trimmed || tab.last_active.elapsed() < idle {
+            if Some(tab.id) == active || tab.asleep || tab.trimmed || tab.playing || tab.last_active.elapsed() < idle {
                 continue;
             }
             if let Some(browser) = tab.browser() {
@@ -310,6 +313,7 @@ impl Tabs {
                     && Some(tab.id) != self.active
                     && !host_listed(&tab.url, never)
                     && !tab.audible
+                    && !tab.playing
                     && !tab.dirty
                     && !tab.loading
                     && tab.last_active.elapsed() >= idle
@@ -379,6 +383,7 @@ impl Tabs {
             opener: None,
             zoom: 1.0,
             audible: false,
+            playing: false,
         });
     }
 

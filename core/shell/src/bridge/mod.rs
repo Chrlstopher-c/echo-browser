@@ -14,7 +14,7 @@ pub mod publish;
 
 pub use library::publish_permissions;
 pub use publish::{
-    reset_tab_scroll, set_tab_dirty, set_tab_favicon, set_tab_scroll, take_pending_scroll,
+    reset_tab_scroll, set_tab_dirty, set_tab_media, set_tab_favicon, set_tab_scroll, take_pending_scroll,
     publish_filter_lists, publish_initial_state, publish_shield, publish_tab, publish_tabs,
     set_fullscreen, set_tab_title,
 };

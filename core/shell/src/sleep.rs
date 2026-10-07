@@ -15,7 +15,16 @@ console.debug('echo:dirty')};addEventListener('input',f,true);addEventListener('
 let t=0;addEventListener('scroll',()=>{clearTimeout(t);t=setTimeout(()=>{\
 const y=Math.round(document.scrollingElement?document.scrollingElement.scrollTop:0);\
 console.debug('echo:scroll:'+y)},400)},{passive:true,capture:true});\
-addEventListener('mousedown',e=>{if(e.button!==2)console.debug('echo:press')},true)})()";
+addEventListener('mousedown',e=>{if(e.button!==2)console.debug('echo:press')},true);\
+let last='';const m=()=>{const all=[...document.querySelectorAll('video,audio')];\
+const on=all.filter(x=>!x.paused&&!x.ended&&x.readyState>2);\
+const s=(on.length?'1':'0')+(on.some(x=>!x.muted&&x.volume>0)?'1':'0');\
+if(s!==last){last=s;console.debug('echo:media:'+s)}};\
+for(const ev of ['play','playing','pause','ended','volumechange','emptied'])addEventListener(ev,m,true);\
+setInterval(m,5000)})()";
+
+/// Message console de lecture : `echo:media:<lecture><son>` (1/0 chacun).
+pub const MEDIA_MARKER: &str = "echo:media:";
 
 /// Message console d'un clic gauche ou milieu dans la page : il referme le menu contextuel ouvert.
 pub const PRESS_MARKER: &str = "echo:press";

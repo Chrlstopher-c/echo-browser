@@ -145,6 +145,22 @@ pub fn take_pending_scroll(browser_id: i32) -> Option<i32> {
     session::with(|s| s.tabs.by_browser(browser_id).and_then(|tab| tab.pending_scroll.take())).flatten()
 }
 
+/// La page signale une lecture (video ou son) : l'onglet ne doit pas dormir, la marque « son » suit.
+pub fn set_tab_media(browser_id: i32, playing: bool, audible: bool) {
+    let changed = session::with(|s| {
+        let tab = s.tabs.by_browser(browser_id)?;
+        let changed = tab.audible != audible;
+        tab.playing = playing;
+        tab.audible = audible;
+        Some(changed)
+    })
+    .flatten()
+    .unwrap_or(false);
+    if changed {
+        publish_tabs();
+    }
+}
+
 pub fn set_tab_dirty(browser_id: i32, dirty: bool) {
     session::with(|s| {
         if let Some(tab) = s.tabs.by_browser(browser_id) {

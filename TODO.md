@@ -19,6 +19,12 @@ Ordre voulu par Chris : angles → favicons → mémoire → décodeur vidéo. P
       profils/espaces : chacun ses onglets (et ses comptes, via un conteneur), nom modifiable, couleur propre.
    5. Pubs Twitch : essayer d'intercepter le flux (pas prioritaire).
    6. Release publique : quand prêt (Chris la délègue).
+   7. Veille pendant une lecture : un onglet qui lit une vidéo/son (même muet) ne dort jamais.
+   8. Bouclier : les interrupteurs n'affichent pas l'état réel après bascule (pub YouTube alors que « actif ») — vérifier tous les réglages.
+   9. Réglages, téléchargements, bibliothèque, thèmes : en PAGE pleine (onglet spécial comme « Nouvel onglet ») au lieu de la barre ;
+      le bouclier et les extensions verticales peuvent rester dans la barre.
+   10. Extensions : page dédiée ; installer depuis le Chrome Web Store dans un onglet (bouton « Ajouter ») et/ou catalogue intégré
+       (API gratuite ?) ; à défaut, intégration native propre du Web Store.
 4. **Reste (petit)** : extensions dans les conteneurs (Chromium les rattache au profil) ; menu contextuel des sites aux couleurs
    neumorphiques ; « Examiner l'élément » qui sélectionne l'élément cliqué (aujourd'hui : ouvre seulement les DevTools ancrés) ;
    largeur des DevTools mémorisée ; pubs Twitch (insérées côté serveur dans le flux, le bouclier ne les voit pas).

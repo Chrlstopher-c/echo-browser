@@ -87,7 +87,7 @@ wrap_load_handler! {
                     crate::bridge::set_tab_dirty(browser.identifier(), false);
                     crate::bridge::reset_tab_scroll(browser.identifier());
                 }
-                if url.starts_with("http") {
+                if url.starts_with("http") || url.starts_with("file:") {
                     frame.execute_java_script(
                         Some(&CefString::from(crate::sleep::DIRTY_WATCHER)),
                         Some(&CefString::from("echo://sleep")),
@@ -216,6 +216,15 @@ wrap_display_handler! {
                 if let Some(browser) = browser.as_deref() {
                     crate::bridge::finish_orphan_signin(browser.identifier());
                 }
+            }
+            if let Some(state) = message.strip_prefix(crate::sleep::MEDIA_MARKER) {
+                if let Some(browser) = browser {
+                    let mut flags = state.chars();
+                    let playing = flags.next() == Some('1');
+                    let audible = flags.next() == Some('1');
+                    crate::bridge::set_tab_media(browser.identifier(), playing, audible);
+                }
+                return 1;
             }
             if message == crate::sleep::PRESS_MARKER {
                 if crate::overlay::menu_open() {
