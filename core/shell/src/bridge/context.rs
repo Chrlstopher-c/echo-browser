@@ -3,7 +3,7 @@
 use super::{navigation, notify_error, publish, session};
 use crate::menu::{self, Click};
 use cef::{
-    Browser, CefString, ImplBrowser, ImplBrowserHost, ImplFrame, Point, Rect,
+    Browser, CefString, ImplBrowser, ImplBrowserHost, ImplFrame, Rect,
 };
 use echo_contract::{ContextTarget, CoreEvent, MenuItemKind};
 use tracing::{debug, warn};
@@ -171,16 +171,16 @@ pub fn toggle_devtools() {
     }
 }
 
+/// Ouvre l'inspecteur sur l'element clique : la page le retient avant que les outils ne la retrecissent.
 fn inspect() {
-    let browser = session::with(|s| s.tabs.active().and_then(|tab| tab.browser())).flatten();
-    let Some(host) = browser.and_then(|browser| browser.host()) else { return };
-    let _ = host;
+    let (x, y) = CLICK_POINT.with(std::cell::Cell::get);
+    let zoom = session::with(|s| s.tabs.active().map(|tab| tab.zoom)).flatten().unwrap_or(1.0).max(0.25);
+    let mark = format!("window.__echoInspect=document.elementFromPoint({}, {})", x as f32 / zoom, y as f32 / zoom);
+    with_page(|frame| frame.execute_java_script(Some(&CefString::from(mark.as_str())), None, 0));
     if !crate::devtools::is_open() {
         crate::devtools::open_for_active();
     }
-    // Selection de l'element clique dans l'inspecteur, par le protocole de debogage de la page.
-    let (x, y) = CLICK_POINT.with(std::cell::Cell::get);
-    let _ = Point { x, y };
+    crate::devtools::reveal_marked();
 }
 
 fn with_page(action: impl FnOnce(&cef::Frame)) {

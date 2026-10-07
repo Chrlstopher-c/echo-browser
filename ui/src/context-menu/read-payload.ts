@@ -48,6 +48,9 @@ export function applyTheme(theme: OverlayTheme): void {
   root.style.setProperty('--color-ink-faint', theme.inkFaint)
   root.style.setProperty('--color-danger', theme.danger)
   root.style.setProperty('--color-tint', theme.tint)
+  // Liseres du relief : le menu ne peut pas deborder de sa surimpression, son relief se lit sur ses bords.
+  root.style.setProperty('--color-hi', theme.hi)
+  root.style.setProperty('--color-lo', theme.lo)
   const shadows = reliefShadows(theme)
   root.style.setProperty('--shadow-field', shadows.field)
   root.style.setProperty('--shadow-pressed', shadows.pressed)

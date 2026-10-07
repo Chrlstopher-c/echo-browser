@@ -127,6 +127,7 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `tools/test-extension-profiles.sh` — une extension n'est active que dans les profils qui l'ont (ajout, retrait), conteneurs rattachés
 - `tools/test-extension-query.sh` — `tabs.query` d'une fenêtre d'extension rend l'onglet affiché, avec un id réel
 - `tools/test-codecs-install.sh` — release : installer le décodeur complet, redémarrer, lire H.264 + AAC sans GPU
+- `tools/test-inspect.sh` — « Examiner l'élément » sélectionne l'élément cliqué ; largeur des outils enregistrée
 - `tools/test-keep-awake.sh` — « Garder éveillé » : ni veille ni allègement, gardé à la relance, décochable
 - `tools/test-trim-alive.sh` — une page d'arrière-plan allégée reste vivante (JavaScript actif, pas de rechargement)
 - `tools/test-sleep-scroll.sh`

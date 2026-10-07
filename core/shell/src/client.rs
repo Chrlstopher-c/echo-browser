@@ -152,6 +152,9 @@ wrap_load_handler! {
                     frame.execute_java_script(Some(&CefString::from(script.as_str())), Some(&CefString::from("echo://sleep")), 0);
                 }
             }
+            if frame.is_main() == 1 {
+                crate::devtools::on_frontend_loaded(frame, &url);
+            }
             if !is_interface_page(&url) {
                 return;
             }

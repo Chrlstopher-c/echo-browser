@@ -53,6 +53,11 @@ wrap_browser_process_handler! {
             {
                 window::restore_accent(&shell);
             }
+            if let Some((_, echo_library::settings::Value::Number(width))) =
+                echo_library::settings::all(&library).into_iter().find(|(key, _)| key == "devtools.width")
+            {
+                crate::devtools::restore_width(width);
+            }
             // La coupure globale du bouclier survit aux relances.
             let shield_on = !echo_library::settings::all(&library)
                 .into_iter()

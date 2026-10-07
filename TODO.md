@@ -17,6 +17,9 @@ Ordre voulu par Chris : angles → favicons → mémoire → décodeur vidéo. P
    ancrée et redimensionnable. Reste : pubs Twitch (essai).
 3c. **« Garder éveillé » (demande de Chris 07/10 soir) : fait** — clic droit sur un onglet → option cochable ; l'onglet n'est
    ni endormi ni allégé, pastille soleil sur son icône, choix gardé à la relance (`tools/test-keep-awake.sh`).
+3d. **Finitions faites (07/10)** : « Examiner l'élément » sélectionne l'élément cliqué (`tools/test-inspect.sh`), largeur des
+   DevTools mémorisée (`devtools.width`), menu des sites aux icônes + liserés de relief (clair et sombre ; la surimpression
+   reste carrée : toujours pas de transparence, revérifié).
 4. **Reste** : extensions par profil faites (07/10) — reste : une extension déclarée est téléchargée dans chaque profil (disque) ; menu contextuel des sites aux couleurs
    neumorphiques ; « Examiner l'élément » qui sélectionne l'élément cliqué (aujourd'hui : ouvre seulement les DevTools ancrés) ;
    largeur des DevTools mémorisée ; pubs Twitch (insérées côté serveur dans le flux, le bouclier ne les voit pas).

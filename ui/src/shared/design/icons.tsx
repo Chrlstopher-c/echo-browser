@@ -414,3 +414,58 @@ export function IconSun(props: IconProps): ReactElement {
     </Glyph>
   )
 }
+
+export function IconCopy(props: IconProps): ReactElement {
+  return (
+    <Glyph {...props}>
+      <rect x="5.5" y="5.5" width="8" height="8" rx="1.6" />
+      <path d="M10.5 5.5V3.9c0-.8-.6-1.4-1.4-1.4H3.9c-.8 0-1.4.6-1.4 1.4v5.2c0 .8.6 1.4 1.4 1.4h1.6" />
+    </Glyph>
+  )
+}
+
+export function IconClipboard(props: IconProps): ReactElement {
+  return (
+    <Glyph {...props}>
+      <rect x="3.2" y="3.2" width="9.6" height="10.6" rx="1.6" />
+      <path d="M6 2.2h4v2H6z" />
+    </Glyph>
+  )
+}
+
+export function IconScissors(props: IconProps): ReactElement {
+  return (
+    <Glyph {...props}>
+      <circle cx="4.3" cy="11.6" r="1.8" />
+      <circle cx="11.7" cy="11.6" r="1.8" />
+      <path d="M5.6 10.3 12 2.8M10.4 10.3 4 2.8" />
+    </Glyph>
+  )
+}
+
+export function IconPrinter(props: IconProps): ReactElement {
+  return (
+    <Glyph {...props}>
+      <path d="M4.5 5.8V2.6h7v3.2M4.5 11.2H3a1 1 0 0 1-1-1V6.8a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v3.4a1 1 0 0 1-1 1h-1.5" />
+      <path d="M4.5 9.2h7v4.2h-7z" />
+    </Glyph>
+  )
+}
+
+export function IconCode(props: IconProps): ReactElement {
+  return (
+    <Glyph {...props}>
+      <path d="M5.5 4.5 2 8l3.5 3.5M10.5 4.5 14 8l-3.5 3.5" />
+    </Glyph>
+  )
+}
+
+export function IconImage(props: IconProps): ReactElement {
+  return (
+    <Glyph {...props}>
+      <rect x="2.2" y="2.8" width="11.6" height="10.4" rx="1.8" />
+      <circle cx="5.8" cy="6.2" r="1.1" />
+      <path d="m13.8 10.4-3.3-3.2-6.8 6" />
+    </Glyph>
+  )
+}

@@ -59,6 +59,14 @@
   Une page déjà ouverte garde l'ancienne teinte dans ses angles jusqu'au rechargement.
 
 
+## Inspecteur et menu des sites (07/10)
+- « Examiner l'élément » : la page marque `window.__echoInspect = elementFromPoint(clic / zoom)` AVANT l'ouverture (le
+  panneau rétrécit la page), puis `devtools::reveal_marked` exécute dans l'inspecteur un script qui importe ses modules
+  (`devtools://devtools/bundled/core/sdk/sdk.js`, `common.js`), résout l'objet en nœud et `Common.Revealer.reveal`.
+- Largeur des outils : réglage `devtools.width`, enregistré 600 ms après la fin du glissement.
+- Menu des sites : la surimpression ne sait toujours pas être transparente (revérifié : coin noir) → carré, relief par
+  liserés `--color-hi/--color-lo` + icônes par action.
+
 ## Garder éveillé (07/10)
 - `Tab.keep_awake` (session + `TabSnapshot`), `UiRequest::KeepTabAwake` ; épargné par `sleep_candidates` et
   `take_trim_targets` ; restitué endormi au démarrage → réveillé au premier passage de la veille (15 s).

@@ -25,6 +25,8 @@ const GRIP_WIDTH: i32 = 10;
 /// Le panneau ancre : son conteneur (barre + outils), les identifiants de ses navigateurs, la poignee.
 struct Docked {
     container: Panel,
+    /// Vue de l'inspecteur, pour lui demander de selectionner un element.
+    tools: BrowserView,
     browsers: Vec<i32>,
     grip: Option<crate::overlay::Overlay>,
 }
@@ -160,7 +162,7 @@ fn create_and_dock(frontend: &str) {
         layout.set_flex_for_view(Some(&mut tools_view), 1);
     }
     let browsers = [&bar, &tools].iter().filter_map(|v| v.browser()).map(|b| b.identifier()).collect();
-    dock(container, browsers);
+    dock(container, tools, browsers);
 }
 
 fn window() -> Option<Window> {
@@ -168,7 +170,7 @@ fn window() -> Option<Window> {
     View::from(&chrome).window()
 }
 
-fn dock(container: Panel, browsers: Vec<i32>) {
+fn dock(container: Panel, tools: BrowserView, browsers: Vec<i32>) {
     undock();
     let Some(window) = window() else { return };
     let mut as_view = View::from(&container);
@@ -177,7 +179,7 @@ fn dock(container: Panel, browsers: Vec<i32>) {
         layout.set_flex_for_view(Some(&mut as_view), 0);
     }
     window.layout();
-    DOCKED.with(|slot| *slot.borrow_mut() = Some(Docked { container, browsers, grip: None }));
+    DOCKED.with(|slot| *slot.borrow_mut() = Some(Docked { container, tools, browsers, grip: None }));
     place();
     info!("outils de developpement ancres dans la fenetre");
 }
@@ -213,6 +215,7 @@ pub fn resize(dx: i32) {
     let max = (available - MIN_PAGE).max(MIN_WIDTH);
     let next = (WIDTH.load(Ordering::Relaxed) - dx).clamp(MIN_WIDTH, max);
     WIDTH.store(next, Ordering::Relaxed);
+    save_width_soon();
     DOCKED.with(|slot| {
         if let Some(docked) = slot.borrow().as_ref() {
             View::from(&docked.container).invalidate_layout();
@@ -220,6 +223,81 @@ pub fn resize(dx: i32) {
     });
     window.layout();
     place();
+}
+
+/// L'element a selectionner, marque dans la page (`window.__echoInspect`) avant l'ouverture : les outils retrecissent
+/// la page, l'element sous le clic ne serait plus le meme une fois la mise en page refaite.
+static REVEAL_PENDING: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+const FRONTEND: &str = "devtools://devtools/bundled/devtools_app.html";
+
+/// Selectionne dans l'inspecteur l'element marque par la page. Le module SDK de l'inspecteur est charge a la demande ;
+/// on attend que la page soit attachee (jusqu'a 10 s).
+const REVEAL_SCRIPT: &str = "(async()=>{const b='devtools://devtools/bundled/';\
+const [SDK,Common]=await Promise.all([import(b+'core/sdk/sdk.js'),import(b+'core/common/common.js')]);\
+for(let i=0;i<100;i++){const t=SDK.TargetManager.TargetManager.instance().primaryPageTarget();\
+const dom=t&&t.model(SDK.DOMModel.DOMModel);if(dom){await dom.requestDocument();\
+const r=await t.runtimeAgent().invoke_evaluate({expression:'window.__echoInspect'});\
+const id=r.result&&r.result.objectId;if(id){const q=await t.domAgent().invoke_requestNode({objectId:id});\
+const n=dom.nodeForId(q.nodeId);if(n){await Common.Revealer.reveal(n);\
+t.runtimeAgent().invoke_evaluate({expression:'delete window.__echoInspect'});return}}}\
+await new Promise(r=>setTimeout(r,100))}})()";
+
+/// Fait selectionner l'element marque : tout de suite si l'inspecteur est charge, sinon a la fin de son chargement.
+pub fn reveal_marked() {
+    let frame = DOCKED.with(|slot| {
+        slot.borrow().as_ref().and_then(|d| d.tools.browser()).and_then(|b| b.main_frame())
+    });
+    match frame.filter(|f| CefString::from(&f.url()).to_string().starts_with(FRONTEND)) {
+        Some(frame) if !frame.browser().is_some_and(|b| b.is_loading() == 1) => run_reveal(&frame),
+        _ => REVEAL_PENDING.store(true, Ordering::Relaxed),
+    }
+}
+
+/// Fin de chargement d'une page : si c'est l'inspecteur et qu'une selection attend, la faire.
+pub fn on_frontend_loaded(frame: &Frame, url: &str) {
+    if url.starts_with(FRONTEND) && REVEAL_PENDING.swap(false, Ordering::Relaxed) {
+        run_reveal(frame);
+    }
+}
+
+fn run_reveal(frame: &Frame) {
+    frame.execute_java_script(Some(&CefString::from(REVEAL_SCRIPT)), Some(&CefString::from("echo://inspect")), 0);
+}
+
+/// Largeur retenue d'une session a l'autre (reglage `devtools.width`).
+pub fn restore_width(width: f64) {
+    if width.is_finite() && width >= f64::from(MIN_WIDTH) {
+        WIDTH.store(width as i32, Ordering::Relaxed);
+    }
+}
+
+static RESIZE_GENERATION: std::sync::atomic::AtomicU32 = std::sync::atomic::AtomicU32::new(0);
+const SAVE_DELAY_MS: i64 = 600;
+
+/// Enregistre la largeur une fois le glissement termine, pas a chaque pixel.
+fn save_width_soon() {
+    let generation = RESIZE_GENERATION.fetch_add(1, Ordering::Relaxed) + 1;
+    let mut task = SaveWidth::new(generation);
+    post_delayed_task(ThreadId::UI, Some(&mut task), SAVE_DELAY_MS);
+}
+
+wrap_task! {
+    struct SaveWidth {
+        generation: u32,
+    }
+
+    impl Task {
+        fn execute(&self) {
+            if RESIZE_GENERATION.load(Ordering::Relaxed) != self.generation {
+                return;
+            }
+            let width = echo_library::settings::Value::Number(f64::from(WIDTH.load(Ordering::Relaxed)));
+            let saved = crate::session::with(|s| echo_library::settings::set(&s.library, "devtools.width", &width));
+            if let Some(Err(err)) = saved {
+                warn!(%err, "largeur des outils non enregistree");
+            }
+        }
+    }
 }
 
 /// Retire le panneau des outils, s'il est ouvert.
