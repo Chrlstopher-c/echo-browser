@@ -154,6 +154,10 @@ fn run(job: Job) {
             crate::bridge::submit(kind.to_string().as_bytes());
             let _ = reply.send(json!({"ok": true}));
         }
+        Some("extension_popup") => {
+            let b = crate::overlay::extension_popup_bounds();
+            let _ = reply.send(json!({"ok": true, "bounds": b.map(|b| json!({"x": b.x, "y": b.y, "width": b.width, "height": b.height}))}));
+        }
         Some("menu") => {
             let _ = reply.send(json!({"ok": true, "open": crate::overlay::menu_open()}));
         }

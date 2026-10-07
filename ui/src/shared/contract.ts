@@ -17,6 +17,8 @@ export type UiRequest =
   | { kind: 'openPage'; page: 'reglages' | 'bibliotheque' | 'extensions' }
   /** Referme les outils de developpement ancres. */
   | { kind: 'closeDevTools' }
+  /** La poignee de la fenetre d'extension a ete tiree. */
+  | { kind: 'resizeExtensionPopup'; dx: number; dy: number }
   /** La poignee des outils a ete tiree de `dx` pixels. */
   | { kind: 'resizeDevTools'; dx: number }
   | { kind: 'sleepTab'; id: TabId }

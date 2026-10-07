@@ -37,6 +37,8 @@ pub enum UiRequest {
     OpenDevTools { id: TabId },
     /// Referme les outils de developpement ancres (croix de leur barre).
     CloseDevTools,
+    /// La poignee de la fenetre d'extension a ete tiree.
+    ResizeExtensionPopup { dx: i32, dy: i32 },
     /// La poignee entre la page et les outils a ete tiree de `dx` pixels.
     ResizeDevTools { dx: i32 },
     /// Ouvre le terminal de Claude Code, ou y revient s'il est deja ouvert.

@@ -199,8 +199,10 @@ fn essai_extension(anchor: &BrowserView) {
 /// Dimensions de depart d'une fenetre d'extension. Chrome mesure la page pour s'y
 /// ajuster ; faute de pouvoir l'interroger, on prend la taille la plus courante et on
 /// laisse la page defiler dedans.
-const POPUP_WIDTH: i32 = 380;
-const POPUP_HEIGHT: i32 = 600;
+/// Taille courante (reglable a la poignee, gardee pour les ouvertures suivantes).
+static POPUP_WIDTH: std::sync::atomic::AtomicI32 = std::sync::atomic::AtomicI32::new(400);
+static POPUP_HEIGHT: std::sync::atomic::AtomicI32 = std::sync::atomic::AtomicI32::new(600);
+const GRIP_SIZE: i32 = 16;
 
 /// Ecart entre l'icone et la fenetre qu'elle ouvre.
 const POPUP_GAP: i32 = 6;
@@ -213,6 +215,9 @@ thread_local! {
     /// que fait Chrome, et deux fenetres ouvertes n'auraient pas de sens a l'usage.
     static POPUP: std::cell::RefCell<Option<(String, Overlay)>> =
         const { std::cell::RefCell::new(None) };
+
+    /// Poignee de redimensionnement, dans le coin bas droit de la fenetre d'extension.
+    static POPUP_GRIP: std::cell::RefCell<Option<Overlay>> = const { std::cell::RefCell::new(None) };
 }
 
 /// Identifiant de l'extension dont la fenetre est ouverte.
@@ -230,16 +235,21 @@ pub fn toggle_extension_popup(id: &str, url: &str, anchor: Rect, anchor_view: &B
     close_extension_popup();
     let bounds = place_under(anchor, anchor_view);
     let (x, y) = (bounds.x, bounds.y);
-    let Some(overlay) = Overlay::open(anchor_view, url, bounds) else {
+    let Some(overlay) = Overlay::open(anchor_view, url, bounds.clone()) else {
         warn!(%id, "fenetre d'extension : ouverture refusee");
         return;
     };
     debug!(%id, %url, x, y, "fenetre d'extension ouverte");
     POPUP.with(|cell| *cell.borrow_mut() = Some((id.to_string(), overlay)));
+    let grip = Overlay::open(anchor_view, "echo://ui/popup-poignee.html", grip_rect(bounds));
+    POPUP_GRIP.with(|cell| *cell.borrow_mut() = grip);
 }
 
 /// Referme la fenetre d'extension ouverte. Sans effet s'il n'y en a pas.
 pub fn close_extension_popup() {
+    if let Some(grip) = POPUP_GRIP.with(|cell| cell.borrow_mut().take()) {
+        grip.close();
+    }
     let previous = POPUP.with(|cell| cell.borrow_mut().take());
     if let Some((id, overlay)) = previous {
         overlay.close();
@@ -267,14 +277,13 @@ fn place_under(anchor: Rect, anchor_view: &BrowserView) -> Rect {
         height: anchor.height,
     };
 
-    let height = POPUP_HEIGHT.min(frame.height - 2 * POPUP_MARGIN).max(200);
-    let width = POPUP_WIDTH.min(frame.width - 2 * POPUP_MARGIN).max(240);
-    // A droite de la barre laterale : posee sous l'icone, la barre (dessinee au-dessus) la recouvrait.
+    let _ = anchor;
+    let height = POPUP_HEIGHT.load(std::sync::atomic::Ordering::Relaxed).min(frame.height - 2 * POPUP_MARGIN).max(200);
+    let width = POPUP_WIDTH.load(std::sync::atomic::Ordering::Relaxed).min(frame.width - 2 * POPUP_MARGIN).max(240);
+    // Ancree dans le coin haut gauche de la zone de page, a droite de la barre laterale.
     let sidebar_right = crate::window::docked_width() + origine.x;
     let x = (sidebar_right + POPUP_GAP).min(frame.width - width - POPUP_MARGIN).max(POPUP_MARGIN);
-    let y = anchor.y
-        .min(frame.height - height - POPUP_MARGIN)
-        .max(POPUP_MARGIN);
+    let y = POPUP_MARGIN + origine.y.max(0);
     Rect { x, y, width, height }
 }
 
@@ -362,4 +371,37 @@ fn encode(payload: &str) -> String {
             other => format!("%{other:02X}"),
         })
         .collect()
+}
+
+fn grip_rect(popup: Rect) -> Rect {
+    Rect { x: popup.x + popup.width - GRIP_SIZE, y: popup.y + popup.height - GRIP_SIZE, width: GRIP_SIZE, height: GRIP_SIZE }
+}
+
+/// Position et taille de la fenetre d'extension ouverte (pour les essais).
+pub fn extension_popup_bounds() -> Option<Rect> {
+    POPUP.with(|cell| cell.borrow().as_ref().map(|(_, overlay)| overlay.bounds()))
+}
+
+/// La poignee a ete tiree : la fenetre d'extension grandit ou retrecit, son coin haut gauche reste en place.
+pub fn resize_extension_popup(dx: i32, dy: i32) {
+    use std::sync::atomic::Ordering::Relaxed;
+    let width = (POPUP_WIDTH.load(Relaxed) + dx).clamp(240, 1600);
+    let height = (POPUP_HEIGHT.load(Relaxed) + dy).clamp(200, 1400);
+    POPUP_WIDTH.store(width, Relaxed);
+    POPUP_HEIGHT.store(height, Relaxed);
+    let Some(bounds) = POPUP.with(|cell| {
+        cell.borrow().as_ref().map(|(_, overlay)| {
+            let current = overlay.bounds();
+            let next = Rect { x: current.x, y: current.y, width, height };
+            overlay.set_bounds(next.clone());
+            next
+        })
+    }) else {
+        return;
+    };
+    POPUP_GRIP.with(|cell| {
+        if let Some(grip) = cell.borrow().as_ref() {
+            grip.set_bounds(grip_rect(bounds));
+        }
+    });
 }

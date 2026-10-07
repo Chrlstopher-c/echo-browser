@@ -113,6 +113,7 @@ fn apply(request: UiRequest) {
         UiRequest::SetTabContainer { id, container } => move_to_container(id, container),
         UiRequest::WarmTab { id } => warm_tab(id),
         UiRequest::CloseDevTools => crate::devtools::undock(),
+        UiRequest::ResizeExtensionPopup { dx, dy } => crate::overlay::resize_extension_popup(dx, dy),
         UiRequest::ResizeDevTools { dx } => crate::devtools::resize(dx),
         UiRequest::OpenDevTools { .. } => {
             if !crate::devtools::is_open() {

@@ -14,3 +14,6 @@ button svg path { stroke: currentColor; stroke-width: 1.6; stroke-linecap: round
 body.poignee { background: transparent; cursor: col-resize; display: grid; place-items: center; }
 .trait { width: 3px; height: 36px; border-radius: 2px; background: var(--ink-faint); opacity: 0.35; transition: opacity 120ms; }
 body.poignee:hover .trait, body.poignee.actif .trait { opacity: 0.9; background: var(--tint); }
+body.poignee.coin { cursor: nwse-resize; place-items: end; padding: 2px; box-sizing: border-box; }
+body.poignee.coin svg path { stroke: var(--ink-faint); stroke-width: 1.4; stroke-linecap: round; fill: none; }
+body.poignee.coin:hover svg path, body.poignee.coin.actif svg path { stroke: var(--tint); }
