@@ -128,6 +128,7 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `tools/test-contextmenu.sh`
 - `tools/test-control.sh`
 - `tools/test-copy-image.sh`
+- `tools/test-default-profile.sh`
 - `tools/test-drag-folder.sh`
 - `tools/test-extension-events.sh`
 - `tools/test-extension-profiles.sh`

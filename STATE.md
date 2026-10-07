@@ -59,6 +59,13 @@
   Une page déjà ouverte garde l'ancienne teinte dans ses angles jusqu'au rechargement.
 
 
+## INCIDENT 08/10 : comptes déconnectés (corrigé)
+- Cause : sans `cache_path`, CEF (runtime Chrome) ouvre au démarrage le « dernier profil utilisé » de `Local State`
+  (`profile.last_used`) ; une fenêtre Chrome d'extension ouverte dans un conteneur le change → au redémarrage, le contexte
+  commun = un conteneur vide (`conteneur-profil-sable`), tous les comptes du profil principal « déconnectés ». Données
+  intactes dans `profile/Default` (cookies vérifiés sur copie). Correctif : `--profile-directory=Default` (flags.rs).
+  Test qui reproduit puis vérifie : `tools/test-default-profile.sh` (échoue sans le correctif).
+
 ## Release 0.4.0 : proposition du décodeur, installateur (08/10)
 - Proposition : le shim des codecs (décodeur libre seulement) envoie `echo:codecs` quand une page demande de l'AAC ou
   qu'une vidéo échoue au décodage (code 3, ou 4 hors webm/ogg) → `codecs::page_needs_codecs` (une fois par session,

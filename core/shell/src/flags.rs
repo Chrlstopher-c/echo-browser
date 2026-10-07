@@ -88,6 +88,10 @@ pub fn apply(process_type: &str, command_line: &mut CommandLine) {
     // Sans identifiant d'application, le gestionnaire de fenetres ne sait pas ranger la
     // fenetre et la laisse flotter. C'est aussi ce qui porte l'icone dans la barre des taches.
     switch_with_value(command_line, "class", APP_ID);
+    // Le contexte commun (profil principal) est toujours `Default`. Sans cela, Chromium ouvre au demarrage le « dernier
+    // profil utilise » de Local State, qu'une fenetre d'extension ouverte dans un conteneur suffit a changer : le 08/10,
+    // tous les onglets du profil principal se sont retrouves dans un conteneur vide, comptes deconnectes.
+    switch_with_value(command_line, "profile-directory", "Default");
     // Les outils de developpement ancres se connectent au port de debogage local : seule leur origine est
     // admise, aucune page web ne peut s'y brancher.
     switch_with_value(command_line, "remote-allow-origins", "devtools://devtools");
