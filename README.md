@@ -5,7 +5,20 @@ Barre latérale verticale façon Zen/Arc, bouclier anti-pub natif, veille des on
 
 Objectifs, dans l'ordre : **design** (neumorphisme clair et sombre), **rendu**, **performance** (RAM par onglet), puis usage quotidien.
 
-## Lancer
+## Installer (release)
+
+Télécharger `echo-browser-<version>-linux-x64.tar.xz` depuis les *Releases*, puis :
+
+```bash
+tar -xJf echo-browser-*-linux-x64.tar.xz && cd echo-browser-*-linux-x64 && ./echo-browser.sh
+```
+
+Lecture vidéo : VP9, AV1, Opus et Vorbis d'emblée (YouTube…). Le H.264/AAC (Twitch, certains MP4) n'est pas
+distribué dans la release : ces formats sont brevetés. Le moteur compilé localement avec `proprietary_codecs` les lit.
+
+Fabriquer l'archive : `tools/package-release.sh <libffmpeg.so libre>` (décodeur compilé avec `ffmpeg_branding=Chromium`).
+
+## Lancer (développement)
 
 ```bash
 ./start.sh release     # lance (profil dans ~/.local/share/echo-browser) ; journal : logs/browser.log
@@ -24,7 +37,7 @@ puis `cargo build -p echo-shell --release` (cargo doit être dans le PATH ; `exp
 | Données | SQLite (favoris, historique, téléchargements, réglages, permissions) |
 | Terminal Claude Code | PTY Rust + xterm.js, session tmux partagée avec Quart |
 
-Ports : sonde de présence `127.0.0.1:4330` (seul port ouvert). Pilotage local : prise Unix `$XDG_RUNTIME_DIR/echo-browser/control.sock`.
+Ports : sonde de présence `127.0.0.1:4330` ; port de débogage local `127.0.0.1` (aléatoire, DevTools ancrés et onglets ouverts par les extensions — seule l'origine `devtools://devtools` est admise en WebSocket). Pilotage local : prise Unix `$XDG_RUNTIME_DIR/echo-browser/control.sock`.
 
 ## Tester
 
