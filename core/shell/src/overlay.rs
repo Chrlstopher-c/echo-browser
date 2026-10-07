@@ -269,8 +269,10 @@ fn place_under(anchor: Rect, anchor_view: &BrowserView) -> Rect {
 
     let height = POPUP_HEIGHT.min(frame.height - 2 * POPUP_MARGIN).max(200);
     let width = POPUP_WIDTH.min(frame.width - 2 * POPUP_MARGIN).max(240);
-    let x = anchor.x.min(frame.width - width - POPUP_MARGIN).max(POPUP_MARGIN);
-    let y = (anchor.y + anchor.height + POPUP_GAP)
+    // A droite de la barre laterale : posee sous l'icone, la barre (dessinee au-dessus) la recouvrait.
+    let sidebar_right = crate::window::docked_width() + origine.x;
+    let x = (sidebar_right + POPUP_GAP).min(frame.width - width - POPUP_MARGIN).max(POPUP_MARGIN);
+    let y = anchor.y
         .min(frame.height - height - POPUP_MARGIN)
         .max(POPUP_MARGIN);
     Rect { x, y, width, height }
