@@ -30,7 +30,7 @@ cat > "$ECHO_RUN_DIR/lien.html" <<'H'
 <title>lien</title><body style="margin:0"><a href="cible.html" target="_blank" style="display:block;height:100vh">ouvrir</a>
 H
 echo '<title>cible</title><p>cible</p>' > "$ECHO_RUN_DIR/cible.html"
-trap 'cp "$ECHO_RUN_DIR/browser.log" /tmp/claude-1000/popup.log 2>/dev/null; ./stop.sh >/dev/null 2>&1 || true' EXIT
+trap './stop.sh >/dev/null 2>&1 || true' EXIT
 ./start.sh release >/dev/null; sleep 14
 python3 - <<'PY'
 import json, os, socket, subprocess, time
@@ -39,8 +39,14 @@ sock.connect(f"{os.environ['XDG_RUNTIME_DIR']}/echo-browser/{os.environ['ECHO_CO
 f = sock.makefile("rw")
 def call(**r):
     f.write(json.dumps(r) + "\n"); f.flush(); return json.loads(f.readline())
+def ready(tab, title):
+    for _ in range(40):
+        t = [x for x in call(op="tabs")["tabs"] if x["id"] == tab]
+        if t and t[0]["title"] == title and not t[0]["loading"]:
+            time.sleep(0.5); return
+        time.sleep(0.25)
 o = call(op="open", url="file://" + os.environ["ECHO_RUN_DIR"] + "/opener.html")["id"]
-time.sleep(2)
+ready(o, "origine")
 call(op="click", x=300, y=300)  # geste utilisateur, comme un clic sur « Continuer avec Google »
 time.sleep(1.5)
 titles = [t["title"] for t in call(op="tabs")["tabs"]]
@@ -60,7 +66,7 @@ assert not any("popup" in t["title"] for t in tabs), "la popup ne s'est pas refe
 assert "recu:connecte" in call(op="read", id=o)["text"], "le message n'est pas revenu a la page d'origine"
 # Popup coupee de sa page (COOP, cas de LinkedIn + Google) : fermee, page d'origine rechargee.
 o2 = call(op="open", url="file://" + os.environ["ECHO_RUN_DIR"] + "/orphan-opener.html")["id"]
-time.sleep(2)
+ready(o2, "origine2")
 call(op="click", x=300, y=300)
 time.sleep(5)
 tabs = call(op="tabs")["tabs"]
@@ -68,7 +74,7 @@ assert not any(t["title"] == "gsi" for t in tabs), f"popup orpheline restee ouve
 assert [t for t in tabs if t["id"] == o2][0]["active"], "retour sur la page d'origine attendu"
 assert "chargements=2" in call(op="read", id=o2)["text"], call(op="read", id=o2)["text"]
 # Lien target=_blank (pubs, « compléter une tâche »…) : nouvel onglet, jamais une fenetre.
-call(op="open", url="file://" + os.environ["ECHO_RUN_DIR"] + "/lien.html"); time.sleep(2)
+li = call(op="open", url="file://" + os.environ["ECHO_RUN_DIR"] + "/lien.html")["id"]; ready(li, "lien")
 call(op="click", x=300, y=300); time.sleep(2.5)
 titles = [t["title"] for t in call(op="tabs")["tabs"]]
 assert "cible" in titles, f"lien _blank non ouvert en onglet : {titles}"
