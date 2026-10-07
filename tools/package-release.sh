@@ -63,5 +63,6 @@ télécharger le décodeur (depuis un tiers, vérifié par empreinte) puis de re
 EOF
 
 (cd "$OUT" && tar -cf - "$NAME" | xz -T0 -6 > "$NAME.tar.xz")
-sha256sum "$OUT/$NAME.tar.xz" > "$OUT/$NAME.tar.xz.sha256"
+# Nom seul dans le fichier d'empreinte : `sha256sum -c` doit marcher la ou l'utilisateur a telecharge.
+(cd "$OUT" && sha256sum "$NAME.tar.xz" > "$NAME.tar.xz.sha256")
 ls -la "$OUT/$NAME.tar.xz"
