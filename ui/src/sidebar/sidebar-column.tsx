@@ -8,6 +8,7 @@ import { TopControls } from '../address/top-controls'
 import { RestartStrip } from '../restart/restart-strip'
 import { SpaceStrip } from '../spaces/space-strip'
 import { TabsArea } from '../tabs/tabs-area'
+import { CodecsStrip } from './codecs-strip'
 import { NoticeStrip } from './notice-strip'
 import { PermissionStrip } from './permission-strip'
 import { SidebarSheets } from './sidebar-sheets'
@@ -70,6 +71,7 @@ function ColumnFooter({ model }: { model: SidebarModel }): ReactElement {
     <footer className="flex shrink-0 flex-col gap-1.5">
       <RestartStrip pending={extensions.restartPending} count={extensions.pending} onRestart={extensions.restart} />
       <PermissionStrip requests={core.state.permissions} send={core.send} />
+      <CodecsStrip codecs={core.state.codecs} send={core.send} />
       <NoticeStrip notice={core.notice} />
       <UtilityRow
         shield={core.shield}

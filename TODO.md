@@ -17,6 +17,7 @@ Ordre voulu par Chris : angles → favicons → mémoire → décodeur vidéo. P
    ancrée et redimensionnable. Reste : pubs Twitch (essai).
 3c. **« Garder éveillé » (demande de Chris 07/10 soir) : fait** — clic droit sur un onglet → option cochable ; l'onglet n'est
    ni endormi ni allégé, pastille soleil sur son icône, choix gardé à la relance (`tools/test-keep-awake.sh`).
+3f. **Release 0.4.0 (08/10)** : proposition automatique du décodeur, installateur avec entrée de menu et icône.
 3e. **Fait 08/10** : événements d'onglets + `tabs.query` dans les service workers d'extensions (TTV LOL PRO fonctionne) ;
    pubs Twitch bloquées par vaft intégré au bouclier (mesuré). Reste : réveiller un service worker endormi sur un
    changement d'onglet (aujourd'hui il ne reçoit que l'état complet au réveil).

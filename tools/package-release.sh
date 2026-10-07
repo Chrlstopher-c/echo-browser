@@ -25,7 +25,8 @@ cargo build --release -p echo-shell >/dev/null
 rm -rf "$STAGE" && mkdir -p "$STAGE/cef/locales" "$STAGE/ui"
 cp target/release/echo-browser "$STAGE/"
 strip --strip-unneeded "$STAGE/echo-browser"
-cp data/shield-resources.json "$STAGE/"
+cp data/shield-resources.json data/echo-browser.svg "$STAGE/"
+cp tools/release-installer.sh "$STAGE/installer.sh"
 cp -r ui/dist/. "$STAGE/ui/"
 
 for f in libcef.so libvk_swiftshader.so libvulkan.so.1 vk_swiftshader_icd.json icudtl.dat v8_context_snapshot.bin \
@@ -39,7 +40,8 @@ strip --strip-unneeded "$STAGE/cef/libcef.so" "$STAGE/cef/libffmpeg.so"
 cat > "$STAGE/echo-browser.sh" <<'EOF'
 #!/usr/bin/env bash
 # Lance Echo Browser depuis ce dossier. Profil : ~/.local/share/echo-browser (ECHO_DATA_DIR pour le changer).
-here="$(cd "$(dirname "$0")" && pwd)"
+# La commande `echo-browser` est un lien vers ce fichier : on suit le lien pour trouver le dossier.
+here="$(dirname "$(readlink -f "$0")")"
 export CEF_PATH="$here/cef"
 export LD_LIBRARY_PATH="$here/cef${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
 export ECHO_UI_DIR="$here/ui"
@@ -51,11 +53,13 @@ chmod +x "$STAGE/echo-browser.sh"
 cat > "$STAGE/LISEZMOI.txt" <<EOF
 Echo Browser $VERSION — Linux x86-64
 
-Lancer : ./echo-browser.sh
+Installer : ./installer.sh  (menu des applications + commande echo-browser ; relancer pour mettre à jour)
+Essayer sans installer : ./echo-browser.sh
+Désinstaller : ~/.local/opt/echo-browser/installer.sh --retirer  (vos données sont gardées)
 
-Vidéo : VP9, AV1, Opus et Vorbis sont lus d'emblée (YouTube, la plupart des sites). Les décodeurs logiciels
-H.264 et AAC (Twitch, certains MP4) ne sont pas inclus : ces formats sont couverts par des brevets. Pour les
-lire : Réglages → Vidéo → Installer (téléchargé depuis un tiers, vérifié par empreinte), puis Redémarrer.
+Vidéo : VP9, AV1, Opus et Vorbis sont lus d'emblée (YouTube, la plupart des sites). Le H.264/AAC (Twitch, certains
+MP4) est couvert par des brevets et n'est pas distribué : la première fois qu'une page en a besoin, Echo propose de
+télécharger le décodeur (depuis un tiers, vérifié par empreinte) puis de redémarrer. Aussi dans Réglages → Vidéo.
 EOF
 
 (cd "$OUT" && tar -cf - "$NAME" | xz -T0 -6 > "$NAME.tar.xz")

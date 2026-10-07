@@ -59,6 +59,14 @@
   Une page déjà ouverte garde l'ancienne teinte dans ses angles jusqu'au rechargement.
 
 
+## Release 0.4.0 : proposition du décodeur, installateur (08/10)
+- Proposition : le shim des codecs (décodeur libre seulement) envoie `echo:codecs` quand une page demande de l'AAC ou
+  qu'une vidéo échoue au décodage (code 3, ou 4 hors webm/ogg) → `codecs::page_needs_codecs` (une fois par session,
+  réglage `video.codecsPrompt` pour « Jamais ») → bandeau `sidebar/codecs-strip.tsx` : Installer / Plus tard / Jamais,
+  puis Redémarrer. Test du parcours : `tools/test-codecs-prompt.sh` (archive, sans GPU).
+- Archive : `installer.sh` (copie dans ~/.local/opt/echo-browser, entrée de menu + icône `data/echo-browser.svg`,
+  commande `echo-browser`, `--retirer`), ne bloque que si la copie installée est ouverte.
+
 ## Extensions : onglets dans les service workers, pubs Twitch (08/10)
 - Service workers d'extension (`extension_tabs/workers.rs` + `worker.js`) : connexion au protocole de débogage, mise en pause
   au démarrage (`setAutoAttach waitForDebuggerOnStart`, filtre service_worker), `chrome` n'existe qu'à l'arrêt

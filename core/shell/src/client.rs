@@ -242,6 +242,13 @@ wrap_display_handler! {
                 }
                 return 1;
             }
+            if message == crate::codecs::NEED_MARKER {
+                let page = browser.as_deref().and_then(|b| b.main_frame()).map(|f| CefString::from(&f.url()).to_string());
+                if let Some(page) = page.filter(|p| p.starts_with("http")) {
+                    crate::codecs::page_needs_codecs(&page);
+                }
+                return 1;
+            }
             if let Some(page) = message.strip_prefix(crate::store::INSTALL_MARKER) {
                 // Seule une page du catalogue peut demander une installation, et seulement d'une de ses fiches.
                 let from_store = browser

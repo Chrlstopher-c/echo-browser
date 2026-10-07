@@ -105,6 +105,8 @@ export type UiRequest =
   /** Telecharge le decodeur complet (H.264/AAC) depuis un tiers ; actif a la prochaine relance. */
   | { kind: 'installVideoCodecs' }
   | { kind: 'removeVideoCodecs' }
+  /** Ferme la proposition d'installation ; `forever` : ne plus jamais la faire. */
+  | { kind: 'dismissVideoCodecs'; forever: boolean }
 
 /** Ce que le coeur renvoie a l'interface. */
 export type CoreEvent =
@@ -149,6 +151,8 @@ export interface VideoCodecsView {
   /** D'ou vient le decodeur telechargeable. */
   source: string
   error: string | null
+  /** Site dont une video attend le decodeur : l'interface propose de l'installer. */
+  proposal: string | null
 }
 
 /** L'etat d'un onglet tel que l'interface l'affiche. */

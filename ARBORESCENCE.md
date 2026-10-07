@@ -24,8 +24,8 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `core/extensions/src/crx.rs` — ouvrir un paquet d'extension Chrome et l'etaler sur le disque.
 - `core/extensions/src/external.rs` — declarer une extension a Chromium pour qu'il l'installe lui-meme.
 - `core/extensions/src/lib.rs`
-- `core/extensions/src/profiles.rs` — registre : quelles extensions appartiennent à quel profil d'Echo
 - `core/extensions/src/profile.rs` — lire l'inventaire des extensions tenu par Chromium lui-meme.
+- `core/extensions/src/profiles.rs` — quelles extensions appartiennent a quel profil d'Echo. Un profil est une identite : ses extensions
 - `core/extensions/src/store.rs` — l'inventaire des extensions installees, sur disque et en memoire.
 - `core/library/Cargo.toml`
 - `core/library/src/bookmarks.rs` — les favoris, et l'ordre dans lequel l'utilisateur les a ranges.
@@ -37,6 +37,8 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `core/library/src/settings.rs` — les reglages du navigateur, et leurs valeurs par defaut.
 - `core/library/tests/library.rs`
 - `core/shell/Cargo.toml`
+- `core/shell/src/anchor.rs` — le point d'ancrage des extensions. Les API d'extension de Chrome (`tabs.create`,
+- `core/shell/src/anchor_watch.rs` — reperer les onglets que les extensions ouvrent dans la fenetre d'ancrage et les
 - `core/shell/src/app.rs` — le point de contact avec Chromium — drapeaux au demarrage, creation de la fenetre.
 - `core/shell/src/assets.rs` — servir l'interface du navigateur sous le schema interne `echo://`.
 - `core/shell/src/bridge/context.rs` — le menu contextuel — ce que le clic droit ouvre, et ce qu'il declenche.
@@ -48,26 +50,31 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `core/shell/src/bridge/publish.rs` — ce que le coeur pousse vers l'interface — etat de depart, onglets,
 - `core/shell/src/bridge/script.rs` — le code injecte dans la page d'interface pour lui donner `window.echo`.
 - `core/shell/src/client.rs` — le client CEF — ce que Chromium rappelle pendant la vie d'un navigateur.
-- `core/shell/src/extension_tabs/mod.rs` — onglets d'Echo vus par les extensions : pose du pont, script injecté dans leurs pages
-- `core/shell/src/extension_tabs/polyfill.js` — `chrome.tabs.query` qui rend les onglets d'Echo avec leur vrai identifiant
-- `core/shell/src/extension_tabs/pont/` — extension interne (manifeste à clé fixe) : `pont.js` (identifiants réels via `debugger`),
-  `regle.js` (extensions du profil seules actives), `appliquer.html/.js` (applique la règle à la demande)
-- `core/shell/src/extension_tabs/workers.rs` — onglets d'Echo dans les service workers d'extensions (pause au démarrage, envoi des changements)
-- `core/shell/src/extension_tabs/worker.js` — injecté : `tabs.query` et événements d'onglets à partir de la liste d'Echo
-- `core/shell/src/injection/twitch/` — pubs Twitch : vaft (MIT, `LICENSE-vaft`) posé sur twitch.tv quand le bouclier est actif
-- `core/shell/src/extension_profiles.rs` — extensions propres à chaque profil : registre, marque par contexte, application immédiate
-- `core/shell/src/codecs/mod.rs` — décodeur chargé (libre ou complet), état publié, AAC retiré des annonces avec le décodeur libre
-- `core/shell/src/codecs/pack.rs` — décodeur complet tiers : source, empreinte épinglée, téléchargement, rangement, retrait
-- `core/shell/src/codecs/loader.rs` — relance au démarrage avec le dossier du décodeur installé en tête de `LD_LIBRARY_PATH`
 - `core/shell/src/clipboard.rs` — mettre une image dans le presse-papiers du bureau, pour la coller ailleurs (Ctrl+V)
+- `core/shell/src/codecs/loader.rs`
+- `core/shell/src/codecs/mod.rs`
+- `core/shell/src/codecs/pack.rs`
 - `core/shell/src/containers.rs` — les conteneurs d'onglets. Chacun a son propre contexte Chromium — cookies,
 - `core/shell/src/control.rs` — la prise de pilotage locale — un outil (MCP de Claude, script) y liste,
 - `core/shell/src/devtools.rs` — les outils de developpement ancres a droite de la page, dans la fenetre d'Echo.
+- `core/shell/src/extension_profiles.rs`
+- `core/shell/src/extension_tabs/mod.rs`
+- `core/shell/src/extension_tabs/polyfill.js`
+- `core/shell/src/extension_tabs/pont/appliquer.html`
+- `core/shell/src/extension_tabs/pont/appliquer.js`
+- `core/shell/src/extension_tabs/pont/manifest.json`
+- `core/shell/src/extension_tabs/pont/pont.js`
+- `core/shell/src/extension_tabs/pont/regle.js`
+- `core/shell/src/extension_tabs/worker.js`
+- `core/shell/src/extension_tabs/workers.rs`
 - `core/shell/src/filtering.rs` — soumettre chaque requete du navigateur au bouclier, et appliquer sa decision.
 - `core/shell/src/flags.rs` — les drapeaux Chromium imposes au demarrage, et pourquoi chacun est la.
 - `core/shell/src/identity.rs` — ce que le navigateur declare de lui-meme aux sites qu'il visite.
 - `core/shell/src/injection/filter.rs` — glisser le traitement du bouclier dans le flux HTML de la page,
 - `core/shell/src/injection/mod.rs` — appliquer dans la page ce que le blocage reseau ne peut pas faire —
+- `core/shell/src/injection/twitch/LICENSE-vaft`
+- `core/shell/src/injection/twitch/mod.rs`
+- `core/shell/src/injection/twitch/vaft.js`
 - `core/shell/src/main.rs`
 - `core/shell/src/menu.rs` — ce que le clic droit propose, selon ce qui est sous le curseur.
 - `core/shell/src/occlusion.rs` — dire a Chromium quand la fenetre n'est plus visible. Wayland ne le signale pas :
@@ -84,6 +91,7 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `core/shell/src/session.rs` — l'etat vivant du navigateur — les onglets, l'interface, le bouclier.
 - `core/shell/src/shortcuts.rs` — les raccourcis clavier du navigateur, interceptes avant la page.
 - `core/shell/src/sleep.rs` — endormir periodiquement les onglets inactifs pour rendre leur memoire.
+- `core/shell/src/store.rs` — installer une extension depuis le Chrome Web Store sans quitter Echo. La boutique
 - `core/shell/src/suggest.rs` — les suggestions de la page « nouvel onglet » — onglets ouverts, favoris et
 - `core/shell/src/tabs.rs` — les onglets — creation, bascule, fermeture, et la vue qui leur sert de scene.
 - `core/shell/src/terminal.rs` — le terminal de Claude Code — la commande lancee, et les routes
@@ -106,19 +114,29 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `rust-toolchain.toml`
 - `start.sh`
 - `stop.sh`
-- `tools/package-release.sh` — archive publique (binaire, moteur, décodeur libre, interface, lanceur)
 - `tools/bench-ram.sh`
+- `tools/bench-twitch-ads.py`
 - `tools/bench-video.sh`
 - `tools/build-resources.mjs`
 - `tools/fetch-cef.sh`
 - `tools/gen-arborescence.py`
+- `tools/package-release.sh`
+- `tools/release-installer.sh`
+- `tools/test-codecs-install.sh`
+- `tools/test-codecs-prompt.sh`
 - `tools/test-containers.sh`
 - `tools/test-contextmenu.sh`
 - `tools/test-control.sh`
 - `tools/test-copy-image.sh`
 - `tools/test-drag-folder.sh`
+- `tools/test-extension-events.sh`
+- `tools/test-extension-profiles.sh`
+- `tools/test-extension-query.sh`
+- `tools/test-extension-tabs.sh`
 - `tools/test-folders.sh`
+- `tools/test-inspect.sh`
 - `tools/test-ipc-origin.sh`
+- `tools/test-keep-awake.sh`
 - `tools/test-media-sleep.sh`
 - `tools/test-never-sleep.sh`
 - `tools/test-occlusion.sh`
@@ -127,15 +145,8 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `tools/test-scheme.sh`
 - `tools/test-shield-toggle.sh`
 - `tools/test-sidebar-anim.sh`
-- `tools/test-extension-events.sh` — service worker d'extension : `tabs.query` au démarrage, `onUpdated` éveillé
-- `tools/bench-twitch-ads.py` — banc pubs Twitch : étiquette de pub affichée et avancée de la vidéo sur 70 s
-- `tools/test-extension-profiles.sh` — une extension n'est active que dans les profils qui l'ont (ajout, retrait), conteneurs rattachés
-- `tools/test-extension-query.sh` — `tabs.query` d'une fenêtre d'extension rend l'onglet affiché, avec un id réel
-- `tools/test-codecs-install.sh` — release : installer le décodeur complet, redémarrer, lire H.264 + AAC sans GPU
-- `tools/test-inspect.sh` — « Examiner l'élément » sélectionne l'élément cliqué ; largeur des outils enregistrée
-- `tools/test-keep-awake.sh` — « Garder éveillé » : ni veille ni allègement, gardé à la relance, décochable
-- `tools/test-trim-alive.sh` — une page d'arrière-plan allégée reste vivante (JavaScript actif, pas de rechargement)
 - `tools/test-sleep-scroll.sh`
+- `tools/test-trim-alive.sh`
 - `tools/test-warm.sh`
 - `ui/.gitignore`
 - `ui/README.md`
@@ -143,6 +154,7 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `ui/index.html`
 - `ui/menu.html`
 - `ui/package.json`
+- `ui/pages.html`
 - `ui/public/bord.css`
 - `ui/public/bord.html`
 - `ui/public/bord.js`
@@ -155,6 +167,8 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `ui/public/outils-poignee.html`
 - `ui/public/outils-poignee.js`
 - `ui/public/outils.css`
+- `ui/public/popup-poignee.html`
+- `ui/public/popup-poignee.js`
 - `ui/public/terminal.css`
 - `ui/public/terminal.html`
 - `ui/public/terminal.js`
@@ -189,16 +203,20 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `ui/src/library/library-sheet.tsx` — feuille de la bibliotheque — trois sections sous un selecteur, le contenu glisse entre elles.
 - `ui/src/library/use-library.ts` — modele de la bibliotheque — section affichee (persistee), favoris, historique, telechargements.
 - `ui/src/main.tsx` — point d'entree de l'interface.
+- `ui/src/pages/main.tsx` — point d'entree des pages pleine largeur (reglages, bibliotheque) ouvertes dans un onglet.
+- `ui/src/pages/pages-app.tsx` — les pages pleine largeur d'Echo — reglages et bibliotheque — dans un onglet, la ou la
+- `ui/src/pages/use-page-route.ts` — la section affichee, lue dans l'ancre de l'adresse (#reglages, #bibliotheque).
+- `ui/src/pages/use-page-theme.ts` — la page prend la teinte et le schema choisis dans la barre (stockage local partage),
 - `ui/src/restart/restart-screen.tsx` — ecran d'attente plein cadre pendant la relance du navigateur. Il vit quelques
 - `ui/src/restart/restart-strip.tsx` — bande de relance — propose le redemarrage sans l'imposer, jamais bloquante.
 - `ui/src/settings/containers-section.tsx` — conteneurs dans les reglages — nom et retrait ; l'ouverture se fait depuis la liste d'onglets.
-- `ui/src/settings/video-section.tsx` — Réglages → Vidéo : décodeur complet, installer / redémarrer / retirer
 - `ui/src/settings/grants-section.tsx` — les autorisations retenues par site (camera, micro, position…) et leur retrait.
 - `ui/src/settings/profiles-section.tsx` — les profils dans les reglages — renommer chacun ; leur couleur est celle de leur pastille.
 - `ui/src/settings/setting-catalogue.ts` — habillage des reglages — pour chaque cle que le coeur livre, un groupe, un libelle
 - `ui/src/settings/setting-row.tsx` — une ligne de reglage — libelle, explication, et le controle qui va avec son type.
 - `ui/src/settings/settings-sheet.tsx` — feuille des reglages — apparence tenue par l'interface, puis les reglages du coeur par theme.
 - `ui/src/settings/use-settings.ts` — reglages groupes par theme d'apres le catalogue, et envoi des modifications au coeur.
+- `ui/src/settings/video-section.tsx` — decodeur video complet (H.264/AAC) — etat, installation a la demande depuis un tiers, retrait.
 - `ui/src/shared/contract.ts` — miroir TypeScript du contrat d'echange avec le coeur Rust.
 - `ui/src/shared/core-bridge.ts` — resoudre le pont vers le coeur — le vrai s'il est injecte, sinon le faux de developpement.
 - `ui/src/shared/core-state.ts` — etat de l'interface derive des evenements du coeur. Reducteur pur, sans effet de bord.
@@ -236,6 +254,7 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `ui/src/shield/shield-sheet.tsx` — feuille du bouclier — etat, compteurs, interrupteurs global et par site, listes.
 - `ui/src/shield/shield-stat.tsx` — chiffre de blocage — nombre monospace et sa legende complete.
 - `ui/src/shield/use-shield.ts` — commandes du bouclier — interrupteurs, listes de filtres, rafraichissement borne.
+- `ui/src/sidebar/codecs-strip.tsx` — proposer le decodeur video complet quand une page en a besoin (Twitch, MP4 en H.264/AAC), puis le
 - `ui/src/sidebar/notice-strip.tsx` — message du coeur, pose au-dessus de la rangee d'outils, efface automatiquement.
 - `ui/src/sidebar/permission-strip.tsx` — la question d'un site qui demande une permission (camera, micro, position…).
 - `ui/src/sidebar/sheet-host.tsx` — cadre anime d'une feuille — en-tete avec titre et fermeture, corps defilant.

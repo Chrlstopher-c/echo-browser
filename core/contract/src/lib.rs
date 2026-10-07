@@ -132,6 +132,8 @@ pub enum UiRequest {
     /// Telecharge le decodeur complet (H.264/AAC) depuis un tiers ; actif a la prochaine relance.
     InstallVideoCodecs,
     RemoveVideoCodecs,
+    /// Ferme la proposition d'installation ; `forever` : ne plus jamais la faire.
+    DismissVideoCodecs { forever: bool },
 }
 
 /// Ce que le coeur renvoie a l'interface.
@@ -194,6 +196,8 @@ pub struct VideoCodecsView {
     /// D'ou vient le decodeur telechargeable.
     pub source: String,
     pub error: Option<String>,
+    /// Site dont une video attend le decodeur : l'interface propose de l'installer.
+    pub proposal: Option<String>,
 }
 
 /// L'etat d'un onglet tel que l'interface l'affiche.

@@ -16,9 +16,17 @@ pub use loader::adopt_installed;
 
 const AAC_MARK: &[u8] = b"AAC decoder\0";
 
+/// Signal envoye par la page quand elle a besoin du decodeur complet : Echo propose alors de l'installer.
+pub const NEED_MARKER: &str = "echo:codecs";
+
 /// Avec le decodeur libre, l'AAC est annonce par le moteur mais jamais decodable (aucun chemin materiel) : on le retire
-/// des annonces pour que les sites basculent sur Opus.
-const SHIM: &str = "(()=>{const no=t=>/mp4a|aac/i.test(String(t));\
+/// des annonces pour que les sites basculent sur Opus. Une demande d'AAC, ou une video qui echoue a se decoder, envoie
+/// `NEED_MARKER`.
+
+const SHIM: &str = "(()=>{const say=()=>{if(!self.__echoCodecs){self.__echoCodecs=1;console.log('echo:codecs')}};\
+const no=t=>{const r=/mp4a|aac/i.test(String(t));if(r)say();return r};\
+addEventListener('error',e=>{const v=e.target,c=v instanceof HTMLMediaElement&&v.error&&v.error.code;\
+if(c===3||(c===4&&!/\\.(webm|ogg|ogv|opus)(\\?|$)/i.test(v.currentSrc||'')))say()},true);\
 const cp=HTMLMediaElement.prototype.canPlayType;\
 HTMLMediaElement.prototype.canPlayType=function(t){return no(t)?'':cp.call(this,t)};\
 if(self.MediaSource){const s=MediaSource.isTypeSupported.bind(MediaSource);MediaSource.isTypeSupported=t=>!no(t)&&s(t)}\
@@ -27,6 +35,11 @@ mc.decodingInfo=c=>no(c&&c.audio&&c.audio.contentType)\
 ?Promise.resolve({supported:false,smooth:false,powerEfficient:false}):d(c)}})()";
 
 static DOWNLOADING: AtomicBool = AtomicBool::new(false);
+/// Site dont une video attend le decodeur complet : l'interface propose l'installation.
+static PROPOSAL: Mutex<Option<String>> = Mutex::new(None);
+/// « Plus tard » : on ne repropose pas avant la prochaine session.
+static DISMISSED: AtomicBool = AtomicBool::new(false);
+const PROMPT_SETTING: &str = "video.codecsPrompt";
 static LAST_ERROR: Mutex<Option<String>> = Mutex::new(None);
 
 /// Le decodeur charge par ce processus.
@@ -76,7 +89,12 @@ fn status() -> VideoCodecsStatus {
 
 /// Diffuse l'etat des decodeurs a l'interface.
 pub fn publish() {
-    let codecs = VideoCodecsView { status: status(), source: pack::SOURCE.to_string(), error: LAST_ERROR.lock().clone() };
+    let codecs = VideoCodecsView {
+        status: status(),
+        source: pack::SOURCE.to_string(),
+        error: LAST_ERROR.lock().clone(),
+        proposal: PROPOSAL.lock().clone(),
+    };
     crate::bridge::publish(&CoreEvent::VideoCodecsChanged { codecs });
 }
 
@@ -98,6 +116,39 @@ pub fn install() {
             publish();
         });
     });
+}
+
+/// Une page a besoin du decodeur complet : le proposer, une fois par session, sauf refus definitif.
+pub fn page_needs_codecs(page_url: &str) {
+    if status() != VideoCodecsStatus::Missing || DISMISSED.load(Ordering::SeqCst) || PROPOSAL.lock().is_some() {
+        return;
+    }
+    let refused = crate::session::with(|s| {
+        echo_library::settings::all(&s.library)
+            .into_iter()
+            .any(|(key, value)| key == PROMPT_SETTING && value == echo_library::settings::Value::Flag(false))
+    })
+    .unwrap_or(false);
+    if refused {
+        return;
+    }
+    let host = page_url.split("://").nth(1).and_then(|rest| rest.split(['/', '?', '#']).next()).unwrap_or(page_url);
+    info!(%host, "video H.264/AAC : installation du decodeur proposee");
+    *PROPOSAL.lock() = Some(host.trim_start_matches("www.").to_string());
+    publish();
+}
+
+/// « Plus tard » ou « Ne plus proposer ».
+pub fn dismiss(forever: bool) {
+    DISMISSED.store(true, Ordering::SeqCst);
+    *PROPOSAL.lock() = None;
+    if forever {
+        let off = echo_library::settings::Value::Flag(false);
+        if let Some(Err(err)) = crate::session::with(|s| echo_library::settings::set(&s.library, PROMPT_SETTING, &off)) {
+            warn!(%err, "refus de la proposition non enregistre");
+        }
+    }
+    publish();
 }
 
 /// Retire le decodeur complet ; le decodeur libre reprend a la prochaine relance.

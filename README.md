@@ -10,11 +10,16 @@ Objectifs, dans l'ordre : **design** (neumorphisme clair et sombre), **rendu**, 
 Télécharger `echo-browser-<version>-linux-x64.tar.xz` depuis les *Releases*, puis :
 
 ```bash
-tar -xJf echo-browser-*-linux-x64.tar.xz && cd echo-browser-*-linux-x64 && ./echo-browser.sh
+tar -xJf echo-browser-*-linux-x64.tar.xz && cd echo-browser-*-linux-x64 && ./installer.sh
 ```
 
-Lecture vidéo : VP9, AV1, Opus et Vorbis d'emblée (YouTube…). Le H.264/AAC (Twitch, certains MP4) n'est pas
-distribué dans la release : ces formats sont brevetés. Le moteur compilé localement avec `proprietary_codecs` les lit.
+Echo apparaît dans le menu des applications (et la commande `echo-browser`). Mise à jour : extraire la nouvelle archive
+et relancer `./installer.sh`. Désinstaller : `~/.local/opt/echo-browser/installer.sh --retirer` (le profil est gardé).
+Sans installer : `./echo-browser.sh` depuis le dossier extrait.
+
+Lecture vidéo : VP9, AV1, Opus et Vorbis d'emblée (YouTube…). Le H.264/AAC (Twitch, certains MP4) est breveté et n'est
+pas distribué : la première fois qu'une page en a besoin, Echo propose de télécharger le décodeur (tiers, vérifié par
+empreinte), puis de redémarrer. Aussi dans Réglages → Vidéo.
 
 Fabriquer l'archive : `tools/package-release.sh <libffmpeg.so libre>` (décodeur compilé avec `ffmpeg_branding=Chromium`).
 
