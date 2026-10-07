@@ -15,7 +15,7 @@ Ordre voulu par Chris : angles → favicons → mémoire → décodeur vidéo. P
    copier l'image, profils façon Arc, veille pendant une lecture, état réel du bouclier, pages pleine largeur (réglages, bibliothèque,
    extensions), bouton « Ajouter à Echo » sur le Web Store, onglets ouverts par les extensions (fenêtre d'ancrage), fenêtre d'extension
    ancrée et redimensionnable. Reste : pubs Twitch (essai).
-4. **Reste (petit)** : `tabs.query` des extensions voit l'onglet vide de l'ancrage (suggestions Proton par site) ; extensions dans les conteneurs (Chromium les rattache au profil) ; menu contextuel des sites aux couleurs
+4. **Reste** : **extensions propres à chaque profil** (règle de Chris : un profil = une identité, rien de partagé ; aujourd'hui une extension s'installe dans tous les profils) ; menu contextuel des sites aux couleurs
    neumorphiques ; « Examiner l'élément » qui sélectionne l'élément cliqué (aujourd'hui : ouvre seulement les DevTools ancrés) ;
    largeur des DevTools mémorisée ; pubs Twitch (insérées côté serveur dans le flux, le bouclier ne les voit pas).
 5. **Fait 07/10** : moteur CEF compilé avec codecs installé (Twitch/H.264/AAC/HEVC OK, testé par Chris en 1080p). Aucun build lourd

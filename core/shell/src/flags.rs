@@ -93,12 +93,18 @@ pub fn apply(process_type: &str, command_line: &mut CommandLine) {
     switch_with_value(command_line, "remote-allow-origins", "devtools://devtools");
 
     // Banc : `ECHO_FLAGS="--a --b=1"` ajoute des drapeaux Chromium pour mesurer leur effet.
+    let pont = crate::extension_tabs::install_pont();
+    let mut unpacked: Vec<String> = pont.iter().map(|d| d.to_string_lossy().into_owned()).collect();
     for flag in std::env::var("ECHO_FLAGS").unwrap_or_default().split_whitespace() {
         let flag = flag.trim_start_matches("--");
         match flag.split_once('=') {
+            Some(("load-extension", value)) => unpacked.extend(value.split(',').map(str::to_string)),
             Some((name, value)) => switch_with_value(command_line, name, value),
             None => command_line.append_switch(Some(&CefString::from(flag))),
         }
+    }
+    if !unpacked.is_empty() {
+        switch_with_value(command_line, "load-extension", &unpacked.join(","));
     }
 
     if aucun_proxy_declare() {
@@ -107,14 +113,13 @@ pub fn apply(process_type: &str, command_line: &mut CommandLine) {
 
     let inventaire = echo_extensions::Extensions::new(extensions_dir())
         .with_profile(echo_extensions::profile::default_profile(&data_dir()));
-    // `--load-extension` n'est pas repris ici : mesure du 10/09/2026, une extension
-    // ainsi chargee est listee, annoncee active, et toutes ses adresses repondent
-    // ERR_BLOCKED_BY_CLIENT — y compris avec le mode developpeur. Les extensions
-    // passent desormais par une declaration que Chromium installe lui-meme
-    // (echo_extensions::external).
+    // Les extensions de l'utilisateur passent par une declaration que Chromium installe lui-meme
+    // (echo_extensions::external) : le 10/09/2026, `--load-extension` les laissait en ERR_BLOCKED_BY_CLIENT.
+    // Depuis CEF 154 il fonctionne (verifie le 07/10) et ne sert qu'au pont interne et aux tests.
     // Ce que l'utilisateur a ecarte ne se desactive pas dans le profil : Chromium y
     // remet sa propre valeur. Il respecte en revanche cette liste-ci.
-    if let Some(gardees) = inventaire.enabled_paths() {
+    if let Some(mut gardees) = inventaire.enabled_paths() {
+        gardees.extend(unpacked);
         switch_with_value(command_line, "disable-extensions-except", &gardees.join(","));
         tracing::info!(nombre = gardees.len(), "extensions gardees actives");
     }

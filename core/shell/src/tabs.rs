@@ -243,6 +243,10 @@ impl Tabs {
         self.entries.iter().filter(|t| t.space == space).max_by_key(|t| t.last_active).map(|t| t.id)
     }
 
+    pub fn iter(&self) -> impl Iterator<Item = &Tab> {
+        self.entries.iter()
+    }
+
     pub fn exists(&self, id: TabId) -> bool {
         self.entries.iter().any(|tab| tab.id == id)
     }

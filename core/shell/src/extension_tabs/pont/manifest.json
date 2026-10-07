@@ -1,0 +1,9 @@
+{
+  "manifest_version": 3,
+  "name": "Echo — onglets pour les extensions",
+  "description": "Interne a Echo : relie les onglets d'Echo aux extensions qui ont le droit de les voir.",
+  "version": "1.0",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA3sj5Q8AJaoggr/gU5ZCLtxrZIyf6J416oQhkfz+PAebKd80o7JbiJc6iMtbCV5DSUMPCTSjB9ExSEW+MU6huCl7gJUBaLRx3Wbj9dGK/yuHR9VaBBWjvMmP5gJDnvPYH50XD74PILwhQE9lAmTXzgsZH9sf0X17dN23PYZsRnJFcmT9NVyYAnd1zY81JIaa+baIKSy4pxPeawRvp0bgypHRywap3jC8toR407Bb/Y/oV9ADuo3wVBQeui3meM4+RKLSrxlOK3CAocoy7fl4FkPwYNyuXArnS2ZBTxkle6VsX8J6DwW5j9nPFgmzxYZOZusT9QAuoRk2sn9C2l6vhLQIDAQAB",
+  "permissions": ["debugger", "management"],
+  "background": { "service_worker": "pont.js" }
+}

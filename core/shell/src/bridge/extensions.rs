@@ -51,6 +51,7 @@ pub fn publish_extensions() {
     let Some(extensions) = session::with(|s| s.extensions.list()) else { return };
     let view = extensions
         .into_iter()
+        .filter(|extension| !crate::extension_tabs::is_pont(&extension.id))
         .map(|extension| {
             let url = |path: &str| echo_extensions::action::resource_url(&extension.id, path);
             echo_contract::ExtensionView {

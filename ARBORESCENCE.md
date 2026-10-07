@@ -47,6 +47,9 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `core/shell/src/bridge/publish.rs` — ce que le coeur pousse vers l'interface — etat de depart, onglets,
 - `core/shell/src/bridge/script.rs` — le code injecte dans la page d'interface pour lui donner `window.echo`.
 - `core/shell/src/client.rs` — le client CEF — ce que Chromium rappelle pendant la vie d'un navigateur.
+- `core/shell/src/extension_tabs/mod.rs` — onglets d'Echo vus par les extensions : pose du pont, script injecté dans leurs pages
+- `core/shell/src/extension_tabs/polyfill.js` — `chrome.tabs.query` qui rend les onglets d'Echo avec leur vrai identifiant
+- `core/shell/src/extension_tabs/pont/` — extension interne (manifeste à clé fixe, `pont.js`) : identifiants réels via `debugger`
 - `core/shell/src/codecs/mod.rs` — décodeur chargé (libre ou complet), état publié, AAC retiré des annonces avec le décodeur libre
 - `core/shell/src/codecs/pack.rs` — décodeur complet tiers : source, empreinte épinglée, téléchargement, rangement, retrait
 - `core/shell/src/codecs/loader.rs` — relance au démarrage avec le dossier du décodeur installé en tête de `LD_LIBRARY_PATH`
@@ -118,6 +121,7 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `tools/test-scheme.sh`
 - `tools/test-shield-toggle.sh`
 - `tools/test-sidebar-anim.sh`
+- `tools/test-extension-query.sh` — `tabs.query` d'une fenêtre d'extension rend l'onglet affiché, avec un id réel
 - `tools/test-codecs-install.sh` — release : installer le décodeur complet, redémarrer, lire H.264 + AAC sans GPU
 - `tools/test-trim-alive.sh` — une page d'arrière-plan allégée reste vivante (JavaScript actif, pas de rechargement)
 - `tools/test-sleep-scroll.sh`

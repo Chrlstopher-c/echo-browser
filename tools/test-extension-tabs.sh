@@ -15,7 +15,7 @@ echo "chrome.tabs.create({url: 'https://example.com/?depuis=popup'}); chrome.run
 export ECHO_FLAGS="--load-extension=$EXT"
 trap './stop.sh >/dev/null 2>&1 || true' EXIT
 ./start.sh release >/dev/null; sleep 14
-ID=$(curl -s "http://127.0.0.1:$ECHO_DEVTOOLS_PORT/json/list" | python3 -c "import json,sys;[print(t['url'].split('/')[2]) for t in json.load(sys.stdin) if t['url'].startswith('chrome-extension://')]" | head -1)
+ID=$(curl -s "http://127.0.0.1:$ECHO_DEVTOOLS_PORT/json/list" | python3 -c "import json,sys;[print(t['url'].split('/')[2]) for t in json.load(sys.stdin) if t['url'].startswith('chrome-extension://') and 'mcndjimfalplibhknmeieoolkckkpnnc' not in t['url']]" | head -1)
 python3 - "$ID" <<'PY'
 import json, os, socket, sys, time
 s = socket.socket(socket.AF_UNIX); s.connect(f"{os.environ['XDG_RUNTIME_DIR']}/echo-browser/{os.environ['ECHO_CONTROL_NAME']}.sock")

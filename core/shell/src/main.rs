@@ -14,6 +14,7 @@ mod clipboard;
 mod codecs;
 mod containers;
 mod devtools;
+mod extension_tabs;
 mod control;
 mod filtering;
 mod flags;
