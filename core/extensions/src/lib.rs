@@ -9,6 +9,7 @@ pub mod external;
 pub mod catalog;
 pub mod crx;
 pub mod profile;
+pub mod profiles;
 pub mod store;
 
 use std::path::{Path, PathBuf};
@@ -156,6 +157,15 @@ impl Extensions {
             }
         }
         store::remove(&self.root, id)
+    }
+
+    /// Les extensions de chaque profil d'Echo. Au premier appel, tout l'inventaire va au profil `default`.
+    pub fn registry(&self, default: &str) -> profiles::Registry {
+        profiles::load(&self.root, default, || self.list().into_iter().map(|extension| extension.id).collect())
+    }
+
+    pub fn save_registry(&self, registry: &profiles::Registry) -> anyhow::Result<()> {
+        profiles::save(&self.root, registry)
     }
 
     /// Les dossiers a passer a Chromium au demarrage.

@@ -16,18 +16,48 @@ use tracing::info;
 /// On telecharge donc le paquet et on le depaquette nous-memes. Il devient une extension
 /// a nous, chargee au demarrage, que notre gestionnaire pilote entierement.
 pub(super) fn install_extension(source: &str) {
-    let outcome = session::with(|s| s.extensions.install(source));
-    match outcome {
-        Some(Ok(id)) => {
-            mark_restart_needed();
-            info!(%id, "extension declaree");
-            publish(&CoreEvent::Notice {
-                level: echo_contract::NoticeLevel::Info,
-                message: "Extension ajoutée — elle s'installe à la relance.".to_string(),
-            });
+    let Some(id) = echo_extensions::catalog::extract_id(source) else {
+        notify_error(&format!("installation impossible : aucun identifiant d'extension dans « {source} »"));
+        return;
+    };
+    let installed = session::with(|s| s.extensions.list().iter().any(|e| e.id == id)).unwrap_or(false);
+    if !installed {
+        match session::with(|s| s.extensions.install(source)) {
+            Some(Ok(_)) => {
+                mark_restart_needed();
+                info!(%id, "extension declaree");
+            }
+            Some(Err(err)) => return notify_error(&format!("installation impossible : {err}")),
+            None => return notify_error("installation impossible : le navigateur est occupé."),
         }
-        Some(Err(err)) => notify_error(&format!("installation impossible : {err}")),
-        None => notify_error("installation impossible : le navigateur est occupé."),
+    }
+    let mut registry = crate::extension_profiles::registry();
+    let space = session::with(|s| s.tabs.space()).unwrap_or_else(|| crate::profiles::DEFAULT.to_string());
+    let added = echo_extensions::profiles::add(&mut registry, &space, &id);
+    crate::extension_profiles::save(&registry);
+    let message = match (installed, added) {
+        (false, _) => "Extension ajoutée à ce profil — elle s'installe à la relance.",
+        (true, true) => "Extension ajoutée à ce profil.",
+        (true, false) => "Cette extension est déjà dans ce profil.",
+    };
+    publish(&CoreEvent::Notice { level: echo_contract::NoticeLevel::Info, message: message.to_string() });
+    publish_extensions();
+}
+
+/// Retire une extension du catalogue du profil affiche. Plus aucun profil ne la garde : sa declaration est retiree et
+/// Chromium la desinstalle a la relance.
+pub(super) fn remove_from_profile(id: &str) {
+    let mut registry = crate::extension_profiles::registry();
+    let space = session::with(|s| s.tabs.space()).unwrap_or_else(|| crate::profiles::DEFAULT.to_string());
+    let kept_elsewhere = echo_extensions::profiles::remove(&mut registry, &space, id);
+    crate::extension_profiles::save(&registry);
+    if !kept_elsewhere {
+        let profile_root = echo_extensions::profile::default_profile(&crate::flags::data_dir());
+        let withdrawn = profile_root.parent().map(|root| echo_extensions::external::withdraw(root, id));
+        if let Some(Err(err)) = withdrawn {
+            notify_error(&format!("désinstallation incomplète : {err}"));
+        }
+        mark_restart_needed();
     }
     publish_extensions();
 }
@@ -49,9 +79,12 @@ const CATALOG_HOME: &str = "https://chromewebstore.google.com/";
 pub fn publish_extensions() {
     let pending = RESTART_NEEDED.load(std::sync::atomic::Ordering::SeqCst);
     let Some(extensions) = session::with(|s| s.extensions.list()) else { return };
+    // Un profil ne montre que ses extensions ; nos propres paquets (ligne de commande) restent visibles partout.
+    let mine = crate::extension_profiles::current_ids();
     let view = extensions
         .into_iter()
         .filter(|extension| !crate::extension_tabs::is_pont(&extension.id))
+        .filter(|extension| extension.from_command_line || mine.contains(&extension.id))
         .map(|extension| {
             let url = |path: &str| echo_extensions::action::resource_url(&extension.id, path);
             echo_contract::ExtensionView {

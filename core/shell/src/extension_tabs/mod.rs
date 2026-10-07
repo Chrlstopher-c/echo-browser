@@ -10,11 +10,22 @@ use tracing::warn;
 const PONT_ID: &str = "mcndjimfalplibhknmeieoolkckkpnnc";
 const MANIFEST: &str = include_str!("pont/manifest.json");
 const PONT_JS: &str = include_str!("pont/pont.js");
+/// Fichiers du pont sans traitement : la regle des profils et la page qui l'applique a la demande.
+const STATIC: [(&str, &str); 3] = [
+    ("regle.js", include_str!("pont/regle.js")),
+    ("appliquer.html", include_str!("pont/appliquer.html")),
+    ("appliquer.js", include_str!("pont/appliquer.js")),
+];
 const POLYFILL: &str = include_str!("polyfill.js");
 
 /// Le pont est interne : il ne s'affiche pas parmi les extensions de l'utilisateur.
 pub fn is_pont(id: &str) -> bool {
     id == PONT_ID
+}
+
+/// Page du pont qui applique la regle des profils la ou elle est ouverte.
+pub fn apply_page() -> String {
+    format!("chrome-extension://{PONT_ID}/appliquer.html")
 }
 
 /// Dossier du pont, a charger par `--load-extension`.
@@ -27,7 +38,23 @@ pub fn install_pont() -> Option<PathBuf> {
     let dir = pont_dir();
     let write = || -> std::io::Result<()> {
         std::fs::create_dir_all(&dir)?;
-        for (name, content) in [("manifest.json", MANIFEST), ("pont.js", PONT_JS)] {
+        // Chromium garde le script du service worker deja enregistre, meme quand la version change : le nom du
+        // script suit son contenu, une nouvelle adresse force un nouvel enregistrement.
+        let version = content_version();
+        let script = format!("pont-{}.js", version.replace('.', "-"));
+        let manifest = MANIFEST
+            .replace("\"version\": \"1.0\"", &format!("\"version\": \"{version}\""))
+            .replace("\"pont.js\"", &format!("\"{script}\""));
+        for entry in std::fs::read_dir(&dir)?.flatten() {
+            let name = entry.file_name().to_string_lossy().into_owned();
+            let stale = name.starts_with("pont") && name.ends_with(".js") && name != script;
+            // `profils.json` : ancien registre lu par le pont, remplace par la marque `extensions`.
+            if stale || name == "profils.json" {
+                let _ = std::fs::remove_file(entry.path());
+            }
+        }
+        let files = [("manifest.json", manifest.as_str()), (script.as_str(), PONT_JS)].into_iter().chain(STATIC);
+        for (name, content) in files {
             let path = dir.join(name);
             if std::fs::read_to_string(&path).ok().as_deref() != Some(content) {
                 std::fs::write(path, content)?;
@@ -42,6 +69,13 @@ pub fn install_pont() -> Option<PathBuf> {
             None
         }
     }
+}
+
+/// Version du pont tiree de son contenu (FNV-1a : stable d'une compilation a l'autre).
+fn content_version() -> String {
+    let hash = MANIFEST.bytes().chain(PONT_JS.bytes()).chain(STATIC.iter().flat_map(|(_, c)| c.bytes()))
+        .fold(0xcbf2_9ce4_8422_2325_u64, |h, b| (h ^ u64::from(b)).wrapping_mul(0x0100_0000_01b3));
+    format!("1.{}.{}", (hash >> 16) % 65_535, hash % 65_535)
 }
 
 /// Script a injecter dans une page d'extension, `None` pour le pont lui-meme et les autres pages.

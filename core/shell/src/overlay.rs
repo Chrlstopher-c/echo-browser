@@ -22,6 +22,11 @@ impl Overlay {
     /// `anchor` est n'importe quelle vue deja dans la fenetre : elle sert uniquement a
     /// retrouver la fenetre, qui seule sait ancrer une surimpression.
     pub fn open(anchor: &BrowserView, url: &str, bounds: Rect) -> Option<Self> {
+        Self::open_in(anchor, url, bounds, None)
+    }
+
+    /// Comme `open`, dans le contexte (profil, conteneur) donne ; `None` : le contexte commun.
+    pub fn open_in(anchor: &BrowserView, url: &str, bounds: Rect, context: Option<&mut RequestContext>) -> Option<Self> {
         let window = View::from(anchor).window()?;
         // Fond transparent : la page reste visible sous les coins et les ombres.
         let settings = BrowserSettings { background_color: 0, ..Default::default() };
@@ -34,7 +39,7 @@ impl Overlay {
             Some(&CefString::from(url)),
             Some(&settings),
             None,
-            None,
+            context,
             Some(&mut delegate),
         )?;
         let mut as_view = View::from(&view);

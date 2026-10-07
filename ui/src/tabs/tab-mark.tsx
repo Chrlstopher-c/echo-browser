@@ -8,7 +8,7 @@ import { IconMoon } from '../shared/design/icons'
 import { QUICK } from '../shared/design/motion'
 import { ProgressRing } from '../shared/design/progress-ring'
 import { SiteMark } from '../shared/design/site-mark'
-import { containerColor } from './use-containers'
+import { chosenContainer, containerColor } from './use-containers'
 
 export interface TabMarkProps {
   tab: TabView
@@ -43,6 +43,7 @@ function ContainerPip({ id }: { id: string }): ReactElement {
 
 export function TabMark({ tab, size }: TabMarkProps): ReactElement {
   const ringSize = size + 6
+  const container = chosenContainer(tab.container)
   return (
     <span style={{ width: size, height: size }} className="relative grid shrink-0 place-items-center">
       <motion.span
@@ -52,7 +53,7 @@ export function TabMark({ tab, size }: TabMarkProps): ReactElement {
       >
         <SiteMark url={tab.url} favicon={tab.favicon} size={size} />
       </motion.span>
-      {tab.container !== null && <ContainerPip id={tab.container} />}
+      {container !== null && <ContainerPip id={container} />}
       <AnimatePresence>
         {tab.loading && (
           <motion.span

@@ -12,6 +12,7 @@ pub mod navigation;
 pub mod library;
 pub mod publish;
 
+pub use extensions::publish_extensions;
 pub use library::publish_permissions;
 pub use publish::{
     reset_tab_scroll, set_tab_dirty, set_tab_media, set_tab_favicon, set_tab_scroll, take_pending_scroll,
@@ -107,10 +108,10 @@ fn apply(request: UiRequest) {
         }
         UiRequest::NewTab { url, container } => {
             let target = url.map(|u| normalize(&u)).unwrap_or_else(|| search::HOME.to_string());
-            open_tab_in(&target, container.as_deref());
+            open_tab_in(&target, scoped(container).as_deref());
             publish_tabs();
         }
-        UiRequest::SetTabContainer { id, container } => move_to_container(id, container),
+        UiRequest::SetTabContainer { id, container } => move_to_container(id, scoped(container)),
         UiRequest::WarmTab { id } => warm_tab(id),
         UiRequest::CloseDevTools => crate::devtools::undock(),
         UiRequest::ResizeExtensionPopup { dx, dy } => crate::overlay::resize_extension_popup(dx, dy),
@@ -187,10 +188,7 @@ fn apply(request: UiRequest) {
                 }
                 extensions::publish_extensions();
             } else {
-                // Celles du catalogue appartiennent au gestionnaire de Chromium :
-                // les effacer dans son dos laisserait son profil incoherent.
-                open_tab(echo_extensions::profile::MANAGE_PAGE);
-                publish_tabs();
+                extensions::remove_from_profile(&id);
             }
         }
         UiRequest::SetExtensionEnabled { id, enabled } => {
@@ -332,6 +330,12 @@ pub fn publish(event: &CoreEvent) {
 }
 
 /// Installation demandee par le bouton « Ajouter à Echo » du catalogue.
+/// Un conteneur choisi dans l'interface appartient au profil affiche.
+fn scoped(container: Option<String>) -> Option<String> {
+    let space = session::with(|s| s.tabs.space()).unwrap_or_else(|| crate::profiles::DEFAULT.to_string());
+    container.map(|c| crate::profiles::scope_container(&space, &c))
+}
+
 pub fn install_extension_from_store(page: &str) {
     extensions::install_extension(page);
 }

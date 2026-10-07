@@ -21,3 +21,11 @@ chrome.runtime.onMessageExternal.addListener((message, sender, reply) => {
   })
   return true
 })
+
+importScripts('regle.js')
+
+// Au demarrage du profil et a chaque extension que Chromium y installe. Les changements faits pendant la session
+// passent par `appliquer.html` : un cookie pose par Echo ne declenche pas `cookies.onChanged`.
+chrome.runtime.onStartup.addListener(enforce)
+chrome.runtime.onInstalled.addListener(enforce)
+chrome.management.onInstalled.addListener(enforce)

@@ -31,6 +31,17 @@ export function containerColor(id: string): string {
   return `hsl(${HUES[sum % HUES.length] ?? 205} 58% 62%)`
 }
 
+/**
+ * Le conteneur choisi par l'utilisateur, a partir du contexte de l'onglet : le coeur prefixe un conteneur par son
+ * profil (`profil-<id>--<conteneur>`). Null pour le contexte propre au profil ou le contexte commun.
+ */
+export function chosenContainer(context: string | null): string | null {
+  if (context === null) return null
+  const parts = context.split('--')
+  if (parts.length > 1) return parts[parts.length - 1] ?? null
+  return context.startsWith('profil-') ? null : context
+}
+
 function isContainer(value: unknown): value is Container {
   if (typeof value !== 'object' || value === null) return false
   const candidate = value as Record<string, unknown>

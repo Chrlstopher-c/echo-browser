@@ -60,9 +60,19 @@
 
 
 ## Profils = identités (règle de Chris, 07/10)
-- Comptes, cookies ET extensions jamais partagés entre profils. Cookies/comptes : déjà séparés (un `RequestContext` par profil,
-  `profile/conteneur-profil-<id>`). Extensions : NON conforme — la déclaration externe (`profile/External Extensions`) est lue
-  par tous les profils Chromium, un conteneur créé installe Proton tout seul (~1 min, mesuré). Chantier en cours.
+- Comptes, cookies ET extensions jamais partagés entre profils. Cookies/comptes : un `RequestContext` par profil
+  (`profile/conteneur-profil-<id>`) ; les conteneurs choisis dans un profil lui appartiennent (`profil-<id>--<conteneur>`,
+  `profiles::scope_container` ; profil par défaut : identifiant nu, contextes existants gardés).
+- Extensions : Chromium installe une extension déclarée dans TOUS ses profils (déclaration externe globale). Registre
+  d'Echo `extensions/profils.json` (`echo_extensions::profiles`, migration : tout l'existant → profil par défaut). Le pont
+  (chargé dans chaque profil Chromium) désactive ce qui n'appartient pas au profil, d'après le cookie `extensions` posé par
+  Echo dans chaque contexte (`extension_profiles.rs`). Pièges mesurés : un cookie posé par CEF ne déclenche PAS
+  `cookies.onChanged` → après un ajout/retrait, Echo ouvre un instant `appliquer.html` (page du pont) dans chaque contexte
+  du profil, invisible ; Chromium garde l'ancien script du service worker même si la version change → le nom du script suit
+  son contenu (`pont-<hash>.js`) ; `cookies.getAll({url})` ne rend rien, `cookies.get` oui.
+  Test : `tools/test-extension-profiles.sh` (Proton depuis le catalogue, réseau requis).
+- Tests : lancer sur un sway sans écran (`~/.local/share/jev-desktop/sway`, `WAYLAND_DISPLAY` dédié) pour ne pas ouvrir de
+  fenêtres sur l'écran de Chris ; test-contextmenu/occlusion/popup interrogent Hyprland.
 
 ## Release publique 0.3.0 (07/10)
 - `tools/package-release.sh <libffmpeg.so libre>` → `dist-release/*.tar.xz` + sha256. Décodeur libre : `out/FfmpegLibre` dans l'arbre

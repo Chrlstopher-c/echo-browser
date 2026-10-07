@@ -24,6 +24,7 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `core/extensions/src/crx.rs` — ouvrir un paquet d'extension Chrome et l'etaler sur le disque.
 - `core/extensions/src/external.rs` — declarer une extension a Chromium pour qu'il l'installe lui-meme.
 - `core/extensions/src/lib.rs`
+- `core/extensions/src/profiles.rs` — registre : quelles extensions appartiennent à quel profil d'Echo
 - `core/extensions/src/profile.rs` — lire l'inventaire des extensions tenu par Chromium lui-meme.
 - `core/extensions/src/store.rs` — l'inventaire des extensions installees, sur disque et en memoire.
 - `core/library/Cargo.toml`
@@ -49,7 +50,9 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `core/shell/src/client.rs` — le client CEF — ce que Chromium rappelle pendant la vie d'un navigateur.
 - `core/shell/src/extension_tabs/mod.rs` — onglets d'Echo vus par les extensions : pose du pont, script injecté dans leurs pages
 - `core/shell/src/extension_tabs/polyfill.js` — `chrome.tabs.query` qui rend les onglets d'Echo avec leur vrai identifiant
-- `core/shell/src/extension_tabs/pont/` — extension interne (manifeste à clé fixe, `pont.js`) : identifiants réels via `debugger`
+- `core/shell/src/extension_tabs/pont/` — extension interne (manifeste à clé fixe) : `pont.js` (identifiants réels via `debugger`),
+  `regle.js` (extensions du profil seules actives), `appliquer.html/.js` (applique la règle à la demande)
+- `core/shell/src/extension_profiles.rs` — extensions propres à chaque profil : registre, marque par contexte, application immédiate
 - `core/shell/src/codecs/mod.rs` — décodeur chargé (libre ou complet), état publié, AAC retiré des annonces avec le décodeur libre
 - `core/shell/src/codecs/pack.rs` — décodeur complet tiers : source, empreinte épinglée, téléchargement, rangement, retrait
 - `core/shell/src/codecs/loader.rs` — relance au démarrage avec le dossier du décodeur installé en tête de `LD_LIBRARY_PATH`
@@ -121,6 +124,7 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `tools/test-scheme.sh`
 - `tools/test-shield-toggle.sh`
 - `tools/test-sidebar-anim.sh`
+- `tools/test-extension-profiles.sh` — une extension n'est active que dans les profils qui l'ont (ajout, retrait), conteneurs rattachés
 - `tools/test-extension-query.sh` — `tabs.query` d'une fenêtre d'extension rend l'onglet affiché, avec un id réel
 - `tools/test-codecs-install.sh` — release : installer le décodeur complet, redémarrer, lire H.264 + AAC sans GPU
 - `tools/test-trim-alive.sh` — une page d'arrière-plan allégée reste vivante (JavaScript actif, pas de rechargement)

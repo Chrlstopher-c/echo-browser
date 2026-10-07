@@ -7,7 +7,7 @@ import {
   IconClose, IconFolder, IconMoon, IconPin, IconPlus, IconReload, IconStar, IconTrash, IconUnpin, IconUser,
 } from '../shared/design/icons'
 import { Stepper } from '../shared/design/stepper'
-import { containerColor, type ContainerActions } from './use-containers'
+import { chosenContainer, containerColor, type ContainerActions } from './use-containers'
 import type { FolderActions } from './use-folders'
 import type { TabActions } from './use-tab-actions'
 import { MenuItem, MenuSeparator } from './menu-item'
@@ -84,12 +84,12 @@ function ContainerItems({ tab, containers, close }: ContainerItemsProps): ReactE
   return (
     <>
       {containers.containers
-        .filter((item) => item.id !== tab.container)
+        .filter((item) => item.id !== chosenContainer(tab.container))
         .map((item) => (
           <MenuItem key={item.id} icon={<ContainerDot id={item.id} />} label={`Rouvrir dans « ${item.name} »`}
             onClick={run(() => containers.moveTab(tab.id, item.id))} />
         ))}
-      {tab.container !== null && (
+      {chosenContainer(tab.container) !== null && (
         <MenuItem icon={<IconUser size={13} />} label="Rouvrir hors conteneur"
           onClick={run(() => containers.moveTab(tab.id, null))} />
       )}

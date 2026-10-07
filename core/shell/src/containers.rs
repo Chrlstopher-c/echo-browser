@@ -7,7 +7,7 @@ use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};
 use tracing::warn;
 
-const MAX_ID_LEN: usize = 32;
+const MAX_ID_LEN: usize = 48;
 
 thread_local! {
     /// Un contexte par conteneur, cree a la premiere demande et garde tant que le navigateur vit.
@@ -24,8 +24,11 @@ wrap_request_context_handler! {
     }
 
     impl RequestContextHandler {
-        fn on_request_context_initialized(&self, _request_context: Option<&mut RequestContext>) {
+        fn on_request_context_initialized(&self, request_context: Option<&mut RequestContext>) {
             READY.with(|set| set.borrow_mut().insert(self.id.clone()));
+            if let Some(manager) = request_context.and_then(|context| context.cookie_manager(None)) {
+                crate::extension_profiles::mark(&manager, &crate::profiles::space_of_context(Some(&self.id)));
+            }
         }
     }
 }
@@ -65,6 +68,11 @@ pub fn context_for(id: &str) -> Option<RequestContext> {
     crate::assets::install_factory_in(&context);
     CONTEXTS.with(|map| map.borrow_mut().insert(id.to_string(), context.clone()));
     Some(context)
+}
+
+/// Chaque contexte deja cree, avec son identifiant.
+pub fn for_each_context(mut f: impl FnMut(&str, &RequestContext)) {
+    CONTEXTS.with(|map| map.borrow().iter().for_each(|(id, context)| f(id, context)));
 }
 
 /// Libere les contextes avant l'arret de Chromium.
