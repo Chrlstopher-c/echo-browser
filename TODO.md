@@ -8,7 +8,7 @@ Ordre voulu par Chris : angles → favicons → mémoire → décodeur vidéo. P
    l'instance de Chris tuée) · angles de page (masques) · identité Chrome 154 cohérente (captcha) · neumorphisme clair/sombre.
 2. **Faits cette nuit (tests dans `tools/test-*.sh`)** : animation barre repliée (page repoussée, 14 étapes) · clic droit réel dans les pages ·
    F12 / Ctrl+Maj+I/J (DevTools complets) · clic droit barre (onglet, dossier, fond de liste) · dossiers d'onglets persistés · conteneurs
-   (cookies isolés, persistés) · défilement restitué au réveil · purge V8 des onglets d'arrière-plan (-9 %) · démarrage 0,3 s.
+   (cookies isolés, persistés) · défilement restitué au réveil · allègement des onglets d'arrière-plan (pression mémoire simulée ; l'ancienne purge V8 tuait les pages) · démarrage 0,3 s.
 3. **Mémoire** : drapeaux Chromium testés, aucun > 4 % (voir STATE.md) ; le levier est la veille. Piste restante : état des onglets endormis
    sur disque (déjà : fiche + défilement), délai de veille plus court, extensions par conteneur.
 3b. **RETOURS DE CHRIS 07/10 après-midi** — faits et testés : menu clic droit (fermeture/réouverture), téléchargements annoncés,

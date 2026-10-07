@@ -177,11 +177,16 @@ pub fn sleep_idle_tabs(idle: std::time::Duration) -> usize {
     slept
 }
 
-/// Purge la memoire JavaScript des pages d'arriere-plan inactives depuis `idle`. Renvoie leur nombre.
+/// Allege les pages d'arriere-plan inactives depuis `idle` (pression memoire simulee : caches vides, ramasse-miettes).
+/// Jamais `Memory.forciblyPurgeJavaScriptMemory` : il detruit le contexte JavaScript, la page reste affichee mais morte
+/// (editeurs inertes, collage casse) jusqu'au rechargement. Renvoie le nombre de pages allegees.
 pub fn trim_idle_tabs(idle: std::time::Duration) -> usize {
     use cef::{ImplBrowser, ImplBrowserHost};
     let targets = session::with(|s| s.tabs.take_trim_targets(idle)).unwrap_or_default();
-    let message = serde_json::json!({"id": 1, "method": "Memory.forciblyPurgeJavaScriptMemory"}).to_string();
+    let message = serde_json::json!({
+        "id": 1, "method": "Memory.simulatePressureNotification", "params": {"level": "critical"}
+    })
+    .to_string();
     for browser in &targets {
         if let Some(host) = browser.host() {
             host.send_dev_tools_message(Some(message.as_bytes()));

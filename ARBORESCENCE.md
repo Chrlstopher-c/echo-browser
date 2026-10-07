@@ -116,6 +116,7 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `tools/test-scheme.sh`
 - `tools/test-shield-toggle.sh`
 - `tools/test-sidebar-anim.sh`
+- `tools/test-trim-alive.sh` — une page d'arrière-plan allégée reste vivante (JavaScript actif, pas de rechargement)
 - `tools/test-sleep-scroll.sh`
 - `tools/test-warm.sh`
 - `ui/.gitignore`
