@@ -24,7 +24,7 @@ pub fn start() {
     });
 }
 
-fn browser_endpoint() -> Option<String> {
+pub fn browser_endpoint() -> Option<String> {
     let mut stream = TcpStream::connect((Ipv4Addr::LOCALHOST, crate::devtools::port())).ok()?;
     // L'adresse renvoyee est construite sur l'en-tete Host : sans le port, elle en est privee.
     let request = format!("GET /json/version HTTP/1.1\r\nHost: 127.0.0.1:{}\r\nConnection: close\r\n\r\n", crate::devtools::port());

@@ -206,4 +206,5 @@ pub fn publish_tabs() {
     };
     publish(&CoreEvent::TabsChanged { tabs, active });
     crate::persist::schedule();
+    crate::extension_tabs::tabs_changed();
 }

@@ -52,6 +52,9 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `core/shell/src/extension_tabs/polyfill.js` — `chrome.tabs.query` qui rend les onglets d'Echo avec leur vrai identifiant
 - `core/shell/src/extension_tabs/pont/` — extension interne (manifeste à clé fixe) : `pont.js` (identifiants réels via `debugger`),
   `regle.js` (extensions du profil seules actives), `appliquer.html/.js` (applique la règle à la demande)
+- `core/shell/src/extension_tabs/workers.rs` — onglets d'Echo dans les service workers d'extensions (pause au démarrage, envoi des changements)
+- `core/shell/src/extension_tabs/worker.js` — injecté : `tabs.query` et événements d'onglets à partir de la liste d'Echo
+- `core/shell/src/injection/twitch/` — pubs Twitch : vaft (MIT, `LICENSE-vaft`) posé sur twitch.tv quand le bouclier est actif
 - `core/shell/src/extension_profiles.rs` — extensions propres à chaque profil : registre, marque par contexte, application immédiate
 - `core/shell/src/codecs/mod.rs` — décodeur chargé (libre ou complet), état publié, AAC retiré des annonces avec le décodeur libre
 - `core/shell/src/codecs/pack.rs` — décodeur complet tiers : source, empreinte épinglée, téléchargement, rangement, retrait
@@ -124,6 +127,8 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `tools/test-scheme.sh`
 - `tools/test-shield-toggle.sh`
 - `tools/test-sidebar-anim.sh`
+- `tools/test-extension-events.sh` — service worker d'extension : `tabs.query` au démarrage, `onUpdated` éveillé
+- `tools/bench-twitch-ads.py` — banc pubs Twitch : étiquette de pub affichée et avancée de la vidéo sur 70 s
 - `tools/test-extension-profiles.sh` — une extension n'est active que dans les profils qui l'ont (ajout, retrait), conteneurs rattachés
 - `tools/test-extension-query.sh` — `tabs.query` d'une fenêtre d'extension rend l'onglet affiché, avec un id réel
 - `tools/test-codecs-install.sh` — release : installer le décodeur complet, redémarrer, lire H.264 + AAC sans GPU

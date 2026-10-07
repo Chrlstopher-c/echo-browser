@@ -5,6 +5,7 @@
 //! le traitement arrive trop tard et la regie a deja gagne.
 
 pub mod filter;
+mod twitch;
 
 use cef::{CefString, Frame, ImplFrame};
 use echo_shield::verdict::PageTreatment;
@@ -23,7 +24,8 @@ pub fn page_script(url: &str, shield: &Shield) -> Option<String> {
     }
     let treatment = shield.treat_page(url);
     let codecs = crate::codecs::shim();
-    if treatment.is_empty() && codecs.is_none() {
+    let twitch = twitch::script_for(url, shield);
+    if treatment.is_empty() && codecs.is_none() && twitch.is_none() {
         return None;
     }
     debug!(
@@ -33,6 +35,10 @@ pub fn page_script(url: &str, shield: &Shield) -> Option<String> {
         "traitement prepare"
     );
     let mut script = codecs.map(|c| format!("try {{ {c} }} catch (e) {{}}\n")).unwrap_or_default();
+    if let Some(vaft) = twitch {
+        script.push_str(vaft);
+        script.push('\n');
+    }
     script.push_str(&build(&treatment));
     Some(script)
 }
@@ -46,6 +52,10 @@ pub fn treat_page(frame: &Frame, shield: &Shield) {
     let url = CefString::from(&frame.url()).to_string();
     if url.is_empty() || url.starts_with("echo://") || url.starts_with("about:") || url.starts_with("chrome-extension://") || bench_sans_injection() {
         return;
+    }
+    // Filet : sans le flux HTML filtre, vaft arrive apres les premiers scripts ; il agit des la chaine suivante.
+    if let Some(vaft) = twitch::script_for(&url, shield) {
+        run(frame, vaft);
     }
     let treatment = shield.treat_page(&url);
     if treatment.is_empty() {

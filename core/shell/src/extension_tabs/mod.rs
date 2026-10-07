@@ -3,11 +3,14 @@
 //! (`pont/`, permission `debugger`) qui donne l'identifiant reel des onglets, et injecte dans les pages d'extension un
 //! `tabs.query` qui s'en sert, avec l'ordre et l'onglet actif tenus par Echo.
 
+mod workers;
+
+use std::collections::HashSet;
 use std::path::PathBuf;
 
 use tracing::warn;
 
-const PONT_ID: &str = "mcndjimfalplibhknmeieoolkckkpnnc";
+pub(crate) const PONT_ID: &str = "mcndjimfalplibhknmeieoolkckkpnnc";
 const MANIFEST: &str = include_str!("pont/manifest.json");
 const PONT_JS: &str = include_str!("pont/pont.js");
 /// Fichiers du pont sans traitement : la regle des profils et la page qui l'applique a la demande.
@@ -78,10 +81,54 @@ fn content_version() -> String {
     format!("1.{}.{}", (hash >> 16) % 65_535, hash % 65_535)
 }
 
-/// Script a injecter dans une page d'extension, `None` pour le pont lui-meme et les autres pages.
+/// Acces a tous les sites : equivaut a voir les onglets.
+const BROAD: [&str; 4] = ["<all_urls>", "*://*/*", "http://*/*", "https://*/*"];
+
+/// Les extensions qui voient deja les onglets (permission `tabs` ou acces a tous les sites) : les seules a qui Echo
+/// montre les siens.
+fn allowed() -> HashSet<String> {
+    crate::session::with(|s| {
+        s.extensions
+            .list()
+            .into_iter()
+            .filter(|e| e.permissions.iter().any(|p| p == "tabs" || BROAD.contains(&p.as_str())))
+            .map(|e| e.id)
+            .collect()
+    })
+    .unwrap_or_default()
+}
+
+/// Les onglets vivants, tels que les service workers des extensions les recoivent.
+fn live_tabs() -> Vec<serde_json::Value> {
+    crate::session::with(|s| {
+        let active = s.tabs.active_id();
+        s.tabs
+            .iter()
+            .filter(|t| !t.asleep)
+            .map(|t| {
+                serde_json::json!({"e": t.id, "url": t.url, "title": t.title, "pinned": t.pinned,
+                    "status": if t.loading { "loading" } else { "complete" }, "active": Some(t.id) == active})
+            })
+            .collect()
+    })
+    .unwrap_or_default()
+}
+
+/// Demarre le service des onglets aux service workers des extensions (apres l'installation de la session).
+pub fn start_workers() {
+    workers::start(workers::Update { tabs: live_tabs(), allowed: Some(allowed()) });
+}
+
+/// Les onglets ont change : les service workers eveilles le sauront.
+pub fn tabs_changed() {
+    workers::send(workers::Update { tabs: live_tabs(), allowed: None });
+}
+
+/// Script a injecter dans une page d'extension, `None` pour le pont, les autres pages et les extensions qui ne voient
+/// pas les onglets.
 pub fn script_for(url: &str) -> Option<String> {
     let id = url.strip_prefix("chrome-extension://")?.split('/').next()?;
-    if is_pont(id) {
+    if is_pont(id) || !allowed().contains(id) {
         return None;
     }
     let tabs = crate::session::with(|s| {

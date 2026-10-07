@@ -59,6 +59,21 @@
   Une page déjà ouverte garde l'ancienne teinte dans ses angles jusqu'au rechargement.
 
 
+## Extensions : onglets dans les service workers, pubs Twitch (08/10)
+- Service workers d'extension (`extension_tabs/workers.rs` + `worker.js`) : connexion au protocole de débogage, mise en pause
+  au démarrage (`setAutoAttach waitForDebuggerOnStart`, filtre service_worker), `chrome` n'existe qu'à l'arrêt
+  `Debugger.setInstrumentationBreakpoint beforeScriptExecution` → `worker.js` + liste des onglets, puis reprise et
+  détachement (un débogueur attaché empêche la veille). Changements d'onglets poussés aux service workers éveillés (attache,
+  `__echoTabs`, détache) → `onCreated/onUpdated/onRemoved/onActivated` + `tabs.query`. Seulement les extensions qui voient
+  déjà les onglets ; chacune ne voit que son profil (contexte appris par URL puis gardé ; le pont filtre par `tabs.get`).
+  Pièges : se détacher juste après un ordre le perd (worker figé avant son script) → détacher à la réponse ; un accesseur sur
+  `self.chrome` ne voit rien (défini par DefineOwnProperty) ; service workers lancés avant la connexion → `ServiceWorker.stopAllWorkers`
+  une fois par contexte. Limite : un service worker endormi ne reçoit pas les événements (au réveil il reçoit l'état complet).
+  Vérifié : TTV LOL PRO pose/retire son proxy à l'ouverture/fermeture de Twitch. Tests : `test-extension-events.sh`.
+- Pubs Twitch : sur profil neuf, pub d'arrivée ~16 s, bouclier actif ou non ; aucun marqueur « stitched » observé. vaft
+  (`injection/twitch/`, MIT, archivé 03/2026) intégré au bouclier pour twitch.tv : 0 pub, lecture continue (bandeau « Blocking
+  ads »), mesures `tools/bench-twitch-ads.py`. Si Twitch change, re-mesurer ; vaft ne se met plus à jour seul.
+
 ## Inspecteur et menu des sites (07/10)
 - « Examiner l'élément » : la page marque `window.__echoInspect = elementFromPoint(clic / zoom)` AVANT l'ouverture (le
   panneau rétrécit la page), puis `devtools::reveal_marked` exécute dans l'inspecteur un script qui importe ses modules

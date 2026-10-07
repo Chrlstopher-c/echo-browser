@@ -15,9 +15,10 @@ chrome.runtime.onMessageExternal.addListener((message, sender, reply) => {
   if (message !== 'echo:onglets') return false
   allowed(sender.id).then(async (ok) => {
     if (!ok) return reply([])
-    const targets = await chrome.debugger.getTargets()
-    reply(targets.filter((t) => t.type === 'page' && t.tabId !== undefined)
-      .map((t) => ({ tabId: t.tabId, url: t.url })))
+    const targets = (await chrome.debugger.getTargets()).filter((t) => t.type === 'page' && t.tabId !== undefined)
+    // `getTargets` voit tous les profils ; `tabs.get` echoue pour un onglet d'un autre profil : on ne rend que les siens.
+    const mine = await Promise.all(targets.map((t) => chrome.tabs.get(t.tabId).then(() => t, () => null)))
+    reply(mine.filter(Boolean).map((t) => ({ tabId: t.tabId, url: t.url })))
   })
   return true
 })
