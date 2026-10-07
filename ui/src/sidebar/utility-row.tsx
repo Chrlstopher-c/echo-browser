@@ -19,7 +19,7 @@ export interface UtilityRowProps {
   onToggle: (sheet: SheetId) => void
   onOpenTerminal: () => void
   /** Reglages et bibliotheque s'ouvrent en page pleine largeur, dans un onglet. */
-  onOpenPage: (page: 'reglages' | 'bibliotheque') => void
+  onOpenPage: (page: 'reglages' | 'bibliotheque' | 'extensions') => void
 }
 
 function PendingDot(): ReactElement {

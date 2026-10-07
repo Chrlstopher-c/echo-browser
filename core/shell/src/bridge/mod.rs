@@ -333,7 +333,7 @@ const PAGES_URL: &str = "echo://ui/pages.html";
 
 /// Ouvre la page demandee, ou revient sur l'onglet qui la montre deja (dans le profil courant).
 fn open_page(page: &str) {
-    if !matches!(page, "reglages" | "bibliotheque") {
+    if !matches!(page, "reglages" | "bibliotheque" | "extensions") {
         return;
     }
     let url = format!("{PAGES_URL}#{page}");

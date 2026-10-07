@@ -6,7 +6,9 @@ import { LibrarySheet } from '../library/library-sheet'
 import { useLibrary } from '../library/use-library'
 import { SettingsSheet } from '../settings/settings-sheet'
 import { useSettings } from '../settings/use-settings'
-import { IconLibrary, IconSettings } from '../shared/design/icons'
+import { IconLibrary, IconPuzzle, IconSettings } from '../shared/design/icons'
+import { ExtensionsSheet } from '../extensions/extensions-sheet'
+import { useExtensions } from '../extensions/use-extensions'
 import { useCore } from '../shared/use-core'
 import { useProfileNames } from '../spaces/use-profile-names'
 import { useContainers } from '../tabs/use-containers'
@@ -16,6 +18,7 @@ import { usePageTheme } from './use-page-theme'
 const PAGES: Array<{ id: PageId; label: string; icon: ReactElement }> = [
   { id: 'reglages', label: 'Réglages', icon: <IconSettings size={15} /> },
   { id: 'bibliotheque', label: 'Bibliothèque', icon: <IconLibrary size={15} /> },
+  { id: 'extensions', label: 'Extensions', icon: <IconPuzzle size={15} /> },
 ]
 
 function Nav({ page, go }: { page: PageId; go: (next: PageId) => void }): ReactElement {
@@ -44,7 +47,9 @@ function Content({ page }: { page: PageId }): ReactElement {
   const library = useLibrary(send, state)
   const containers = useContainers(send, state.settings)
   const profiles = useProfileNames(send, state.settings)
+  const extensions = useExtensions(send, state.extensions, state.restartPending, state.extensionPopupId)
   if (page === 'bibliotheque') return <LibrarySheet controller={library} />
+  if (page === 'extensions') return <ExtensionsSheet controller={extensions} />
   return (
     <SettingsSheet
       settings={settings}

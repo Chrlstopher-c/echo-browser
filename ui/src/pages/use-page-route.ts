@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from 'react'
 
-export type PageId = 'reglages' | 'bibliotheque'
+export type PageId = 'reglages' | 'bibliotheque' | 'extensions'
 
 function read(): PageId {
-  return window.location.hash === '#bibliotheque' ? 'bibliotheque' : 'reglages'
+  const hash = window.location.hash.slice(1)
+  return hash === 'bibliotheque' || hash === 'extensions' ? hash : 'reglages'
 }
 
 export function usePageRoute(): [PageId, (next: PageId) => void] {
