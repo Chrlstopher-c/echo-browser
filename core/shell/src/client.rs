@@ -95,6 +95,9 @@ wrap_load_handler! {
                     );
                 }
             }
+            if let Some(shim) = crate::codecs::shim().filter(|_| url.starts_with("http") || url.starts_with("file:")) {
+                frame.execute_java_script(Some(&CefString::from(shim)), Some(&CefString::from("echo://codecs")), 0);
+            }
             if frame.is_main() == 1 && !is_interface_page(&url) && crate::roundness::enabled() {
                 frame.execute_java_script(
                     Some(&CefString::from(crate::roundness::install_script(crate::window::accent_now()).as_str())),

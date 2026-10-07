@@ -59,6 +59,15 @@
   Une page déjà ouverte garde l'ancienne teinte dans ses angles jusqu'au rechargement.
 
 
+## Release publique 0.3.0 (07/10)
+- `tools/package-release.sh <libffmpeg.so libre>` → `dist-release/*.tar.xz` + sha256. Décodeur libre : `out/FfmpegLibre` dans l'arbre
+  CEF (`ffmpeg_branding="Chromium"`, `proprietary_codecs=false`, cible `third_party/ffmpeg`, ~5 min).
+- Piège : « h264 » figure aussi dans le décodeur libre (table des descripteurs) ; le garde-fou teste `h264_has_num_reorder_frames` /
+  `AAC decoder`, avec `grep -c` (un `grep -q` sous `pipefail` laisse tout passer : SIGPIPE de `strings`).
+- Le moteur (compilé avec codecs) annonce H.264/AAC même avec le décodeur libre : sans GPU, une vidéo H.264 échoue (erreur 4) ; l'AAC
+  n'a aucun chemin matériel, donc `codecs.rs` le retire de `canPlayType`, `MediaSource.isTypeSupported` et `mediaCapabilities`
+  (injecté dans le flux HTML, avant les scripts du site). Vérifié : YouTube passe en AV1 + Opus.
+
 ## Session et robustesse (06/10 soir)
 - **Session** : `persist.rs` enregistre les onglets (historique, position, épinglé, titre, icône) dans `last-session.json`, 1,2 s après
   chaque changement et avant toute fermeture ; au démarrage `app.rs::restore_or_open` les restitue — seul l'actif est chargé, les

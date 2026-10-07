@@ -11,6 +11,7 @@ mod assets;
 mod bridge;
 mod client;
 mod clipboard;
+mod codecs;
 mod containers;
 mod devtools;
 mod control;

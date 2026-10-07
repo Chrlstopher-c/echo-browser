@@ -12,7 +12,8 @@ VERSION="$(sed -n 's/^version = "\(.*\)"/\1/p' Cargo.toml | head -1)"
 NAME="echo-browser-$VERSION-linux-x64"
 STAGE="$OUT/$NAME"
 
-if strings "$FFMPEG_LIBRE" | grep -qx 'h264'; then
+# Le nom « h264 » figure aussi dans la table des descripteurs du decodeur libre : on teste les vrais decodeurs.
+if [ "$(strings "$FFMPEG_LIBRE" | grep -cE 'h264_has_num_reorder_frames|^AAC decoder$')" != 0 ]; then
   echo "refus : $FFMPEG_LIBRE contient le decodeur H.264 (variante Chrome)" >&2
   exit 1
 fi
@@ -52,9 +53,9 @@ Echo Browser $VERSION — Linux x86-64
 
 Lancer : ./echo-browser.sh
 
-Vidéo : VP9, AV1, Opus et Vorbis sont lus d'emblée (YouTube, la plupart des sites). Le H.264/AAC (Twitch,
-certains MP4) n'est pas inclus : ces formats sont couverts par des brevets et cette version ne distribue
-pas leur décodeur.
+Vidéo : VP9, AV1, Opus et Vorbis sont lus d'emblée (YouTube, la plupart des sites). Les décodeurs logiciels
+H.264 et AAC (Twitch, certains MP4) ne sont pas inclus : ces formats sont couverts par des brevets. Le H.264
+reste lu si la carte graphique le décode (VA-API).
 EOF
 
 (cd "$OUT" && tar -cf - "$NAME" | xz -T0 -6 > "$NAME.tar.xz")

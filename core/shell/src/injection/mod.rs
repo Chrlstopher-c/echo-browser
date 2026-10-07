@@ -22,7 +22,8 @@ pub fn page_script(url: &str, shield: &Shield) -> Option<String> {
         return None;
     }
     let treatment = shield.treat_page(url);
-    if treatment.is_empty() {
+    let codecs = crate::codecs::shim();
+    if treatment.is_empty() && codecs.is_none() {
         return None;
     }
     debug!(
@@ -31,7 +32,9 @@ pub fn page_script(url: &str, shield: &Shield) -> Option<String> {
         scriptlets = treatment.injected_script.len(),
         "traitement prepare"
     );
-    Some(build(&treatment))
+    let mut script = codecs.map(|c| format!("try {{ {c} }} catch (e) {{}}\n")).unwrap_or_default();
+    script.push_str(&build(&treatment));
+    Some(script)
 }
 
 /// Applique le traitement du bouclier a une page qui commence a charger.
