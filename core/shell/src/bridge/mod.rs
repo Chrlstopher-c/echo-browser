@@ -125,6 +125,7 @@ fn apply(request: UiRequest) {
         }
         UiRequest::SelectTab { id } => select_tab(id),
         UiRequest::OpenTerminal => open_terminal(),
+        UiRequest::OpenPage { page } => open_page(&page),
         UiRequest::AnswerPermission { id, allow, remember } => crate::permissions::answer(id, allow, remember),
         UiRequest::SleepTab { id } => sleep_tab(id),
         UiRequest::CloseTab { id } => close_tab(id),
@@ -314,11 +315,45 @@ pub fn publish(event: &CoreEvent) {
             return;
         }
     };
-    let script = format!("window.__echoDeliver && window.__echoDeliver({payload})");
+    let script = CefString::from(format!("window.__echoDeliver && window.__echoDeliver({payload})").as_str());
     let frame = session::with(|s| s.chrome_frame()).flatten();
     match frame {
-        Some(frame) => frame.execute_java_script(Some(&CefString::from(script.as_str())), None, 0),
+        Some(frame) => frame.execute_java_script(Some(&script), None, 0),
         None => debug!("interface pas encore prete, evenement perdu"),
+    }
+    // Les pages pleine largeur ouvertes en onglet suivent le meme etat que la barre.
+    let pages = session::with(|s| s.tabs.main_frames()).unwrap_or_default();
+    for frame in pages.iter().filter(|f| CefString::from(&f.url()).to_string().starts_with(PAGES_URL)) {
+        frame.execute_java_script(Some(&script), None, 0);
+    }
+}
+
+/// Les pages pleine largeur d'Echo.
+const PAGES_URL: &str = "echo://ui/pages.html";
+
+/// Ouvre la page demandee, ou revient sur l'onglet qui la montre deja (dans le profil courant).
+fn open_page(page: &str) {
+    if !matches!(page, "reglages" | "bibliotheque") {
+        return;
+    }
+    let url = format!("{PAGES_URL}#{page}");
+    let existing = session::with(|s| {
+        let space = s.tabs.space();
+        s.tabs.snapshot().into_iter().find(|t| t.url.starts_with(PAGES_URL) && t.space == space).map(|t| t.id)
+    })
+    .flatten();
+    match existing {
+        Some(id) => {
+            select_tab(id);
+            let browser = session::with(|s| s.tabs.get_mut(id).and_then(|t| t.browser())).flatten();
+            if let Some(frame) = browser.and_then(|b| b.main_frame()) {
+                frame.load_url(Some(&CefString::from(url.as_str())));
+            }
+        }
+        None => {
+            open_tab(&url);
+            publish_tabs();
+        }
     }
 }
 

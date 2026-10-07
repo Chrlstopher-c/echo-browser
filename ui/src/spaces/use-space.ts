@@ -35,11 +35,11 @@ function overlayTheme(space: Space): OverlayTheme {
   return { shell, card, hover, hairline, ink, inkMuted, inkFaint, hi, lo, tint, danger: SCHEME_TOKENS[space.scheme].danger }
 }
 
-function readStoredSpace(): SpaceId {
+export function readStoredSpace(): SpaceId {
   return readLocal(SPACE_KEY, (raw) => (typeof raw === 'string' && isSpaceId(raw) ? raw : null)) ?? DEFAULT_SPACE
 }
 
-function readStoredScheme(): Scheme {
+export function readStoredScheme(): Scheme {
   return readLocal(SCHEME_KEY, (raw) => (typeof raw === 'string' && isScheme(raw) ? raw : null)) ?? DEFAULT_SCHEME
 }
 

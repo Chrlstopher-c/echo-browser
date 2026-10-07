@@ -159,7 +159,9 @@ wrap_load_handler! {
             let Some(url) = browser.main_frame().map(|f| CefString::from(&f.url()).to_string()) else {
                 return;
             };
-            if is_interface_page(&url) {
+            // Les pages d'Echo ouvertes en onglet (reglages, bibliotheque) suivent le meme etat que les sites.
+            let is_tab = crate::session::with(|s| s.tabs.by_browser(browser_id).is_some()).unwrap_or(false);
+            if is_interface_page(&url) && !is_tab {
                 return;
             }
             crate::bridge::publish_tab(browser_id, &url, &url, is_loading == 1);

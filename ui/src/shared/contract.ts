@@ -13,6 +13,8 @@ export type UiRequest =
   | { kind: 'closeTab'; id: TabId }
   /** Reveille d'avance un onglet endormi que la souris survole. */
   | { kind: 'warmTab'; id: TabId }
+  /** Ouvre une page pleine largeur d'Echo dans un onglet, ou y revient. */
+  | { kind: 'openPage'; page: 'reglages' | 'bibliotheque' }
   /** Referme les outils de developpement ancres. */
   | { kind: 'closeDevTools' }
   /** La poignee des outils a ete tiree de `dx` pixels. */

@@ -6,7 +6,7 @@ import { IconSettings, IconWrench } from '../shared/design/icons'
 import { ListRow } from '../shared/design/list-row'
 import { SectionLabel } from '../shared/design/section-label'
 import { SpacePicker } from '../spaces/space-picker'
-import type { SpaceController } from '../spaces/use-space'
+import { readStoredScheme, type SpaceController } from '../spaces/use-space'
 import type { ContainerActions } from '../tabs/use-containers'
 import type { PermissionGrantView } from '../shared/contract'
 import { ContainersSection } from './containers-section'
@@ -18,7 +18,8 @@ import type { SettingsController } from './use-settings'
 
 export interface SettingsSheetProps {
   settings: SettingsController
-  space: SpaceController
+  /** Absent dans la page pleine largeur : la teinte se choisit dans la barre. */
+  space?: SpaceController
   containers: ContainerActions
   profiles: ProfileNames
   grants: PermissionGrantView[]
@@ -65,8 +66,8 @@ export function SettingsSheet(props: SettingsSheetProps): ReactElement {
   const { settings, space, containers, profiles, grants, onForgetGrant, onDevTools } = props
   return (
     <div className="flex flex-col gap-3">
-      <AppearanceSection space={space} />
-      <ProfilesSection profiles={profiles} scheme={space.space.scheme} />
+      {space !== undefined && <AppearanceSection space={space} />}
+      <ProfilesSection profiles={profiles} scheme={space?.space.scheme ?? readStoredScheme()} />
       <ContainersSection actions={containers} />
       <GrantsSection grants={grants} onForget={onForgetGrant} />
       <CoreSections settings={settings} />

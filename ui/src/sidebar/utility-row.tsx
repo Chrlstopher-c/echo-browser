@@ -18,6 +18,8 @@ export interface UtilityRowProps {
   downloads: DownloadsSummary
   onToggle: (sheet: SheetId) => void
   onOpenTerminal: () => void
+  /** Reglages et bibliotheque s'ouvrent en page pleine largeur, dans un onglet. */
+  onOpenPage: (page: 'reglages' | 'bibliotheque') => void
 }
 
 function PendingDot(): ReactElement {
@@ -25,7 +27,7 @@ function PendingDot(): ReactElement {
 }
 
 export function UtilityRow(props: UtilityRowProps): ReactElement {
-  const { shield, open, compact, restartPending, downloads, onToggle, onOpenTerminal } = props
+  const { shield, open, compact, restartPending, downloads, onToggle, onOpenTerminal, onOpenPage } = props
   return (
     <div className={`flex items-center gap-0.5 ${compact ? 'flex-col' : ''}`}>
       <ShieldButton shield={shield} open={open === 'shield'} compact={compact} onClick={() => onToggle('shield')} />
@@ -33,7 +35,7 @@ export function UtilityRow(props: UtilityRowProps): ReactElement {
       <IconButton label="Claude Code" onClick={onOpenTerminal}>
         <IconTerminal size={15} />
       </IconButton>
-      <IconButton label="Bibliothèque" onClick={() => onToggle('library')} active={open === 'library'}>
+      <IconButton label="Bibliothèque" onClick={() => onOpenPage('bibliotheque')}>
         <IconLibrary size={15} />
         <DownloadBadge summary={downloads} />
       </IconButton>
@@ -41,7 +43,7 @@ export function UtilityRow(props: UtilityRowProps): ReactElement {
         <IconPuzzle size={15} />
         {restartPending && <PendingDot />}
       </IconButton>
-      <IconButton label="Réglages" onClick={() => onToggle('settings')} active={open === 'settings'}>
+      <IconButton label="Réglages" onClick={() => onOpenPage('reglages')}>
         <IconSettings size={15} />
       </IconButton>
     </div>

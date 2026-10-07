@@ -16,6 +16,7 @@ export default defineConfig({
       input: {
         main: fileURLToPath(new URL('./index.html', import.meta.url)),
         menu: fileURLToPath(new URL('./menu.html', import.meta.url)),
+        pages: fileURLToPath(new URL('./pages.html', import.meta.url)),
       },
     },
     outDir: 'dist',

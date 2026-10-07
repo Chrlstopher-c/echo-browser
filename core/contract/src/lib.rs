@@ -41,6 +41,8 @@ pub enum UiRequest {
     ResizeDevTools { dx: i32 },
     /// Ouvre le terminal de Claude Code, ou y revient s'il est deja ouvert.
     OpenTerminal,
+    /// Ouvre une page pleine largeur d'Echo (« reglages », « bibliotheque ») dans un onglet, ou y revient.
+    OpenPage { page: String },
     /// Oublie une decision de permission retenue : la question sera reposee.
     ForgetPermission { origin: String, permission: String },
     /// Reponse a une demande de permission d'un site (camera, micro, position…).

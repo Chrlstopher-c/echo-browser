@@ -63,6 +63,7 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `core/shell/src/permissions.rs` — les demandes de permission des sites (camera, micro, position, notifications,
 - `core/shell/src/persist.rs` — sauvegarder les onglets au fil de l'eau, pour les retrouver apres une fermeture
 - `core/shell/src/presence.rs`
+- `core/shell/src/profiles.rs` — les profils (espaces facon Arc). Chacun a sa liste d'onglets et, sauf le profil par
 - `core/shell/src/restart.rs` — relancer le navigateur sans perdre ce qui etait ouvert.
 - `core/shell/src/roundness.rs` — les angles arrondis de la page. Une vue web est un rectangle natif que Chromium ne sait
 - `core/shell/src/scheme.rs` — le theme clair ou sombre que les pages voient (`prefers-color-scheme`). Il suit celui
@@ -105,9 +106,11 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `tools/test-drag-folder.sh`
 - `tools/test-folders.sh`
 - `tools/test-ipc-origin.sh`
+- `tools/test-media-sleep.sh`
 - `tools/test-never-sleep.sh`
 - `tools/test-occlusion.sh`
 - `tools/test-popup.sh`
+- `tools/test-profiles.sh`
 - `tools/test-scheme.sh`
 - `tools/test-shield-toggle.sh`
 - `tools/test-sidebar-anim.sh`
@@ -169,6 +172,7 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `ui/src/restart/restart-strip.tsx` — bande de relance — propose le redemarrage sans l'imposer, jamais bloquante.
 - `ui/src/settings/containers-section.tsx` — conteneurs dans les reglages — nom et retrait ; l'ouverture se fait depuis la liste d'onglets.
 - `ui/src/settings/grants-section.tsx` — les autorisations retenues par site (camera, micro, position…) et leur retrait.
+- `ui/src/settings/profiles-section.tsx` — les profils dans les reglages — renommer chacun ; leur couleur est celle de leur pastille.
 - `ui/src/settings/setting-catalogue.ts` — habillage des reglages — pour chaque cle que le coeur livre, un groupe, un libelle
 - `ui/src/settings/setting-row.tsx` — une ligne de reglage — libelle, explication, et le controle qui va avec son type.
 - `ui/src/settings/settings-sheet.tsx` — feuille des reglages — apparence tenue par l'interface, puis les reglages du coeur par theme.
@@ -229,6 +233,7 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `ui/src/spaces/space-palette.ts` — les espaces — une teinte (graphite, sable…) dans l'un des deux schemas, clair ou sombre.
 - `ui/src/spaces/space-picker.tsx` — choix de l'espace dans les reglages — une pastille par teinte, la courante cochee.
 - `ui/src/spaces/space-strip.tsx` — bande des espaces au pied de la barre — un point par teinte (le courant etire en trait) et
+- `ui/src/spaces/use-profile-names.ts` — les noms des profils (les pastilles du bas de la barre), enregistres dans `profiles.names`.
 - `ui/src/spaces/use-space.ts` — espace courant (teinte + schema clair/sombre) — choix persistes, jetons poses sur le
 - `ui/src/stage/dev-toolbar.tsx` — leviers de simulation poses sur la scene — son, sommeil, telechargement, plein ecran.
 - `ui/src/stage/page-stage.tsx` — scene de developpement — la place de la page, dans un cadre flottant aux coins
