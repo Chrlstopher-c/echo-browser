@@ -4,6 +4,8 @@
 //! se relance lui-meme avec `--type=`. Tout ce qui precede `execute_process` est donc
 //! execute une fois par processus.
 
+mod anchor;
+mod anchor_watch;
 mod app;
 mod assets;
 mod bridge;
@@ -76,6 +78,7 @@ fn main() -> anyhow::Result<()> {
     // enregistres, Chromium echoue une verification a la sortie et passe une dizaine de secondes a ecrire un rapport de plantage.
     window::release_views();
     containers::release();
+    anchor::release();
     session::release();
     shutdown();
 

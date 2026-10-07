@@ -274,6 +274,15 @@ wrap_life_span_handler! {
 
     impl LifeSpanHandler {
         fn on_after_created(&self, browser: Option<&mut Browser>) {
+            // Un navigateur de style Chrome qui n'est pas l'ancrage : un onglet ouvert par une extension.
+            if let Some(b) = browser.as_deref() {
+                let chrome_style = b.host().is_some_and(|h| h.runtime_style() == RuntimeStyle::CHROME);
+                if chrome_style && !crate::anchor::is_anchor(b.identifier()) {
+                    crate::anchor::adopt_foreign(b.clone());
+                    self.live.opened();
+                    return;
+                }
+            }
             if let Some(browser) = browser.as_deref() {
                 crate::identity::emulate(browser);
                 crate::scheme::apply(browser);

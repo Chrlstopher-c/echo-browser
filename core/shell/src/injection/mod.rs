@@ -18,7 +18,7 @@ fn bench_sans_injection() -> bool {
 
 /// Le code a poser dans le document d'une page, ou `None` s'il n'y a rien a y faire.
 pub fn page_script(url: &str, shield: &Shield) -> Option<String> {
-    if url.is_empty() || url.starts_with("echo://") || url.starts_with("about:") || bench_sans_injection() {
+    if url.is_empty() || url.starts_with("echo://") || url.starts_with("about:") || url.starts_with("chrome-extension://") || bench_sans_injection() {
         return None;
     }
     let treatment = shield.treat_page(url);
@@ -41,7 +41,7 @@ pub fn page_script(url: &str, shield: &Shield) -> Option<String> {
 /// anti-bloqueur, a temps pour le masquage.
 pub fn treat_page(frame: &Frame, shield: &Shield) {
     let url = CefString::from(&frame.url()).to_string();
-    if url.is_empty() || url.starts_with("echo://") || url.starts_with("about:") || bench_sans_injection() {
+    if url.is_empty() || url.starts_with("echo://") || url.starts_with("about:") || url.starts_with("chrome-extension://") || bench_sans_injection() {
         return;
     }
     let treatment = shield.treat_page(&url);

@@ -70,6 +70,8 @@ wrap_browser_process_handler! {
                 shield: shield.clone(),
                 library,
             });
+            crate::anchor::create(client.clone().as_mut());
+            crate::anchor_watch::start();
             crate::selftest::schedule();
             crate::sleep::start();
             crate::control::start();
