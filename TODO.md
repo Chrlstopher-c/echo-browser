@@ -11,16 +11,15 @@ Ordre voulu par Chris : angles → favicons → mémoire → décodeur vidéo. P
    (cookies isolés, persistés) · défilement restitué au réveil · purge V8 des onglets d'arrière-plan (-9 %) · démarrage 0,3 s.
 3. **Mémoire** : drapeaux Chromium testés, aucun > 4 % (voir STATE.md) ; le levier est la veille. Piste restante : état des onglets endormis
    sur disque (déjà : fiche + défilement), délai de veille plus court, extensions par conteneur.
-4. **Reste** : renommer/supprimer dossiers au glisser-déposer d'onglets vers un dossier ; extensions dans les conteneurs ; menu contextuel
-   des sites aux couleurs neumorphiques (aujourd'hui sombre plat) ; retour animé des permissions retenues.
-4b. **Fait** (sudo, mot de passe donné par Chris) : libva-nvidia-driver installé, zram1 10 Go ajouté à chaud (non persistant : à mettre dans la config zram du système si voulu). Ancien item : : `pacman -S libva-nvidia-driver` (décodage vidéo GPU, puis `LIBVA_DRIVER_NAME=nvidia` + `--enable-features=AcceleratedVideoDecodeLinuxGL,VaapiOnNvidiaGPUs`) ; agrandir zram (8-12 Go) — il est plein à 4 Go, ce qui bloque aussi le gel+pageout des onglets.
-5. **Moteur avec codecs** : téléchargement en phase finale ; `chain.sh` lance seul la compilation (8-12 h, -j10) ensuite — suivre `logs/build.log`. Téléchargement (`/mnt/backup/cef-build/logs/download.log`). Quand `src/` est complet, lancer
-   `BUILD=1 /mnt/backup/cef-build/build.sh` (nice 19, 8-12 h), puis remplacer `~/.local/share/cef` et recompiler la coque.
-5c. **Release : décodeur H.264 à la demande** — build avec `is_component_ffmpeg=true` (décodeur = `libffmpeg.so` séparé, déjà dans gn-defines.txt) ; la release embarque un ffmpeg sans codecs brevetés ; au premier site H.264 (Twitch), proposer de télécharger un `libffmpeg.so` ALIGNÉ sur Chromium 154 depuis un tiers (nwjs-ffmpeg-prebuilt par version, ou ffmpeg système) — jamais distribué par nous. Impossible avec le CEF officiel actuel : ffmpeg y est lié en statique (vérifié : aucun libffmpeg.so ni symbole avcodec dynamique).
-6. **Décodeur H.264/AAC** (E6.S16). **Build CEF avec codecs** : disque libre sur `/mnt/backup` (752 Go) ; `automate-git.py`
-   (depot_tools) branche Chromium 154 = **8037** (CEF 154.0.33, Chromium 154.0.8037.94) ; `GN_DEFINES="proprietary_codecs=true
-   ffmpeg_branding=Chrome is_official_build=false symbol_level=0 is_component_build=false"` ; ninja `nice -n 19`, ~8–12 h ; ensuite remplacer
-   `~/.local/share/cef` et recompiler la coque (crate `cef` 152 compile contre CEF 154 : OK à ce jour).
+4. **Reste (petit)** : extensions dans les conteneurs (Chromium les rattache au profil) ; menu contextuel des sites aux couleurs
+   neumorphiques ; « Examiner l'élément » qui sélectionne l'élément cliqué (aujourd'hui : ouvre seulement les DevTools ancrés) ;
+   largeur des DevTools mémorisée ; pubs Twitch (insérées côté serveur dans le flux, le bouclier ne les voit pas).
+5. **Fait 07/10** : moteur CEF compilé avec codecs installé (Twitch/H.264/AAC/HEVC OK, testé par Chris en 1080p). Aucun build lourd
+   prévu. À refaire seulement à une montée de version de CEF (pièges et commandes : STATE.md).
+6. **Release publique (quand Chris le décide)** : moteur sans codecs brevetés + `libffmpeg.so` H.264 téléchargé à la demande depuis un
+   tiers (emplacement séparé déjà prévu, `is_component_ffmpeg`) ; paquet (binaire + CEF + UI), CI verte, dépôt public à relire
+   (aucun identifiant réel). Rien n'est encore poussé sur GitHub.
+7. **Système (non persistant)** : zram1 10 Go ajouté à chaud ; la config zram (12 Go) prendra effet au prochain redémarrage.
 8. **Règles retenues** : ne jamais arrêter l'instance de Chris (tests isolés) · ne jamais perdre ses onglets · NE PAS toucher à sa souris
    (captures par `grim` sur fenêtre flottante de test, demandes jouées par `ECHO_BENCH_UI` / `ECHO_BENCH_JS`).
 
