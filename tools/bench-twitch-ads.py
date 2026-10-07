@@ -53,5 +53,5 @@ for _ in range(31):
     v = json.loads(results.get(i, {}).get("result", {}).get("result", {}).get("value", "{}") or "{}")
     samples += 1; ads += 1 if v.get("ad") else 0; times.append(round(v.get("t", 0), 1))
     time.sleep(2)
-print(json.dumps({"chaine": channel, "vaft": bool(script), "listes": playlists[0], "listes_avec_pub": stitched[0],
+print(json.dumps({"chaine": channel, "vaft": bool(script), "listes": playlists[0],
                   "echantillons_pub_affichee": ads, "echantillons": samples, "video_t": [times[0], times[len(times)//2], times[-1]]}))
