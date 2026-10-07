@@ -74,6 +74,10 @@ pub fn run(action: MenuItemKind) {
         MenuItemKind::CopyPageLink => copy(&click.page),
         MenuItemKind::SaveLink => download(&click.link),
         MenuItemKind::SaveImage => download(&click.image),
+        MenuItemKind::CopyImage => crate::clipboard::copy_image(&click.image),
+        MenuItemKind::OpenMedia => open_and_show(&click.media),
+        MenuItemKind::CopyMediaLink => copy(&click.media),
+        MenuItemKind::SaveMedia => download(&click.media),
         MenuItemKind::Copy => with_page(|frame| frame.copy()),
         MenuItemKind::Cut => with_page(|frame| frame.cut()),
         MenuItemKind::Paste => with_page(|frame| frame.paste()),
@@ -198,6 +202,7 @@ fn clone_click(click: &Click) -> Click {
     Click {
         link: click.link.clone(),
         image: click.image.clone(),
+        media: click.media.clone(),
         selection: click.selection.clone(),
         page: click.page.clone(),
         editable: click.editable,

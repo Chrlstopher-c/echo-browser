@@ -8,6 +8,7 @@ mod app;
 mod assets;
 mod bridge;
 mod client;
+mod clipboard;
 mod containers;
 mod devtools;
 mod control;

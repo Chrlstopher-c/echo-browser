@@ -10,6 +10,8 @@ use echo_contract::{ContextTarget, MenuEntry, MenuItemKind};
 pub struct Click {
     pub link: String,
     pub image: String,
+    /// Adresse de la video ou du son clique.
+    pub media: String,
     pub selection: String,
     pub page: String,
     pub editable: bool,
@@ -28,6 +30,12 @@ pub fn build(click: &Click) -> ContextTarget {
             entries.push(MenuEntry::separator());
         }
         entries.extend(image_entries(&click.image));
+    }
+    if !click.media.is_empty() {
+        if !entries.is_empty() {
+            entries.push(MenuEntry::separator());
+        }
+        entries.extend(media_entries());
     }
     if !click.selection.is_empty() {
         if !entries.is_empty() {
@@ -60,8 +68,17 @@ fn link_entries(link: &str) -> Vec<MenuEntry> {
     ]
 }
 
+fn media_entries() -> Vec<MenuEntry> {
+    vec![
+        MenuEntry::new(MenuItemKind::OpenMedia, "Ouvrir la vidéo dans un onglet"),
+        MenuEntry::new(MenuItemKind::CopyMediaLink, "Copier l'adresse de la vidéo"),
+        MenuEntry::new(MenuItemKind::SaveMedia, "Enregistrer la vidéo"),
+    ]
+}
+
 fn image_entries(_image: &str) -> Vec<MenuEntry> {
     vec![
+        MenuEntry::new(MenuItemKind::CopyImage, "Copier l'image"),
         MenuEntry::new(MenuItemKind::OpenImage, "Ouvrir l'image dans un onglet"),
         MenuEntry::new(MenuItemKind::CopyImageLink, "Copier l'adresse de l'image"),
         MenuEntry::new(MenuItemKind::SaveImage, "Enregistrer l'image"),
@@ -132,6 +149,7 @@ mod tests {
         Click {
             link: String::new(),
             image: String::new(),
+            media: String::new(),
             selection: String::new(),
             page: "https://exemple.fr/".to_string(),
             editable: false,

@@ -138,6 +138,7 @@ wrap_task! {
                 let click = crate::menu::Click {
                     link: "https://exemple.fr/page".to_string(),
                     image: String::new(),
+                    media: String::new(),
                     selection: String::new(),
                     page: "https://exemple.fr/".to_string(),
                     editable: false,

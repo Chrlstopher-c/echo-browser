@@ -324,6 +324,11 @@ pub enum MenuItemKind {
     OpenImage,
     CopyImageLink,
     SaveImage,
+    /// Copie l'image elle-meme (pas son adresse) dans le presse-papiers.
+    CopyImage,
+    OpenMedia,
+    CopyMediaLink,
+    SaveMedia,
     Copy,
     Cut,
     Paste,

@@ -332,6 +332,10 @@ fn read_click(params: &ContextMenuParams) -> crate::menu::Click {
     crate::menu::Click {
         link: text(params.link_url()),
         image: if params.has_image_contents() == 1 { text(params.source_url()) } else { String::new() },
+        media: match params.media_type() {
+            ContextMenuMediaType::VIDEO | ContextMenuMediaType::AUDIO => text(params.source_url()),
+            _ => String::new(),
+        },
         selection: text(params.selection_text()),
         page: text(params.page_url()),
         editable: params.is_editable() == 1,
