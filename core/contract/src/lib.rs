@@ -58,6 +58,8 @@ pub enum UiRequest {
     SetAccent { color: String },
     /// Theme clair ou sombre d'Echo : les pages le recoivent comme `prefers-color-scheme`.
     SetColorScheme { dark: bool },
+    /// Change de profil : ses onglets s'affichent, les nouveaux y naissent, avec ses propres comptes.
+    SetSpace { id: String },
 
     // --- Bouclier ---
     ToggleShieldForSite { id: TabId },
@@ -174,6 +176,8 @@ pub struct TabView {
     pub folder: Option<String>,
     /// Conteneur de l'onglet, s'il n'est pas dans le contexte commun.
     pub container: Option<String>,
+    /// Profil (espace) de l'onglet.
+    pub space: String,
     pub zoom: f32,
     /// Vrai si la page joue du son.
     pub audible: bool,

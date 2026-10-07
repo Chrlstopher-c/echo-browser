@@ -43,6 +43,8 @@ pub struct Tab {
     pub folder: Option<String>,
     /// Conteneur de l'onglet (cookies et comptes a part), `None` pour le contexte commun.
     pub container: Option<String>,
+    /// Profil (espace) auquel l'onglet appartient : chaque profil a sa propre liste d'onglets.
+    pub space: String,
     /// Onglet qui a ouvert celui-ci par `window.open` (connexion Google…) : on y revient a la fermeture.
     pub opener: Option<TabId>,
     /// Facteur de zoom, 1.0 etant la taille naturelle.
@@ -106,6 +108,7 @@ impl Tab {
             pinned: self.pinned,
             folder: self.folder.clone(),
             container: self.container.clone(),
+            space: self.space.clone(),
             zoom: self.zoom,
             audible: self.audible,
             asleep: self.asleep,
@@ -157,6 +160,8 @@ pub struct Tabs {
     entries: Vec<Tab>,
     active: Option<TabId>,
     next_id: TabId,
+    /// Profil affiche : seuls ses onglets sont montres, les nouveaux onglets y naissent.
+    space: String,
 }
 
 impl Tabs {
@@ -197,6 +202,7 @@ impl Tabs {
             pinned: false,
             folder: None,
             container: None,
+            space: self.space(),
             opener: None,
             zoom: 1.0,
             audible: false,
@@ -218,6 +224,20 @@ impl Tabs {
             tab.trimmed = false;
         }
         self.refresh_visibility();
+    }
+
+    /// Profil affiche.
+    pub fn space(&self) -> String {
+        if self.space.is_empty() { crate::profiles::DEFAULT.to_string() } else { self.space.clone() }
+    }
+
+    pub fn set_space(&mut self, space: &str) {
+        self.space = space.to_string();
+    }
+
+    /// L'onglet du profil utilise le plus recemment.
+    pub fn last_in_space(&self, space: &str) -> Option<TabId> {
+        self.entries.iter().filter(|t| t.space == space).max_by_key(|t| t.last_active).map(|t| t.id)
     }
 
     pub fn exists(&self, id: TabId) -> bool {
@@ -327,7 +347,7 @@ impl Tabs {
         };
         let tab = self.entries.remove(index);
         if self.active == Some(id) {
-            self.active = self.entries.get(index).or_else(|| self.entries.last()).map(|t| t.id);
+            self.active = self.last_in_space(&tab.space);
         }
         Detached { view: tab.view, host: self.host.clone(), remaining: self.entries.len() }
     }
@@ -355,6 +375,7 @@ impl Tabs {
             pinned: snapshot.pinned,
             folder: snapshot.folder.clone(),
             container: snapshot.container.clone(),
+            space: if snapshot.space.is_empty() { crate::profiles::DEFAULT.to_string() } else { snapshot.space.clone() },
             opener: None,
             zoom: 1.0,
             audible: false,
@@ -406,6 +427,7 @@ impl Tabs {
                     pinned: tab.pinned,
                     folder: tab.folder.clone(),
                     container: tab.container.clone(),
+                    space: tab.space.clone(),
                     scroll: tab.scroll,
                     title: tab.title.clone(),
                     favicon: tab.favicon.clone(),

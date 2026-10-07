@@ -59,6 +59,7 @@ function blankTab(id: TabId, url: string): TabView {
     pinned: false,
     folder: null,
     container: null,
+    space: 'graphite',
     zoom: 1,
     audible: false,
     asleep: false,

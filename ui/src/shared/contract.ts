@@ -48,6 +48,8 @@ export type UiRequest =
   | { kind: 'setAccent'; color: string }
   /** Theme d'Echo, transmis aux pages comme `prefers-color-scheme`. */
   | { kind: 'setColorScheme'; dark: boolean }
+  /** Change de profil : ses onglets s'affichent, avec ses propres comptes. */
+  | { kind: 'setSpace'; id: string }
   // --- Bouclier ---
   | { kind: 'toggleShieldForSite'; id: TabId }
   | { kind: 'setShieldEnabled'; enabled: boolean }
@@ -139,6 +141,8 @@ export interface TabView {
   folder: string | null
   /** Conteneur de l'onglet, ou null pour le contexte commun. */
   container: string | null
+  /** Profil (espace) de l'onglet. */
+  space: string
   zoom: number
   /** Vrai si la page joue du son. */
   audible: boolean

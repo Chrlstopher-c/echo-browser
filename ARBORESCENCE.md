@@ -47,6 +47,7 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `core/shell/src/bridge/publish.rs` — ce que le coeur pousse vers l'interface — etat de depart, onglets,
 - `core/shell/src/bridge/script.rs` — le code injecte dans la page d'interface pour lui donner `window.echo`.
 - `core/shell/src/client.rs` — le client CEF — ce que Chromium rappelle pendant la vie d'un navigateur.
+- `core/shell/src/clipboard.rs` — mettre une image dans le presse-papiers du bureau, pour la coller ailleurs (Ctrl+V)
 - `core/shell/src/containers.rs` — les conteneurs d'onglets. Chacun a son propre contexte Chromium — cookies,
 - `core/shell/src/control.rs` — la prise de pilotage locale — un outil (MCP de Claude, script) y liste,
 - `core/shell/src/devtools.rs` — les outils de developpement ancres a droite de la page, dans la fenetre d'Echo.
@@ -100,6 +101,7 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `tools/test-containers.sh`
 - `tools/test-contextmenu.sh`
 - `tools/test-control.sh`
+- `tools/test-copy-image.sh`
 - `tools/test-drag-folder.sh`
 - `tools/test-folders.sh`
 - `tools/test-ipc-origin.sh`

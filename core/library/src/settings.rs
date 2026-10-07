@@ -53,6 +53,7 @@ pub fn defaults() -> Vec<(&'static str, Value)> {
         ("tabs.sleepAfterMinutes", Value::Number(5.0)),
         ("tabs.folders", Value::Text("[]".into())),
         ("tabs.containers", Value::Text("[]".into())),
+        ("profiles.names", Value::Text("{}".into())),
         ("tabs.neverSleep", Value::Text(NEVER_SLEEP.into())),
     ]
 }

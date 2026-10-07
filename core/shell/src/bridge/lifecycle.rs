@@ -21,6 +21,9 @@ pub fn open_tab_like_active(url: &str) {
 
 /// Ouvre un onglet dans le conteneur donne (`None` : contexte commun).
 pub fn open_tab_in(url: &str, container: Option<&str>) {
+    // Sans conteneur explicite, l'onglet prend les comptes du profil affiche.
+    let profile = session::with(|s| crate::profiles::container_for(&s.tabs.space())).flatten();
+    let container = container.or(profile.as_deref());
     if wait_for_container(container, || {
         let (url, container) = (url.to_string(), container.map(str::to_string));
         move || {
@@ -198,6 +201,10 @@ pub fn close_tab(id: TabId) {
         return;
     }
     session::with(|s| s.tabs.refresh_visibility());
+    // Dernier onglet du profil ferme : le profil garde une page d'accueil plutot qu'un ecran vide.
+    if session::with(|s| s.tabs.active_id()).flatten().is_none() {
+        open_tab(crate::search::HOME);
+    }
     publish_tabs();
     publish_shield();
 }

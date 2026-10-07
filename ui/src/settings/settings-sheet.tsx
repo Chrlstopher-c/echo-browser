@@ -10,6 +10,8 @@ import type { SpaceController } from '../spaces/use-space'
 import type { ContainerActions } from '../tabs/use-containers'
 import type { PermissionGrantView } from '../shared/contract'
 import { ContainersSection } from './containers-section'
+import { ProfilesSection } from './profiles-section'
+import type { ProfileNames } from '../spaces/use-profile-names'
 import { GrantsSection } from './grants-section'
 import { SettingRow } from './setting-row'
 import type { SettingsController } from './use-settings'
@@ -18,6 +20,7 @@ export interface SettingsSheetProps {
   settings: SettingsController
   space: SpaceController
   containers: ContainerActions
+  profiles: ProfileNames
   grants: PermissionGrantView[]
   onForgetGrant: (origin: string, permission: string) => void
   onDevTools: () => void
@@ -59,10 +62,11 @@ function CoreSections({ settings }: { settings: SettingsController }): ReactElem
 }
 
 export function SettingsSheet(props: SettingsSheetProps): ReactElement {
-  const { settings, space, containers, grants, onForgetGrant, onDevTools } = props
+  const { settings, space, containers, profiles, grants, onForgetGrant, onDevTools } = props
   return (
     <div className="flex flex-col gap-3">
       <AppearanceSection space={space} />
+      <ProfilesSection profiles={profiles} scheme={space.space.scheme} />
       <ContainersSection actions={containers} />
       <GrantsSection grants={grants} onForget={onForgetGrant} />
       <CoreSections settings={settings} />

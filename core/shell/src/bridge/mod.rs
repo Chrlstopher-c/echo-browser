@@ -140,6 +140,7 @@ fn apply(request: UiRequest) {
             let chrome = session::with(|s| s.chrome.clone()).flatten();
             crate::window::reveal_chrome(reveal, chrome.as_ref());
         }
+        UiRequest::SetSpace { id } => crate::profiles::switch(&id),
         UiRequest::SetColorScheme { dark } => {
             let browsers = session::with(|s| s.tabs.browsers()).unwrap_or_default();
             crate::scheme::set(dark, &browsers);

@@ -21,6 +21,7 @@ mod occlusion;
 mod overlay;
 mod permissions;
 mod persist;
+mod profiles;
 mod presence;
 mod selftest;
 mod restart;

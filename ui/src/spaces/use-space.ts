@@ -49,6 +49,7 @@ function usePublishSpace(space: Space, send: (request: UiRequest) => void): void
     applySpace(space)
     send({ kind: 'setAccent', color: space.tokens.shell })
     send({ kind: 'setColorScheme', dark: space.scheme === 'dark' })
+    send({ kind: 'setSpace', id: space.id })
     // Ce qui s'affiche au-dessus de la page est une page a part : elle ne partage pas
     // nos jetons, le coeur les lui transmet.
     send({ kind: 'setOverlayTheme', theme: overlayTheme(space) })

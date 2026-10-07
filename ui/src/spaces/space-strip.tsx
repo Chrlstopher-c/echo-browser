@@ -12,6 +12,8 @@ export interface SpaceStripProps {
   scheme: Scheme
   onSelect: (id: SpaceId) => void
   onToggleScheme: () => void
+  /** Nom affiche de chaque profil. */
+  nameOf: (id: SpaceId) => string
 }
 
 function HueDot(props: {
@@ -24,7 +26,7 @@ function HueDot(props: {
       role="radio"
       aria-checked={active}
       title={name}
-      aria-label={`Espace ${name}`}
+      aria-label={`Profil ${name}`}
       onClick={() => onSelect(id)}
       className="grid h-4 place-items-center px-0.5"
     >
@@ -38,12 +40,12 @@ function HueDot(props: {
   )
 }
 
-export function SpaceStrip({ current, scheme, onSelect, onToggleScheme }: SpaceStripProps): ReactElement {
+export function SpaceStrip({ current, scheme, onSelect, onToggleScheme, nameOf }: SpaceStripProps): ReactElement {
   return (
     <div className="flex h-7 items-center justify-between">
-      <div role="radiogroup" aria-label="Espaces" className="flex h-5 items-center gap-1.5">
+      <div role="radiogroup" aria-label="Profils" className="flex h-5 items-center gap-1.5">
         {HUES.map((hue) => (
-          <HueDot key={hue.id} id={hue.id} name={hue.name} active={hue.id === current} scheme={scheme}
+          <HueDot key={hue.id} id={hue.id} name={nameOf(hue.id)} active={hue.id === current} scheme={scheme}
             onSelect={onSelect} />
         ))}
       </div>

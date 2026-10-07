@@ -85,6 +85,7 @@ function ColumnFooter({ model }: { model: SidebarModel }): ReactElement {
         scheme={space.space.scheme}
         onSelect={space.select}
         onToggleScheme={space.toggleScheme}
+        nameOf={model.profiles.nameOf}
       />
     </footer>
   )
@@ -100,7 +101,7 @@ export function SidebarColumn({ model }: { model: SidebarModel }): ReactElement 
           onContextMenu={menu.openArea}
           className={`h-full overflow-y-auto ${sheet.current === null ? '' : 'invisible'}`}
         >
-          <TabsArea tabs={core.state.tabs} activeId={core.state.activeId} actions={tabs} menu={menu}
+          <TabsArea tabs={core.state.tabs.filter((tab) => tab.space === model.space.space.id)} activeId={core.state.activeId} actions={tabs} menu={menu}
             folders={folders} containers={containers} compact={false} />
         </div>
         <SidebarSheets model={model} />
