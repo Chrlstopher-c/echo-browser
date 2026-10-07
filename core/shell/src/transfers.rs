@@ -54,6 +54,7 @@ wrap_download_handler! {
                 callback.cont(Some(&CefString::from(target.to_string_lossy().as_ref())), 0);
             }
             info!(%name, "telechargement demarre");
+            notice(format!("Téléchargement de {name}…"));
             1
         }
 
@@ -116,8 +117,21 @@ fn record(item: &DownloadItem, fallback_name: &str) {
         started_at: echo_library::now(),
     };
 
+    let finished = download.state == State::Complete && ANNOUNCED.lock().insert(download.id);
+    let name = download.file_name.clone();
     crate::session::with(|s| downloads::upsert(&s.library, &download));
     crate::bridge::library::publish_downloads();
+    if finished {
+        notice(format!("Téléchargé : {name} (dossier Téléchargements)"));
+    }
+}
+
+/// Telechargements dont la fin a deja ete annoncee : Chromium rappelle plusieurs fois l'etat final.
+static ANNOUNCED: std::sync::LazyLock<Mutex<std::collections::HashSet<u32>>> =
+    std::sync::LazyLock::new(|| Mutex::new(std::collections::HashSet::new()));
+
+fn notice(message: String) {
+    crate::bridge::publish(&echo_contract::CoreEvent::Notice { level: echo_contract::NoticeLevel::Info, message });
 }
 
 fn state_of(item: &DownloadItem) -> State {

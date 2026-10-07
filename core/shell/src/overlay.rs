@@ -72,6 +72,14 @@ impl Overlay {
         self.view.browser()?.main_frame()
     }
 
+    /// Donne le focus clavier a la surimpression : quand on clique ailleurs, elle le perd et se referme.
+    pub fn focus(&self) {
+        View::from(&self.view).request_focus();
+        if let Some(host) = self.view.browser().and_then(|b| b.host()) {
+            host.set_focus(1);
+        }
+    }
+
     /// Retire la surimpression. Sans cet appel, la vue survit a l'objet.
     pub fn close(self) {
         if self.controller.is_valid() == 1 {
@@ -286,7 +294,22 @@ pub fn open_menu(anchor_view: &BrowserView, payload: &str, at: Rect) {
         warn!("menu contextuel : ouverture refusee");
         return;
     };
+    overlay.focus();
     MENU.with(|cell| *cell.borrow_mut() = Some(overlay));
+    MENU_OPENED.with(|cell| cell.set(Some(std::time::Instant::now())));
+}
+
+thread_local! {
+    static MENU_OPENED: std::cell::Cell<Option<std::time::Instant>> = const { std::cell::Cell::new(None) };
+}
+
+/// Fermeture demandee par le menu lui-meme (il a perdu le focus). Ignoree juste apres une ouverture :
+/// c'est alors l'ancien menu, remplace par un nouveau clic droit, qui parle.
+pub fn close_menu_from_page() {
+    let fresh = MENU_OPENED.with(|cell| cell.get()).is_some_and(|at| at.elapsed() < std::time::Duration::from_millis(250));
+    if !fresh {
+        close_menu();
+    }
 }
 
 /// Referme le menu contextuel. Sans effet s'il n'y en a pas.

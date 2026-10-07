@@ -217,6 +217,12 @@ wrap_display_handler! {
                     crate::bridge::finish_orphan_signin(browser.identifier());
                 }
             }
+            if message == crate::sleep::PRESS_MARKER {
+                if crate::overlay::menu_open() {
+                    crate::overlay::close_menu();
+                }
+                return 1;
+            }
             if message == crate::sleep::DIRTY_MARKER {
                 if let Some(browser) = browser {
                     crate::bridge::set_tab_dirty(browser.identifier(), true);

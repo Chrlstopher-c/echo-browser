@@ -163,7 +163,7 @@ fn apply(request: UiRequest) {
         UiRequest::OpenExtensionPopup { id, anchor } => extensions::open_extension_popup(&id, anchor),
         UiRequest::OpenExtensionOptions { id } => extensions::open_extension_options(&id),
         UiRequest::RunContextMenu { action } => context::run(action),
-        UiRequest::CloseContextMenu => context::close(),
+        UiRequest::CloseContextMenu => crate::overlay::close_menu_from_page(),
         UiRequest::SetOverlayTheme { theme } => context::set_theme(theme),
         UiRequest::CloseExtensionPopup => {
             crate::overlay::close_extension_popup();

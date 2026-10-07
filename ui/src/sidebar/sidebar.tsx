@@ -13,6 +13,8 @@ export function Sidebar({ model }: { model: SidebarModel }): ReactElement {
     <aside
       onPointerEnter={hover.enter}
       onPointerLeave={hover.leave}
+      // Un clic dans la barre referme le menu contextuel d'une page, s'il est ouvert.
+      onPointerDownCapture={() => model.core.send({ kind: 'closeContextMenu' })}
       style={{ width: SIDEBAR_WIDTH }}
       className="fond-espace relative h-full shrink-0 overflow-hidden"
     >

@@ -21,6 +21,14 @@ assert not call(op="menu")["open"]
 assert call(op="click", x=300, y=200, button="right")["ok"]
 time.sleep(1.5)
 assert call(op="menu")["open"], "le menu contextuel ne s'ouvre pas sur la page"
+time.sleep(1)
+assert call(op="menu")["open"], "le menu se referme tout seul"
+call(op="click", x=500, y=400); time.sleep(1)
+assert not call(op="menu")["open"], "un clic gauche ailleurs ne ferme pas le menu"
+call(op="click", x=300, y=200, button="right"); time.sleep(1)
+call(op="click", x=500, y=400, button="right"); time.sleep(1)
+assert call(op="menu")["open"], "un second clic droit doit rouvrir le menu au nouvel endroit"
+call(op="click", x=500, y=300); time.sleep(1)
 import subprocess
 def windows():
     pid = int(open(os.environ["ECHO_RUN_DIR"] + "/browser.pid").read())

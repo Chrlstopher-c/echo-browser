@@ -14,7 +14,11 @@ pub const DIRTY_WATCHER: &str = "(()=>{let sent=false;const f=e=>{if(sent||!e.is
 console.debug('echo:dirty')};addEventListener('input',f,true);addEventListener('change',f,true);\
 let t=0;addEventListener('scroll',()=>{clearTimeout(t);t=setTimeout(()=>{\
 const y=Math.round(document.scrollingElement?document.scrollingElement.scrollTop:0);\
-console.debug('echo:scroll:'+y)},400)},{passive:true,capture:true})})()";
+console.debug('echo:scroll:'+y)},400)},{passive:true,capture:true});\
+addEventListener('mousedown',e=>{if(e.button!==2)console.debug('echo:press')},true)})()";
+
+/// Message console d'un clic gauche ou milieu dans la page : il referme le menu contextuel ouvert.
+pub const PRESS_MARKER: &str = "echo:press";
 
 /// Prefixe du message console qui porte le defilement de la page.
 pub const SCROLL_MARKER: &str = "echo:scroll:";
