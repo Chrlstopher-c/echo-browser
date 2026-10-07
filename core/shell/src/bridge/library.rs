@@ -152,7 +152,14 @@ pub fn update_setting(key: &str, value: &SettingValue) {
                 message: reason,
             });
         }
-        _ => publish_settings(),
+        _ => {
+            // Le meme interrupteur existe dans le bouclier et dans les reglages : les deux doivent agir.
+            if let (Some(Ok(())), "shield.enabled", SettingValue::Flag(on)) = (&outcome, key, value) {
+                session::with(|s| s.shield.set_enabled(*on));
+                super::publish_shield();
+            }
+            publish_settings();
+        }
     }
 }
 

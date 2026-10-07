@@ -69,18 +69,21 @@ wrap_task! {
 /// Diffuse l'etat courant du bouclier.
 pub fn publish_shield() {
     let url = current_url();
-    let Some(state) = session::with(|s| {
+    // L'interface lit l'etat du bouclier sous l'identifiant de l'onglet actif : l'envoyer sous un autre
+    // (l'ancien 0 fixe) lui faisait afficher « actif » par defaut, quel que soit l'etat reel.
+    let Some((id, state)) = session::with(|s| {
         let tally = s.shield.tally(0);
-        ShieldView {
+        let view = ShieldView {
             enabled: s.shield.is_enabled(),
             active_here: s.shield.is_active_for(&url),
             blocked_here: tally.tab,
             blocked_total: tally.total,
-        }
+        };
+        (s.tabs.active_id().unwrap_or(0), view)
     }) else {
         return;
     };
-    publish(&CoreEvent::ShieldUpdated { id: 0, state });
+    publish(&CoreEvent::ShieldUpdated { id, state });
 }
 
 /// Met a jour un onglet a partir de ce que Chromium rapporte, puis previent l'interface.
