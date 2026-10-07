@@ -15,9 +15,8 @@ Ordre voulu par Chris : angles → favicons → mémoire → décodeur vidéo. P
    copier l'image, profils façon Arc, veille pendant une lecture, état réel du bouclier, pages pleine largeur (réglages, bibliothèque,
    extensions), bouton « Ajouter à Echo » sur le Web Store, onglets ouverts par les extensions (fenêtre d'ancrage), fenêtre d'extension
    ancrée et redimensionnable. Reste : pubs Twitch (essai).
-3c. **Demande de Chris 07/10 soir : « Garder éveillé »** — clic droit sur un onglet (épinglé ou non) → option à case « Garder
-   éveillé » ; cochée : l'onglet n'est jamais endormi ni allégé, une pastille le signale sur l'onglet ; décochée : retour à la
-   normale. Persisté (session). Lien naturel : réglage `tabs.neverSleep` (par site) — ici c'est par onglet.
+3c. **« Garder éveillé » (demande de Chris 07/10 soir) : fait** — clic droit sur un onglet → option cochable ; l'onglet n'est
+   ni endormi ni allégé, pastille soleil sur son icône, choix gardé à la relance (`tools/test-keep-awake.sh`).
 4. **Reste** : extensions par profil faites (07/10) — reste : une extension déclarée est téléchargée dans chaque profil (disque) ; menu contextuel des sites aux couleurs
    neumorphiques ; « Examiner l'élément » qui sélectionne l'élément cliqué (aujourd'hui : ouvre seulement les DevTools ancrés) ;
    largeur des DevTools mémorisée ; pubs Twitch (insérées côté serveur dans le flux, le bouclier ne les voit pas).

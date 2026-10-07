@@ -63,6 +63,7 @@ function blankTab(id: TabId, url: string): TabView {
     zoom: 1,
     audible: false,
     asleep: false,
+    keepAwake: false,
   }
 }
 
@@ -134,6 +135,10 @@ export class FakeTabs {
     next.splice(Math.min(Math.max(to, 0), next.length), 0, moved)
     this.tabs = next
     this.emitTabs()
+  }
+
+  public keepAwake(id: TabId, keepAwake: boolean): void {
+    this.patch(id, { keepAwake, asleep: false })
   }
 
   public pin(id: TabId, pinned: boolean): void {

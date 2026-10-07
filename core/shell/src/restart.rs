@@ -45,6 +45,8 @@ pub struct TabSnapshot {
     /// Conteneur de l'onglet (comptes a part).
     #[serde(default)]
     pub container: Option<String>,
+    #[serde(default)]
+    pub keep_awake: bool,
 }
 
 impl TabSnapshot {

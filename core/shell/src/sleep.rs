@@ -87,6 +87,9 @@ wrap_task! {
 
     impl Task {
         fn execute(&self) {
+            for id in crate::session::with(|s| s.tabs.kept_awake_asleep()).unwrap_or_default() {
+                crate::bridge::warm_tab(id);
+            }
             if let Some(idle) = trim_delay() {
                 crate::bridge::trim_idle_tabs(idle);
             }

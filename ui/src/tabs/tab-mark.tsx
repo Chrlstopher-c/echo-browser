@@ -4,7 +4,7 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import type { ReactElement } from 'react'
 import type { TabView } from '../shared/contract'
-import { IconMoon } from '../shared/design/icons'
+import { IconMoon, IconSun } from '../shared/design/icons'
 import { QUICK } from '../shared/design/motion'
 import { ProgressRing } from '../shared/design/progress-ring'
 import { SiteMark } from '../shared/design/site-mark'
@@ -41,6 +41,19 @@ function ContainerPip({ id }: { id: string }): ReactElement {
   )
 }
 
+/** Pastille des onglets gardes eveilles : jamais endormis ni alleges. */
+function AwakePip(): ReactElement {
+  return (
+    <span
+      title="Toujours éveillé"
+      className="absolute -right-1.5 -bottom-1.5 grid size-[13px] place-items-center rounded-full bg-card text-warn
+        shadow-card ring-1 ring-shell"
+    >
+      <IconSun size={10} />
+    </span>
+  )
+}
+
 export function TabMark({ tab, size }: TabMarkProps): ReactElement {
   const ringSize = size + 6
   const container = chosenContainer(tab.container)
@@ -54,6 +67,7 @@ export function TabMark({ tab, size }: TabMarkProps): ReactElement {
         <SiteMark url={tab.url} favicon={tab.favicon} size={size} />
       </motion.span>
       {container !== null && <ContainerPip id={container} />}
+      {tab.keepAwake && <AwakePip />}
       <AnimatePresence>
         {tab.loading && (
           <motion.span

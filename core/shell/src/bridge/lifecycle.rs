@@ -112,7 +112,7 @@ pub fn select_tab(id: TabId) {
 }
 
 /// Reveille un onglet endormi sans l'afficher : la page charge pendant que la souris approche du clic.
-pub(super) fn warm_tab(id: TabId) {
+pub fn warm_tab(id: TabId) {
     if !session::with(|s| s.tabs.is_asleep(id)).unwrap_or(false) {
         return;
     }

@@ -26,6 +26,8 @@ export type UiRequest =
   /** Deplace un onglet a une nouvelle position dans la liste. */
   | { kind: 'moveTab'; id: TabId; to: number }
   | { kind: 'pinTab'; id: TabId; pinned: boolean }
+  /** Garde l'onglet toujours eveille : jamais endormi ni allege. */
+  | { kind: 'keepTabAwake'; id: TabId; keep: boolean }
   /** Range un onglet dans un dossier, ou l'en sort (null). */
   /** Oublie une decision de permission retenue : la question sera reposee. */
   | { kind: 'forgetPermission'; origin: string; permission: string }
@@ -174,6 +176,8 @@ export interface TabView {
   audible: boolean
   /** Vrai si l'onglet a ete mis en sommeil pour economiser la memoire. */
   asleep: boolean
+  /** L'utilisateur l'a demande toujours eveille. */
+  keepAwake: boolean
 }
 
 export type Security = 'secure' | 'mixed' | 'invalid' | 'insecure' | 'local'

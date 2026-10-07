@@ -39,6 +39,8 @@ pub struct Tab {
     /// Position courante dans `history`.
     pub position: usize,
     pub pinned: bool,
+    /// Demande de l'utilisateur : jamais endormi ni allege.
+    pub keep_awake: bool,
     /// Dossier d'onglets ou l'onglet est range (identifiant).
     pub folder: Option<String>,
     /// Conteneur de l'onglet (cookies et comptes a part), `None` pour le contexte commun.
@@ -114,6 +116,7 @@ impl Tab {
             zoom: self.zoom,
             audible: self.audible,
             asleep: self.asleep,
+            keep_awake: self.keep_awake,
         }
     }
 
@@ -202,6 +205,7 @@ impl Tabs {
             history: vec![url.to_string()],
             position: 0,
             pinned: false,
+            keep_awake: false,
             folder: None,
             container: None,
             space: self.space(),
@@ -292,7 +296,8 @@ impl Tabs {
         let active = self.active;
         let mut targets = Vec::new();
         for tab in self.entries.iter_mut() {
-            if Some(tab.id) == active || tab.asleep || tab.trimmed || tab.playing || tab.last_active.elapsed() < idle {
+            let spared = tab.asleep || tab.trimmed || tab.playing || tab.keep_awake;
+            if Some(tab.id) == active || spared || tab.last_active.elapsed() < idle {
                 continue;
             }
             if let Some(browser) = tab.browser() {
@@ -301,6 +306,11 @@ impl Tabs {
             }
         }
         targets
+    }
+
+    /// Onglets gardes eveilles mais endormis (restitues au demarrage) : a reveiller.
+    pub fn kept_awake_asleep(&self) -> Vec<TabId> {
+        self.entries.iter().filter(|tab| tab.keep_awake && tab.asleep).map(|tab| tab.id).collect()
     }
 
     /// Nombre d'onglets dont la page est chargee en memoire.
@@ -314,6 +324,7 @@ impl Tabs {
             .iter()
             .filter(|tab| {
                 !tab.asleep
+                    && !tab.keep_awake
                     && Some(tab.id) != self.active
                     && !host_listed(&tab.url, never)
                     && !tab.audible
@@ -381,6 +392,7 @@ impl Tabs {
             history: snapshot.history.clone(),
             position: snapshot.position.min(snapshot.history.len().saturating_sub(1)),
             pinned: snapshot.pinned,
+            keep_awake: snapshot.keep_awake,
             folder: snapshot.folder.clone(),
             container: snapshot.container.clone(),
             space: if snapshot.space.is_empty() { crate::profiles::DEFAULT.to_string() } else { snapshot.space.clone() },
@@ -434,6 +446,7 @@ impl Tabs {
                     history: tab.history.clone(),
                     position: tab.position,
                     pinned: tab.pinned,
+                    keep_awake: tab.keep_awake,
                     folder: tab.folder.clone(),
                     container: tab.container.clone(),
                     space: tab.space.clone(),

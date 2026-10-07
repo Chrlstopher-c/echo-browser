@@ -228,6 +228,13 @@ fn apply(request: UiRequest) {
             open_tab(echo_extensions::profile::MANAGE_PAGE);
             publish_tabs();
         }
+        UiRequest::KeepTabAwake { id, keep } => {
+            session::with(|s| s.tabs.get_mut(id).map(|tab| tab.keep_awake = keep));
+            if keep {
+                warm_tab(id);
+            }
+            publish_tabs();
+        }
         UiRequest::PinTab { id, pinned } => {
             session::with(|s| {
                 if let Some(tab) = s.tabs.get_mut(id) {

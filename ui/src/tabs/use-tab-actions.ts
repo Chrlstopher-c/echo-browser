@@ -11,6 +11,7 @@ export interface TabActions {
   /** Reveille d'avance un onglet endormi (survol). */
   warm: (id: TabId) => void
   pin: (id: TabId, pinned: boolean) => void
+  keepAwake: (id: TabId, keep: boolean) => void
   /** Deplace un onglet a une position dans la liste complete (epingles compris). */
   move: (id: TabId, to: number) => void
   setZoom: (id: TabId, factor: number) => void
@@ -41,6 +42,7 @@ function buildActions(send: Send, activeId: TabId | null): TabActions {
     sleep: (id) => send({ kind: 'sleepTab', id }),
     warm: (id) => send({ kind: 'warmTab', id }),
     pin: (id, pinned) => send({ kind: 'pinTab', id, pinned }),
+    keepAwake: (id, keep) => send({ kind: 'keepTabAwake', id, keep }),
     move: (id, to) => send({ kind: 'moveTab', id, to }),
     setZoom: (id, factor) => send({ kind: 'setZoom', id, factor }),
     addBookmark: (id) => send({ kind: 'addBookmark', id }),

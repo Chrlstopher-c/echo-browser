@@ -59,6 +59,11 @@
   Une page déjà ouverte garde l'ancienne teinte dans ses angles jusqu'au rechargement.
 
 
+## Garder éveillé (07/10)
+- `Tab.keep_awake` (session + `TabSnapshot`), `UiRequest::KeepTabAwake` ; épargné par `sleep_candidates` et
+  `take_trim_targets` ; restitué endormi au démarrage → réveillé au premier passage de la veille (15 s).
+  Menu : `MenuItem checked`, pastille `AwakePip` (soleil) sur `TabMark`.
+
 ## Profils = identités (règle de Chris, 07/10)
 - Comptes, cookies ET extensions jamais partagés entre profils. Cookies/comptes : un `RequestContext` par profil
   (`profile/conteneur-profil-<id>`) ; les conteneurs choisis dans un profil lui appartiennent (`profil-<id>--<conteneur>`,

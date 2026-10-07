@@ -129,6 +129,9 @@ class FakeCore implements CoreBridge {
       case 'moveTab':
         this.tabs.move(request.id, request.to)
         return true
+      case 'keepTabAwake':
+        this.tabs.keepAwake(request.id, request.keep)
+        return true
       case 'pinTab':
         this.tabs.pin(request.id, request.pinned)
         return true

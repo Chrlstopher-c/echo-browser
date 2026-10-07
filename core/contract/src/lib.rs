@@ -25,6 +25,8 @@ pub enum UiRequest {
     /// Deplace un onglet a une nouvelle position dans la liste.
     MoveTab { id: TabId, to: usize },
     PinTab { id: TabId, pinned: bool },
+    /// Garde l'onglet toujours eveille : jamais endormi ni allege.
+    KeepTabAwake { id: TabId, keep: bool },
     /// Range un onglet dans un dossier, ou l'en sort (`None`).
     SetTabFolder { id: TabId, folder: Option<String> },
     Navigate { id: TabId, input: String },
@@ -221,6 +223,8 @@ pub struct TabView {
     pub audible: bool,
     /// Vrai si l'onglet a ete mis en sommeil pour economiser la memoire.
     pub asleep: bool,
+    /// L'utilisateur l'a demande toujours eveille.
+    pub keep_awake: bool,
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
