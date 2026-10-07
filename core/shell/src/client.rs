@@ -134,6 +134,9 @@ wrap_load_handler! {
         fn on_load_end(&self, browser: Option<&mut Browser>, frame: Option<&mut Frame>, _status: i32) {
             let Some(frame) = frame else { return };
             let url = CefString::from(&frame.url()).to_string();
+            if frame.is_main() == 1 && crate::store::is_store(&url) {
+                frame.execute_java_script(Some(&CefString::from(crate::store::BUTTON_SCRIPT)), Some(&CefString::from("echo://store")), 0);
+            }
             if frame.is_main() == 1 && url.starts_with("http") {
                 let pending = browser.and_then(|b| crate::bridge::take_pending_scroll(b.identifier()));
                 if let Some(y) = pending {
@@ -225,6 +228,17 @@ wrap_display_handler! {
                     let playing = flags.next() == Some('1');
                     let audible = flags.next() == Some('1');
                     crate::bridge::set_tab_media(browser.identifier(), playing, audible);
+                }
+                return 1;
+            }
+            if let Some(page) = message.strip_prefix(crate::store::INSTALL_MARKER) {
+                // Seule une page du catalogue peut demander une installation, et seulement d'une de ses fiches.
+                let from_store = browser
+                    .as_deref()
+                    .and_then(|b| b.main_frame())
+                    .is_some_and(|f| crate::store::is_store(&CefString::from(&f.url()).to_string()));
+                if from_store && crate::store::is_store(page) {
+                    crate::bridge::install_extension_from_store(page);
                 }
                 return 1;
             }

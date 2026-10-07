@@ -28,6 +28,7 @@ mod restart;
 mod roundness;
 mod scheme;
 mod search;
+mod store;
 mod session;
 mod shortcuts;
 mod sleep;

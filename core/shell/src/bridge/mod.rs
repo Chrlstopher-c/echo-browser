@@ -328,6 +328,11 @@ pub fn publish(event: &CoreEvent) {
     }
 }
 
+/// Installation demandee par le bouton « Ajouter à Echo » du catalogue.
+pub fn install_extension_from_store(page: &str) {
+    extensions::install_extension(page);
+}
+
 /// Les pages pleine largeur d'Echo.
 const PAGES_URL: &str = "echo://ui/pages.html";
 
