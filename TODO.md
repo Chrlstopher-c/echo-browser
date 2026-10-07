@@ -11,21 +11,11 @@ Ordre voulu par Chris : angles → favicons → mémoire → décodeur vidéo. P
    (cookies isolés, persistés) · défilement restitué au réveil · purge V8 des onglets d'arrière-plan (-9 %) · démarrage 0,3 s.
 3. **Mémoire** : drapeaux Chromium testés, aucun > 4 % (voir STATE.md) ; le levier est la veille. Piste restante : état des onglets endormis
    sur disque (déjà : fiche + défilement), délai de veille plus court, extensions par conteneur.
-3b. **RETOURS DE CHRIS 07/10 après-midi (ordre de traitement)** :
-   1. Menu clic droit des pages : un clic gauche ailleurs le ferme ; un clic droit ailleurs ferme l'ancien et rouvre au nouvel endroit.
-   2. Téléchargements : ne fonctionnent pas (aucun système visible) — à réparer et vérifier de bout en bout.
-   3. Copier une image (et l'adresse d'une vidéo) au clic droit, pour coller directement ailleurs (Ctrl+V) sans télécharger.
-   4. **Profils façon Arc** : les points en bas de la barre (graphite, sable, rose…) ne changent que la couleur ; ils doivent être des
-      profils/espaces : chacun ses onglets (et ses comptes, via un conteneur), nom modifiable, couleur propre.
-   5. Pubs Twitch : essayer d'intercepter le flux (pas prioritaire).
-   6. Release publique : quand prêt (Chris la délègue).
-   7. Veille pendant une lecture : un onglet qui lit une vidéo/son (même muet) ne dort jamais.
-   8. Bouclier : les interrupteurs n'affichent pas l'état réel après bascule (pub YouTube alors que « actif ») — vérifier tous les réglages.
-   9. Réglages, téléchargements, bibliothèque, thèmes : en PAGE pleine (onglet spécial comme « Nouvel onglet ») au lieu de la barre ;
-      le bouclier et les extensions verticales peuvent rester dans la barre.
-   10. Extensions : page dédiée ; installer depuis le Chrome Web Store dans un onglet (bouton « Ajouter ») et/ou catalogue intégré
-       (API gratuite ?) ; à défaut, intégration native propre du Web Store.
-4. **Reste (petit)** : extensions dans les conteneurs (Chromium les rattache au profil) ; menu contextuel des sites aux couleurs
+3b. **RETOURS DE CHRIS 07/10 après-midi** — faits et testés : menu clic droit (fermeture/réouverture), téléchargements annoncés,
+   copier l'image, profils façon Arc, veille pendant une lecture, état réel du bouclier, pages pleine largeur (réglages, bibliothèque,
+   extensions), bouton « Ajouter à Echo » sur le Web Store, onglets ouverts par les extensions (fenêtre d'ancrage), fenêtre d'extension
+   ancrée et redimensionnable. Restent : pubs Twitch (essai), release publique (déléguée).
+4. **Reste (petit)** : `tabs.query` des extensions voit l'onglet vide de l'ancrage (suggestions Proton par site) ; extensions dans les conteneurs (Chromium les rattache au profil) ; menu contextuel des sites aux couleurs
    neumorphiques ; « Examiner l'élément » qui sélectionne l'élément cliqué (aujourd'hui : ouvre seulement les DevTools ancrés) ;
    largeur des DevTools mémorisée ; pubs Twitch (insérées côté serveur dans le flux, le bouclier ne les voit pas).
 5. **Fait 07/10** : moteur CEF compilé avec codecs installé (Twitch/H.264/AAC/HEVC OK, testé par Chris en 1080p). Aucun build lourd
