@@ -1,6 +1,6 @@
 # TODO — echo-browser
 
-## FAIT 08/10 (nuit) — à valider par Chris
+## FAIT 08/10 — releases 0.8.0 et 0.9.0, `main` à jour, signaux anonymes déployés
 - Console d'administration DANS Echo (comptes admin, drapeau serveur) + détail par compte : faite, en production.
 - Synchro automatique (temps réel / automatique / manuelle), alerte « pas synchronisé » : faite, service déployé.
 - E10 (idées) : panneau Réseau (domaines, octets, tiers, blocage par site, isolement strict, journal d'accès), reprise
@@ -15,13 +15,7 @@
 - Extensions : la déclaration externe est lue par Chromium pour TOUS les profils (dossier `External Extensions` à la
   racine des données) → chaque profil télécharge son exemplaire (quelques Mo, désactivé là où il n'est pas voulu).
   Pas de voie par profil connue sans revenir au chargement dépaqueté (cassé, mesuré le 10/09). À étudier à part.
-- Signaux anonymes (E9 S2) : codés et testés ; DÉPLOYER le service (tables + deploy) avec Chris, puis les fonctions
-  collectives (sites malveillants, habitudes) dessus (E9 S3+, IDEES.md).
-- Release 0.8.0 quand Chris a validé (main + tag, CI verte ; déployer d’abord le service pour les signaux — `/v1/etat` et l’admin y sont déjà).
-  Notes prêtes : compte (historique synchronisé, données visibles, suppression, synchro automatique 3 modes + alerte),
-  Administration dans Echo (comptes admin), panneau Réseau (domaines, poids, journal, blocage par site, isolement),
-  reprise exacte des pages, routines, masquer un élément par gabarit, surveiller une page, signaux anonymes (opt-in),
-  réveil des extensions endormies.
+- Fonctions collectives sur les signaux anonymes (déployés le 08/10) : sites malveillants, habitudes (E9 S3+, IDEES.md).
 
 ## RETOURS DE CHRIS DU 06/10 SOIR — liste de reprise (ne rien perdre ; détail et critères dans EPICS.md E6)
 
