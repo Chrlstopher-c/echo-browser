@@ -19,6 +19,7 @@ import type {
   NetworkView,
   RoutineProposalView,
   RoutineView,
+  SuggestionView,
   UpdateView,
   VideoCodecsView,
 } from './contract'
@@ -70,6 +71,8 @@ export interface CoreState {
   vault: VaultKindView[] | null
   /** Tableau de bord des createurs, null tant qu'il n'a pas ete demande. */
   admin: { summary: unknown; accounts: unknown; signals: unknown; error: string | null } | null
+  /** Dernieres suggestions de l'adresse. */
+  suggestions: { query: string; items: SuggestionView[] } | null
   /** Panneau de la barre demande (par l'Aide) : nom et jeton (chaque demande l'incremente). */
   sheetRequest: { sheet: string; token: number } | null
   /** Derniere page surveillee qui a change, en attente d'etre vue. */
@@ -120,6 +123,7 @@ export const EMPTY_CORE_STATE: CoreState = {
   routineProposal: null,
   pageChange: null,
   sheetRequest: null,
+  suggestions: null,
   routines: [],
 }
 
@@ -203,6 +207,8 @@ export function reduceCore(state: CoreState, event: CoreEvent): CoreState {
       return { ...state, remoteMachines: event.machines }
     case 'accountVault':
       return { ...state, vault: event.kinds }
+    case 'suggestions':
+      return { ...state, suggestions: { query: event.query, items: event.items } }
     case 'sidebarSheetRequested':
       return { ...state, sheetRequest: { sheet: event.sheet, token: (state.sheetRequest?.token ?? 0) + 1 } }
     case 'pageChanged':

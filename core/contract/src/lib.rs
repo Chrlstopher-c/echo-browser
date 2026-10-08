@@ -174,6 +174,8 @@ pub enum UiRequest {
     /// Isolement strict du site de l'onglet actif : aucune requete vers un autre site.
     NetworkSetStrict { strict: bool },
 
+    /// Suggestions pour ce que l'utilisateur tape dans l'adresse (onglets ouverts, favoris, historique).
+    Suggest { query: String },
     /// Ouvrir un panneau de la barre (`network`, `shield`, `extensions`) — depuis l'Aide par exemple.
     OpenSidebarSheet { sheet: String },
 
@@ -247,6 +249,8 @@ pub enum CoreEvent {
         signals: serde_json::Value,
         error: Option<String>,
     },
+    /// Suggestions de l'adresse, pour `query`.
+    Suggestions { query: String, items: Vec<SuggestionView> },
     /// La barre doit ouvrir ce panneau.
     SidebarSheetRequested { sheet: String },
     /// Une page surveillee a change depuis la visite precedente.
@@ -431,4 +435,14 @@ mod tests {
         assert!(json.contains("\"restartPending\":true"), "{json}");
         assert!(!json.contains("restart_pending"), "{json}");
     }
+}
+
+/// Une suggestion de l'adresse : `tab` (onglet ouvert, a activer), `bookmark` ou `history`.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SuggestionView {
+    pub kind: String,
+    pub title: String,
+    pub url: String,
+    pub tab: Option<TabId>,
 }

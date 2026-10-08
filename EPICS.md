@@ -131,3 +131,17 @@ Le coffre est chiffré sur la machine : le serveur ne peut pas le lire, le table
 - S2 Cadenas de l'adresse → Sécurité et réseau (domaines, poids, journal, blocages).
 - S3 Profils : créer, renommer, teinte, réinitialiser, supprimer (sessions effacées tout de suite, données au
   lancement suivant). Critère : `tools/test-help-profiles.sh` vert.
+
+## E12 — Quotidien et lecture (autonomie validée par Chris, 08/10 après-midi)
+Mots de passe écartés : Chris utilise Proton Pass dans Echo ; un gestionnaire maison ferait doublon et ajouterait du
+risque dans un projet open source.
+- S1 Palette d'adresse : en tapant, onglets ouverts, favoris et historique sous la barre ; ↑/↓, Entrée, Échap ; un
+  onglet ouvert s'active au lieu d'être rouvert ; Ctrl+K comme Ctrl+L. Critère : test qui tape, voit les trois
+  sections, choisit au clavier.
+- S2 Formulaires réutilisables (idée 3) : fiches (identité, adresse) dans Réglages → Formulaires, clic droit
+  « Remplir le formulaire » dans un champ ; champs reconnus par leurs attributs `autocomplete`/nom/libellé ; jamais un
+  mot de passe ni une carte. Synchronisées chiffrées avec le compte. Critère : formulaire de test rempli.
+- S3 Mode lecture (idée 20) : clic droit / Ctrl+Alt+R « Lire en mode lecture » : l'article seul, typographie d'Echo,
+  clair/sombre, sans publicité ni menus ; « Quitter la lecture ». Critère : page de test avec pub et menu → seuls
+  titre et paragraphes restent.
+- Chaque story : point d'entrée visible + ligne dans l'Aide.

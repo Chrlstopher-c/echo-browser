@@ -241,6 +241,10 @@ fn apply(request: UiRequest) {
         }
         UiRequest::AccountInspect => crate::account::inspect(),
         UiRequest::AccountDelete => crate::account::delete(),
+        UiRequest::Suggest { query } => {
+            let items = crate::suggest::for_address(&query);
+            publish(&CoreEvent::Suggestions { query, items });
+        }
         UiRequest::OpenSidebarSheet { sheet } => {
             if matches!(sheet.as_str(), "network" | "shield" | "extensions") {
                 crate::window::reveal_chrome(true, session::with(|s| s.chrome.clone()).flatten().as_ref());

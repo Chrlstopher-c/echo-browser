@@ -65,6 +65,8 @@ function ColumnHeader({ model }: { model: SidebarModel }): ReactElement {
         }}
         focusToken={model.addressFocusToken}
         onOpenSecurity={() => model.sheet.open('network')}
+        suggestions={core.state.suggestions}
+        send={core.send}
       />
       <Extensions model={model} />
     </header>

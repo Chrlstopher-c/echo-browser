@@ -3,12 +3,15 @@
 
 import { AnimatePresence, motion } from 'framer-motion'
 import type { ReactElement } from 'react'
-import type { TabView } from '../shared/contract'
+import type { TabView, UiRequest } from '../shared/contract'
 import { formatZoom } from '../shared/format'
 import { QUICK } from '../shared/design/motion'
 import { readUrl } from '../shared/url-shape'
 import { LoadProgress } from './load-progress'
 import { SecurityMark } from './security-mark'
+import { SuggestionList } from './suggestion-list'
+import { useSuggestions } from './use-suggestions'
+import type { CoreState } from '../shared/core-state'
 import { useAddressField } from './use-address-field'
 
 export interface AddressFieldProps {
@@ -17,6 +20,9 @@ export interface AddressFieldProps {
   onResetZoom: () => void
   /** Clic sur le cadenas : la securite du site. */
   onOpenSecurity?: () => void
+  /** Suggestions recues du coeur, et l'envoi des demandes. */
+  suggestions: CoreState['suggestions']
+  send: (request: UiRequest) => void
   /** Incremente pour donner le focus au champ depuis l'exterieur. */
   focusToken: number
 }
@@ -60,10 +66,13 @@ function ZoomBadge({ zoom, onReset }: { zoom: number; onReset: () => void }): Re
 }
 
 export function AddressField(props: AddressFieldProps): ReactElement {
-  const { tab, onSubmit, onResetZoom, focusToken, onOpenSecurity } = props
+  const { tab, onSubmit, onResetZoom, focusToken, onOpenSecurity, send } = props
   const field = useAddressField(tab, onSubmit, focusToken)
+  const list = useSuggestions(field.value, field.editing, props.suggestions, send, onSubmit,
+    () => field.inputRef.current?.blur())
   const security = tab === null || tab.url.length === 0 || tab.url === 'about:blank' ? 'blank' : tab.security
   return (
+    <div className="relative">
     <div
       className={`relative flex h-9 min-w-0 items-center gap-2 overflow-hidden rounded-full bg-field px-3.5
         shadow-field transition-colors duration-100 ${field.editing ? 'ring-1 ring-guard/60' : 'hover:bg-hover'}`}
@@ -79,7 +88,9 @@ export function AddressField(props: AddressFieldProps): ReactElement {
         onChange={(event) => field.onChange(event.target.value)}
         onFocus={field.onFocus}
         onBlur={field.onBlur}
-        onKeyDown={field.onKeyDown}
+        onKeyDown={(event) => {
+          if (!list.onKey(event)) field.onKeyDown(event)
+        }}
         className={`numerique min-w-0 flex-1 bg-transparent text-[12px] outline-none select-text
           placeholder:text-ink-faint ${field.editing ? 'text-ink' : 'text-transparent'}`}
       />
@@ -91,6 +102,8 @@ export function AddressField(props: AddressFieldProps): ReactElement {
       )}
       {!field.editing && tab !== null && <ZoomBadge zoom={tab.zoom} onReset={onResetZoom} />}
       <LoadProgress loading={tab?.loading ?? false} progress={tab?.progress ?? 0} />
+    </div>
+    <SuggestionList items={list.items} selected={list.selected} onPick={list.pick} />
     </div>
   )
 }

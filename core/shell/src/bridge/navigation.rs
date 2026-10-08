@@ -3,7 +3,7 @@
 
 use super::publish::publish_tabs;
 use super::{close_tab, open_tab, publish, session};
-use cef::{Browser, CefString, ImplBrowser, ImplBrowserHost, ImplFrame};
+use cef::{Browser, CefString, ImplBrowser, ImplBrowserHost, ImplBrowserView, ImplFrame, ImplView};
 use echo_contract::CoreEvent;
 use tracing::{debug, warn};
 
@@ -24,6 +24,19 @@ pub(super) fn set_zoom(id: echo_contract::TabId, factor: f32) {
         host.set_zoom_level(f64::from(clamped).log(1.2));
     }
     publish_tabs();
+}
+
+/// Donne le focus clavier a la barre (la page le garde sinon : la saisie partirait dans la page), puis a l'adresse.
+fn focus_address() {
+    let chrome = session::with(|s| s.chrome.clone()).flatten();
+    crate::window::reveal_chrome(true, chrome.as_ref());
+    if let Some(view) = chrome {
+        cef::View::from(&view).request_focus();
+        if let Some(host) = view.browser().and_then(|b| b.host()) {
+            host.set_focus(1);
+        }
+    }
+    publish(&CoreEvent::FocusAddressRequested);
 }
 
 /// Applique un raccourci clavier.
@@ -50,7 +63,7 @@ pub fn perform(action: crate::shortcuts::Action) {
         Action::Reload { bypass_cache } => with_browser(|browser| {
             if bypass_cache { browser.reload_ignore_cache() } else { browser.reload() }
         }),
-        Action::FocusAddress => publish(&CoreEvent::FocusAddressRequested),
+        Action::FocusAddress => focus_address(),
         Action::DismissOverlay => super::dismiss_overlays(),
         Action::ToggleDevTools => super::context::toggle_devtools(),
         // F11 ne fait que sortir du plein ecran : c'est la page qui y entre, pas nous.

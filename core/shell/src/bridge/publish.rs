@@ -181,10 +181,13 @@ pub fn set_tab_title(browser_id: i32, title: &str) {
     if title.is_empty() {
         return;
     }
+    // Le titre de la nouvelle page arrive avant son adresse : l'adresse retenue par l'onglet serait encore l'ancienne,
+    // et la visite precedente prendrait ce titre. L'adresse vient donc de la trame.
     let url = session::with(|s| {
         let tab = s.tabs.by_browser(browser_id)?;
         tab.title = title.to_string();
-        Some(tab.url.clone())
+        let current = tab.browser().and_then(|b| b.main_frame()).map(|f| CefString::from(&f.url()).to_string());
+        Some(current.filter(|u| !u.is_empty()).unwrap_or_else(|| tab.url.clone()))
     })
     .flatten();
     if let Some(url) = url {

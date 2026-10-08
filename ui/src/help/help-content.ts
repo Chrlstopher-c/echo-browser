@@ -69,6 +69,8 @@ export const HELP: HelpSection[] = [
     id: 'quotidien', title: 'Au quotidien',
     intro: 'Ce qu’Echo fait tout seul, et comment en profiter.',
     topics: [
+      { title: 'Palette d’adresse', how: 'Ctrl+K (ou Ctrl+L) puis tapez : onglets ouverts, favoris et historique '
+        + 'apparaissent sous l’adresse ; ↓/↑ puis Entrée. Un onglet déjà ouvert est rejoint, pas dupliqué.' },
       { title: 'Reprise exacte', how: 'Ce que vous aviez tapé et la position des vidéos reviennent après une relance '
         + 'ou un onglet réveillé (jamais les mots de passe).' },
       { title: 'Routines', how: 'Quand vous ouvrez souvent les mêmes sites à la suite, Echo propose d’en faire une '
@@ -97,7 +99,7 @@ export const HELP: HelpSection[] = [
 export const SHORTCUTS: Array<[string, string]> = [
   ['Ctrl+T', 'Nouvel onglet'], ['Ctrl+W', 'Fermer l’onglet'], ['Ctrl+Maj+T', 'Rouvrir l’onglet fermé'],
   ['Ctrl+Tab / Ctrl+Page↓', 'Onglet suivant'], ['Ctrl+Maj+Tab / Ctrl+Page↑', 'Onglet précédent'],
-  ['Ctrl+1 … 9', 'Aller à l’onglet n'], ['Ctrl+L', 'Barre d’adresse'], ['Ctrl+O', 'Ouvrir un fichier'],
+  ['Ctrl+1 … 9', 'Aller à l’onglet n'], ['Ctrl+L / Ctrl+K', 'Adresse et palette'], ['Ctrl+O', 'Ouvrir un fichier'],
   ['Ctrl+D', 'Ajouter aux favoris'], ['Ctrl+H / Ctrl+J', 'Bibliothèque (historique, fichiers)'],
   ['Ctrl+P', 'Imprimer'], ['Ctrl+S', 'Enregistrer la page'], ['Ctrl+U', 'Code source'],
   ['Ctrl+R / F5', 'Recharger'], ['Ctrl+Maj+R', 'Recharger sans cache'], ['Alt+← / Alt+→', 'Précédent / suivant'],

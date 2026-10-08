@@ -113,7 +113,7 @@ fn ctrl_letter(letter: char, shift: bool) -> Option<Action> {
         ('t', false) => Action::NewTab,
         ('t', true) => Action::ReopenTab,
         ('w', false) => Action::CloseTab,
-        ('l', false) => Action::FocusAddress,
+        ('l' | 'k', false) => Action::FocusAddress,
         ('r', false) => Action::Reload { bypass_cache: false },
         ('r', true) => Action::Reload { bypass_cache: true },
         ('i' | 'j', true) => Action::ToggleDevTools,

@@ -22,6 +22,8 @@ export type UiRequest =
   | { kind: 'warmTab'; id: TabId }
   /** Ouvre une page pleine largeur d'Echo dans un onglet, ou y revient. */
   | { kind: 'openPage'; page: 'reglages' | 'bibliotheque' | 'extensions' | 'admin' | 'aide' }
+  /** Suggestions pour ce que l'utilisateur tape dans l'adresse. */
+  | { kind: 'suggest'; query: string }
   /** Ouvrir un panneau de la barre (`network`, `shield`, `extensions`) — depuis l'Aide par exemple. */
   | { kind: 'openSidebarSheet'; sheet: string }
   /** Referme les outils de developpement ancres. */
@@ -190,6 +192,8 @@ export type CoreEvent =
   | { kind: 'accountVault'; kinds: VaultKindView[] }
   /** Tableau de bord tel que le service le rend (forme lue par `admin/admin-data.ts`), ou l'erreur. */
   | { kind: 'adminData'; summary: unknown; accounts: unknown; signals: unknown; error: string | null }
+  /** Suggestions de l'adresse, pour `query`. */
+  | { kind: 'suggestions'; query: string; items: SuggestionView[] }
   /** La barre doit ouvrir ce panneau. */
   | { kind: 'sidebarSheetRequested'; sheet: string }
   /** Une page surveillee a change depuis la visite precedente. */
@@ -445,3 +449,10 @@ export interface PermissionGrantView {
   allow: boolean
 }
 
+/** Une suggestion de l'adresse : onglet ouvert (a activer), favori ou historique. */
+export interface SuggestionView {
+  kind: 'tab' | 'bookmark' | 'history'
+  title: string
+  url: string
+  tab: TabId | null
+}

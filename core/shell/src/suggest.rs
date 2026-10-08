@@ -39,3 +39,25 @@ pub fn suggest(query: &str) -> Value {
     });
     found.unwrap_or_else(|| json!({"ok": false, "error": "navigateur occupe"}))
 }
+
+/// Les suggestions de la barre d'adresse, a plat (onglets, favoris, historique), sans doublon d'adresse.
+pub fn for_address(query: &str) -> Vec<echo_contract::SuggestionView> {
+    let found = suggest(query);
+    let mut seen = std::collections::HashSet::new();
+    let mut items = Vec::new();
+    for (section, kind) in [("tabs", "tab"), ("bookmarks", "bookmark"), ("history", "history")] {
+        for entry in found[section].as_array().into_iter().flatten() {
+            let url = entry["url"].as_str().unwrap_or_default().to_string();
+            if url.is_empty() || !seen.insert(url.trim_end_matches('/').to_string()) {
+                continue;
+            }
+            items.push(echo_contract::SuggestionView {
+                kind: kind.to_string(),
+                title: entry["title"].as_str().unwrap_or_default().to_string(),
+                url,
+                tab: entry["id"].as_u64().and_then(|id| u32::try_from(id).ok()),
+            });
+        }
+    }
+    items
+}
