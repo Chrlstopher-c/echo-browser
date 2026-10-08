@@ -14,6 +14,7 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `EPICS.md`
 - `IDEES.md`
 - `README.md`
+- `STATE-ARCHIVE.md`
 - `STATE.md`
 - `TODO.md`
 - `compte/.gitignore`
@@ -44,6 +45,7 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `core/contract/Cargo.toml`
 - `core/contract/src/account.rs`
 - `core/contract/src/lib.rs`
+- `core/contract/src/network.rs`
 - `core/extensions/Cargo.toml`
 - `core/extensions/examples/installer.rs`
 - `core/extensions/src/action.rs` — ce qu'une extension propose dans la barre — sa fenetre et son icone.
@@ -57,12 +59,20 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `core/library/Cargo.toml`
 - `core/library/src/bookmarks.rs` — les favoris, et l'ordre dans lequel l'utilisateur les a ranges.
 - `core/library/src/downloads.rs` — les telechargements, en cours et passes.
+- `core/library/src/hidden.rs` — les elements que l'utilisateur a masques, retenus par gabarit de page (empreinte de la structure,
 - `core/library/src/history.rs` — l'historique de navigation, sa recherche et son effacement.
+- `core/library/src/journal.rs` — le journal d'acces de chaque site — ce qu'il a fait de sensible (premier contact avec un tiers,
 - `core/library/src/lib.rs`
 - `core/library/src/permissions.rs` — les decisions de permission (camera, micro, position, notifications…) retenues
+- `core/library/src/routines.rs` — les routines — suites de sites que l'utilisateur ouvre souvent dans le meme ordre. Chaque suite
 - `core/library/src/schema.rs` — la forme de la base et sa mise a niveau.
 - `core/library/src/settings.rs` — les reglages du navigateur, et leurs valeurs par defaut.
 - `core/library/tests/library.rs`
+- `core/network/Cargo.toml`
+- `core/network/src/lib.rs`
+- `core/network/src/log.rs` — le journal reseau d'un onglet — les dernieres requetes et leur resume par domaine. Remis a zero
+- `core/network/src/rules.rs` — les regles reseau choisies par l'utilisateur, par site — domaines bloques sur ce site, et
+- `core/network/src/site.rs` — le « site » d'une adresse (domaine enregistrable, ex. `news.bbc.co.uk` → `bbc.co.uk`), et dire si
 - `core/shell/Cargo.toml`
 - `core/shell/src/account/admin.rs`
 - `core/shell/src/account/history.rs`
@@ -111,14 +121,18 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `core/shell/src/injection/twitch/vaft.js`
 - `core/shell/src/main.rs`
 - `core/shell/src/menu.rs` — ce que le clic droit propose, selon ce qui est sous le curseur.
+- `core/shell/src/network.rs` — le reseau des onglets dans le navigateur — chaque requete est notee dans le journal de son onglet
 - `core/shell/src/occlusion.rs` — dire a Chromium quand la fenetre n'est plus visible. Wayland ne le signale pas :
 - `core/shell/src/overlay.rs` — les vues posees **au-dessus** de la page.
+- `core/shell/src/page_memory.rs` — memoire de structure — chaque page calcule l'empreinte de son gabarit (squelette des balises et
+- `core/shell/src/page_state.rs` — reprise exacte d'une page — ce que l'utilisateur a saisi (jamais les mots de passe ni les donnees de
 - `core/shell/src/permissions.rs` — les demandes de permission des sites (camera, micro, position, notifications,
 - `core/shell/src/persist.rs` — sauvegarder les onglets au fil de l'eau, pour les retrouver apres une fermeture
 - `core/shell/src/presence.rs`
 - `core/shell/src/profiles.rs` — les profils (espaces facon Arc). Chacun a sa liste d'onglets et, sauf le profil par
 - `core/shell/src/restart.rs` — relancer le navigateur sans perdre ce qui etait ouvert.
 - `core/shell/src/roundness.rs` — les angles arrondis de la page. Une vue web est un rectangle natif que Chromium ne sait
+- `core/shell/src/routines.rs` — routines dans le navigateur — suit les sites ouverts a la suite (seance = visites a moins de 15 min
 - `core/shell/src/scheme.rs` — le theme clair ou sombre que les pages voient (`prefers-color-scheme`). Il suit celui
 - `core/shell/src/search.rs` — le moteur de recherche et la page d'accueil.
 - `core/shell/src/selftest.rs` — rejouer sans main les manipulations d'onglets, pour verifier
@@ -160,6 +174,7 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `tools/gen-arborescence.py`
 - `tools/package-release.sh`
 - `tools/release-installer.sh`
+- `tools/serveur-test.py`
 - `tools/test-account-auto.sh`
 - `tools/test-account-sync.sh`
 - `tools/test-admin.sh`
@@ -176,14 +191,18 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `tools/test-extension-query.sh`
 - `tools/test-extension-tabs.sh`
 - `tools/test-folders.sh`
+- `tools/test-hide-element.sh`
 - `tools/test-inspect.sh`
 - `tools/test-ipc-origin.sh`
 - `tools/test-keep-awake.sh`
 - `tools/test-media-sleep.sh`
+- `tools/test-network.sh`
 - `tools/test-never-sleep.sh`
 - `tools/test-occlusion.sh`
+- `tools/test-page-state.sh`
 - `tools/test-popup.sh`
 - `tools/test-profiles.sh`
+- `tools/test-routines.sh`
 - `tools/test-scheme.sh`
 - `tools/test-shield-toggle.sh`
 - `tools/test-sidebar-anim.sh`
@@ -259,6 +278,9 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `ui/src/library/library-sheet.tsx` — feuille de la bibliotheque — trois sections sous un selecteur, le contenu glisse entre elles.
 - `ui/src/library/use-library.ts` — modele de la bibliotheque — section affichee (persistee), favoris, historique, telechargements.
 - `ui/src/main.tsx` — point d'entree de l'interface.
+- `ui/src/network/network-format.ts` — mise en forme du panneau Reseau — tailles, durees, types et raisons de blocage en francais.
+- `ui/src/network/network-journal.tsx` — journal d'acces du site de l'onglet actif — premiers contacts avec des tiers, permissions demandees
+- `ui/src/network/network-sheet.tsx` — feuille Reseau — ce que charge l'onglet actif, domaine par domaine (requetes, octets, tiers,
 - `ui/src/pages/main.tsx` — point d'entree des pages pleine largeur (reglages, bibliotheque) ouvertes dans un onglet.
 - `ui/src/pages/pages-app.tsx` — les pages pleine largeur d'Echo — reglages et bibliotheque — dans un onglet, la ou la
 - `ui/src/pages/use-page-route.ts` — la section affichee, lue dans l'ancre de l'adresse (#reglages, #bibliotheque, #admin).
@@ -266,6 +288,8 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `ui/src/pages/welcome-page.tsx` — presentation d'Echo au premier lancement (facon Arc) — quelques ecrans, puis le compte Echo a creer,
 - `ui/src/restart/restart-screen.tsx` — ecran d'attente plein cadre pendant la relance du navigateur. Il vit quelques
 - `ui/src/restart/restart-strip.tsx` — bande de relance — propose le redemarrage sans l'imposer, jamais bloquante.
+- `ui/src/routines/routine-strip.tsx` — proposition de routine en bas de la barre — une suite de sites revient souvent ; la creer (nommee)
+- `ui/src/routines/routines-panel.tsx` — Bibliotheque → Routines — les suites de sites enregistrees ; les ouvrir d'un geste, les retirer.
 - `ui/src/settings/about-section.tsx` — Reglages → A propos — version d'Echo, etat de la mise a jour, verification a la demande.
 - `ui/src/settings/containers-section.tsx` — conteneurs dans les reglages — nom et retrait ; l'ouverture se fait depuis la liste d'onglets.
 - `ui/src/settings/grants-section.tsx` — les autorisations retenues par site (camera, micro, position…) et leur retrait.
@@ -329,7 +353,7 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `ui/src/sidebar/use-sheet.ts` — feuille ouverte sur la liste d'onglets. Une seule a la fois ; Echap la ferme.
 - `ui/src/sidebar/use-sidebar-width.ts` — repli de la barre. La largeur reclamee au coeur ne change jamais ; le repli
 - `ui/src/sidebar/use-sidebar.ts` — modele complet de la barre — coeur, gestes, largeur, feuilles, espace, domaines.
-- `ui/src/sidebar/utility-row.tsx` — rangee d'outils au bas de la barre — bouclier, bibliotheque, extensions, reglages.
+- `ui/src/sidebar/utility-row.tsx` — rangee d'outils au bas de la barre — bouclier, reseau, bibliotheque, extensions, reglages.
 - `ui/src/spaces/apply-space.ts` — poser les jetons d'un espace sur le document. Les utilitaires Tailwind lisent
 - `ui/src/spaces/space-palette.ts` — les espaces — une teinte (graphite, sable…) dans l'un des deux schemas, clair ou sombre.
 - `ui/src/spaces/space-picker.tsx` — choix de l'espace dans les reglages — une pastille par teinte, la courante cochee.

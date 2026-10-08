@@ -49,12 +49,15 @@ Ports : sonde de présence `127.0.0.1:4330` ; port de débogage local `127.0.0.1
 - `./tools/test-control.sh` — prise de pilotage ; `./tools/test-ipc-origin.sh` — une page web ne pilote pas le cœur.
 - `cargo test --workspace --exclude echo-shell` — crates sans Chromium (CI GitHub).
 - `./tools/bench-ram.sh echo|chrome [attente_s]` — mémoire (PSS) sur des pages réelles, comparée à Chrome.
+- `./tools/test-network.sh`, `test-page-state.sh`, `test-routines.sh`, `test-hide-element.sh` — panneau Réseau et
+  journal, reprise exacte, routines, mémoire de structure (servis par `tools/serveur-test.py`).
+- `./tools/test-account-auto.sh`, `test-admin.sh` — synchro automatique et administration (service local `compte/`).
 - **Les scripts de test lancent une instance isolée** (`ECHO_RUN_DIR`, `ECHO_CONTROL_NAME`) : ils ne touchent jamais au navigateur de l'utilisateur.
 
 ## Variables utiles (bancs et diagnostic)
 
 `ECHO_DATA_DIR`, `ECHO_RUN_DIR`, `ECHO_LOG=debug`, `ECHO_SLEEP_AFTER_S`, `ECHO_BENCH_URLS`, `ECHO_BENCH_UI`, `ECHO_BENCH_JS`,
-`ECHO_FLAGS`, `ECHO_ROUND=0`, `ECHO_TERM_CMD`, `ECHO_CONTROL=0`.
+`ECHO_FLAGS`, `ECHO_ROUND=0`, `ECHO_TERM_CMD`, `ECHO_CONTROL=0`, `ECHO_ROUTINE_GAP_S` (routines, essais).
 
 ## Documentation
 

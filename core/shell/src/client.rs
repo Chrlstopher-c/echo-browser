@@ -152,6 +152,11 @@ wrap_load_handler! {
                 frame.execute_java_script(Some(&CefString::from(crate::store::BUTTON_SCRIPT)), Some(&CefString::from("echo://store")), 0);
             }
             if frame.is_main() == 1 && url.starts_with("http") {
+                frame.execute_java_script(
+                    Some(&CefString::from(crate::page_memory::announce_script().as_str())),
+                    Some(&CefString::from("echo://gabarit")),
+                    0,
+                );
                 let browser_id = browser.as_ref().map(|b| b.identifier());
                 if let Some(script) = browser_id.and_then(crate::page_state::restore_script) {
                     frame.execute_java_script(Some(&CefString::from(script.as_str())), Some(&CefString::from("echo://etat")), 0);
@@ -231,6 +236,18 @@ wrap_display_handler! {
             line: i32,
         ) -> i32 {
             let message = message.map(CefString::to_string).unwrap_or_default();
+            if let Some(fingerprint) = message.strip_prefix(crate::page_memory::FINGERPRINT_MARKER) {
+                if let Some(browser) = browser {
+                    crate::page_memory::announced(browser, fingerprint);
+                }
+                return 1;
+            }
+            if let Some(hidden) = message.strip_prefix(crate::page_memory::HIDE_MARKER) {
+                if let Some(browser) = browser {
+                    crate::page_memory::hidden(browser, hidden);
+                }
+                return 1;
+            }
             if let Some(state) = message.strip_prefix(crate::page_state::MARKER) {
                 if let Some(browser) = browser {
                     crate::page_state::record(browser.identifier(), state);

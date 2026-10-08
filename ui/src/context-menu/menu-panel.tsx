@@ -6,7 +6,8 @@ import { useEffect, type ReactElement } from 'react'
 import type { ContextTarget, MenuEntry, MenuItemKind, UiRequest } from '../shared/contract'
 import {
   IconBack, IconClipboard, IconCode, IconCopy, IconDownload, IconFile, IconForward, IconImage, IconOpen, IconPlus,
-  IconPrinter, IconReload, IconScissors, IconSearch, IconShield, IconStar, IconWrench, type IconComponent,
+  IconPrinter, IconReload, IconScissors, IconSearch, IconShield, IconStar, IconWrench, IconEye, IconEyeOff,
+  type IconComponent,
 } from '../shared/design/icons'
 
 export interface MenuPanelProps {
@@ -27,6 +28,7 @@ const ICONS: Partial<Record<MenuItemKind, IconComponent>> = {
   searchSelection: IconSearch, openSelection: IconOpen,
   back: IconBack, forward: IconForward, reload: IconReload, copyPageLink: IconCopy, bookmark: IconStar,
   savePage: IconDownload, print: IconPrinter, toggleShield: IconShield, viewSource: IconCode, inspect: IconWrench,
+  hideElement: IconEyeOff, unhideElements: IconEye,
 }
 
 function Item({ entry, onRun }: { entry: MenuEntry; onRun: (kind: MenuItemKind) => void }): ReactElement {

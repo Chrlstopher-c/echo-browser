@@ -478,3 +478,24 @@ export function IconActivity(props: IconProps): ReactElement {
     </Glyph>
   )
 }
+
+/** Masquer : un oeil barre. */
+export function IconEyeOff(props: IconProps): ReactElement {
+  return (
+    <Glyph {...props}>
+      <path d="M2 8s2.2-4 6-4 6 4 6 4-2.2 4-6 4-6-4-6-4Z" />
+      <circle cx="8" cy="8" r="1.6" />
+      <path d="M2.5 13.5 13.5 2.5" />
+    </Glyph>
+  )
+}
+
+/** Reafficher : un oeil ouvert. */
+export function IconEye(props: IconProps): ReactElement {
+  return (
+    <Glyph {...props}>
+      <path d="M2 8s2.2-4 6-4 6 4 6 4-2.2 4-6 4-6-4-6-4Z" />
+      <circle cx="8" cy="8" r="1.6" />
+    </Glyph>
+  )
+}

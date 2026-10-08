@@ -20,7 +20,7 @@ pub struct Click {
 }
 
 /// Construit le menu qui convient a ce clic.
-pub fn build(click: &Click) -> ContextTarget {
+pub fn build(click: &Click, hidden_here: bool) -> ContextTarget {
     let mut entries = Vec::new();
     if !click.link.is_empty() {
         entries.extend(link_entries(&click.link));
@@ -53,7 +53,11 @@ pub fn build(click: &Click) -> ContextTarget {
         entries.extend(page_entries(click));
     } else {
         entries.push(MenuEntry::separator());
+        entries.push(MenuEntry::new(MenuItemKind::HideElement, "Masquer cet élément"));
         entries.push(MenuEntry::new(MenuItemKind::Inspect, "Examiner l'élément"));
+    }
+    if hidden_here {
+        entries.push(MenuEntry::new(MenuItemKind::UnhideElements, "Réafficher les éléments masqués"));
     }
     ContextTarget { entries, link: click.link.clone(), selection: trim(&click.selection) }
 }
@@ -119,6 +123,7 @@ fn page_entries(click: &Click) -> Vec<MenuEntry> {
         MenuEntry::separator(),
         MenuEntry::new(MenuItemKind::ToggleShield, "Bouclier sur ce site"),
         MenuEntry::new(MenuItemKind::ViewSource, "Code source"),
+        MenuEntry::new(MenuItemKind::HideElement, "Masquer cet élément"),
         MenuEntry::new(MenuItemKind::Inspect, "Examiner l'élément"),
     ]
 }
@@ -160,7 +165,7 @@ mod tests {
 
     #[test]
     fn la_page_nue_propose_la_navigation_et_le_bouclier() {
-        let menu = build(&clic());
+        let menu = build(&clic(), false);
         let kinds: Vec<_> = menu.entries.iter().map(|e| e.kind).collect();
         assert!(kinds.contains(&MenuItemKind::Reload));
         assert!(kinds.contains(&MenuItemKind::ToggleShield));
@@ -171,7 +176,7 @@ mod tests {
 
     #[test]
     fn precedent_est_grise_quand_il_n_y_a_pas_d_historique() {
-        let menu = build(&clic());
+        let menu = build(&clic(), false);
         let back = menu.entries.iter().find(|e| e.kind == MenuItemKind::Back).expect("precedent");
         assert!(!back.enabled);
     }
@@ -180,7 +185,7 @@ mod tests {
     fn un_lien_propose_de_l_ouvrir_et_de_le_copier() {
         let mut click = clic();
         click.link = "https://exemple.fr/page".to_string();
-        let kinds: Vec<_> = build(&click).entries.iter().map(|e| e.kind).collect();
+        let kinds: Vec<_> = build(&click, false).entries.iter().map(|e| e.kind).collect();
         assert!(kinds.contains(&MenuItemKind::OpenLinkInTab));
         assert!(kinds.contains(&MenuItemKind::CopyLink));
         assert!(kinds.contains(&MenuItemKind::Inspect), "toujours examinable");
@@ -190,11 +195,11 @@ mod tests {
     fn une_selection_qui_ressemble_a_une_adresse_s_ouvre() {
         let mut click = clic();
         click.selection = "exemple.fr/page".to_string();
-        let kinds: Vec<_> = build(&click).entries.iter().map(|e| e.kind).collect();
+        let kinds: Vec<_> = build(&click, false).entries.iter().map(|e| e.kind).collect();
         assert!(kinds.contains(&MenuItemKind::OpenSelection));
 
         click.selection = "deux mots".to_string();
-        let kinds: Vec<_> = build(&click).entries.iter().map(|e| e.kind).collect();
+        let kinds: Vec<_> = build(&click, false).entries.iter().map(|e| e.kind).collect();
         assert!(!kinds.contains(&MenuItemKind::OpenSelection));
         assert!(kinds.contains(&MenuItemKind::SearchSelection));
     }
@@ -203,7 +208,7 @@ mod tests {
     fn un_champ_propose_couper_copier_coller() {
         let mut click = clic();
         click.editable = true;
-        let entries = build(&click).entries;
+        let entries = build(&click, false).entries;
         let couper = entries.iter().find(|e| e.kind == MenuItemKind::Cut).expect("couper");
         assert!(!couper.enabled, "rien de selectionne");
         assert!(entries.iter().any(|e| e.kind == MenuItemKind::Paste));
@@ -214,7 +219,7 @@ mod tests {
         let long = "a".repeat(200);
         let mut click = clic();
         click.selection = long;
-        assert_eq!(build(&click).selection.chars().count(), 65, "64 caracteres et l'ellipse");
+        assert_eq!(build(&click, false).selection.chars().count(), 65, "64 caracteres et l'ellipse");
     }
 }
 

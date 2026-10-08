@@ -1,12 +1,14 @@
 # TODO — echo-browser
 
-## DEMANDÉ PAR CHRIS LE 08/10 — console d'administration du service de compte
+## FAIT 08/10 (nuit) — à valider par Chris
+- Console d'administration DANS Echo (comptes admin, drapeau serveur) + détail par compte : faite, en production.
+- Synchro automatique (temps réel / automatique / manuelle), alerte « pas synchronisé » : faite, service déployé.
+- E10 (idées) : panneau Réseau (domaines, octets, tiers, blocage par site, isolement strict, journal d'accès), reprise
+  exacte des pages (saisies, médias), routines (suites de sites), masquer un élément retenu par gabarit.
 
-Interface pour nous (créateurs) : gérer ce qui se passe sur le Worker Cloudflare — nombre de comptes, inscriptions dans
-le temps, volume stocké par type, sessions actives, erreurs ; plus tard les métriques d'usage partagées (opt-in). Pouvoir
-gérer les comptes (supprimer, couper les sessions). Contrainte : JAMAIS lire les données des utilisateurs (le coffre est
-chiffré de bout en bout ; la console ne voit que des comptes, tailles et dates). À cadrer (brief 5 lignes) après la synchro
-de l'historique.
+## SUITE (E9 S2 puis IDEES.md)
+- Signaux anonymes partagés (opt-in, coupé par défaut) : socle des fonctions collectives (sites malveillants, habitudes).
+- Release 0.8.0 quand Chris a validé (main + tag, CI verte).
 
 ## RETOURS DE CHRIS DU 06/10 SOIR — liste de reprise (ne rien perdre ; détail et critères dans EPICS.md E6)
 

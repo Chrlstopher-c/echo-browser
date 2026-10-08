@@ -361,6 +361,10 @@ export type MenuItemKind =
   | 'toggleShield'
   | 'viewSource'
   | 'inspect'
+  /** Masquer l'element clique, sur toutes les pages du meme gabarit. */
+  | 'hideElement'
+  /** Reafficher ce qui a ete masque sur le gabarit de cette page. */
+  | 'unhideElements'
 
 export interface MenuEntry {
   kind: MenuItemKind

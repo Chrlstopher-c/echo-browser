@@ -34,7 +34,7 @@ export function NetworkJournal({ journal }: { journal: JournalEntryView[] }): Re
           <div key={`${entry.at}-${i}`} className="flex items-start gap-2 px-2 py-1">
             <span className="mt-0.5 shrink-0 text-ink-faint">{icon}</span>
             <div className="min-w-0">
-              <p className="text-[11.5px] leading-snug text-ink">{text}</p>
+              <p className="text-[11.5px] leading-snug text-ink [overflow-wrap:anywhere]">{text}</p>
               <p className="numerique text-[10px] text-ink-faint">{when(entry.at)}</p>
             </div>
           </div>

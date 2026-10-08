@@ -485,6 +485,10 @@ pub enum MenuItemKind {
     ToggleShield,
     ViewSource,
     Inspect,
+    /// Masquer l'element clique, sur toutes les pages du meme gabarit.
+    HideElement,
+    /// Reafficher ce qui a ete masque sur le gabarit de cette page.
+    UnhideElements,
 }
 
 /// Un rectangle de l'interface, en pixels, repere depuis le coin haut-gauche de la

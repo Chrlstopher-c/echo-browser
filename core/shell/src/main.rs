@@ -26,6 +26,7 @@ mod menu;
 mod network;
 mod occlusion;
 mod overlay;
+mod page_memory;
 mod page_state;
 mod permissions;
 mod persist;

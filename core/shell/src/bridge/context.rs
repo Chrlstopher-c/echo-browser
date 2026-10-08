@@ -33,7 +33,7 @@ fn theme() -> echo_contract::OverlayTheme {
 
 /// Retient la cible et demande l'ouverture du menu au-dessus de la page.
 pub fn open(click: Click, x: i32, y: i32) {
-    let target = menu::build(&click);
+    let target = menu::build(&click, crate::page_memory::active_has_hidden());
     let (width, height) = menu::size_of(&target);
     TARGET.with(|cell| *cell.borrow_mut() = Some(click));
     CLICK_POINT.with(|cell| cell.set((x, y)));
@@ -94,6 +94,8 @@ pub fn run(action: MenuItemKind) {
         // `view_source` de CEF ouvre une fenetre a part : le code source s'affiche dans un onglet.
         MenuItemKind::ViewSource => open_and_show(&format!("view-source:{}", click.page)),
         MenuItemKind::Inspect => inspect(),
+        MenuItemKind::HideElement => hide_element(),
+        MenuItemKind::UnhideElements => crate::page_memory::unhide_active(),
         MenuItemKind::Bookmark => {
             let active = session::with(|s| s.tabs.active_id()).flatten();
             if let Some(id) = active {
@@ -183,6 +185,14 @@ fn inspect() {
     crate::devtools::reveal_marked();
 }
 
+/// Masque l'element sous le clic droit ; la page annonce gabarit et selecteur, retenus par `page_memory`.
+fn hide_element() {
+    let (x, y) = CLICK_POINT.with(std::cell::Cell::get);
+    let zoom = session::with(|s| s.tabs.active().map(|tab| tab.zoom)).flatten().unwrap_or(1.0).max(0.25);
+    let script = crate::page_memory::hide_script(x as f32 / zoom, y as f32 / zoom);
+    with_page(|frame| frame.execute_java_script(Some(&CefString::from(script.as_str())), None, 0));
+}
+
 fn with_page(action: impl FnOnce(&cef::Frame)) {
     match session::with(|s| s.active_frame()).flatten() {
         Some(frame) => action(&frame),
@@ -213,5 +223,5 @@ fn clone_click(click: &Click) -> Click {
 
 /// Le menu tel qu'il sera affiche, pour les essais et le journal.
 pub fn preview(click: &Click) -> ContextTarget {
-    menu::build(click)
+    menu::build(click, false)
 }
