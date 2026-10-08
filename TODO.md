@@ -30,7 +30,7 @@ Ordre voulu par Chris : angles → favicons → mémoire → décodeur vidéo. P
    ni endormi ni allégé, pastille soleil sur son icône, choix gardé à la relance (`tools/test-keep-awake.sh`).
 3f. **Release 0.4.0 (08/10)** : proposition automatique du décodeur, installateur avec entrée de menu et icône.
 3e. **Fait 08/10** : événements d'onglets + `tabs.query` dans les service workers d'extensions (TTV LOL PRO fonctionne) ;
-   pubs Twitch bloquées par vaft intégré au bouclier (mesuré). Reste : réveiller un service worker endormi sur un
+   pubs Twitch bloquées par vaft intégré au bouclier (mesuré). Fait 08/10 nuit : réveil d'un service worker endormi sur un
    changement d'onglet (aujourd'hui il ne reçoit que l'état complet au réveil).
 3d. **Finitions faites (07/10)** : « Examiner l'élément » sélectionne l'élément cliqué (`tools/test-inspect.sh`), largeur des
    DevTools mémorisée (`devtools.width`), menu des sites aux icônes + liserés de relief (clair et sombre ; la surimpression
@@ -216,7 +216,7 @@ debout à la première requête.
 
 - [ ] Angles arrondis : pages en `color-scheme: dark` sans fond déclaré s'affichent en blanc (le fond par défaut est forcé) ; à traiter si ça se voit
 
-## FAIT 08/10 (0.6.0) : compte Echo + synchronisation — voir STATE.md ; onglets des autres machines faits (0.7.0) ; reste : historique
+## FAIT 08/10 (0.6.0) : compte Echo + synchronisation — voir STATE.md ; onglets des autres machines faits (0.7.0) ; historique synchronisé fait (08/10)
 Créer un compte Echo au premier lancement (pages de présentation façon Arc : suivant, suivant, créer un compte / se
 connecter), puis synchroniser entre machines : réglages, profils, favoris, historique, onglets, liste d'extensions par
 profil. Serveur gratuit : Cloudflare Worker (authentification) + D1 (SQLite, 5 Go gratuits) ou KV/R2 ; repli possible sur

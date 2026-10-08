@@ -41,6 +41,13 @@ def right_click(p, x, y):
     time.sleep(1)
 tab = call(op="open", url=url("a1.html"))["id"]; time.sleep(3)
 assert shown("a1.html")
+cdp(url("a1.html"), "Runtime.evaluate", {"expression":
+    "console.debug('echo:masquer:'+JSON.stringify({g:'deadbeef',s:'body > header.entete'}))"}); time.sleep(1)
+import sqlite3
+con = sqlite3.connect(f"file:{os.environ['W']}/data/library.db?mode=ro", uri=True)
+assert con.execute("select count(*) from hidden_elements").fetchone()[0] == 0, "une page a pu enregistrer une regle"
+con.close()
+print("une page qui imite la console n'enregistre rien")
 right_click("a1.html", 200, 100)
 call(op="ui", request={"kind": "runContextMenu", "action": "hideElement"}); time.sleep(1.5)
 assert not shown("a1.html"), "banniere toujours visible apres « Masquer »"

@@ -6,9 +6,10 @@ import { useEffect, type ReactElement } from 'react'
 import type { ContextTarget, MenuEntry, MenuItemKind, UiRequest } from '../shared/contract'
 import {
   IconBack, IconClipboard, IconCode, IconCopy, IconDownload, IconFile, IconForward, IconImage, IconOpen, IconPlus,
-  IconPrinter, IconReload, IconScissors, IconSearch, IconShield, IconStar, IconWrench, IconEye, IconEyeOff,
+  IconPrinter, IconReload, IconScissors, IconSearch, IconShield, IconStar, IconWrench,
   type IconComponent,
 } from '../shared/design/icons'
+import { IconEye, IconEyeOff } from '../shared/design/icons-page'
 
 export interface MenuPanelProps {
   target: ContextTarget

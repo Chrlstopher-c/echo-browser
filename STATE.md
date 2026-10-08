@@ -81,7 +81,9 @@
   rejouées au réveil et à la relance sans écraser une saisie.
 - Routines (`routines.rs`, table `sequences`/`routines`) : suites de 2 à 4 sites par empreinte, proposées au 3e passage.
 - Mémoire de structure (`page_memory.rs`, table `hidden_elements`) : « Masquer cet élément » retenu par empreinte de
-  gabarit (squelette balises + classes stables, répétitions écrasées), appliqué aux pages de même gabarit.
+  gabarit (squelette balises + classes stables, répétitions écrasées), appliqué aux pages de même gabarit DU MÊME SITE.
+  Sécurité : une page peut écrire dans la console comme nos scripts — un masquage n'est cru que dans les 3 s qui suivent
+  un vrai « Masquer » de l'utilisateur, et un autre site qui annonce le même gabarit ne reçoit rien.
 - Tests : `test-network.sh`, `test-page-state.sh`, `test-routines.sh`, `test-hide-element.sh`.
 
 ## Synchro automatique (consigne de Chris, 08/10)

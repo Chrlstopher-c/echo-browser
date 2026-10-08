@@ -4,11 +4,18 @@
 //! Modifier l'un sans l'autre casse l'interface en silence.
 
 mod account;
+mod library;
+mod menu;
 mod network;
 
 use serde::{Deserialize, Serialize};
 
 pub use network::{JournalEntryView, NetDomainView, NetRequestView, NetworkView, RoutineProposalView, RoutineView};
+pub use library::{
+    BookmarkView, DownloadState, DownloadView, HistoryEntryView, NoticeLevel, PermissionGrantView, SettingValue,
+    SettingView,
+};
+pub use menu::{AnchorRect, ContextTarget, MenuEntry, MenuItemKind, OverlayTheme};
 pub use account::{AccountView, RemoteMachineView, RemoteTabView, VaultKindView, VaultLineView};
 
 pub type TabId = u32;
@@ -382,200 +389,6 @@ pub struct ExtensionView {
     pub permissions: Vec<String>,
 }
 
-/// Les quelques couleurs dont une surimpression a besoin pour se fondre dans l'espace.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct OverlayTheme {
-    pub shell: String,
-    pub card: String,
-    pub hover: String,
-    pub hairline: String,
-    pub ink: String,
-    pub ink_muted: String,
-    pub ink_faint: String,
-    /// Lumiere et ombre du relief neumorphique, et teinte de l'espace.
-    pub hi: String,
-    pub lo: String,
-    pub tint: String,
-    pub danger: String,
-}
-
-impl Default for OverlayTheme {
-    fn default() -> Self {
-        Self {
-            shell: "#222326".to_string(),
-            card: "#222326".to_string(),
-            hover: "#27282c".to_string(),
-            hairline: "#34363b".to_string(),
-            ink: "#ebeced".to_string(),
-            ink_muted: "#a3a6ae".to_string(),
-            ink_faint: "#6c707a".to_string(),
-            hi: "rgba(255, 255, 255, 0.075)".to_string(),
-            lo: "rgba(0, 0, 0, 0.7)".to_string(),
-            tint: "#8f96a3".to_string(),
-            danger: "#e5484d".to_string(),
-        }
-    }
-}
-
-/// Ce que propose le clic droit, construit par le coeur selon la cible.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct ContextTarget {
-    pub entries: Vec<MenuEntry>,
-    /// Adresse du lien clique, vide s'il n'y en avait pas.
-    pub link: String,
-    /// Texte selectionne, ecourte pour l'affichage.
-    pub selection: String,
-}
-
-/// Une entree du menu contextuel.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct MenuEntry {
-    pub kind: MenuItemKind,
-    pub label: String,
-    pub enabled: bool,
-    /// Vrai pour un simple trait de separation : ni libelle, ni action.
-    pub separator: bool,
-}
-
-impl MenuEntry {
-    pub fn new(kind: MenuItemKind, label: &str) -> Self {
-        Self { kind, label: label.to_string(), enabled: true, separator: false }
-    }
-
-    pub fn separator() -> Self {
-        Self { kind: MenuItemKind::Separator, label: String::new(), enabled: false, separator: true }
-    }
-
-    /// Grise l'entree quand la condition est vraie. L'entree reste affichee : une action
-    /// qui disparait deplace les autres et se cherche du regard.
-    pub fn disabled_when(mut self, condition: bool) -> Self {
-        self.enabled = !condition;
-        self
-    }
-}
-
-/// Les actions que le menu contextuel sait declencher.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub enum MenuItemKind {
-    Separator,
-    OpenLinkInTab,
-    OpenLinkInBackground,
-    CopyLink,
-    SaveLink,
-    OpenImage,
-    CopyImageLink,
-    SaveImage,
-    /// Copie l'image elle-meme (pas son adresse) dans le presse-papiers.
-    CopyImage,
-    OpenMedia,
-    CopyMediaLink,
-    SaveMedia,
-    Copy,
-    Cut,
-    Paste,
-    PastePlain,
-    SelectAll,
-    SearchSelection,
-    OpenSelection,
-    Back,
-    Forward,
-    Reload,
-    CopyPageLink,
-    Bookmark,
-    SavePage,
-    Print,
-    ToggleShield,
-    ViewSource,
-    Inspect,
-    /// Masquer l'element clique, sur toutes les pages du meme gabarit.
-    HideElement,
-    /// Reafficher ce qui a ete masque sur le gabarit de cette page.
-    UnhideElements,
-}
-
-/// Un rectangle de l'interface, en pixels, repere depuis le coin haut-gauche de la
-/// fenetre. Sert d'ancre a ce qui s'affiche au-dessus de la page.
-#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct AnchorRect {
-    pub x: i32,
-    pub y: i32,
-    pub width: i32,
-    pub height: i32,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct BookmarkView {
-    pub url: String,
-    pub title: String,
-    pub favicon: Option<String>,
-    pub added_at: i64,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct HistoryEntryView {
-    pub url: String,
-    pub title: String,
-    pub favicon: Option<String>,
-    pub visited_at: i64,
-    /// Nombre de visites sur cette adresse.
-    pub visits: u32,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct DownloadView {
-    pub id: DownloadId,
-    pub file_name: String,
-    pub url: String,
-    /// Chemin complet, une fois le fichier ecrit.
-    pub path: Option<String>,
-    pub received: u64,
-    pub total: Option<u64>,
-    pub state: DownloadState,
-    pub started_at: i64,
-}
-
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
-pub enum DownloadState {
-    Running,
-    Paused,
-    Complete,
-    Cancelled,
-    Failed,
-}
-
-/// Un reglage et sa valeur courante.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct SettingView {
-    pub key: String,
-    pub value: SettingValue,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-#[serde(tag = "type", content = "value", rename_all = "camelCase")]
-pub enum SettingValue {
-    Flag(bool),
-    Text(String),
-    Number(f64),
-}
-
-#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub enum NoticeLevel {
-    Info,
-    Warning,
-    Error,
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -604,13 +417,4 @@ mod tests {
         assert!(json.contains("\"restartPending\":true"), "{json}");
         assert!(!json.contains("restart_pending"), "{json}");
     }
-}
-
-/// Une decision de permission retenue pour un site.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct PermissionGrantView {
-    pub origin: String,
-    pub kind: String,
-    pub allow: bool,
 }

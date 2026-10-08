@@ -9,7 +9,7 @@ export interface IconProps {
 
 export type IconComponent = (props: IconProps) => ReactElement
 
-function Glyph({ size = 16, className, children }: PropsWithChildren<IconProps>): ReactElement {
+export function Glyph({ size = 16, className, children }: PropsWithChildren<IconProps>): ReactElement {
   return (
     <svg
       width={size}
@@ -466,36 +466,6 @@ export function IconImage(props: IconProps): ReactElement {
       <rect x="2.2" y="2.8" width="11.6" height="10.4" rx="1.8" />
       <circle cx="5.8" cy="6.2" r="1.1" />
       <path d="m13.8 10.4-3.3-3.2-6.8 6" />
-    </Glyph>
-  )
-}
-
-/** Activite reseau : une trace de pouls. */
-export function IconActivity(props: IconProps): ReactElement {
-  return (
-    <Glyph {...props}>
-      <path d="M1.5 8h2.7l1.8-4.6 3.3 9.2 1.8-4.6h3.4" />
-    </Glyph>
-  )
-}
-
-/** Masquer : un oeil barre. */
-export function IconEyeOff(props: IconProps): ReactElement {
-  return (
-    <Glyph {...props}>
-      <path d="M2 8s2.2-4 6-4 6 4 6 4-2.2 4-6 4-6-4-6-4Z" />
-      <circle cx="8" cy="8" r="1.6" />
-      <path d="M2.5 13.5 13.5 2.5" />
-    </Glyph>
-  )
-}
-
-/** Reafficher : un oeil ouvert. */
-export function IconEye(props: IconProps): ReactElement {
-  return (
-    <Glyph {...props}>
-      <path d="M2 8s2.2-4 6-4 6 4 6 4-2.2 4-6 4-6-4-6-4Z" />
-      <circle cx="8" cy="8" r="1.6" />
     </Glyph>
   )
 }

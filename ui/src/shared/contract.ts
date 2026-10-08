@@ -1,6 +1,13 @@
 // Responsabilite : miroir TypeScript du contrat d'echange avec le coeur Rust.
 // Jumeau de core/contract/src/lib.rs — les deux se modifient ensemble, jamais l'un sans l'autre.
 
+import type { AccountView, RemoteMachineView, VaultKindView } from './contract-account'
+import type { NetworkView, RoutineProposalView, RoutineView } from './contract-network'
+
+export type { AccountView, RemoteMachineView, SyncMode, VaultKindView } from './contract-account'
+export type {
+  JournalEntryView, NetDomainView, NetRequestView, NetworkView, RoutineProposalView, RoutineView,
+} from './contract-network'
 export type TabId = number
 export type DownloadId = number
 
@@ -185,49 +192,6 @@ export type CoreEvent =
   | { kind: 'networkChanged'; network: NetworkView }
   /** Fiche d'un compte telle que le service la rend (lue par `admin/admin-data.ts`), ou l'erreur. */
   | { kind: 'adminAccount'; detail: unknown; error: string | null }
-
-export interface RemoteMachineView {
-  name: string
-  /** Derniere publication de ses onglets (secondes Unix). */
-  updated: number
-  tabs: Array<{ url: string; title: string }>
-}
-
-/** Le compte Echo de cette machine. */
-export interface AccountView {
-  /** Un service de compte est configure. */
-  available: boolean
-  email: string | null
-  /** Connexion ou synchronisation en cours. */
-  busy: boolean
-  /** Derniere synchronisation reussie (secondes Unix). */
-  lastSync: number | null
-  error: string | null
-  /** L'historique est synchronise (reglage `sync.history`). */
-  history: boolean
-  /** Le compte ouvre l'administration (drapeau pose sur le serveur). */
-  admin: boolean
-  /** Mode de synchronisation (reglage `sync.mode`). */
-  mode: SyncMode
-  /** Des modifications locales attendent d'etre envoyees. */
-  pending: boolean
-}
-
-export type SyncMode = 'realtime' | 'auto' | 'manual'
-
-/** Un type de donnees tel que le service le garde. */
-export interface VaultKindView {
-  /** `reglages`, `favoris`, `extensions`, `onglets`, `historique`. */
-  kind: string
-  version: number
-  /** Taille chiffree sur le service, en octets. */
-  bytes: number
-  /** Derniere ecriture (millisecondes Unix). */
-  updated: number
-  count: number
-  /** Les elements lisibles (les premiers seulement). */
-  lines: Array<{ title: string; detail: string }>
-}
 
 /** Ou en est la mise a jour de la version installee. */
 export type UpdateStatus =
@@ -469,63 +433,3 @@ export interface PermissionGrantView {
   allow: boolean
 }
 
-/** Ce que charge l'onglet actif, resume par domaine, et les regles du site. */
-export interface NetworkView {
-  page: string
-  totalBytes: number
-  domains: NetDomainView[]
-  /** Dernieres requetes (du domaine choisi, ou toutes), les plus recentes d'abord. */
-  requests: NetRequestView[]
-  focus: string | null
-  /** Hotes bloques par l'utilisateur sur ce site. */
-  blockedHosts: string[]
-  /** Isolement strict du site : aucune requete tierce. */
-  strict: boolean
-  /** Journal d'acces du site, le plus recent d'abord. */
-  journal: JournalEntryView[]
-}
-
-export interface JournalEntryView {
-  /** Secondes Unix. */
-  at: number
-  /** `tiers`, `permission`, `telechargement`. */
-  kind: string
-  detail: string
-}
-
-export interface NetDomainView {
-  host: string
-  site: string
-  requests: number
-  bytes: number
-  blocked: number
-  thirdParty: boolean
-  /** Requetes par type, les plus nombreuses d'abord : [type, nombre]. */
-  kinds: Array<[string, number]>
-}
-
-export interface NetRequestView {
-  url: string
-  host: string
-  kind: string
-  method: string
-  thirdParty: boolean
-  /** `bouclier`, `regle` ou `isolement` quand elle a ete bloquee. */
-  blocked: string | null
-  status: number | null
-  bytes: number
-  durationMs: number | null
-}
-
-/** Une suite de sites ouverte souvent dans le meme ordre, proposee comme routine. */
-export interface RoutineProposalView {
-  fingerprint: string
-  sites: string[]
-  urls: string[]
-}
-
-export interface RoutineView {
-  id: number
-  name: string
-  urls: string[]
-}

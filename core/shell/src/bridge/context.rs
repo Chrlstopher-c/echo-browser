@@ -190,6 +190,9 @@ fn hide_element() {
     let (x, y) = CLICK_POINT.with(std::cell::Cell::get);
     let zoom = session::with(|s| s.tabs.active().map(|tab| tab.zoom)).flatten().unwrap_or(1.0).max(0.25);
     let script = crate::page_memory::hide_script(x as f32 / zoom, y as f32 / zoom);
+    if let Some(browser) = session::with(|s| s.tabs.active().and_then(|t| t.browser())).flatten() {
+        crate::page_memory::arm(browser.identifier());
+    }
     with_page(|frame| frame.execute_java_script(Some(&CefString::from(script.as_str())), None, 0));
 }
 

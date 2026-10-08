@@ -203,10 +203,11 @@ fn un_element_masque_l_est_pour_tout_le_gabarit() {
     let lib = library();
     assert!(hidden::add(&lib, "g1", "div.banniere", "journal.fr"));
     hidden::add(&lib, "g1", "div.banniere", "journal.fr");
-    assert_eq!(hidden::selectors(&lib, "g1"), ["div.banniere"]);
-    assert!(hidden::selectors(&lib, "g2").is_empty());
-    assert!(hidden::clear(&lib, "g1"));
-    assert!(hidden::selectors(&lib, "g1").is_empty());
+    assert_eq!(hidden::selectors(&lib, "g1", "journal.fr"), ["div.banniere"]);
+    assert!(hidden::selectors(&lib, "g1", "autre.fr").is_empty(), "un autre site ne voit pas les regles");
+    assert!(hidden::selectors(&lib, "g2", "journal.fr").is_empty());
+    assert!(hidden::clear(&lib, "g1", "journal.fr"));
+    assert!(hidden::selectors(&lib, "g1", "journal.fr").is_empty());
 }
 
 #[test]

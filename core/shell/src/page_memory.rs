@@ -1,6 +1,6 @@
 //! Responsabilite : memoire de structure — chaque page calcule l'empreinte de son gabarit (squelette des balises et
 //! classes stables, repetitions ecrasees) ; « Masquer cet element » retient un selecteur pour ce gabarit, applique a
-//! toute page qui a le meme, sur le site ou ailleurs.
+//! toute page de ce site qui a le meme. Seul un masquage demande par l'utilisateur est retenu (voir `arm`).
 
 use std::collections::HashMap;
 use std::sync::OnceLock;
@@ -37,6 +37,20 @@ console.debug('{HIDE_MARKER}'+JSON.stringify({{g:echoPrint(),s:sel}}))}})()"
 }
 
 static LAST: OnceLock<Mutex<HashMap<i32, String>>> = OnceLock::new();
+/// Navigateur ou l'utilisateur vient de demander « Masquer » : seul ce message-la est cru (une page qui imite la
+/// console ne peut pas enregistrer de regle).
+static ARMED: Mutex<Option<(i32, std::time::Instant)>> = Mutex::new(None);
+const ARMED_FOR: std::time::Duration = std::time::Duration::from_secs(3);
+
+/// L'utilisateur a choisi « Masquer cet element » dans ce navigateur.
+pub fn arm(browser: i32) {
+    *ARMED.lock() = Some((browser, std::time::Instant::now()));
+}
+
+fn site_of_browser(browser: &Browser) -> String {
+    let page = browser.main_frame().map(|f| CefString::from(&f.url()).to_string()).unwrap_or_default();
+    echo_network::site::site_of(&page).unwrap_or_default()
+}
 
 fn last() -> &'static Mutex<HashMap<i32, String>> {
     LAST.get_or_init(|| Mutex::new(HashMap::new()))
@@ -57,7 +71,9 @@ pub fn announced(browser: &Browser, fingerprint: &str) {
         return;
     }
     last().lock().insert(browser.identifier(), fingerprint.to_string());
-    let selectors = crate::session::with(|s| echo_library::hidden::selectors(&s.library, fingerprint)).unwrap_or_default();
+    let site = site_of_browser(browser);
+    let selectors =
+        crate::session::with(|s| echo_library::hidden::selectors(&s.library, fingerprint, &site)).unwrap_or_default();
     if let (false, Some(frame)) = (selectors.is_empty(), browser.main_frame()) {
         frame.execute_java_script(Some(&CefString::from(css_script(&selectors).as_str())), None, 0);
     }
@@ -65,13 +81,16 @@ pub fn announced(browser: &Browser, fingerprint: &str) {
 
 /// L'utilisateur a masque un element : retenu pour le gabarit de la page.
 pub fn hidden(browser: &Browser, message: &str) {
+    let armed = ARMED.lock().take();
+    if !armed.is_some_and(|(id, at)| id == browser.identifier() && at.elapsed() < ARMED_FOR) {
+        return;
+    }
     let Ok(value) = serde_json::from_str::<serde_json::Value>(message) else { return };
     let (Some(fingerprint), Some(selector)) = (value["g"].as_str(), value["s"].as_str()) else { return };
     if fingerprint.len() > 16 || selector.len() > 400 || selector.contains(['{', '}', '<']) {
         return;
     }
-    let page = browser.main_frame().map(|f| CefString::from(&f.url()).to_string()).unwrap_or_default();
-    let site = echo_network::site::site_of(&page).unwrap_or_default();
+    let site = site_of_browser(browser);
     last().lock().insert(browser.identifier(), fingerprint.to_string());
     crate::session::with(|s| echo_library::hidden::add(&s.library, fingerprint, selector, &site));
 }
@@ -82,14 +101,17 @@ pub fn active_has_hidden() -> bool {
         return false;
     };
     let Some(fingerprint) = last().lock().get(&browser.identifier()).cloned() else { return false };
-    crate::session::with(|s| !echo_library::hidden::selectors(&s.library, &fingerprint).is_empty()).unwrap_or(false)
+    let site = site_of_browser(&browser);
+    crate::session::with(|s| !echo_library::hidden::selectors(&s.library, &fingerprint, &site).is_empty())
+        .unwrap_or(false)
 }
 
 /// Reaffiche tout ce qui etait masque sur le gabarit de la page active.
 pub fn unhide_active() {
     let Some(browser) = crate::session::with(|s| s.tabs.active().and_then(|t| t.browser())).flatten() else { return };
     let Some(fingerprint) = last().lock().get(&browser.identifier()).cloned() else { return };
-    crate::session::with(|s| echo_library::hidden::clear(&s.library, &fingerprint));
+    let site = site_of_browser(&browser);
+    crate::session::with(|s| echo_library::hidden::clear(&s.library, &fingerprint, &site));
     if let Some(frame) = browser.main_frame() {
         frame.execute_java_script(Some(&CefString::from(css_script(&[]).as_str())), None, 0);
     }

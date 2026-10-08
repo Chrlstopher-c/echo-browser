@@ -46,6 +46,8 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `core/contract/Cargo.toml`
 - `core/contract/src/account.rs`
 - `core/contract/src/lib.rs`
+- `core/contract/src/library.rs`
+- `core/contract/src/menu.rs`
 - `core/contract/src/network.rs`
 - `core/extensions/Cargo.toml`
 - `core/extensions/examples/installer.rs`
@@ -304,12 +306,15 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `ui/src/settings/settings-sheet.tsx` — feuille des reglages — apparence tenue par l'interface, puis les reglages du coeur par theme.
 - `ui/src/settings/use-settings.ts` — reglages groupes par theme d'apres le catalogue, et envoi des modifications au coeur.
 - `ui/src/settings/video-section.tsx` — decodeur video complet (H.264/AAC) — etat, installation a la demande depuis un tiers, retrait.
+- `ui/src/shared/contract-account.ts` — contrat du compte Echo (miroir de core/contract/src/account.rs).
+- `ui/src/shared/contract-network.ts` — contrat du panneau Reseau et des routines (miroir de core/contract/src/network.rs).
 - `ui/src/shared/contract.ts` — miroir TypeScript du contrat d'echange avec le coeur Rust.
 - `ui/src/shared/core-bridge.ts` — resoudre le pont vers le coeur — le vrai s'il est injecte, sinon le faux de developpement.
 - `ui/src/shared/core-state.ts` — etat de l'interface derive des evenements du coeur. Reducteur pur, sans effet de bord.
 - `ui/src/shared/design/confirm-strip.tsx` — confirmation en place d'une action destructrice — pas de boite modale, la ligne
 - `ui/src/shared/design/empty-state.tsx` — etat vide d'un panneau — pas d'illustration, une phrase et un motif discret.
 - `ui/src/shared/design/icon-button.tsx` — bouton icone — unique forme cliquable des rangees de controle de la barre.
+- `ui/src/shared/design/icons-page.tsx` — icones des outils de page — activite reseau, masquer et reafficher un element. Meme trace que
 - `ui/src/shared/design/icons.tsx` — jeu d'icones du chrome. Traits de 1.5px, grille 16, aucun remplissage sauf mention.
 - `ui/src/shared/design/list-row.tsx` — ligne standard d'une liste de feuille — icone, contenu, actions au survol.
 - `ui/src/shared/design/motion.ts` — rythme du mouvement — une seule courbe, des durees courtes, jamais de rebond.
