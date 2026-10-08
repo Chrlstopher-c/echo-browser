@@ -7,7 +7,9 @@ import { useLibrary } from '../library/use-library'
 import { SettingsSheet } from '../settings/settings-sheet'
 import { videoRequest } from '../settings/video-section'
 import { useSettings } from '../settings/use-settings'
-import { IconLibrary, IconPuzzle, IconSettings } from '../shared/design/icons'
+import { AdminPage } from '../admin/admin-page'
+import { useAdmin } from '../admin/use-admin'
+import { IconLibrary, IconLock, IconPuzzle, IconSettings } from '../shared/design/icons'
 import { ExtensionsSheet } from '../extensions/extensions-sheet'
 import { useExtensions } from '../extensions/use-extensions'
 import { useCore } from '../shared/use-core'
@@ -21,12 +23,18 @@ const PAGES: Array<{ id: PageId; label: string; icon: ReactElement }> = [
   { id: 'reglages', label: 'Réglages', icon: <IconSettings size={15} /> },
   { id: 'bibliotheque', label: 'Bibliothèque', icon: <IconLibrary size={15} /> },
   { id: 'extensions', label: 'Extensions', icon: <IconPuzzle size={15} /> },
+  { id: 'admin', label: 'Administration', icon: <IconLock size={15} /> },
 ]
 
-function Nav({ page, go }: { page: PageId; go: (next: PageId) => void }): ReactElement {
+/** Pages montrees dans la navigation : l'administration seulement pour un compte administrateur. */
+function visiblePages(admin: boolean): typeof PAGES {
+  return PAGES.filter((p) => p.id !== 'admin' || admin)
+}
+
+function Nav({ page, go, admin }: { page: PageId; go: (next: PageId) => void; admin: boolean }): ReactElement {
   return (
     <nav className="flex shrink-0 flex-col gap-1 pt-2" aria-label="Pages">
-      {PAGES.map((item) => (
+      {visiblePages(admin).map((item) => (
         <button
           key={item.id}
           type="button"
@@ -52,6 +60,7 @@ function Content({ page }: { page: PageId }): ReactElement {
   const extensions = useExtensions(send, state.extensions, state.restartPending, state.extensionPopupId)
   if (page === 'bibliotheque') return <LibrarySheet controller={library} />
   if (page === 'extensions') return <ExtensionsSheet controller={extensions} />
+  if (page === 'admin' && state.account?.admin === true) return <Admin />
   return (
     <SettingsSheet
       settings={settings}
@@ -71,6 +80,11 @@ function Content({ page }: { page: PageId }): ReactElement {
   )
 }
 
+function Admin(): ReactElement {
+  const { state, send } = useCore()
+  return <AdminPage admin={useAdmin(send, state.admin)} />
+}
+
 function Welcome(): ReactElement {
   const { state, send } = useCore()
   return <WelcomePage account={state.account} send={send} />
@@ -79,14 +93,15 @@ function Welcome(): ReactElement {
 export function PagesApp(): ReactElement {
   usePageTheme()
   const [page, go] = usePageRoute()
+  const admin = useCore().state.account?.admin === true
   useEffect(() => {
     document.title = page === 'bienvenue' ? 'Bienvenue' : PAGES.find((p) => p.id === page)?.label ?? 'Echo'
   }, [page])
   if (page === 'bienvenue') return <Welcome />
   return (
     <div className="fond-espace min-h-screen bg-shell">
-      <div className="mx-auto flex max-w-4xl gap-8 px-8 py-10">
-        <Nav page={page} go={go} />
+      <div className={`mx-auto flex gap-8 px-8 py-10 ${page === 'admin' ? 'max-w-6xl' : 'max-w-4xl'}`}>
+        <Nav page={page} go={go} admin={admin} />
         <main className="min-w-0 flex-1 rounded-tile bg-card p-5 shadow-card">
           <h1 className="mb-4 text-[18px] font-semibold text-ink">{PAGES.find((p) => p.id === page)?.label}</h1>
           <Content page={page} />

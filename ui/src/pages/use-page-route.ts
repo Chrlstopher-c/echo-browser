@@ -1,12 +1,12 @@
-// Responsabilite : la section affichee, lue dans l'ancre de l'adresse (#reglages, #bibliotheque).
+// Responsabilite : la section affichee, lue dans l'ancre de l'adresse (#reglages, #bibliotheque, #admin).
 
 import { useEffect, useState } from 'react'
 
-export type PageId = 'reglages' | 'bibliotheque' | 'extensions' | 'bienvenue'
+export type PageId = 'reglages' | 'bibliotheque' | 'extensions' | 'bienvenue' | 'admin'
 
 function read(): PageId {
   const hash = window.location.hash.slice(1)
-  return hash === 'bibliotheque' || hash === 'extensions' || hash === 'bienvenue' ? hash : 'reglages'
+  return hash === 'bibliotheque' || hash === 'extensions' || hash === 'bienvenue' || hash === 'admin' ? hash : 'reglages'
 }
 
 export function usePageRoute(): [PageId, (next: PageId) => void] {

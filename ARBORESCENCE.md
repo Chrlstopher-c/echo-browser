@@ -63,6 +63,7 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `core/library/src/settings.rs` — les reglages du navigateur, et leurs valeurs par defaut.
 - `core/library/tests/library.rs`
 - `core/shell/Cargo.toml`
+- `core/shell/src/account/admin.rs`
 - `core/shell/src/account/history.rs`
 - `core/shell/src/account/local.rs`
 - `core/shell/src/account/machine.rs`
@@ -158,6 +159,7 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `tools/package-release.sh`
 - `tools/release-installer.sh`
 - `tools/test-account-sync.sh`
+- `tools/test-admin.sh`
 - `tools/test-codecs-install.sh`
 - `tools/test-codecs-prompt.sh`
 - `tools/test-containers.sh`
@@ -221,6 +223,12 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `ui/src/address/security-mark.tsx` — indicateur de securite du champ d'adresse, d'apres l'etat que le coeur connait.
 - `ui/src/address/top-controls.tsx` — rangee de controles compacts — precedent, suivant, rechargement, repli de la barre.
 - `ui/src/address/use-address-field.ts` — etat du champ d'adresse — brouillon de saisie, focus, selection, validation.
+- `ui/src/admin/admin-accounts.tsx` — la liste des comptes de l'administration — e-mail, dates, version, taille du coffre, sessions — et
+- `ui/src/admin/admin-charts.tsx` — les visuels du tableau de bord — tuiles chiffrees, barres par jour sur 30 jours, jauges par nom.
+- `ui/src/admin/admin-data.ts` — lire le tableau de bord rendu par le service (forme libre cote contrat) en types surs, sans
+- `ui/src/admin/admin-format.ts` — mise en forme des chiffres du tableau de bord (tailles, dates, nombres).
+- `ui/src/admin/admin-page.tsx` — page Administration d'Echo (comptes administrateurs) — chiffres du service, activite, coffre par
+- `ui/src/admin/use-admin.ts` — etat de la section Administration — relit le tableau de bord a l'ouverture, toutes les minutes et a
 - `ui/src/app.tsx` — composition de la fenetre — la barre, l'ecran de relance, l'effacement en plein
 - `ui/src/context-menu/main.tsx` — point d'entree du menu contextuel, page a part servie au-dessus du contenu.
 - `ui/src/context-menu/menu-panel.tsx` — le menu contextuel de la page — une liste d'entrees, posee au-dessus du
@@ -248,7 +256,7 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `ui/src/main.tsx` — point d'entree de l'interface.
 - `ui/src/pages/main.tsx` — point d'entree des pages pleine largeur (reglages, bibliotheque) ouvertes dans un onglet.
 - `ui/src/pages/pages-app.tsx` — les pages pleine largeur d'Echo — reglages et bibliotheque — dans un onglet, la ou la
-- `ui/src/pages/use-page-route.ts` — la section affichee, lue dans l'ancre de l'adresse (#reglages, #bibliotheque).
+- `ui/src/pages/use-page-route.ts` — la section affichee, lue dans l'ancre de l'adresse (#reglages, #bibliotheque, #admin).
 - `ui/src/pages/use-page-theme.ts` — la page prend la teinte et le schema choisis dans la barre (stockage local partage),
 - `ui/src/pages/welcome-page.tsx` — presentation d'Echo au premier lancement (facon Arc) — quelques ecrans, puis le compte Echo a creer,
 - `ui/src/restart/restart-screen.tsx` — ecran d'attente plein cadre pendant la relance du navigateur. Il vit quelques

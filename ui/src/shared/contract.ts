@@ -14,7 +14,7 @@ export type UiRequest =
   /** Reveille d'avance un onglet endormi que la souris survole. */
   | { kind: 'warmTab'; id: TabId }
   /** Ouvre une page pleine largeur d'Echo dans un onglet, ou y revient. */
-  | { kind: 'openPage'; page: 'reglages' | 'bibliotheque' | 'extensions' }
+  | { kind: 'openPage'; page: 'reglages' | 'bibliotheque' | 'extensions' | 'admin' }
   /** Referme les outils de developpement ancres. */
   | { kind: 'closeDevTools' }
   /** La poignee de la fenetre d'extension a ete tiree. */
@@ -119,6 +119,13 @@ export type UiRequest =
   | { kind: 'accountInspect' }
   /** Supprimer le compte et toutes ses donnees du service, puis se deconnecter. Definitif. */
   | { kind: 'accountDelete' }
+  // --- Administration (comptes administrateurs seulement ; le service verifie a chaque appel) ---
+  /** Relire le tableau de bord, comptes filtres par `query` (adresse e-mail). */
+  | { kind: 'adminRefresh'; query: string }
+  | { kind: 'adminSignOutAccount'; id: string }
+  /** Supprimer un compte et tout son coffre. Definitif. */
+  | { kind: 'adminDeleteAccount'; id: string }
+  | { kind: 'adminSetFlag'; id: string; admin: boolean }
 
 /** Ce que le coeur renvoie a l'interface. */
 export type CoreEvent =
@@ -153,6 +160,8 @@ export type CoreEvent =
   | { kind: 'remoteTabsChanged'; machines: RemoteMachineView[] }
   /** Ce que le service garde du compte, en reponse a `accountInspect`. */
   | { kind: 'accountVault'; kinds: VaultKindView[] }
+  /** Tableau de bord tel que le service le rend (forme lue par `admin/admin-data.ts`), ou l'erreur. */
+  | { kind: 'adminData'; summary: unknown; accounts: unknown; error: string | null }
 
 export interface RemoteMachineView {
   name: string
@@ -173,6 +182,8 @@ export interface AccountView {
   error: string | null
   /** L'historique est synchronise (reglage `sync.history`). */
   history: boolean
+  /** Le compte ouvre l'administration (drapeau pose sur le serveur). */
+  admin: boolean
 }
 
 /** Un type de donnees tel que le service le garde. */

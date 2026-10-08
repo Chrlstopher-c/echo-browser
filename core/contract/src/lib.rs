@@ -152,6 +152,16 @@ pub enum UiRequest {
     AccountInspect,
     /// Supprimer le compte et toutes ses donnees du service, puis se deconnecter. Definitif.
     AccountDelete,
+
+    // --- Administration (comptes administrateurs seulement ; le service verifie a chaque appel) ---
+    /// Relire le tableau de bord, comptes filtres par `query` (adresse e-mail).
+    AdminRefresh { query: String },
+    /// Deconnecter un compte de toutes ses machines.
+    AdminSignOutAccount { id: String },
+    /// Supprimer un compte et tout son coffre. Definitif.
+    AdminDeleteAccount { id: String },
+    /// Donner ou retirer l'acces administrateur.
+    AdminSetFlag { id: String, admin: bool },
 }
 
 /// Ce que le coeur renvoie a l'interface.
@@ -192,6 +202,8 @@ pub enum CoreEvent {
     RemoteTabsChanged { machines: Vec<RemoteMachineView> },
     /// Ce que le service garde du compte, en reponse a `AccountInspect`.
     AccountVault { kinds: Vec<VaultKindView> },
+    /// Tableau de bord tel que le service le rend (`summary` : chiffres, `accounts` : comptes), ou l'erreur.
+    AdminData { summary: serde_json::Value, accounts: serde_json::Value, error: Option<String> },
 }
 
 /// Ou en est la mise a jour de la version installee.

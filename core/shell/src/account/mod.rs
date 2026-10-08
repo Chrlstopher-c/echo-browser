@@ -3,6 +3,7 @@
 //! lues et ecrites sur ce fil (`local.rs`). Adresse du service : `ECHO_SYNC_URL`, sinon le marqueur de l'archive,
 //! sinon celle fixee a la compilation (jamais dans le depot public).
 
+mod admin;
 mod history;
 mod local;
 mod machine;
@@ -22,9 +23,11 @@ const FIRST_SYNC_MS: i64 = 10_000;
 const SYNC_EVERY_MS: i64 = 10 * 60 * 1000;
 
 static BUSY: AtomicBool = AtomicBool::new(false);
+/// Le compte connecte ouvre l'administration (relu a chaque synchronisation).
+static ADMIN: AtomicBool = AtomicBool::new(false);
 static LAST_ERROR: Mutex<Option<String>> = Mutex::new(None);
 
-fn service_url() -> Option<String> {
+pub(super) fn service_url() -> Option<String> {
     std::env::var("ECHO_SYNC_URL").ok()
         .or_else(|| {
             let dir = crate::update::install_dir()?;
@@ -35,7 +38,7 @@ fn service_url() -> Option<String> {
         .filter(|url| url.starts_with("https://") || url.starts_with("http://127.0.0.1"))
 }
 
-fn stored_path() -> PathBuf {
+pub(super) fn stored_path() -> PathBuf {
     crate::flags::data_dir().join("compte.json")
 }
 
@@ -49,6 +52,7 @@ pub fn publish() {
         last_sync: stored.as_ref().and_then(|s| s.last_sync),
         error: LAST_ERROR.lock().clone(),
         history: history::enabled(),
+        admin: stored.is_some() && ADMIN.load(Ordering::SeqCst),
     };
     crate::bridge::publish(&CoreEvent::AccountChanged { account });
 }
@@ -93,6 +97,7 @@ pub fn sign_in(email: String, password: String, create: bool) {
 }
 
 pub fn sign_out() {
+    ADMIN.store(false, Ordering::SeqCst);
     let path = stored_path();
     let token = store::load(&path).map(|s| s.token);
     store::forget(&path);
@@ -115,6 +120,7 @@ pub fn sync_now() {
     background(
         move |client| {
             let outcome = echo_account::sync::run(&client, &session, &mut stored, &locals)?;
+            ADMIN.store(client.is_admin(&session.token).unwrap_or(false), Ordering::SeqCst);
             stored.last_sync = Some(std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH)?.as_secs() as i64);
             Ok((stored, outcome))
         },
@@ -130,6 +136,9 @@ pub fn sync_now() {
         },
     );
 }
+
+pub use admin::{delete_account as admin_delete, refresh as admin_refresh, set_flag as admin_set_flag,
+    sign_out_account as admin_sign_out};
 
 /// L'interface a change un reglage : celui de l'historique se reflete dans l'etat du compte, et part tout de suite.
 pub fn setting_changed(key: &str) {

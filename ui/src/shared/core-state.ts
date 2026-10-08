@@ -65,6 +65,8 @@ export interface CoreState {
   remoteMachines: RemoteMachineView[]
   /** Contenu du coffre du compte, null tant qu'il n'a pas ete demande. */
   vault: VaultKindView[] | null
+  /** Tableau de bord des createurs, null tant qu'il n'a pas ete demande. */
+  admin: { summary: unknown; accounts: unknown; error: string | null } | null
 }
 
 export interface PermissionRequest {
@@ -98,6 +100,7 @@ export const EMPTY_CORE_STATE: CoreState = {
   account: null,
   remoteMachines: [],
   vault: null,
+  admin: null,
 }
 
 function withShield(state: CoreState, id: TabId, view: ShieldView): CoreState {
@@ -180,6 +183,8 @@ export function reduceCore(state: CoreState, event: CoreEvent): CoreState {
       return { ...state, remoteMachines: event.machines }
     case 'accountVault':
       return { ...state, vault: event.kinds }
+    case 'adminData':
+      return { ...state, admin: { summary: event.summary, accounts: event.accounts, error: event.error } }
   }
 }
 

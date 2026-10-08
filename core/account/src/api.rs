@@ -144,6 +144,21 @@ impl Client {
             .unwrap_or_default())
     }
 
+    /// Le compte ouvre-t-il l'administration ?
+    pub fn is_admin(&self, token: &str) -> anyhow::Result<bool> {
+        let (status, body) = self.call("GET", "/v1/moi", Some(token), None)?;
+        anyhow::ensure!(status == 200, error_of(status, &body));
+        Ok(body["admin"].as_bool().unwrap_or(false))
+    }
+
+    /// Appel du tableau de bord avec la session (le service verifie que le compte est administrateur).
+    pub fn admin(&self, token: &str, method: &str, path: &str, body: Option<Value>) -> anyhow::Result<Value> {
+        anyhow::ensure!(path.starts_with("/v1/admin/"), "chemin d'administration attendu");
+        let (status, body) = self.call(method, path, Some(token), body)?;
+        anyhow::ensure!((200..300).contains(&status), error_of(status, &body));
+        Ok(body)
+    }
+
     pub fn put(&self, token: &str, kind: &str, base: u64, data: &str) -> anyhow::Result<Put> {
         let body = json!({ "base": base, "donnees": data });
         let (status, body) = self.call("PUT", &format!("/v1/coffre/{kind}"), Some(token), Some(body))?;

@@ -86,6 +86,13 @@ if (CLE_ADMIN) essai('tableau de bord : cle exigee, chiffres, version, deconnexi
   const [compte] = (await admin('GET', `/v1/admin/comptes?q=${encodeURIComponent(e)}`)).corps.comptes
   assert.equal(compte.email, e); assert.equal(compte.version, '9.9.9'); assert.ok(compte.octets > 0)
   assert.ok(!JSON.stringify(resume).includes('DONNEES-CHIFFREES'), 'le resume ne contient jamais le coffre')
+  assert.equal((await appel('GET', '/v1/moi', undefined, jeton)).corps.admin, false)
+  assert.equal((await appel('GET', '/v1/admin/resume', undefined, jeton)).statut, 403)
+  const rendre = await fetch(`${URL_SERVICE}/v1/admin/comptes/${compte.id}/admin`, { method: 'POST',
+    headers: { authorization: `Bearer ${CLE_ADMIN}` }, body: JSON.stringify({ admin: true }) })
+  assert.equal(rendre.status, 200)
+  assert.equal((await appel('GET', '/v1/moi', undefined, jeton)).corps.admin, true)
+  assert.equal((await appel('GET', '/v1/admin/resume', undefined, jeton)).statut, 200, 'session admin acceptee')
   assert.equal((await admin('POST', `/v1/admin/comptes/${compte.id}/deconnexion`)).corps.sessionsFermees, 1)
   assert.equal((await appel('GET', '/v1/coffre', undefined, jeton)).statut, 401)
   assert.equal((await admin('DELETE', `/v1/admin/comptes/${compte.id}`)).statut, 204)

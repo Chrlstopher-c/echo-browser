@@ -3,7 +3,7 @@
 
 import { json } from '../outils'
 import type { Env } from '../outils'
-import { deconnecterCompte, listeComptes, resume, supprimerCompte, verifierAdmin } from './api'
+import { changerAdmin, deconnecterCompte, listeComptes, resume, supprimerCompte, verifierAdmin } from './api'
 import { PAGE_ADMIN } from './page'
 
 const ENTETES_PAGE = {
@@ -27,8 +27,9 @@ export async function routeAdmin(requete: Request, env: Env): Promise<Response |
   await verifierAdmin(requete, env)
   if (methode === 'GET' && pathname === '/v1/admin/resume') return resume(env)
   if (methode === 'GET' && pathname === '/v1/admin/comptes') return listeComptes(requete, env)
-  const [, id, action] = /^\/v1\/admin\/comptes\/([0-9a-f-]{36})(\/deconnexion)?$/.exec(pathname) ?? []
-  if (id !== undefined && methode === 'POST' && action !== undefined) return deconnecterCompte(env, id)
+  const [, id, action] = /^\/v1\/admin\/comptes\/([0-9a-f-]{36})(\/deconnexion|\/admin)?$/.exec(pathname) ?? []
+  if (id !== undefined && methode === 'POST' && action === '/deconnexion') return deconnecterCompte(env, id)
+  if (id !== undefined && methode === 'POST' && action === '/admin') return changerAdmin(requete, env, id)
   if (id !== undefined && methode === 'DELETE' && action === undefined) return supprimerCompte(env, id)
   return json({ erreur: 'introuvable' }, 404)
 }

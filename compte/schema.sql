@@ -40,3 +40,7 @@ CREATE TABLE IF NOT EXISTS compteurs (
   n INTEGER NOT NULL,
   PRIMARY KEY (jour, cle)
 );
+-- Comptes administrateurs : la section Administration d'Echo s'ouvre pour eux (le serveur verifie a chaque appel).
+CREATE TABLE IF NOT EXISTS admins (
+  compte TEXT PRIMARY KEY
+);

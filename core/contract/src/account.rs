@@ -33,6 +33,8 @@ pub struct AccountView {
     pub error: Option<String>,
     /// L'historique est synchronise (reglage `sync.history`).
     pub history: bool,
+    /// Le compte ouvre l'administration (drapeau pose sur le serveur).
+    pub admin: bool,
 }
 
 /// Un type de donnees tel que le service le garde.

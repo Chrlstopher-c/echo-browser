@@ -109,8 +109,16 @@ export async function supprimer(requete: Request, env: Env): Promise<Response> {
 export async function effacerCompte(env: Env, compte: string): Promise<void> {
   await env.DB.batch([
     env.DB.prepare('DELETE FROM activite WHERE compte = ?').bind(compte),
+    env.DB.prepare('DELETE FROM admins WHERE compte = ?').bind(compte),
     env.DB.prepare('DELETE FROM coffre WHERE compte = ?').bind(compte),
     env.DB.prepare('DELETE FROM sessions WHERE compte = ?').bind(compte),
     env.DB.prepare('DELETE FROM comptes WHERE id = ?').bind(compte),
   ])
+}
+
+/** Ce que la machine connectee doit savoir de son compte : s'il ouvre l'administration. */
+export async function moi(requete: Request, env: Env): Promise<Response> {
+  const compte = await compteDe(requete, env)
+  const admin = await env.DB.prepare('SELECT 1 FROM admins WHERE compte = ?').bind(compte).first()
+  return json({ admin: admin !== null })
 }

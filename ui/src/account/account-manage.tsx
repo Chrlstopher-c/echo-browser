@@ -88,6 +88,11 @@ export function AccountManage({ account, vault, send }: AccountManageProps): Rea
           ? <p className="px-2 pb-2 text-[11px] text-ink-faint">Lecture du serveur…</p>
           : <VaultPanel kinds={vault} />)}
       </div>
+      {account.admin && (
+        <Row title="Administration" detail="Tableau de bord du service : comptes, usage, santé.">
+          <PushButton onClick={() => send({ kind: 'openPage', page: 'admin' })}>Ouvrir</PushButton>
+        </Row>
+      )}
       <DeleteRow send={send} />
     </div>
   )

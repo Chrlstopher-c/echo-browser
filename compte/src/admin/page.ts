@@ -54,6 +54,8 @@ td.actions{text-align:right;white-space:nowrap}
 .recherche{display:flex;gap:10px;margin-bottom:10px}
 .recherche input{flex:1}
 .defile{overflow-x:auto}
+.badge{font-size:10px;color:var(--guard);border-radius:6px;padding:1px 6px;margin-left:6px;
+box-shadow:inset -1px -1px 3px var(--hi),inset 1px 1px 3px var(--lo)}
 [hidden]{display:none!important}
 `
 
@@ -144,7 +146,13 @@ function actions(c) {
   const faire = (chemin, method) => async () => {
     await api('/v1/admin/comptes/' + c.id + chemin, { method }); charger()
   }
+  const bascule = async () => {
+    await fetch('/v1/admin/comptes/' + c.id + '/admin', { method: 'POST', body: JSON.stringify({ admin: !c.admin }),
+      headers: { authorization: 'Bearer ' + lire(CLE), 'content-type': 'application/json' } })
+    charger()
+  }
   const normal = () => cellule.replaceChildren(
+    el('button', { onclick: bascule }, c.admin ? 'Retirer admin' : 'Rendre admin'), ' ',
     el('button', { onclick: faire('/deconnexion', 'POST') }, 'Déconnecter'),
     ' ', el('button', { class: 'danger', onclick: confirmer }, 'Supprimer'))
   function confirmer() {
@@ -158,7 +166,8 @@ function actions(c) {
 
 function afficherComptes(liste) {
   if (liste.length === 0) return $('#comptes').replaceChildren(el('div', { class: 'vide' }, 'Aucun compte.'))
-  const lignes = liste.map((c) => el('tr', {}, el('td', {}, c.email), el('td', { class: 'num' }, date(c.creeLe)),
+  const badge = (c) => c.admin ? el('span', { class: 'badge' }, 'admin') : ''
+  const lignes = liste.map((c) => el('tr', {}, el('td', {}, c.email, ' ', badge(c)), el('td', { class: 'num' }, date(c.creeLe)),
     el('td', { class: 'num' }, date(c.vuLe)), el('td', { class: 'num' }, c.version ?? '—'),
     el('td', { class: 'num' }, taille(c.octets)), el('td', { class: 'num' }, c.sessions), actions(c)))
   $('#comptes').replaceChildren(el('div', { class: 'defile' }, el('table', {}, el('thead', {}, el('tr', {},

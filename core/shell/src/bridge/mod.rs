@@ -215,6 +215,10 @@ fn apply(request: UiRequest) {
         UiRequest::AccountSync => crate::account::sync_now(),
         UiRequest::AccountInspect => crate::account::inspect(),
         UiRequest::AccountDelete => crate::account::delete(),
+        UiRequest::AdminRefresh { query } => crate::account::admin_refresh(query),
+        UiRequest::AdminSignOutAccount { id } => crate::account::admin_sign_out(&id),
+        UiRequest::AdminDeleteAccount { id } => crate::account::admin_delete(&id),
+        UiRequest::AdminSetFlag { id, admin } => crate::account::admin_set_flag(&id, admin),
 
         UiRequest::AddBookmark { id } => library::add_bookmark(id),
         UiRequest::RemoveBookmark { url } => library::remove_bookmark(&url),
@@ -362,7 +366,7 @@ const PAGES_URL: &str = "echo://ui/pages.html";
 
 /// Ouvre la page demandee, ou revient sur l'onglet qui la montre deja (dans le profil courant).
 fn open_page(page: &str) {
-    if !matches!(page, "reglages" | "bibliotheque" | "extensions" | "bienvenue") {
+    if !matches!(page, "reglages" | "bibliotheque" | "extensions" | "bienvenue" | "admin") {
         return;
     }
     let url = format!("{PAGES_URL}#{page}");
