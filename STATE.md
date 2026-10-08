@@ -59,7 +59,7 @@
   Une page déjà ouverte garde l'ancienne teinte dans ses angles jusqu'au rechargement.
 
 
-## E12 — palette, formulaires, lecture (autonomie, 08/10 après-midi)
+## E12 — palette, formulaires, lecture (autonomie, 08/10 après-midi) — release 0.10.0, main à jour
 
 - **Palette d'adresse** (`ui/src/address/use-suggestions.ts`, `suggest::for_address`) : en tapant, onglets ouverts,
   favoris, historique sous l'adresse ; ↓/↑ Entrée ; un onglet ouvert est rejoint. Ctrl+K = Ctrl+L, qui donnent
