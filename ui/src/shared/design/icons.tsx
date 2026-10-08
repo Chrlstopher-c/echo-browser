@@ -469,3 +469,12 @@ export function IconImage(props: IconProps): ReactElement {
     </Glyph>
   )
 }
+
+/** Activite reseau : une trace de pouls. */
+export function IconActivity(props: IconProps): ReactElement {
+  return (
+    <Glyph {...props}>
+      <path d="M1.5 8h2.7l1.8-4.6 3.3 9.2 1.8-4.6h3.4" />
+    </Glyph>
+  )
+}

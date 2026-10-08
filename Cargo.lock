@@ -543,8 +543,19 @@ dependencies = [
  "parking_lot",
  "rusqlite",
  "serde",
+ "serde_json",
  "thiserror 2.0.20",
  "tracing",
+]
+
+[[package]]
+name = "echo-network"
+version = "0.7.0"
+dependencies = [
+ "anyhow",
+ "psl",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]
@@ -558,6 +569,7 @@ dependencies = [
  "echo-contract",
  "echo-extensions",
  "echo-library",
+ "echo-network",
  "echo-shield",
  "echo-terminal",
  "image",

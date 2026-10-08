@@ -4,9 +4,11 @@
 //! Modifier l'un sans l'autre casse l'interface en silence.
 
 mod account;
+mod network;
 
 use serde::{Deserialize, Serialize};
 
+pub use network::{JournalEntryView, NetDomainView, NetRequestView, NetworkView};
 pub use account::{AccountView, RemoteMachineView, RemoteTabView, VaultKindView, VaultLineView};
 
 pub type TabId = u32;
@@ -153,6 +155,16 @@ pub enum UiRequest {
     /// Supprimer le compte et toutes ses donnees du service, puis se deconnecter. Definitif.
     AccountDelete,
 
+    // --- Reseau (panneau de l'onglet actif) ---
+    /// Le panneau Reseau s'ouvre (`on`) ou se ferme : le coeur ne diffuse que pendant qu'il est ouvert.
+    NetworkWatch { on: bool },
+    /// Detail d'un domaine (ou de toutes les requetes avec `None`).
+    NetworkFocus { host: Option<String> },
+    /// Bloquer ou debloquer un hote sur le site de l'onglet actif.
+    NetworkBlockHost { host: String, blocked: bool },
+    /// Isolement strict du site de l'onglet actif : aucune requete vers un autre site.
+    NetworkSetStrict { strict: bool },
+
     // --- Administration (comptes administrateurs seulement ; le service verifie a chaque appel) ---
     /// Relire le tableau de bord, comptes filtres par `query` (adresse e-mail).
     AdminRefresh { query: String },
@@ -206,6 +218,8 @@ pub enum CoreEvent {
     AccountVault { kinds: Vec<VaultKindView> },
     /// Tableau de bord tel que le service le rend (`summary` : chiffres, `accounts` : comptes), ou l'erreur.
     AdminData { summary: serde_json::Value, accounts: serde_json::Value, error: Option<String> },
+    /// Reseau de l'onglet actif (panneau ouvert seulement).
+    NetworkChanged { network: NetworkView },
     /// Fiche d'un compte telle que le service la rend, ou l'erreur.
     AdminAccount { detail: serde_json::Value, error: Option<String> },
 }

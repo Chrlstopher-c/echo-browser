@@ -47,6 +47,8 @@ wrap_download_handler! {
         ) -> i32 {
             let name = suggested_name.map(CefString::to_string).unwrap_or_default();
             if let Some(item) = item {
+                let from = CefString::from(&item.original_url()).to_string();
+                crate::network::journal(&from, "telechargement", &name);
                 record(item, &name);
             }
             if let Some(callback) = callback {

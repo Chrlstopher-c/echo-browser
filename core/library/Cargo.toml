@@ -6,6 +6,7 @@ license.workspace = true
 description = "Favoris, historique et telechargements du navigateur"
 
 [dependencies]
+serde_json.workspace = true
 anyhow.workspace = true
 thiserror.workspace = true
 serde.workspace = true

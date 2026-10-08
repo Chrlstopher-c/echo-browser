@@ -241,6 +241,10 @@ fn apply(request: UiRequest) {
         }
         UiRequest::AccountInspect => crate::account::inspect(),
         UiRequest::AccountDelete => crate::account::delete(),
+        UiRequest::NetworkWatch { on } => crate::network::watch(on),
+        UiRequest::NetworkFocus { host } => crate::network::focus(host),
+        UiRequest::NetworkBlockHost { host, blocked } => crate::network::block_host(&host, blocked),
+        UiRequest::NetworkSetStrict { strict } => crate::network::set_strict(strict),
         UiRequest::AdminRefresh { query } => crate::account::admin_refresh(query),
         UiRequest::AdminSignOutAccount { id } => crate::account::admin_sign_out(&id),
         UiRequest::AdminDeleteAccount { id } => crate::account::admin_delete(&id),

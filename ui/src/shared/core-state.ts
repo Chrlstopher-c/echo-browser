@@ -16,6 +16,7 @@ import type {
   AccountView,
   RemoteMachineView,
   VaultKindView,
+  NetworkView,
   UpdateView,
   VideoCodecsView,
 } from './contract'
@@ -67,6 +68,8 @@ export interface CoreState {
   vault: VaultKindView[] | null
   /** Tableau de bord des createurs, null tant qu'il n'a pas ete demande. */
   admin: { summary: unknown; accounts: unknown; error: string | null } | null
+  /** Reseau de l'onglet actif, tant que le panneau est ouvert. */
+  network: NetworkView | null
   /** Fiche du compte ouvert dans l'administration. */
   adminAccount: { detail: unknown; error: string | null } | null
 }
@@ -104,6 +107,7 @@ export const EMPTY_CORE_STATE: CoreState = {
   vault: null,
   admin: null,
   adminAccount: null,
+  network: null,
 }
 
 function withShield(state: CoreState, id: TabId, view: ShieldView): CoreState {
@@ -186,6 +190,8 @@ export function reduceCore(state: CoreState, event: CoreEvent): CoreState {
       return { ...state, remoteMachines: event.machines }
     case 'accountVault':
       return { ...state, vault: event.kinds }
+    case 'networkChanged':
+      return { ...state, network: event.network }
     case 'adminAccount':
       return { ...state, adminAccount: { detail: event.detail, error: event.error } }
     case 'adminData':

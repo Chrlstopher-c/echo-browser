@@ -76,30 +76,68 @@ wrap_resource_request_handler! {
             if est_interne(&url) {
                 return ReturnValue::CONTINUE;
             }
-            // Un site mis en exception l'est entierement, cadres externes compris (lecteur, paiement, connexion).
+            let browser_id = browser.as_ref().map_or(0, |b| b.identifier());
             let top = browser
                 .and_then(|b| b.main_frame())
                 .map(|f| CefString::from(&f.url()).to_string())
                 .unwrap_or_default();
-            if !top.is_empty() && !self.shield.is_active_for(&top) {
-                crate::identity::apply(request);
-                return ReturnValue::CONTINUE;
-            }
             let source = frame
                 .map(|frame| CefString::from(&frame.url()).to_string())
                 .unwrap_or_default();
+            let main_frame = request.resource_type() == ResourceType::MAIN_FRAME;
             let kind = resource_kind(request.resource_type());
             let method = CefString::from(&request.method()).to_string();
-
-            crate::identity::apply(request);
-
-            match self.shield.decide(0, &url, &source, kind, &method) {
-                Verdict::Allow => ReturnValue::CONTINUE,
-                Verdict::Block { .. } | Verdict::Redirect { .. } => {
-                    debug!(%url, %source, %kind, "requete bloquee");
-                    ReturnValue::CANCEL
-                }
+            let page = if main_frame { url.as_str() } else { top.as_str() };
+            let blocked = self.verdict(request, &url, page, &source, kind, &method);
+            crate::network::started(crate::network::Started {
+                browser: browser_id,
+                id: request.identifier(),
+                url: &url,
+                page,
+                kind,
+                method: &method,
+                blocked,
+                main_frame,
+            });
+            if blocked.is_some() {
+                debug!(%url, %source, %kind, ?blocked, "requete bloquee");
+                return ReturnValue::CANCEL;
             }
+            ReturnValue::CONTINUE
+        }
+
+        fn on_resource_load_complete(
+            &self,
+            browser: Option<&mut Browser>,
+            _frame: Option<&mut Frame>,
+            request: Option<&mut Request>,
+            response: Option<&mut Response>,
+            _status: UrlrequestStatus,
+            received_content_length: i64,
+        ) {
+            let (Some(browser), Some(request)) = (browser, request) else { return };
+            let status = response.map_or(0, |r| u16::try_from(r.status()).unwrap_or(0));
+            crate::network::completed(browser.identifier(), request.identifier(), status,
+                u64::try_from(received_content_length).unwrap_or(0));
+        }
+    }
+}
+
+impl ShieldResourceHandler {
+    /// La raison de bloquer : regle de l'utilisateur d'abord (toujours appliquee), puis le bouclier si le site n'est
+    /// pas en exception (une exception vaut pour le site entier, cadres externes compris).
+    fn verdict(&self, request: &mut Request, url: &str, page: &str, source: &str, kind: &str, method: &str)
+        -> Option<&'static str> {
+        crate::identity::apply(request);
+        if let Some(reason) = crate::network::rule_verdict(url, page) {
+            return Some(reason);
+        }
+        if !page.is_empty() && !self.shield.is_active_for(page) {
+            return None;
+        }
+        match self.shield.decide(0, url, source, kind, method) {
+            Verdict::Allow => None,
+            Verdict::Block { .. } | Verdict::Redirect { .. } => Some("bouclier"),
         }
     }
 }

@@ -88,6 +88,7 @@ fn resolve(reply: Reply, allow: bool) {
 fn request(origin: String, kinds: Vec<&'static str>, reply: Reply) {
     if let Some(allow) = stored(&origin, &kinds) {
         info!(%origin, ?kinds, allow, "permission deja decidee");
+        journal_decision(&origin, &kinds, allow, true);
         return resolve(reply, allow);
     }
     let id = NEXT_ID.with(|next| {
@@ -103,6 +104,19 @@ fn request(origin: String, kinds: Vec<&'static str>, reply: Reply) {
     });
     reveal_sidebar(true);
     PENDING.with(|pending| pending.borrow_mut().insert(id, Pending { origin, kinds, reply }));
+}
+
+/// Au journal du site : chaque permission demandee et ce qui a ete decide.
+fn journal_decision(origin: &str, kinds: &[&str], allow: bool, remembered: bool) {
+    let verdict = match (allow, remembered) {
+        (true, false) => "autorisée",
+        (false, false) => "refusée",
+        (true, true) => "autorisée (décision gardée)",
+        (false, true) => "refusée (décision gardée)",
+    };
+    for kind in kinds {
+        crate::network::journal(origin, "permission", &format!("{kind} : {verdict}"));
+    }
 }
 
 /// Une barre repliee cacherait la question, et la page attendrait sans fin.
@@ -123,6 +137,7 @@ pub fn answer(id: u64, allow: bool, remember: bool) {
             }
         });
     }
+    journal_decision(&pending.origin, &pending.kinds, allow, false);
     resolve(pending.reply, allow);
     crate::bridge::publish(&CoreEvent::PermissionResolved { id });
     if remember {

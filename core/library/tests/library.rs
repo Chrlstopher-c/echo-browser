@@ -146,3 +146,53 @@ fn tout_effacer_est_transmis_et_bloque_les_visites_anterieures() {
     history::import(&lib, "https://c.fr", "C", 50);
     assert_eq!(history::search(&lib, "").1, 0);
 }
+
+#[test]
+fn journal_d_acces_par_site_sans_doublon_de_tiers() {
+    use echo_library::journal;
+    let lib = library();
+    assert!(journal::record(&lib, "example.com", "tiers", "cdn.tracker.net", true));
+    assert!(!journal::record(&lib, "example.com", "tiers", "cdn.tracker.net", true));
+    assert!(journal::record(&lib, "example.com", "permission", "position : refusée", false));
+    let entries = journal::list(&lib, "example.com", 10);
+    assert_eq!(entries.len(), 2);
+    assert!(journal::list(&lib, "autre.fr", 10).is_empty());
+    for i in 0..250 {
+        journal::record(&lib, "plein.fr", "tiers", &format!("h{i}"), true);
+    }
+    assert_eq!(journal::list(&lib, "plein.fr", 500).len(), 200);
+}
+
+#[test]
+fn une_suite_qui_revient_est_proposee_une_fois_puis_devient_routine() {
+    use echo_library::routines;
+    let lib = library();
+    let visit = |s: &str| (s.to_string(), format!("https://{s}/"));
+    let suite = vec![visit("github.com"), visit("linear.app"), visit("slack.com")];
+    let mut proposal = None;
+    for _ in 0..3 {
+        for end in 1..=suite.len() {
+            if let Some(p) = routines::observe(&lib, &suite[..end], 0) {
+                proposal = Some(p);
+            }
+        }
+    }
+    let proposal = proposal.expect("suite non proposee apres 3 passages");
+    assert_eq!(proposal.sites, ["github.com", "linear.app", "slack.com"]);
+    assert!(routines::observe(&lib, &suite, 0).is_none(), "proposee deux fois");
+    let id = routines::adopt(&lib, &proposal.fingerprint, "Matin").expect("routine non creee");
+    let all = routines::list(&lib);
+    assert_eq!((all[0].id, all[0].name.as_str(), all[0].urls.len()), (id, "Matin", 3));
+    assert!(routines::remove(&lib, id));
+    assert!(routines::list(&lib).is_empty());
+}
+
+#[test]
+fn une_suite_n_est_comptee_qu_une_fois_par_fenetre() {
+    use echo_library::routines;
+    let lib = library();
+    let suite = vec![("a.fr".to_string(), "https://a.fr/".to_string()), ("b.fr".to_string(), "https://b.fr/".to_string())];
+    for _ in 0..10 {
+        assert!(routines::observe(&lib, &suite, 600).is_none());
+    }
+}

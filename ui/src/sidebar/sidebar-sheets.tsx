@@ -5,6 +5,7 @@ import { ExtensionsSheet } from '../extensions/extensions-sheet'
 import { LibrarySheet } from '../library/library-sheet'
 import { SettingsSheet } from '../settings/settings-sheet'
 import { videoRequest } from '../settings/video-section'
+import { NetworkSheet } from '../network/network-sheet'
 import { ShieldSheet } from '../shield/shield-sheet'
 import { SheetHost } from './sheet-host'
 import type { SidebarModel } from './use-sidebar'
@@ -14,6 +15,8 @@ function SheetBody({ model }: { model: SidebarModel }): ReactElement | null {
   switch (sheet.current) {
     case 'shield':
       return <ShieldSheet view={core.shield} url={core.activeTab?.url ?? ''} shield={model.shield} />
+    case 'network':
+      return <NetworkSheet network={core.state.network} send={core.send} />
     case 'library':
       return <LibrarySheet controller={model.library} />
     case 'extensions':

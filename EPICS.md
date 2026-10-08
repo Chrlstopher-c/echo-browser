@@ -102,3 +102,20 @@ Le coffre est chiffré sur la machine : le serveur ne peut pas le lire, le table
   conservation limitée (90 j). Critère : sans opt-in, rien ne part (vérifié sur le réseau) ; avec, le tableau de bord
   montre les agrégats et rien d'individuel.
 - S3+ Fonctions collectives bâties sur S2 (une story chacune, à cadrer avec IDEES.md).
+
+## E10 — Idées de Chris, première vague (validée 08/10 : 10+14, 6, puis 1+5)
+- S1 Capture réseau par onglet : chaque requête (domaine, type, tiers ou non, méthode, statut, octets, durée, verdict du
+  bouclier) gardée en mémoire par onglet (500 dernières), résumée par domaine ; diffusée seulement quand le panneau est
+  ouvert (rien ne coûte quand il est fermé). Critère : page de test → le résumé montre ses domaines, octets et blocages.
+- S2 Panneau « Réseau » (barre latérale) : domaines de l'onglet actif en direct (requêtes, octets, bloquées, tiers),
+  détail des requêtes d'un domaine ; neumorphisme clair/sombre. Critère : capture claire et sombre lisible, mise à jour live.
+- S3 Actions à la volée : bloquer un domaine sur ce site, « isolement strict » d'un site (aucun tiers) ; gardé entre
+  deux lancements. Critère : domaine bloqué → ses requêtes suivantes annulées ; isolement → zéro requête tierce.
+- S4 Journal d'accès par site : premières connexions à un tiers, permissions demandées et décidées, téléchargements ;
+  gardé (200 derniers par site). Critère : une page qui demande la position → entrée au journal avec la décision.
+- S5 Reprise de session exacte : champs de saisie (jamais les mots de passe) et position des vidéos restaurés après
+  relance et réveil d'onglet. Critère : texte tapé + vidéo à 30 s → relance → texte et position revenus.
+- S6 Empreinte de comportements : séquences de navigation qui reviennent (empreinte des suites de domaines) → proposition
+  de routine (ouvrir la suite d'un geste). Critère : même suite 3 fois → proposition ; acceptée → la routine l'ouvre.
+- S7 Mémoire de structure : « Masquer cet élément » (clic droit) retenu par empreinte de structure de page, appliqué aux
+  pages de même gabarit. Critère : élément masqué sur un article → masqué sur un autre article du même site.

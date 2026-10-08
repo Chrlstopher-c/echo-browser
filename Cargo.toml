@@ -5,6 +5,7 @@ members = [
     "core/contract",
     "core/extensions",
     "core/library",
+    "core/network",
     "core/shell",
     "core/shield",
     "core/terminal",
@@ -22,6 +23,7 @@ echo-shield     = { path = "core/shield" }
 echo-tabs       = { path = "core/tabs" }
 echo-extensions = { path = "core/extensions" }
 echo-library    = { path = "core/library" }
+echo-network    = { path = "core/network" }
 echo-terminal   = { path = "core/terminal" }
 echo-settings   = { path = "core/settings" }
 

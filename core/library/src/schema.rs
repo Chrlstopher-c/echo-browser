@@ -33,6 +33,26 @@ pub fn prepare(connection: &Connection) -> rusqlite::Result<()> {
             PRIMARY KEY (url, visited_at)
          );
          CREATE INDEX IF NOT EXISTS history_by_date ON history (visited_at DESC);
+         CREATE TABLE IF NOT EXISTS sequences (
+            fingerprint TEXT PRIMARY KEY,
+            urls        TEXT NOT NULL,
+            n           INTEGER NOT NULL,
+            last        INTEGER NOT NULL,
+            state       TEXT NOT NULL
+         );
+         CREATE TABLE IF NOT EXISTS routines (
+            id      INTEGER PRIMARY KEY,
+            name    TEXT NOT NULL,
+            urls    TEXT NOT NULL,
+            created INTEGER NOT NULL
+         );
+         CREATE TABLE IF NOT EXISTS site_journal (
+            site   TEXT NOT NULL,
+            at     INTEGER NOT NULL,
+            kind   TEXT NOT NULL,
+            detail TEXT NOT NULL
+         );
+         CREATE INDEX IF NOT EXISTS site_journal_by_site ON site_journal (site, at DESC);
          CREATE TABLE IF NOT EXISTS history_forgotten (
             url TEXT PRIMARY KEY,
             at  INTEGER NOT NULL

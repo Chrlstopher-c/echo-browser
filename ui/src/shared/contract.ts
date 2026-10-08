@@ -119,6 +119,15 @@ export type UiRequest =
   | { kind: 'accountInspect' }
   /** Supprimer le compte et toutes ses donnees du service, puis se deconnecter. Definitif. */
   | { kind: 'accountDelete' }
+  // --- Reseau (panneau de l'onglet actif) ---
+  /** Le panneau Reseau s'ouvre ou se ferme : le coeur ne diffuse que pendant qu'il est ouvert. */
+  | { kind: 'networkWatch'; on: boolean }
+  /** Detail d'un domaine (ou de toutes les requetes avec `null`). */
+  | { kind: 'networkFocus'; host: string | null }
+  /** Bloquer ou debloquer un hote sur le site de l'onglet actif. */
+  | { kind: 'networkBlockHost'; host: string; blocked: boolean }
+  /** Isolement strict du site de l'onglet actif : aucune requete vers un autre site. */
+  | { kind: 'networkSetStrict'; strict: boolean }
   // --- Administration (comptes administrateurs seulement ; le service verifie a chaque appel) ---
   /** Relire le tableau de bord, comptes filtres par `query` (adresse e-mail). */
   | { kind: 'adminRefresh'; query: string }
@@ -164,6 +173,8 @@ export type CoreEvent =
   | { kind: 'accountVault'; kinds: VaultKindView[] }
   /** Tableau de bord tel que le service le rend (forme lue par `admin/admin-data.ts`), ou l'erreur. */
   | { kind: 'adminData'; summary: unknown; accounts: unknown; error: string | null }
+  /** Reseau de l'onglet actif (panneau ouvert seulement). */
+  | { kind: 'networkChanged'; network: NetworkView }
   /** Fiche d'un compte telle que le service la rend (lue par `admin/admin-data.ts`), ou l'erreur. */
   | { kind: 'adminAccount'; detail: unknown; error: string | null }
 
@@ -444,4 +455,52 @@ export interface PermissionGrantView {
   origin: string
   kind: string
   allow: boolean
+}
+
+/** Ce que charge l'onglet actif, resume par domaine, et les regles du site. */
+export interface NetworkView {
+  page: string
+  totalBytes: number
+  domains: NetDomainView[]
+  /** Dernieres requetes (du domaine choisi, ou toutes), les plus recentes d'abord. */
+  requests: NetRequestView[]
+  focus: string | null
+  /** Hotes bloques par l'utilisateur sur ce site. */
+  blockedHosts: string[]
+  /** Isolement strict du site : aucune requete tierce. */
+  strict: boolean
+  /** Journal d'acces du site, le plus recent d'abord. */
+  journal: JournalEntryView[]
+}
+
+export interface JournalEntryView {
+  /** Secondes Unix. */
+  at: number
+  /** `tiers`, `permission`, `telechargement`. */
+  kind: string
+  detail: string
+}
+
+export interface NetDomainView {
+  host: string
+  site: string
+  requests: number
+  bytes: number
+  blocked: number
+  thirdParty: boolean
+  /** Requetes par type, les plus nombreuses d'abord : [type, nombre]. */
+  kinds: Array<[string, number]>
+}
+
+export interface NetRequestView {
+  url: string
+  host: string
+  kind: string
+  method: string
+  thirdParty: boolean
+  /** `bouclier`, `regle` ou `isolement` quand elle a ete bloquee. */
+  blocked: string | null
+  status: number | null
+  bytes: number
+  durationMs: number | null
 }
