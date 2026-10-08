@@ -38,7 +38,8 @@ cp "$FFMPEG_LIBRE" "$STAGE/cef/libffmpeg.so"
 strip --strip-unneeded "$STAGE/cef/libcef.so" "$STAGE/cef/libffmpeg.so"
 
 # Marqueur de l'archive : sa version, et le depot ou chercher les suivantes (mise a jour automatique).
-REPO="$(git remote get-url origin | sed -E 's#(git@github.com:|https://github.com/)##; s#\.git$##')"
+# Nom canonique du depot (un ancien nom ne marche que tant que GitHub redirige) ; a defaut, le remote git.
+REPO="$(gh repo view --json nameWithOwner -q .nameWithOwner 2>/dev/null || git remote get-url origin | sed -E 's#(git@github.com:|https://github.com/)##; s#\.git$##')"
 # Adresse du service de compte : dans .env.local (hors depot), jamais dans un fichier suivi.
 SYNC="$(sed -n 's/^ECHO_SYNC_URL=//p' .env.local 2>/dev/null | tail -1)"
 printf '{"version":"%s","repo":"%s","sync":"%s"}\n' "$VERSION" "$REPO" "$SYNC" > "$STAGE/release.json"
