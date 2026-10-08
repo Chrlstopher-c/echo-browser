@@ -22,6 +22,7 @@ mod files;
 mod filtering;
 mod launch;
 mod flags;
+mod forms;
 mod identity;
 mod injection;
 mod menu;

@@ -344,6 +344,10 @@ export type MenuItemKind =
   | 'unhideElements'
   /** Surveiller la page : signaler ce qui a change a la prochaine visite. */
   | 'watchPage'
+  | 'fillForm1'
+  | 'fillForm2'
+  | 'fillForm3'
+  | 'manageForms'
   | 'unwatchPage'
 
 export interface MenuEntry {

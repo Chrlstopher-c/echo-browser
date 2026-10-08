@@ -17,11 +17,13 @@ export interface SettingSection {
 
 export interface SettingsController {
   sections: SettingSection[]
+  /** Tous les reglages recus, pour les ecrans qui gerent les leurs (fiches de formulaire…). */
+  raw: SettingView[]
   update: (key: string, value: SettingValue) => void
 }
 
 /** Reglages geres par leur propre ecran, jamais listes dans la feuille de reglages. */
-const HIDDEN = new Set(['tabs.folders', 'tabs.containers', 'profiles.names', 'sync.history', 'sync.mode'])
+const HIDDEN = new Set(['tabs.folders', 'tabs.containers', 'profiles.names', 'sync.history', 'sync.mode', 'forms.cards'])
 
 export function groupSettings(settings: SettingView[]): SettingSection[] {
   const entries: SettingEntry[] = settings.filter((item) => !HIDDEN.has(item.key)).map((item) => ({
@@ -41,5 +43,5 @@ export function useSettings(send: (request: UiRequest) => void, settings: Settin
     (key: string, value: SettingValue): void => send({ kind: 'updateSetting', key, value }),
     [send],
   )
-  return { sections, update }
+  return { sections, raw: settings, update }
 }

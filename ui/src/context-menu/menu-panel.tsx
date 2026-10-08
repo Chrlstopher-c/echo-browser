@@ -5,8 +5,8 @@ import { motion } from 'framer-motion'
 import { useEffect, type ReactElement } from 'react'
 import type { ContextTarget, MenuEntry, MenuItemKind, UiRequest } from '../shared/contract'
 import {
-  IconBack, IconClipboard, IconClock, IconCode, IconCopy, IconDownload, IconFile, IconForward, IconImage, IconOpen, IconPlus,
-  IconPrinter, IconReload, IconScissors, IconSearch, IconShield, IconStar, IconWrench,
+  IconBack, IconClipboard, IconClock, IconCode, IconCopy, IconDownload, IconFile, IconForward, IconImage, IconOpen,
+  IconPlus, IconPrinter, IconReload, IconScissors, IconSearch, IconShield, IconStar, IconUser, IconWrench,
   type IconComponent,
 } from '../shared/design/icons'
 import { IconEye, IconEyeOff } from '../shared/design/icons-page'
@@ -30,6 +30,7 @@ const ICONS: Partial<Record<MenuItemKind, IconComponent>> = {
   back: IconBack, forward: IconForward, reload: IconReload, copyPageLink: IconCopy, bookmark: IconStar,
   savePage: IconDownload, print: IconPrinter, toggleShield: IconShield, viewSource: IconCode, inspect: IconWrench,
   hideElement: IconEyeOff, unhideElements: IconEye, watchPage: IconClock, unwatchPage: IconClock,
+  fillForm1: IconUser, fillForm2: IconUser, fillForm3: IconUser, manageForms: IconUser,
 }
 
 function Item({ entry, onRun }: { entry: MenuEntry; onRun: (kind: MenuItemKind) => void }): ReactElement {

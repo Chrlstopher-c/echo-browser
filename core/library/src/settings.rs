@@ -63,6 +63,7 @@ pub fn defaults() -> Vec<(&'static str, Value)> {
         ("signals.share", Value::Flag(false)),
         ("profiles.list", Value::Text(String::new())),
         ("onboarding.done", Value::Flag(false)),
+        ("forms.cards", Value::Text("[]".into())),
     ]
 }
 

@@ -82,6 +82,12 @@ impl MenuEntry {
 #[serde(rename_all = "camelCase")]
 pub enum MenuItemKind {
     Separator,
+    /// Remplir le formulaire avec la premiere, deuxieme ou troisieme fiche.
+    FillForm1,
+    FillForm2,
+    FillForm3,
+    /// Aucune fiche : ouvre les reglages pour en creer une.
+    ManageForms,
     OpenLinkInTab,
     OpenLinkInBackground,
     CopyLink,

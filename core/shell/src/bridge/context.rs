@@ -33,8 +33,11 @@ fn theme() -> echo_contract::OverlayTheme {
 
 /// Retient la cible et demande l'ouverture du menu au-dessus de la page.
 pub fn open(click: Click, x: i32, y: i32) {
-    let facts =
-        menu::PageFacts { hidden_here: crate::page_memory::active_has_hidden(), watched: crate::watch::active_watched() };
+    let facts = menu::PageFacts {
+        hidden_here: crate::page_memory::active_has_hidden(),
+        watched: crate::watch::active_watched(),
+        forms: crate::forms::names(),
+    };
     let target = menu::build(&click, facts);
     let (width, height) = menu::size_of(&target);
     TARGET.with(|cell| *cell.borrow_mut() = Some(click));
@@ -99,6 +102,10 @@ pub fn run(action: MenuItemKind) {
         MenuItemKind::HideElement => hide_element(),
         MenuItemKind::UnhideElements => crate::page_memory::unhide_active(),
         MenuItemKind::WatchPage => crate::watch::watch_active(),
+        MenuItemKind::FillForm1 => crate::forms::fill(0),
+        MenuItemKind::FillForm2 => crate::forms::fill(1),
+        MenuItemKind::FillForm3 => crate::forms::fill(2),
+        MenuItemKind::ManageForms => super::open_page_by_name("reglages"),
         MenuItemKind::UnwatchPage => crate::watch::unwatch_active(),
         MenuItemKind::Bookmark => {
             let active = session::with(|s| s.tabs.active_id()).flatten();

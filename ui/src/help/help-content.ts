@@ -58,6 +58,8 @@ export const HELP: HelpSection[] = [
     id: 'pages', title: 'Clic droit dans une page',
     intro: 'Des outils qui agissent sur la page en cours.',
     topics: [
+      { title: 'Remplir un formulaire', how: 'Clic droit dans un champ → « Remplir : fiche ». Les fiches (nom, e-mail, '
+        + 'adresse…) se créent dans Réglages → Formulaires ; jamais de mot de passe ni de carte.' },
       { title: 'Masquer cet élément', how: 'Clic droit sur une bannière ou un bloc gênant : masqué sur toutes les pages '
         + 'du même modèle du site. « Réafficher les éléments masqués » au même endroit.' },
       { title: 'Surveiller cette page', how: 'À la visite suivante, Echo montre en bas de la barre les lignes ajoutées '

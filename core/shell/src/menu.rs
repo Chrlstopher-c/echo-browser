@@ -21,12 +21,14 @@ pub struct Click {
 
 /// Construit le menu qui convient a ce clic.
 /// Ce que le menu doit savoir de la page, au-dela du clic.
-#[derive(Debug, Clone, Copy, Default)]
+#[derive(Debug, Clone, Default)]
 pub struct PageFacts {
     /// Des elements sont masques sur ce gabarit.
     pub hidden_here: bool,
     /// La page est surveillee.
     pub watched: bool,
+    /// Noms des fiches de formulaire proposees.
+    pub forms: Vec<String>,
 }
 
 pub fn build(click: &Click, facts: PageFacts) -> ContextTarget {
@@ -36,7 +38,7 @@ pub fn build(click: &Click, facts: PageFacts) -> ContextTarget {
         (!click.image.is_empty(), image_entries(&click.image)),
         (!click.media.is_empty(), media_entries()),
         (!click.selection.is_empty(), selection_entries(&click.selection)),
-        (click.editable, field_entries(click)),
+        (click.editable, field_entries(click, &facts.forms)),
     ];
     for (_, group) in groups.into_iter().filter(|(shown, _)| *shown) {
         if !entries.is_empty() {
@@ -51,12 +53,12 @@ pub fn build(click: &Click, facts: PageFacts) -> ContextTarget {
         entries.push(MenuEntry::new(MenuItemKind::HideElement, "Masquer cet élément"));
         entries.push(MenuEntry::new(MenuItemKind::Inspect, "Examiner l'élément"));
     }
-    entries.extend(page_tools(click, facts));
+    entries.extend(page_tools(click, &facts));
     ContextTarget { entries, link: click.link.clone(), selection: trim(&click.selection) }
 }
 
 /// Outils qui dependent de la page : reafficher ce qui est masque, surveiller ou non.
-fn page_tools(click: &Click, facts: PageFacts) -> Vec<MenuEntry> {
+fn page_tools(click: &Click, facts: &PageFacts) -> Vec<MenuEntry> {
     let mut tools = Vec::new();
     if facts.hidden_here {
         tools.push(MenuEntry::new(MenuItemKind::UnhideElements, "Réafficher les éléments masqués"));
@@ -109,14 +111,28 @@ fn selection_entries(selection: &str) -> Vec<MenuEntry> {
     entries
 }
 
-fn field_entries(click: &Click) -> Vec<MenuEntry> {
-    vec![
+fn field_entries(click: &Click, forms: &[String]) -> Vec<MenuEntry> {
+    let mut entries = form_entries(forms);
+    entries.extend([
         MenuEntry::new(MenuItemKind::Cut, "Couper").disabled_when(click.selection.is_empty()),
         MenuEntry::new(MenuItemKind::Copy, "Copier").disabled_when(click.selection.is_empty()),
         MenuEntry::new(MenuItemKind::Paste, "Coller"),
         MenuEntry::new(MenuItemKind::PastePlain, "Coller sans mise en forme"),
         MenuEntry::new(MenuItemKind::SelectAll, "Tout sélectionner"),
-    ]
+    ]);
+    entries
+}
+
+/// « Remplir : <fiche> » pour chaque fiche, ou une entree qui mene a leur creation.
+fn form_entries(forms: &[String]) -> Vec<MenuEntry> {
+    const KINDS: [MenuItemKind; 3] = [MenuItemKind::FillForm1, MenuItemKind::FillForm2, MenuItemKind::FillForm3];
+    let mut entries: Vec<MenuEntry> =
+        forms.iter().zip(KINDS).map(|(name, kind)| MenuEntry::new(kind, &format!("Remplir : {name}"))).collect();
+    if entries.is_empty() {
+        entries.push(MenuEntry::new(MenuItemKind::ManageForms, "Remplir le formulaire…"));
+    }
+    entries.push(MenuEntry::separator());
+    entries
 }
 
 fn page_entries(click: &Click) -> Vec<MenuEntry> {
@@ -181,6 +197,19 @@ mod tests {
         assert!(kinds.contains(&MenuItemKind::Print));
         // Rien a copier ni a ouvrir : aucune entree de lien.
         assert!(!kinds.contains(&MenuItemKind::CopyLink));
+    }
+
+    #[test]
+    fn un_champ_propose_les_fiches_ou_leur_creation() {
+        let mut click = clic();
+        click.editable = true;
+        let kinds: Vec<_> = build(&click, PageFacts::default()).entries.iter().map(|e| e.kind).collect();
+        assert!(kinds.contains(&MenuItemKind::ManageForms));
+        let facts = PageFacts { forms: vec!["Perso".into(), "Travail".into()], ..PageFacts::default() };
+        let menu = build(&click, facts);
+        let labels: Vec<_> = menu.entries.iter().map(|e| e.label.as_str()).collect();
+        assert!(labels.contains(&"Remplir : Perso") && labels.contains(&"Remplir : Travail"));
+        assert!(!menu.entries.iter().any(|e| e.kind == MenuItemKind::ManageForms || e.kind == MenuItemKind::FillForm3));
     }
 
     #[test]

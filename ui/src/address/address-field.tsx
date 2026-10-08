@@ -10,9 +10,9 @@ import { readUrl } from '../shared/url-shape'
 import { LoadProgress } from './load-progress'
 import { SecurityMark } from './security-mark'
 import { SuggestionList } from './suggestion-list'
-import { useSuggestions } from './use-suggestions'
+import { useSuggestions, type Suggestions } from './use-suggestions'
 import type { CoreState } from '../shared/core-state'
-import { useAddressField } from './use-address-field'
+import { useAddressField, type AddressFieldState } from './use-address-field'
 
 export interface AddressFieldProps {
   tab: TabView | null
@@ -65,6 +65,27 @@ function ZoomBadge({ zoom, onReset }: { zoom: number; onReset: () => void }): Re
   )
 }
 
+function AddressInput({ field, list }: { field: AddressFieldState; list: Suggestions }): ReactElement {
+  return (
+    <input
+      ref={field.inputRef}
+      value={field.value}
+      spellCheck={false}
+      autoComplete="off"
+      aria-label="Adresse"
+      placeholder={field.editing ? 'Rechercher ou saisir une URL' : undefined}
+      onChange={(event) => field.onChange(event.target.value)}
+      onFocus={field.onFocus}
+      onBlur={field.onBlur}
+      onKeyDown={(event) => {
+        if (!list.onKey(event)) field.onKeyDown(event)
+      }}
+      className={`numerique min-w-0 flex-1 bg-transparent text-[12px] outline-none select-text
+        placeholder:text-ink-faint ${field.editing ? 'text-ink' : 'text-transparent'}`}
+    />
+  )
+}
+
 export function AddressField(props: AddressFieldProps): ReactElement {
   const { tab, onSubmit, onResetZoom, focusToken, onOpenSecurity, send } = props
   const field = useAddressField(tab, onSubmit, focusToken)
@@ -73,37 +94,22 @@ export function AddressField(props: AddressFieldProps): ReactElement {
   const security = tab === null || tab.url.length === 0 || tab.url === 'about:blank' ? 'blank' : tab.security
   return (
     <div className="relative">
-    <div
-      className={`relative flex h-9 min-w-0 items-center gap-2 overflow-hidden rounded-full bg-field px-3.5
-        shadow-field transition-colors duration-100 ${field.editing ? 'ring-1 ring-guard/60' : 'hover:bg-hover'}`}
-    >
-      <SecurityMark security={security} onOpen={onOpenSecurity} />
-      <input
-        ref={field.inputRef}
-        value={field.value}
-        spellCheck={false}
-        autoComplete="off"
-        aria-label="Adresse"
-        placeholder={field.editing ? 'Rechercher ou saisir une URL' : undefined}
-        onChange={(event) => field.onChange(event.target.value)}
-        onFocus={field.onFocus}
-        onBlur={field.onBlur}
-        onKeyDown={(event) => {
-          if (!list.onKey(event)) field.onKeyDown(event)
-        }}
-        className={`numerique min-w-0 flex-1 bg-transparent text-[12px] outline-none select-text
-          placeholder:text-ink-faint ${field.editing ? 'text-ink' : 'text-transparent'}`}
-      />
-      {!field.editing && (
-        <div className="pointer-events-none absolute inset-y-0 right-3.5 left-[39px] flex items-center
-          overflow-hidden text-[12.5px] leading-none">
-          <RestingHost url={tab?.url ?? ''} />
-        </div>
-      )}
-      {!field.editing && tab !== null && <ZoomBadge zoom={tab.zoom} onReset={onResetZoom} />}
-      <LoadProgress loading={tab?.loading ?? false} progress={tab?.progress ?? 0} />
-    </div>
-    <SuggestionList items={list.items} selected={list.selected} onPick={list.pick} />
+      <div
+        className={`relative flex h-9 min-w-0 items-center gap-2 overflow-hidden rounded-full bg-field px-3.5
+          shadow-field transition-colors duration-100 ${field.editing ? 'ring-1 ring-guard/60' : 'hover:bg-hover'}`}
+      >
+        <SecurityMark security={security} onOpen={onOpenSecurity} />
+        <AddressInput field={field} list={list} />
+        {!field.editing && (
+          <div className="pointer-events-none absolute inset-y-0 right-3.5 left-[39px] flex items-center
+            overflow-hidden text-[12.5px] leading-none">
+            <RestingHost url={tab?.url ?? ''} />
+          </div>
+        )}
+        {!field.editing && tab !== null && <ZoomBadge zoom={tab.zoom} onReset={onResetZoom} />}
+        <LoadProgress loading={tab?.loading ?? false} progress={tab?.progress ?? 0} />
+      </div>
+      <SuggestionList items={list.items} selected={list.selected} onPick={list.pick} />
     </div>
   )
 }
