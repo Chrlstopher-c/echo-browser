@@ -245,6 +245,9 @@ pub(super) fn with_browser(action: impl FnOnce(&Browser)) {
     }
 }
 
+/// Adresse demandee pendant qu'un onglet se reveille (sa page n'existe pas encore) : chargee des sa creation.
+static PENDING: parking_lot::Mutex<Option<(echo_contract::TabId, String)>> = parking_lot::Mutex::new(None);
+
 pub(super) fn navigate(url: &str) {
     let frame = session::with(|s| s.active_frame()).flatten();
     match frame {
@@ -252,7 +255,26 @@ pub(super) fn navigate(url: &str) {
             debug!(%url, "navigation");
             frame.load_url(Some(&CefString::from(url)));
         }
-        None => warn!(%url, "navigation impossible : pas de frame de contenu"),
+        None => match session::with(|s| s.tabs.active_id()).flatten() {
+            Some(id) => {
+                debug!(%url, id, "navigation gardee pour la fin du reveil");
+                *PENDING.lock() = Some((id, url.to_string()));
+            }
+            None => warn!(%url, "navigation impossible : pas d'onglet actif"),
+        },
+    }
+}
+
+/// Une page vient d'etre creee : si une navigation l'attendait, elle part maintenant.
+pub fn flush_pending(browser: &Browser) {
+    let Some((id, _)) = PENDING.lock().clone() else { return };
+    let owner = session::with(|s| s.tabs.by_browser(browser.identifier()).map(|t| t.id)).flatten();
+    if owner != Some(id) {
+        return;
+    }
+    if let (Some((_, url)), Some(frame)) = (PENDING.lock().take(), browser.main_frame()) {
+        debug!(%url, "navigation apres reveil");
+        frame.load_url(Some(&CefString::from(url.as_str())));
     }
 }
 

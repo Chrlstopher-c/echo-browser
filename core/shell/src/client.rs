@@ -357,6 +357,7 @@ wrap_life_span_handler! {
             if let Some(browser) = browser.as_deref() {
                 crate::identity::emulate(browser);
                 crate::scheme::apply(browser);
+                crate::bridge::flush_pending(browser);
             }
             self.live.opened();
         }
