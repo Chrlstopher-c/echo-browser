@@ -86,6 +86,9 @@ export interface CoreState {
   adminAccount: { detail: unknown; error: string | null } | null
   /** Theme du bureau, pour le choix « Système ». */
   systemDark: boolean | null
+  /** Incremente a chaque Ctrl+F. */
+  findToken: number
+  find: { count: number; current: number }
 }
 
 export interface PermissionRequest {
@@ -122,6 +125,8 @@ export const EMPTY_CORE_STATE: CoreState = {
   admin: null,
   adminAccount: null,
   systemDark: null,
+  findToken: 0,
+  find: { count: 0, current: 0 },
   network: null,
   routineProposal: null,
   pageChange: null,
@@ -190,6 +195,10 @@ export function reduceCore(state: CoreState, event: CoreEvent): CoreState {
       return reduceLibrary(state, event)
     case 'fullscreenChanged':
       return { ...state, fullscreen: event.active }
+    case 'findRequested':
+      return { ...state, findToken: state.findToken + 1 }
+    case 'findResult':
+      return { ...state, find: { count: event.count, current: event.current } }
     case 'focusAddressRequested':
       return { ...state, addressFocusToken: state.addressFocusToken + 1 }
     case 'restarting':

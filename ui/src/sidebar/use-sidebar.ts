@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import type { SheetId } from './sheet'
+import { useFind, type FindController } from '../find/use-find'
 import { useExtensionMenu, type ExtensionMenuController } from '../extensions/extension-menu'
 import { useExtensions, type ExtensionsController } from '../extensions/use-extensions'
 import { useLibrary, type LibraryController } from '../library/use-library'
@@ -43,6 +44,8 @@ export interface SidebarModel extends SidebarDomains {
   addressFocusToken: number
   /** Deplie la barre si besoin et donne le focus au champ d'adresse. */
   focusAddress: () => void
+  /** Recherche dans la page (Ctrl+F). */
+  find: FindController
 }
 
 function useDomains(send: (request: UiRequest) => void, state: CoreState): SidebarDomains {
@@ -69,6 +72,15 @@ export function useSidebar(): SidebarModel {
   const space = useSpace(send, profiles, state.systemDark)
   const domains = useDomains(send, state)
   const [localFocus, setLocalFocus] = useState(0)
+  const find = useFind(send, state.findToken, state.activeId)
+
+  // Ctrl+F : la barre se deplie et quitte un panneau ouvert pour montrer la recherche.
+  useEffect(() => {
+    if (state.findToken === 0) return
+    width.expand()
+    sheet.close()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.findToken])
 
   const focusAddress = useCallback((): void => {
     width.expand()
@@ -101,5 +113,6 @@ export function useSidebar(): SidebarModel {
     ...domains, core, tabs, menu, folders, containers, profiles, extensionMenu, width, sheet, space,
     addressFocusToken: localFocus + state.addressFocusToken,
     focusAddress,
+    find,
   }
 }

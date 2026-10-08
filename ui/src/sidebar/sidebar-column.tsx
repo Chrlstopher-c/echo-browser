@@ -3,6 +3,7 @@
 import type { ReactElement } from 'react'
 import { AddressField } from '../address/address-field'
 import { ExtensionBar } from '../extensions/extension-bar'
+import { FindBar } from '../find/find-bar'
 import { ExtensionMenu } from '../extensions/extension-menu'
 import { TopControls } from '../address/top-controls'
 import { RestartStrip } from '../restart/restart-strip'
@@ -68,6 +69,7 @@ function ColumnHeader({ model }: { model: SidebarModel }): ReactElement {
         suggestions={core.state.suggestions}
         send={core.send}
       />
+      <FindBar find={model.find} result={core.state.find} />
       <Extensions model={model} />
     </header>
   )

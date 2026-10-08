@@ -176,6 +176,10 @@ pub enum UiRequest {
 
     /// Suggestions pour ce que l'utilisateur tape dans l'adresse (onglets ouverts, favoris, historique).
     Suggest { query: String },
+    /// Recherche dans la page active ; `next` passe a l'occurrence suivante.
+    Find { text: String, forward: bool, next: bool },
+    /// Ferme la recherche dans la page.
+    StopFind,
     /// Ouvrir un panneau de la barre (`network`, `shield`, `extensions`) — depuis l'Aide par exemple.
     OpenSidebarSheet { sheet: String },
 
@@ -225,6 +229,10 @@ pub enum CoreEvent {
     FullscreenChanged { active: bool },
     /// Le coeur demande le focus sur le champ d'adresse (raccourci clavier).
     FocusAddressRequested,
+    /// Ctrl+F : la barre ouvre la recherche dans la page.
+    FindRequested,
+    /// Resultat de la recherche : nombre d'occurrences, numero de la courante (1…).
+    FindResult { count: i32, current: i32 },
     /// Le navigateur va se relancer : l'interface montre son ecran d'attente.
     Restarting { reason: String },
     Notice { level: NoticeLevel, message: String },

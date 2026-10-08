@@ -24,6 +24,8 @@ export type UiRequest =
   | { kind: 'openPage'; page: 'reglages' | 'bibliotheque' | 'extensions' | 'admin' | 'aide' }
   /** Suggestions pour ce que l'utilisateur tape dans l'adresse. */
   | { kind: 'suggest'; query: string }
+  | { kind: 'find'; text: string; forward: boolean; next: boolean }
+  | { kind: 'stopFind' }
   /** Ouvrir un panneau de la barre (`network`, `shield`, `extensions`) — depuis l'Aide par exemple. */
   | { kind: 'openSidebarSheet'; sheet: string }
   /** Referme les outils de developpement ancres. */
@@ -175,6 +177,8 @@ export type CoreEvent =
   | { kind: 'fullscreenChanged'; active: boolean }
   /** Le coeur demande le focus sur le champ d'adresse (raccourci clavier). */
   | { kind: 'focusAddressRequested' }
+  | { kind: 'findRequested' }
+  | { kind: 'findResult'; count: number; current: number }
   /** Le navigateur va se relancer : l'interface montre son ecran d'attente. */
   | { kind: 'restarting'; reason: string }
   | { kind: 'notice'; level: NoticeLevel; message: string }
@@ -351,6 +355,7 @@ export type MenuItemKind =
   | 'fillForm3'
   | 'manageForms'
   | 'reader'
+  | 'findInPage'
   | 'unwatchPage'
 
 export interface MenuEntry {

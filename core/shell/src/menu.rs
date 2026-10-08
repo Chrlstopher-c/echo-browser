@@ -65,6 +65,9 @@ fn page_tools(click: &Click, facts: &PageFacts) -> Vec<MenuEntry> {
     if facts.hidden_here {
         tools.push(MenuEntry::new(MenuItemKind::UnhideElements, "Réafficher les éléments masqués"));
     }
+    if click.page.starts_with("http") || click.page.starts_with("file:") {
+        tools.push(MenuEntry::new(MenuItemKind::FindInPage, "Rechercher dans la page"));
+    }
     if click.page.starts_with("http") {
         let label = if facts.reading { "Quitter la lecture" } else { "Lire en mode lecture" };
         tools.push(MenuEntry::new(MenuItemKind::Reader, label));

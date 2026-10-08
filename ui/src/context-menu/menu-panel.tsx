@@ -31,6 +31,7 @@ const ICONS: Partial<Record<MenuItemKind, IconComponent>> = {
   savePage: IconDownload, print: IconPrinter, toggleShield: IconShield, viewSource: IconCode, inspect: IconWrench,
   hideElement: IconEyeOff, unhideElements: IconEye, watchPage: IconClock, unwatchPage: IconClock,
   fillForm1: IconUser, fillForm2: IconUser, fillForm3: IconUser, manageForms: IconUser, reader: IconReader,
+  findInPage: IconSearch,
 }
 
 function Item({ entry, onRun }: { entry: MenuEntry; onRun: (kind: MenuItemKind) => void }): ReactElement {

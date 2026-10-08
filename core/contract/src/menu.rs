@@ -90,6 +90,8 @@ pub enum MenuItemKind {
     ManageForms,
     /// Entrer en mode lecture, ou en sortir.
     Reader,
+    /// Ouvrir la recherche dans la page (Ctrl+F).
+    FindInPage,
     OpenLinkInTab,
     OpenLinkInBackground,
     CopyLink,

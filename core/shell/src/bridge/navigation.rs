@@ -28,6 +28,12 @@ pub(super) fn set_zoom(id: echo_contract::TabId, factor: f32) {
 
 /// Donne le focus clavier a la barre (la page le garde sinon : la saisie partirait dans la page), puis a l'adresse.
 fn focus_address() {
+    focus_chrome();
+    publish(&CoreEvent::FocusAddressRequested);
+}
+
+/// Montre la barre (meme repliee) et lui donne le clavier.
+fn focus_chrome() {
     let chrome = session::with(|s| s.chrome.clone()).flatten();
     crate::window::reveal_chrome(true, chrome.as_ref());
     if let Some(view) = chrome {
@@ -36,7 +42,12 @@ fn focus_address() {
             host.set_focus(1);
         }
     }
-    publish(&CoreEvent::FocusAddressRequested);
+}
+
+/// Ctrl+F : la barre se montre, prend le clavier et ouvre la recherche dans la page.
+pub(super) fn focus_find() {
+    focus_chrome();
+    publish(&CoreEvent::FindRequested);
 }
 
 /// Applique un raccourci clavier.
@@ -64,6 +75,7 @@ pub fn perform(action: crate::shortcuts::Action) {
             if bypass_cache { browser.reload_ignore_cache() } else { browser.reload() }
         }),
         Action::FocusAddress => focus_address(),
+        Action::Find => focus_find(),
         Action::Reader => crate::reader::toggle_active(),
         Action::DismissOverlay => super::dismiss_overlays(),
         Action::ToggleDevTools => super::context::toggle_devtools(),

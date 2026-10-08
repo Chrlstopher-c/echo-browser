@@ -107,6 +107,7 @@ pub fn run(action: MenuItemKind) {
         MenuItemKind::FillForm2 => crate::forms::fill(1),
         MenuItemKind::FillForm3 => crate::forms::fill(2),
         MenuItemKind::Reader => crate::reader::toggle_active(),
+        MenuItemKind::FindInPage => super::navigation::focus_find(),
         MenuItemKind::ManageForms => super::open_page_by_name("reglages"),
         MenuItemKind::UnwatchPage => crate::watch::unwatch_active(),
         MenuItemKind::Bookmark => {

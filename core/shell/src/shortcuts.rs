@@ -61,6 +61,8 @@ pub enum Action {
     Zoom(ZoomStep),
     Help,
     Reader,
+    /// Ctrl+F : recherche dans la page.
+    Find,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -118,6 +120,7 @@ fn ctrl_letter(letter: char, shift: bool) -> Option<Action> {
         ('t', true) => Action::ReopenTab,
         ('w', false) => Action::CloseTab,
         ('l' | 'k', false) => Action::FocusAddress,
+        ('f', false) => Action::Find,
         ('r', false) => Action::Reload { bypass_cache: false },
         ('r', true) => Action::Reload { bypass_cache: true },
         ('i' | 'j', true) => Action::ToggleDevTools,

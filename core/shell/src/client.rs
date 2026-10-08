@@ -57,6 +57,10 @@ wrap_client! {
             Some(crate::shortcuts::BrowserShortcuts::new(()))
         }
 
+        fn find_handler(&self) -> Option<FindHandler> {
+            Some(crate::find::EchoFind::new(()))
+        }
+
         fn context_menu_handler(&self) -> Option<ContextMenuHandler> {
             Some(EchoContextMenu::new(()))
         }
