@@ -1,6 +1,7 @@
 [workspace]
 resolver = "3"
 members = [
+    "core/account",
     "core/contract",
     "core/extensions",
     "core/library",
@@ -15,6 +16,7 @@ edition = "2024"
 license = "MIT"
 
 [workspace.dependencies]
+echo-account    = { path = "core/account" }
 echo-contract   = { path = "core/contract" }
 echo-shield     = { path = "core/shield" }
 echo-tabs       = { path = "core/tabs" }

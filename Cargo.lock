@@ -501,6 +501,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "echo-account"
+version = "0.5.0"
+dependencies = [
+ "anyhow",
+ "base64 0.22.1",
+ "ring",
+ "serde",
+ "serde_json",
+ "tracing",
+ "ureq",
+]
+
+[[package]]
 name = "echo-contract"
 version = "0.5.0"
 dependencies = [

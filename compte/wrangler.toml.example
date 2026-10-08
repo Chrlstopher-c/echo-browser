@@ -1,0 +1,10 @@
+# Copier en wrangler.toml (ignore par git) et y mettre l'identifiant de la base D1 cree par
+# `pnpm exec wrangler d1 create echo-compte`. Secret : `pnpm exec wrangler secret put SECRET_SEL` (aleatoire).
+name = "echo-compte"
+main = "src/index.ts"
+compatibility_date = "2026-09-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "echo-compte"
+database_id = "<identifiant de la base>"
