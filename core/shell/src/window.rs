@@ -97,6 +97,8 @@ thread_local! {
     /// L'espaceur qui reserve la place de la barre : sa taille preferee est mise en cache, il faut
     /// l'invalider lui-meme pour que la disposition la relise.
     static SPACER: RefCell<Option<Panel>> = const { RefCell::new(None) };
+    /// Le conteneur de la page, pour refaire la disposition (plein ecran bord a bord).
+    static CONTENT_HOST: RefCell<Option<Panel>> = const { RefCell::new(None) };
 
     /// Le liseré de detection du bord gauche, present seulement quand la barre est repliee.
     static EDGE_STRIP: RefCell<Option<crate::overlay::Overlay>> = const { RefCell::new(None) };
@@ -144,6 +146,11 @@ fn place_chrome(window: &Window) {
 }
 
 /// Fixe la largeur reclamee par la barre laterale et relance la disposition.
+/// Largeur courante de la barre.
+pub fn chrome_width_now() -> i32 {
+    CHROME_WIDTH_NOW.load(Ordering::Relaxed)
+}
+
 pub fn set_chrome_width(pixels: i32, chrome: Option<&BrowserView>) {
     let clamped = pixels.clamp(MIN_CHROME_WIDTH, MAX_CHROME_WIDTH);
     if CHROME_WIDTH_NOW.swap(clamped, Ordering::Relaxed) == clamped {
@@ -283,6 +290,7 @@ wrap_window_delegate! {
             CHROME_OVERLAY.with(|slot| *slot.borrow_mut() = controller);
 
             let host = self.content_host.borrow().clone();
+            CONTENT_HOST.with(|slot| *slot.borrow_mut() = host.clone());
             if let Some(host) = host.as_ref() {
                 let mut host_view = View::from(host);
                 window.add_child_view(Some(&mut host_view));
@@ -467,21 +475,39 @@ fn parse_hex_color(value: &str) -> Option<u32> {
     }
 }
 
+/// Plein ecran : la page va jusqu'aux bords (ni marge ni teinte autour) ; sinon elle reflotte.
+pub fn set_edge_to_edge(on: bool, chrome: Option<&BrowserView>) {
+    let Some(window) = chrome.and_then(|c| View::from(c).window()) else { return };
+    // Comme Chrome : la video prend l'ecran entier, pas seulement la fenetre.
+    window.set_fullscreen(i32::from(on));
+    let layout = window.set_to_box_layout(Some(&layout_with_inset(if on { 0 } else { CONTENT_INSET })));
+    CONTENT_HOST.with(|slot| {
+        if let (Some(layout), Some(host)) = (layout, slot.borrow().as_ref()) {
+            layout.set_flex_for_view(Some(&mut View::from(host)), 1);
+        }
+    });
+    relayout(&window);
+}
+
 /// Disposition en colonnes : la barre laterale a gauche, la page a droite.
 /// La marge interieure fait flotter la page au lieu de la coller aux bords.
 fn side_by_side_layout() -> BoxLayoutSettings {
+    layout_with_inset(CONTENT_INSET)
+}
+
+fn layout_with_inset(inset: i32) -> BoxLayoutSettings {
     BoxLayoutSettings {
         horizontal: 1,
         main_axis_alignment: AxisAlignment::START,
         cross_axis_alignment: AxisAlignment::STRETCH,
         inside_border_insets: Insets {
-            top: CONTENT_INSET,
+            top: inset,
             left: 0,
-            bottom: CONTENT_INSET,
-            right: CONTENT_INSET,
+            bottom: inset,
+            right: inset,
             ..Default::default()
         },
-        between_child_spacing: CONTENT_INSET,
+        between_child_spacing: inset,
         default_flex: 0,
         ..Default::default()
     }

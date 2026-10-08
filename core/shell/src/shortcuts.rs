@@ -183,7 +183,7 @@ wrap_keyboard_handler! {
     impl KeyboardHandler {
         fn on_pre_key_event(
             &self,
-            _browser: Option<&mut Browser>,
+            browser: Option<&mut Browser>,
             event: Option<&KeyEvent>,
             _os_event: Option<&mut sys::XEvent>,
             _is_keyboard_shortcut: Option<&mut i32>,
@@ -200,8 +200,15 @@ wrap_keyboard_handler! {
             // le confisquer casserait la fermeture des fenetres des sites.
             let rien_au_dessus =
                 crate::overlay::open_popup_id().is_none() && !crate::overlay::menu_open();
-            if action == Action::DismissOverlay && rien_au_dessus {
-                return 0;
+            if action == Action::DismissOverlay {
+                // Echap quitte d'abord le plein ecran d'une page (video), comme dans tous les navigateurs.
+                if let Some(host) = browser.and_then(|b| b.host()).filter(|h| h.is_fullscreen() == 1) {
+                    host.exit_fullscreen(1);
+                    return 1;
+                }
+                if rien_au_dessus {
+                    return 0;
+                }
             }
             debug!(?action, "raccourci");
             crate::bridge::perform(action);

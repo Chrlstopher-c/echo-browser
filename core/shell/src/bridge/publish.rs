@@ -202,9 +202,23 @@ pub fn set_fullscreen(active: bool) {
     info!(active, "plein ecran");
     publish(&CoreEvent::FullscreenChanged { active });
     let chrome = session::with(|s| s.chrome.clone()).flatten();
-    // La bande laterale se replie a zero : sans cela elle resterait posee sur la video.
-    let width = if active { 0 } else { crate::window::CHROME_WIDTH };
+    // La bande laterale se replie a zero : sans cela elle resterait posee sur la video. Elle retrouve ensuite
+    // la largeur choisie par l'utilisateur.
+    static BEFORE: std::sync::atomic::AtomicI32 = std::sync::atomic::AtomicI32::new(0);
+    let width = if active {
+        let now = crate::window::chrome_width_now();
+        if now > 0 {
+            BEFORE.store(now, std::sync::atomic::Ordering::Relaxed);
+        }
+        0
+    } else {
+        match BEFORE.load(std::sync::atomic::Ordering::Relaxed) {
+            0 => crate::window::CHROME_WIDTH,
+            before => before,
+        }
+    };
     crate::window::set_chrome_width(width, chrome.as_ref());
+    crate::window::set_edge_to_edge(active, chrome.as_ref());
 }
 
 pub fn publish_tabs() {

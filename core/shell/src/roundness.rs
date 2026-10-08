@@ -34,6 +34,7 @@ const attach=()=>{{const root=document.documentElement;if(!root)return;if(!host)
 window.__echoCorners=(c)=>{{color=c;paint();}};
 attach();
 addEventListener('DOMContentLoaded',attach);
+addEventListener('fullscreenchange',()=>{{if(host)host.style.display=document.fullscreenElement?'none':'';}});
 new MutationObserver(()=>{{if(host&&!host.isConnected)attach();}}).observe(document,{{childList:true,subtree:false}});
 }})()"#,
         color = css_color(argb),
