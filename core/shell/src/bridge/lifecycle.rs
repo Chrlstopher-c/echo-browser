@@ -199,6 +199,7 @@ pub fn trim_idle_tabs(idle: std::time::Duration) -> usize {
 /// Ferme un onglet. Comme pour l'ouverture, les appels a Chromium se font hors de
 /// l'acces a l'etat, sinon la fermeture fige le navigateur.
 pub fn close_tab(id: TabId) {
+    super::navigation::remember_closed(id);
     let Some(detached) = session::with(|s| s.tabs.detach(id)) else { return };
     let remaining = detached.remaining;
     detached.dispose();

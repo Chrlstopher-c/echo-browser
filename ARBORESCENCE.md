@@ -116,6 +116,7 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `core/shell/src/extension_tabs/pont/regle.js`
 - `core/shell/src/extension_tabs/worker.js`
 - `core/shell/src/extension_tabs/workers.rs`
+- `core/shell/src/files.rs` — ouvrir des fichiers et des dossiers locaux dans le navigateur — Ctrl+O (dialogue du systeme,
 - `core/shell/src/filtering.rs` — soumettre chaque requete du navigateur au bouclier, et appliquer sa decision.
 - `core/shell/src/flags.rs` — les drapeaux Chromium imposes au demarrage, et pourquoi chacun est la.
 - `core/shell/src/identity.rs` — ce que le navigateur declare de lui-meme aux sites qu'il visite.
@@ -124,6 +125,7 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `core/shell/src/injection/twitch/LICENSE-vaft`
 - `core/shell/src/injection/twitch/mod.rs`
 - `core/shell/src/injection/twitch/vaft.js`
+- `core/shell/src/launch.rs` — ce que l'on demande a Echo en le lancant — `echo-browser page.html dossier/ https://…` (gestionnaire
 - `core/shell/src/main.rs`
 - `core/shell/src/menu.rs` — ce que le clic droit propose, selon ce qui est sous le curseur.
 - `core/shell/src/network.rs` — le reseau des onglets dans le navigateur — chaque requete est notee dans le journal de son onglet
@@ -202,6 +204,7 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `tools/test-inspect.sh`
 - `tools/test-ipc-origin.sh`
 - `tools/test-keep-awake.sh`
+- `tools/test-launch.sh`
 - `tools/test-media-sleep.sh`
 - `tools/test-network.sh`
 - `tools/test-never-sleep.sh`
@@ -212,6 +215,7 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `tools/test-routines.sh`
 - `tools/test-scheme.sh`
 - `tools/test-shield-toggle.sh`
+- `tools/test-shortcuts.sh`
 - `tools/test-sidebar-anim.sh`
 - `tools/test-signals.sh`
 - `tools/test-sleep-scroll.sh`

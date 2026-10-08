@@ -25,6 +25,9 @@ Fabriquer l'archive : `tools/package-release.sh <libffmpeg.so libre>` (décodeur
 
 ## Lancer (développement)
 
+`./start.sh release [fichiers ou adresses…]` — les arguments s'ouvrent dans des onglets (ou dans l'Echo déjà lancé).
+
+
 ```bash
 ./start.sh release     # lance (profil dans ~/.local/share/echo-browser) ; journal : logs/browser.log
 ./stop.sh              # arrête par identifiant enregistré (jamais par nom de processus)
@@ -51,6 +54,8 @@ Ports : sonde de présence `127.0.0.1:4330` ; port de débogage local `127.0.0.1
 - `./tools/bench-ram.sh echo|chrome [attente_s]` — mémoire (PSS) sur des pages réelles, comparée à Chrome.
 - `./tools/test-network.sh`, `test-page-state.sh`, `test-routines.sh`, `test-hide-element.sh`, `test-watch.sh` — panneau
   Réseau et journal, reprise exacte, routines, mémoire de structure, pages surveillées (servis par `tools/serveur-test.py`).
+- `./tools/test-shortcuts.sh`, `test-launch.sh` — raccourcis (Ctrl+W/T/O…), fichiers et dossiers, lancement avec des
+  fichiers.
 - `./tools/test-account-auto.sh`, `test-admin.sh`, `test-signals.sh` — synchro automatique, administration, signaux
   anonymes (service local `compte/`).
 - **Les scripts de test lancent une instance isolée** (`ECHO_RUN_DIR`, `ECHO_CONTROL_NAME`) : ils ne touchent jamais au navigateur de l'utilisateur.

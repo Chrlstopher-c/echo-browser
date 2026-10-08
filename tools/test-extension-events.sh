@@ -13,15 +13,14 @@ cat > "$EXT/manifest.json" <<J
 "background":{"service_worker":"bg.js"}}
 J
 cat > "$EXT/bg.js" <<'J'
-let q = 'attente'
-const ready = new Promise((done) => chrome.tabs.query({ url: 'https://example.com/*' }, (t) => { q = t.length; done() }))
+const query = () => new Promise((done) => chrome.tabs.query({ url: 'https://example.com/*' }, (t) => done(t.length)))
 const note = async (e) => {
   const { ev = [] } = await chrome.storage.session.get('ev')
   await chrome.storage.session.set({ ev: [...ev, e] })
 }
 chrome.tabs.onUpdated.addListener((id, change) => { if (change.url) note('maj:' + change.url + '@' + Date.now()) })
 chrome.runtime.onMessage.addListener((m, s, reply) => {
-  ready.then(() => chrome.storage.session.get('ev')).then(({ ev = [] }) => reply({ q, ev }))
+  Promise.all([query(), chrome.storage.session.get('ev')]).then(([q, { ev = [] }]) => reply({ q, ev }))
   return true
 })
 J
@@ -41,7 +40,7 @@ def etat():
     text = call(op="read", id=t)["text"].strip(); call(op="close", id=t); return json.loads(text)
 page = call(op="open", url="https://example.com/")["id"]; time.sleep(3)
 first = etat()
-assert first["q"] == 1, f"tabs.query au demarrage ne voit pas l'onglet : {first}"
+assert first["q"] == 1, f"tabs.query (service worker) ne voit pas l'onglet : {first}"
 call(op="navigate", id=page, url="https://example.org/"); time.sleep(3)
 second = etat()
 assert any("example.org" in e for e in second["ev"]), f"onUpdated non recu : {second}"

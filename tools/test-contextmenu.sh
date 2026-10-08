@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Clic droit simule dans une vraie page : le menu s'ouvre, puis se referme. Instance isolee.
+# Clic droit simule dans une vraie page : le menu s'ouvre, puis se referme. Instance isolee. Sur le bureau de test sway,
+# passer SWAYSOCK (fenetres comptees dans son arbre) ; sinon Hyprland.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 export ECHO_RUN_DIR="$(mktemp -d)"
@@ -38,6 +39,13 @@ def windows():
             out += tree(int(c))
         return out
     pids = set(tree(pid))
+    if os.environ.get("SWAYSOCK"):  # bureau de test sway (sans ecran) : fenetres lues dans son arbre
+        def views(node):
+            found = [node] if node.get("pid") in pids and node.get("type") in ("con", "floating_con") else []
+            for child in node.get("nodes", []) + node.get("floating_nodes", []):
+                found += views(child)
+            return found
+        return views(json.loads(subprocess.check_output(["swaymsg", "-t", "get_tree"])))
     return [c for c in json.loads(subprocess.check_output(["hyprctl", "clients", "-j"])) if c["pid"] in pids]
 call(op="devtools"); time.sleep(3)
 assert call(op="devtools_open")["open"], "F12 : devtools non ouverts"

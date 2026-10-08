@@ -7,12 +7,21 @@
   exacte des pages (saisies, médias), routines (suites de sites), masquer un élément retenu par gabarit.
 
 ## SUITE
+- BUG antérieur au 08/10 (vérifié sur le binaire du début de journée) : une fenêtre ouverte par `window.open` vers une
+  page `file://` reste sur about:blank (`tools/test-popup.sh`, sway de test). À reproduire en http et sur Hyprland.
+- Bancs liés à Hyprland (`hyprctl`) : `test-occlusion.sh` ; `test-contextmenu.sh` accepte maintenant `SWAYSOCK`.
+- `test-folders.sh` : clics à coordonnées fixes, décalés depuis l'entrée « Garder éveillé » du menu (07/10) → à refaire
+  avec l'op `menu`/`key` plutôt que des positions.
 - Extensions : la déclaration externe est lue par Chromium pour TOUS les profils (dossier `External Extensions` à la
   racine des données) → chaque profil télécharge son exemplaire (quelques Mo, désactivé là où il n'est pas voulu).
   Pas de voie par profil connue sans revenir au chargement dépaqueté (cassé, mesuré le 10/09). À étudier à part.
 - Signaux anonymes (E9 S2) : codés et testés ; DÉPLOYER le service (tables + deploy) avec Chris, puis les fonctions
   collectives (sites malveillants, habitudes) dessus (E9 S3+, IDEES.md).
-- Release 0.8.0 quand Chris a validé (main + tag, CI verte).
+- Release 0.8.0 quand Chris a validé (main + tag, CI verte ; déployer d’abord le service pour les signaux — `/v1/etat` et l’admin y sont déjà).
+  Notes prêtes : compte (historique synchronisé, données visibles, suppression, synchro automatique 3 modes + alerte),
+  Administration dans Echo (comptes admin), panneau Réseau (domaines, poids, journal, blocage par site, isolement),
+  reprise exacte des pages, routines, masquer un élément par gabarit, surveiller une page, signaux anonymes (opt-in),
+  réveil des extensions endormies.
 
 ## RETOURS DE CHRIS DU 06/10 SOIR — liste de reprise (ne rien perdre ; détail et critères dans EPICS.md E6)
 

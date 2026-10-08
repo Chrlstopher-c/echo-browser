@@ -18,7 +18,9 @@ mod devtools;
 mod extension_profiles;
 mod extension_tabs;
 mod control;
+mod files;
 mod filtering;
+mod launch;
 mod flags;
 mod identity;
 mod injection;
@@ -75,6 +77,12 @@ fn main() -> anyhow::Result<()> {
         return Ok(());
     }
     anyhow::ensure!(code == -1, "processus principal deja consomme (code {code})");
+    // `echo-browser fichier.pdf` alors qu'Echo tourne : les pages vont a l'instance ouverte, ce lancement s'arrete.
+    let targets = launch::targets();
+    if !targets.is_empty() && launch::forward_to_running(&targets) {
+        return Ok(());
+    }
+    launch::keep(targets);
 
     init_logging();
     let settings = browser_settings();

@@ -61,6 +61,83 @@ pub fn perform(action: crate::shortcuts::Action) {
                 }
             }
         }),
+        other => perform_page(other),
+    }
+}
+
+/// Raccourcis qui agissent sur la page active ou ouvrent quelque chose (Ctrl+O, Ctrl+D, zoom…).
+fn perform_page(action: crate::shortcuts::Action) {
+    use crate::shortcuts::{Action, ZoomStep};
+    let active = session::with(|s| s.tabs.active().map(|t| (t.id, t.zoom, t.url.clone()))).flatten();
+    match action {
+        Action::OpenFile => crate::files::open_dialog(),
+        Action::ReopenTab => reopen_closed(),
+        Action::Back => travel(false),
+        Action::Forward => travel(true),
+        Action::Library => super::open_page_by_name("bibliotheque"),
+        Action::Print => with_browser(|browser| {
+            if let Some(host) = browser.host() {
+                host.print();
+            }
+        }),
+        Action::Bookmark => {
+            if let Some((id, _, _)) = active {
+                super::library::add_bookmark(id);
+            }
+        }
+        Action::SavePage | Action::ViewSource => {
+            if let Some((_, _, url)) = active.filter(|(_, _, url)| url.starts_with("http")) {
+                save_or_source(action == Action::SavePage, &url);
+            }
+        }
+        Action::Zoom(step) => {
+            if let Some((id, zoom, _)) = active {
+                set_zoom(id, match step {
+                    ZoomStep::In => zoom * 1.1,
+                    ZoomStep::Out => zoom / 1.1,
+                    ZoomStep::Reset => 1.0,
+                });
+            }
+        }
+        _ => {}
+    }
+}
+
+/// Ctrl+S telecharge la page ; Ctrl+U ouvre son code source dans un onglet.
+fn save_or_source(save: bool, url: &str) {
+    if save {
+        with_browser(|browser| {
+            if let Some(host) = browser.host() {
+                host.start_download(Some(&CefString::from(url)));
+            }
+        });
+    } else {
+        open_tab(&format!("view-source:{url}"));
+        publish_tabs();
+    }
+}
+
+/// Onglets fermes, le plus recent en dernier : (adresse, conteneur). Ctrl+Maj+T rouvre le dernier.
+static CLOSED: parking_lot::Mutex<Vec<(String, Option<String>)>> = parking_lot::Mutex::new(Vec::new());
+const CLOSED_KEPT: usize = 25;
+
+/// Retient un onglet qui va etre ferme (pages web seulement).
+pub fn remember_closed(id: echo_contract::TabId) {
+    let tab = session::with(|s| s.tabs.get_mut(id).map(|t| (t.url.clone(), t.container.clone()))).flatten();
+    if let Some((url, container)) = tab.filter(|(url, _)| url.starts_with("http") || url.starts_with("file:")) {
+        let mut closed = CLOSED.lock();
+        closed.push((url, container));
+        if closed.len() > CLOSED_KEPT {
+            closed.remove(0);
+        }
+    }
+}
+
+fn reopen_closed() {
+    let last = CLOSED.lock().pop();
+    if let Some((url, container)) = last {
+        super::open_tab_in(&url, container.as_deref());
+        publish_tabs();
     }
 }
 
@@ -138,8 +215,14 @@ pub fn normalize(input: &str) -> String {
     if trimmed.is_empty() {
         return String::new();
     }
-    if trimmed.contains("://") || trimmed.starts_with("about:") {
+    if trimmed.contains("://") || trimmed.starts_with("about:") || trimmed.starts_with("view-source:") {
         return trimmed.to_string();
+    }
+    if let Some(url) = crate::files::url_of_path(trimmed) {
+        return url;
+    }
+    if is_local_server(trimmed) {
+        return format!("http://{trimmed}");
     }
     let looks_like_host = !trimmed.contains(' ')
         && trimmed.split('/').next().is_some_and(|host| host.contains('.') && !host.ends_with('.'));
@@ -147,6 +230,15 @@ pub fn normalize(input: &str) -> String {
         return format!("https://{trimmed}");
     }
     search::query_url(trimmed)
+}
+
+/// `localhost`, `localhost:3000/…`, ou une adresse IP avec port : un serveur local, en http.
+fn is_local_server(input: &str) -> bool {
+    let host = input.split('/').next().unwrap_or_default();
+    let (name, port) = host.split_once(':').map_or((host, None), |(n, p)| (n, Some(p)));
+    let port_ok = port.is_none_or(|p| !p.is_empty() && p.bytes().all(|b| b.is_ascii_digit()));
+    let ip = name.split('.').count() == 4 && name.split('.').all(|part| part.parse::<u8>().is_ok());
+    !input.contains(' ') && port_ok && (name == "localhost" || (ip && port.is_some()))
 }
 
 pub(super) fn current_url() -> String {
@@ -162,6 +254,14 @@ mod tests {
         assert_eq!(normalize("https://exemple.fr/page"), "https://exemple.fr/page");
         assert_eq!(normalize("exemple.fr"), "https://exemple.fr");
         assert_eq!(normalize("exemple.fr/page?a=1"), "https://exemple.fr/page?a=1");
+    }
+
+    #[test]
+    fn chemins_et_serveurs_locaux() {
+        assert_eq!(normalize("/tmp/rapport.pdf"), "file:///tmp/rapport.pdf");
+        assert!(normalize("~/Documents").starts_with("file:///"));
+        assert_eq!(normalize("localhost:3000/app"), "http://localhost:3000/app");
+        assert_eq!(normalize("192.168.1.10:8080"), "http://192.168.1.10:8080");
     }
 
     #[test]

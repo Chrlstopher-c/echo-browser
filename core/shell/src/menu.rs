@@ -31,32 +31,18 @@ pub struct PageFacts {
 
 pub fn build(click: &Click, facts: PageFacts) -> ContextTarget {
     let mut entries = Vec::new();
-    if !click.link.is_empty() {
-        entries.extend(link_entries(&click.link));
-    }
-    if !click.image.is_empty() {
+    let groups: [(bool, Vec<MenuEntry>); 5] = [
+        (!click.link.is_empty(), link_entries(&click.link)),
+        (!click.image.is_empty(), image_entries(&click.image)),
+        (!click.media.is_empty(), media_entries()),
+        (!click.selection.is_empty(), selection_entries(&click.selection)),
+        (click.editable, field_entries(click)),
+    ];
+    for (_, group) in groups.into_iter().filter(|(shown, _)| *shown) {
         if !entries.is_empty() {
             entries.push(MenuEntry::separator());
         }
-        entries.extend(image_entries(&click.image));
-    }
-    if !click.media.is_empty() {
-        if !entries.is_empty() {
-            entries.push(MenuEntry::separator());
-        }
-        entries.extend(media_entries());
-    }
-    if !click.selection.is_empty() {
-        if !entries.is_empty() {
-            entries.push(MenuEntry::separator());
-        }
-        entries.extend(selection_entries(&click.selection));
-    }
-    if click.editable {
-        if !entries.is_empty() {
-            entries.push(MenuEntry::separator());
-        }
-        entries.extend(field_entries(click));
+        entries.extend(group);
     }
     if entries.is_empty() {
         entries.extend(page_entries(click));
@@ -65,17 +51,24 @@ pub fn build(click: &Click, facts: PageFacts) -> ContextTarget {
         entries.push(MenuEntry::new(MenuItemKind::HideElement, "Masquer cet élément"));
         entries.push(MenuEntry::new(MenuItemKind::Inspect, "Examiner l'élément"));
     }
+    entries.extend(page_tools(click, facts));
+    ContextTarget { entries, link: click.link.clone(), selection: trim(&click.selection) }
+}
+
+/// Outils qui dependent de la page : reafficher ce qui est masque, surveiller ou non.
+fn page_tools(click: &Click, facts: PageFacts) -> Vec<MenuEntry> {
+    let mut tools = Vec::new();
     if facts.hidden_here {
-        entries.push(MenuEntry::new(MenuItemKind::UnhideElements, "Réafficher les éléments masqués"));
+        tools.push(MenuEntry::new(MenuItemKind::UnhideElements, "Réafficher les éléments masqués"));
     }
     if click.page.starts_with("http") {
-        entries.push(if facts.watched {
+        tools.push(if facts.watched {
             MenuEntry::new(MenuItemKind::UnwatchPage, "Ne plus surveiller cette page")
         } else {
             MenuEntry::new(MenuItemKind::WatchPage, "Surveiller cette page")
         });
     }
-    ContextTarget { entries, link: click.link.clone(), selection: trim(&click.selection) }
+    tools
 }
 
 fn link_entries(link: &str) -> Vec<MenuEntry> {

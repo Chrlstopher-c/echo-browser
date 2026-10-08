@@ -59,6 +59,18 @@
   Une page déjà ouverte garde l'ancienne teinte dans ses angles jusqu'au rechargement.
 
 
+## Raccourcis et fichiers locaux (demande de Chris, 08/10)
+
+- Lettres lues dans le caractère produit (disposition du clavier), plus dans le code de touche : en AZERTY, le code
+  suit souvent la position US (Ctrl+W arrivait comme Ctrl+Z). Ajoutés : Ctrl+O (sélecteur du système via le portail
+  du bureau — crate `rfd`, dans un fil à part : le dialogue intégré de CEF faisait tomber Echo), Ctrl+Maj+T, Ctrl+D,
+  Ctrl+H/J, Ctrl+P, Ctrl+S, Ctrl+U, Alt+←/→, Ctrl+Page↑/↓, Ctrl +/−/0.
+- Barre d'adresse : `/chemin`, `~/…` → `file://` (dossier listé, fichier ouvert) ; `localhost:3000`, IP:port → http.
+- `echo-browser fichier…` ouvre les pages ; Echo déjà lancé → confiées par la prise de pilotage. Entrée de bureau :
+  `%U` + types (HTML, PDF, images, texte, dossiers). Pilotage : op `key` (frappe simulée).
+- Piège de banc : un dialogue de fichiers passe par le portail de la session D-Bus de l'utilisateur et s'ouvre sur SON
+  écran → tests avec un bus D-Bus privé (`test-shortcuts.sh`). Tests : `test-shortcuts.sh`, `test-launch.sh`.
+
 ## Signaux anonymes partagés (E9 S2, nuit du 08/10) — PAS ENCORE DÉPLOYÉ sur le service de production
 
 - Réglage « Partager des signaux anonymes » (`signals.share`, Vie privée), coupé par défaut. Activé seulement : domaines

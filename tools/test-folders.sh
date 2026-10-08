@@ -2,6 +2,7 @@
 # Dossiers d'onglets : creer un dossier au clic droit, y ranger un onglet, relancer, retrouver le rangement.
 set -euo pipefail
 cd "$(dirname "$0")/.."
+export ECHO_NO_WELCOME=1
 export ECHO_RUN_DIR="$(mktemp -d)"
 export ECHO_CONTROL_NAME="test-$$"
 export ECHO_DATA_DIR="$(mktemp -d)"

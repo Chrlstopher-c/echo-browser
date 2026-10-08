@@ -2,10 +2,12 @@
 //! - chaque service worker d'extension qui demarre est mis en pause, arrete juste avant son premier script (`chrome`
 //!   n'existe qu'a ce moment-la), recoit `worker.js` et la liste des onglets, puis repart ; on s'en detache aussitot,
 //!   un debogueur attache l'empecherait de se mettre en veille ;
-//! - a chaque changement d'onglets, les service workers eveilles recoivent la nouvelle liste (attache, envoi, detache) ;
+//! - a chaque changement d'onglets, les service workers eveilles recoivent la nouvelle liste (attache, envoi,
+//!   detache) ;
 //! - une extension qui ecoute les evenements d'onglets et dort est reveillee quand les onglets de son profil changent,
 //!   comme Chrome le fait ; a son reveil elle recoit l'etat vu avant la veille puis l'actuel, donc les changements
-//!   faits entre-temps (un onglet ferme pendant la veille n'est pas annonce : son identifiant est perdu avec le worker).
+//!   faits entre-temps (un onglet ferme pendant la veille n'est pas annonce : son identifiant est perdu avec le
+//!   worker).
 //!
 //! Seules les extensions qui voient deja les onglets (`tabs` ou acces a tous les sites) sont servies, et chacune ne
 //! recoit que les onglets de son profil (contexte Chromium).
@@ -125,29 +127,41 @@ fn run(rx: &Receiver<Update>, state: &mut State) -> anyhow::Result<()> {
         match socket.read() {
             Ok(Message::Text(text)) => handle(&mut socket, state, &text)?,
             Ok(_) => {}
-            Err(tungstenite::Error::Io(e)) if matches!(e.kind(), std::io::ErrorKind::WouldBlock | std::io::ErrorKind::TimedOut) => {}
+            Err(tungstenite::Error::Io(e))
+                if matches!(e.kind(), std::io::ErrorKind::WouldBlock | std::io::ErrorKind::TimedOut) => {}
             Err(err) => return Err(err.into()),
         }
-        while let Ok(update) = rx.try_recv() {
-            state.tabs = update.tabs;
-            if let Some(allowed) = update.allowed {
-                state.allowed = allowed;
-            }
-            state.dirty = true;
-        }
-        if state.dirty {
-            learn_contexts(state);
-        }
+        take_updates(rx, state);
         if state.dirty && last_push.elapsed() >= PUSH_EVERY {
-            state.dirty = false;
             last_push = Instant::now();
-            for target in state.workers.keys() {
-                send_cmd(&mut socket, None, "Target.attachToTarget", json!({"targetId": target, "flatten": true}))?;
-            }
-            wake_sleepers(&mut socket, state)?;
+            push(&mut socket, state)?;
         }
         run_probes(&mut socket, state)?;
     }
+}
+
+/// Recoit les derniers etats d'onglets envoyes par le fil de l'interface.
+fn take_updates(rx: &Receiver<Update>, state: &mut State) {
+    while let Ok(update) = rx.try_recv() {
+        state.tabs = update.tabs;
+        if let Some(allowed) = update.allowed {
+            state.allowed = allowed;
+        }
+        state.dirty = true;
+    }
+    if state.dirty {
+        learn_contexts(state);
+    }
+}
+
+/// Les onglets ont change : les service workers eveilles recoivent la liste, ceux qui dorment et ecoutent sont
+/// reveilles.
+fn push(socket: &mut Socket, state: &mut State) -> anyhow::Result<()> {
+    state.dirty = false;
+    for target in state.workers.keys() {
+        send_cmd(socket, None, "Target.attachToTarget", json!({"targetId": target, "flatten": true}))?;
+    }
+    wake_sleepers(socket, state)
 }
 
 fn send_cmd(socket: &mut Socket, session: Option<&str>, method: &str, params: Value) -> anyhow::Result<i64> {
@@ -194,20 +208,25 @@ fn handle(socket: &mut Socket, state: &mut State, text: &str) -> anyhow::Result<
             state.pages.remove(target);
             state.workers.remove(target);
         }
-        Some("Target.attachedToTarget") if params["targetInfo"]["type"] == "page" => stop_workers_in(socket, state, params)?,
-        Some("Target.attachedToTarget") => attached(socket, state, params)?,
-        Some("Debugger.paused") => {
-            let session = msg["sessionId"].as_str().unwrap_or_default().to_string();
-            if let Some(key) = state.starting.remove(&session) {
-                inject(socket, state, &session, &key, true)?;
-                send_cmd(socket, Some(&session), "Debugger.disable", json!({}))?;
-                finish(socket, state, &session, "Debugger.resume", json!({}))?;
-                if let Some(target) = state.workers.iter().find(|(_, k)| **k == key).map(|(t, _)| t.clone()) {
-                    state.probes.push((Instant::now() + PROBE_AFTER, target));
-                }
-            }
+        Some("Target.attachedToTarget") if params["targetInfo"]["type"] == "page" => {
+            stop_workers_in(socket, state, params)?
         }
+        Some("Target.attachedToTarget") => attached(socket, state, params)?,
+        Some("Debugger.paused") => paused(socket, state, msg["sessionId"].as_str().unwrap_or_default())?,
         _ => {}
+    }
+    Ok(())
+}
+
+/// Un service worker servi est arrete avant son premier script : on lui pose les onglets, on le relance, et on le
+/// sondera une fois son script passe (ecoute-t-il les onglets ?).
+fn paused(socket: &mut Socket, state: &mut State, session: &str) -> anyhow::Result<()> {
+    let Some(key) = state.starting.remove(session) else { return Ok(()) };
+    inject(socket, state, session, &key, true)?;
+    send_cmd(socket, Some(session), "Debugger.disable", json!({}))?;
+    finish(socket, state, session, "Debugger.resume", json!({}))?;
+    if let Some(target) = state.workers.iter().find(|(_, k)| **k == key).map(|(t, _)| t.clone()) {
+        state.probes.push((Instant::now() + PROBE_AFTER, target));
     }
     Ok(())
 }

@@ -19,6 +19,8 @@ if [ ! -f "$CEF_PATH/libcef.so" ]; then
 fi
 
 PROFILE="${1:-release}"
+[ $# -gt 0 ] && shift
+# Le reste est passe au navigateur : pages ou fichiers a ouvrir (`./start.sh release ~/doc.pdf`).
 BINARY="target/$PROFILE/echo-browser"
 if [ ! -x "$BINARY" ]; then
   echo "binaire absent : cargo build -p echo-shell --$PROFILE" >&2
@@ -32,7 +34,7 @@ mkdir -p "$RUN_DIR"
 # le lanceur, pas le navigateur, et stop.sh tuerait un processus deja mort. L'enfant
 # inscrit donc lui-meme son identifiant, juste avant de se remplacer par le binaire.
 export ECHO_RUN_DIR_RESOLVED="$(cd "$RUN_DIR" && pwd)"
-setsid bash -c 'echo $$ > "$ECHO_RUN_DIR_RESOLVED/browser.pid"; exec "$0"' "$BINARY" >> "$RUN_DIR/browser.log" 2>&1 < /dev/null &
+setsid bash -c 'echo $$ > "$ECHO_RUN_DIR_RESOLVED/browser.pid"; exec "$0" "$@"' "$BINARY" "$@" >> "$RUN_DIR/browser.log" 2>&1 < /dev/null &
 for _ in $(seq 1 40); do
   [ -s "$RUN_DIR/browser.pid" ] && break
   sleep 0.05

@@ -38,10 +38,11 @@ Type=Application
 Name=Echo
 GenericName=Navigateur web
 Comment=Navigateur rapide et économe
-Exec=$dest/echo-browser.sh
+Exec=$dest/echo-browser.sh %U
 Icon=echo-browser
 StartupWMClass=echo-browser
 Categories=Network;WebBrowser;
+MimeType=text/html;application/xhtml+xml;x-scheme-handler/http;x-scheme-handler/https;application/pdf;image/png;image/jpeg;image/gif;image/webp;image/svg+xml;text/plain;inode/directory;
 Terminal=false
 DESKTOP
 command -v update-desktop-database >/dev/null && update-desktop-database "$apps" 2>/dev/null || true

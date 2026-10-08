@@ -401,6 +401,11 @@ pub fn install_extension_from_store(page: &str) {
 const PAGES_URL: &str = "echo://ui/pages.html";
 
 /// Ouvre la page demandee, ou revient sur l'onglet qui la montre deja (dans le profil courant).
+/// Ouvre une page pleine largeur d'Echo (raccourcis : Ctrl+H, Ctrl+J).
+pub(crate) fn open_page_by_name(page: &str) {
+    open_page(page);
+}
+
 fn open_page(page: &str) {
     if !matches!(page, "reglages" | "bibliotheque" | "extensions" | "bienvenue" | "admin") {
         return;

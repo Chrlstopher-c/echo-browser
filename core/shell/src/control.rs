@@ -133,6 +133,7 @@ fn run(job: Job) {
         Some("close") => with_id(&request, &reply, crate::bridge::close_tab),
         Some("sleep") => with_id(&request, &reply, crate::bridge::sleep_tab),
         Some("click") => click(&request, &reply),
+        Some("key") => key(&request, &reply),
         Some("wheel") => wheel(&request, &reply),
         Some("drag") => drag(&request, &reply),
         Some("devtools") => {
@@ -174,7 +175,7 @@ fn tabs() -> Value {
         .map(|t| {
             json!({"id": t.id, "title": t.title, "url": t.url, "active": active == Some(t.id),
                    "asleep": t.asleep, "loading": t.loading, "favicon": t.favicon, "pinned": t.pinned, "folder": t.folder,
-                   "container": t.container, "space": t.space, "keepAwake": t.keep_awake})
+                   "container": t.container, "space": t.space, "keepAwake": t.keep_awake, "zoom": t.zoom})
         })
         .collect();
     json!({"ok": true, "tabs": list})
@@ -226,6 +227,40 @@ fn click(request: &Value, reply: &Sender<Value>) {
     host.send_mouse_move_event(Some(&event), 0);
     host.send_mouse_click_event(Some(&event), button, 0, 1);
     host.send_mouse_click_event(Some(&event), button, 1, 1);
+    let _ = reply.send(json!({"ok": true}));
+}
+
+/// Frappe simulee dans la page (ou la barre avec `target: chrome`) : `code` (touche Windows), `ch` (caractere tape,
+/// facultatif) et `mods` (`ctrl`, `shift`, `alt`). Passe par le meme chemin qu'une vraie frappe, raccourcis compris.
+fn key(request: &Value, reply: &Sender<Value>) {
+    use cef::{ImplBrowser, ImplBrowserHost, KeyEvent, KeyEventType};
+    let code = request.get("code").and_then(Value::as_i64).and_then(|v| i32::try_from(v).ok()).unwrap_or(0);
+    let ch = request.get("ch").and_then(Value::as_str).and_then(|s| s.encode_utf16().next()).unwrap_or(0);
+    let mods = request.get("mods").and_then(Value::as_array).map(|m| {
+        m.iter().filter_map(Value::as_str).fold(0u32, |all, name| {
+            all | match name { "shift" => 1 << 1, "ctrl" => 1 << 2, "alt" => 1 << 3, _ => 0 }
+        })
+    });
+    let browser = if request.get("target").and_then(Value::as_str) == Some("chrome") {
+        crate::session::with(|s| s.chrome.as_ref().and_then(|view| view.browser())).flatten()
+    } else {
+        crate::session::with(|s| s.tabs.active().and_then(|tab| tab.browser())).flatten()
+    };
+    let Some(host) = browser.and_then(|b| b.host()) else { return fail(reply, "aucune page active") };
+    for type_ in [KeyEventType::RAWKEYDOWN, KeyEventType::KEYUP] {
+        let event = KeyEvent {
+            size: std::mem::size_of::<cef::sys::_cef_key_event_t>(),
+            type_,
+            modifiers: mods.unwrap_or(0),
+            windows_key_code: code,
+            native_key_code: 0,
+            is_system_key: 0,
+            character: ch,
+            unmodified_character: ch,
+            focus_on_editable_field: 0,
+        };
+        host.send_key_event(Some(&event));
+    }
     let _ = reply.send(json!({"ok": true}));
 }
 

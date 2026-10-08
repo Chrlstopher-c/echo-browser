@@ -30,3 +30,4 @@ image = { version = "0.25", default-features = false, features = ["png", "jpeg",
 tungstenite = "0.24"
 zip = { version = "6", default-features = false, features = ["deflate"] }
 sha2 = "0.10"
+rfd = { version = "0.17", default-features = false, features = ["xdg-portal"] }

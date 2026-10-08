@@ -148,7 +148,10 @@ fn restore_or_open() {
             Some(snapshot) => (snapshot, false),
             None => return open_first_page(),
         },
-        None => return crate::bridge::open_tab(&home_url()),
+        None => {
+            crate::bridge::open_tab(&home_url());
+            return open_requested();
+        }
     };
     // Les profils des conteneurs s'initialisent de facon asynchrone : on les lance tous des maintenant.
     for container in snapshot.tabs.iter().filter_map(|tab| tab.container.as_deref()) {
@@ -185,7 +188,16 @@ fn restore_or_open() {
     if let Some(id) = restored {
         crate::bridge::select_tab(id);
     }
+    open_requested();
     crate::bridge::publish_tabs();
+}
+
+/// Pages demandees au lancement (`echo-browser fichier…`), ouvertes par-dessus la session reprise.
+fn open_requested() {
+    let (first, others) = crate::launch::pending();
+    for url in first.into_iter().chain(others) {
+        crate::bridge::open_tab(&url);
+    }
 }
 
 /// Prepare le bouclier. Le chargement des listes se fait a cote du demarrage : le navigateur
@@ -226,7 +238,12 @@ fn open_first_page() {
     })
     .unwrap_or(true);
     let welcome = std::env::var_os("ECHO_NO_WELCOME").is_none() && !seen;
-    crate::bridge::open_tab(&if welcome { "echo://ui/pages.html#bienvenue".to_string() } else { home_url() });
+    let (first, others) = crate::launch::pending();
+    let start = first.unwrap_or_else(|| if welcome { "echo://ui/pages.html#bienvenue".to_string() } else { home_url() });
+    crate::bridge::open_tab(&start);
+    for url in others {
+        crate::bridge::open_tab(&url);
+    }
 }
 
 fn startup_url() -> String {
