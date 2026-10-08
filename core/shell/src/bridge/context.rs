@@ -37,6 +37,7 @@ pub fn open(click: Click, x: i32, y: i32) {
         hidden_here: crate::page_memory::active_has_hidden(),
         watched: crate::watch::active_watched(),
         forms: crate::forms::names(),
+        reading: crate::reader::active_reading(),
     };
     let target = menu::build(&click, facts);
     let (width, height) = menu::size_of(&target);
@@ -105,6 +106,7 @@ pub fn run(action: MenuItemKind) {
         MenuItemKind::FillForm1 => crate::forms::fill(0),
         MenuItemKind::FillForm2 => crate::forms::fill(1),
         MenuItemKind::FillForm3 => crate::forms::fill(2),
+        MenuItemKind::Reader => crate::reader::toggle_active(),
         MenuItemKind::ManageForms => super::open_page_by_name("reglages"),
         MenuItemKind::UnwatchPage => crate::watch::unwatch_active(),
         MenuItemKind::Bookmark => {

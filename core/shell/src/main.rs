@@ -34,6 +34,7 @@ mod page_state;
 mod permissions;
 mod persist;
 mod profiles;
+mod reader;
 mod presence;
 mod selftest;
 mod restart;

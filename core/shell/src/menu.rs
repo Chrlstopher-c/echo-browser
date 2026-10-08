@@ -29,6 +29,8 @@ pub struct PageFacts {
     pub watched: bool,
     /// Noms des fiches de formulaire proposees.
     pub forms: Vec<String>,
+    /// La page est affichee en mode lecture.
+    pub reading: bool,
 }
 
 pub fn build(click: &Click, facts: PageFacts) -> ContextTarget {
@@ -64,6 +66,8 @@ fn page_tools(click: &Click, facts: &PageFacts) -> Vec<MenuEntry> {
         tools.push(MenuEntry::new(MenuItemKind::UnhideElements, "Réafficher les éléments masqués"));
     }
     if click.page.starts_with("http") {
+        let label = if facts.reading { "Quitter la lecture" } else { "Lire en mode lecture" };
+        tools.push(MenuEntry::new(MenuItemKind::Reader, label));
         tools.push(if facts.watched {
             MenuEntry::new(MenuItemKind::UnwatchPage, "Ne plus surveiller cette page")
         } else {

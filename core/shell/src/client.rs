@@ -158,6 +158,7 @@ wrap_load_handler! {
                     0,
                 );
                 if let Some(browser) = browser.as_deref() {
+                    crate::reader::loaded(browser);
                     crate::watch::loaded(browser, &url);
                 }
                 let browser_id = browser.as_ref().map(|b| b.identifier());
@@ -242,6 +243,12 @@ wrap_display_handler! {
             if let Some(fingerprint) = message.strip_prefix(crate::page_memory::FINGERPRINT_MARKER) {
                 if let Some(browser) = browser {
                     crate::page_memory::announced(browser, fingerprint);
+                }
+                return 1;
+            }
+            if let Some(state) = message.strip_prefix(crate::reader::MARKER) {
+                if let Some(browser) = browser {
+                    crate::reader::shown(browser, state);
                 }
                 return 1;
             }

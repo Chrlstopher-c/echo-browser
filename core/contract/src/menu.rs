@@ -88,6 +88,8 @@ pub enum MenuItemKind {
     FillForm3,
     /// Aucune fiche : ouvre les reglages pour en creer une.
     ManageForms,
+    /// Entrer en mode lecture, ou en sortir.
+    Reader,
     OpenLinkInTab,
     OpenLinkInBackground,
     CopyLink,

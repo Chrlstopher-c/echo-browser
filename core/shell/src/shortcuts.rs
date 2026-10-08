@@ -60,6 +60,7 @@ pub enum Action {
     Forward,
     Zoom(ZoomStep),
     Help,
+    Reader,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -87,6 +88,9 @@ pub fn resolve(code: i32, unmodified: u16, modifiers: u32) -> Option<Action> {
     let alt = modifiers & MOD_ALT != 0;
     if let Some(action) = zoom(code, unmodified, ctrl && !alt) {
         return Some(action);
+    }
+    if let (true, true, Some('r')) = (ctrl, alt, letter(code, unmodified)) {
+        return Some(Action::Reader);
     }
     if let (true, false, Some(l)) = (ctrl, alt, letter(code, unmodified)) {
         return ctrl_letter(l, shift);
@@ -156,6 +160,8 @@ mod tests {
         assert_eq!(resolve(0x4F, u16::from(b'o'), CTRL), Some(Action::OpenFile));
         assert_eq!(resolve(0x54, 0, CTRL | MOD_SHIFT), Some(Action::ReopenTab), "sans caractere : le code");
         assert_eq!(resolve(0x57, 23, CTRL), Some(Action::CloseTab), "caractere de controle Ctrl+W");
+        assert_eq!(resolve(0x52, u16::from(b'r'), CTRL | MOD_ALT), Some(Action::Reader));
+        assert_eq!(resolve(0x4B, u16::from(b'k'), CTRL), Some(Action::FocusAddress));
     }
 
     #[test]

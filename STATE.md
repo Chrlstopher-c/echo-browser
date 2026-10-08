@@ -59,6 +59,22 @@
   Une page déjà ouverte garde l'ancienne teinte dans ses angles jusqu'au rechargement.
 
 
+## E12 — palette, formulaires, lecture (autonomie, 08/10 après-midi)
+
+- **Palette d'adresse** (`ui/src/address/use-suggestions.ts`, `suggest::for_address`) : en tapant, onglets ouverts,
+  favoris, historique sous l'adresse ; ↓/↑ Entrée ; un onglet ouvert est rejoint. Ctrl+K = Ctrl+L, qui donnent
+  désormais le vrai focus clavier à la barre (avant : la frappe restait dans la page). Test `tools/test-palette.sh`.
+- Bug corrigé au passage : le titre d'une page était écrit sur la visite précédente dans l'historique (le titre arrive
+  avant l'adresse) — `set_tab_title` lit l'adresse dans la trame.
+- **Formulaires** (`core/shell/src/forms/`, `ui/src/forms/`) : fiches dans le réglage synchronisé `forms.cards`
+  (chiffré avec le reste), Réglages → Formulaires ; clic droit dans un champ → « Remplir : fiche » (3 au menu) ;
+  seuls les champs vides reconnus (autocomplete, nom, libellé) ; jamais mot de passe, carte, IBAN. `tools/test-forms.sh`.
+- **Mode lecture** (`core/shell/src/reader/`, Readability 0.6.0 de Mozilla, Apache-2.0, embarqué) : clic droit
+  « Lire en mode lecture » / Ctrl+Alt+R ; vue construite DANS la page (jamais dans une page echo://, que le contenu
+  d'un site ne doit pas toucher) ; sortie = rechargement. Moins de 250 caractères = pas d'article. `tools/test-reader.sh`.
+- Banc : le sway headless n'a pas de clavier (seat sans capacité) — aucune fenêtre n'a le focus système ; les tests
+  qui dépendent de focus/blur React simulent `focusin`/`focusout`.
+
 ## Découvrabilité et profils (retour de Chris, 08/10 matin)
 
 - Page **Aide** (`ui/src/help`, bouton « ? » en bas de la barre, F1) : chaque fonction, où la trouver, bouton qui y

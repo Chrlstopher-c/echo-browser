@@ -145,3 +145,4 @@ risque dans un projet open source.
   clair/sombre, sans publicité ni menus ; « Quitter la lecture ». Critère : page de test avec pub et menu → seuls
   titre et paragraphes restent.
 - Chaque story : point d'entrée visible + ligne dans l'Aide.
+- Fait le 08/10 : S1 (`test-palette.sh`), S2 (`test-forms.sh`), S3 (`test-reader.sh`), captures clair/sombre.

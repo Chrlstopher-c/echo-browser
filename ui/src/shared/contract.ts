@@ -348,6 +348,7 @@ export type MenuItemKind =
   | 'fillForm2'
   | 'fillForm3'
   | 'manageForms'
+  | 'reader'
   | 'unwatchPage'
 
 export interface MenuEntry {

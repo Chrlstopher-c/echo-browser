@@ -58,6 +58,8 @@ export const HELP: HelpSection[] = [
     id: 'pages', title: 'Clic droit dans une page',
     intro: 'Des outils qui agissent sur la page en cours.',
     topics: [
+      { title: 'Mode lecture', how: 'Clic droit dans un article → « Lire en mode lecture » (Ctrl+Alt+R) : le texte seul, '
+        + 'sans publicité ni menus, au thème d’Echo. « Quitter la lecture » rend la page.' },
       { title: 'Remplir un formulaire', how: 'Clic droit dans un champ → « Remplir : fiche ». Les fiches (nom, e-mail, '
         + 'adresse…) se créent dans Réglages → Formulaires ; jamais de mot de passe ni de carte.' },
       { title: 'Masquer cet élément', how: 'Clic droit sur une bannière ou un bloc gênant : masqué sur toutes les pages '
@@ -101,7 +103,7 @@ export const HELP: HelpSection[] = [
 export const SHORTCUTS: Array<[string, string]> = [
   ['Ctrl+T', 'Nouvel onglet'], ['Ctrl+W', 'Fermer l’onglet'], ['Ctrl+Maj+T', 'Rouvrir l’onglet fermé'],
   ['Ctrl+Tab / Ctrl+Page↓', 'Onglet suivant'], ['Ctrl+Maj+Tab / Ctrl+Page↑', 'Onglet précédent'],
-  ['Ctrl+1 … 9', 'Aller à l’onglet n'], ['Ctrl+L / Ctrl+K', 'Adresse et palette'], ['Ctrl+O', 'Ouvrir un fichier'],
+  ['Ctrl+1 … 9', 'Aller à l’onglet n'], ['Ctrl+L / Ctrl+K', 'Adresse et palette'], ['Ctrl+O', 'Ouvrir un fichier'], ['Ctrl+Alt+R', 'Mode lecture'],
   ['Ctrl+D', 'Ajouter aux favoris'], ['Ctrl+H / Ctrl+J', 'Bibliothèque (historique, fichiers)'],
   ['Ctrl+P', 'Imprimer'], ['Ctrl+S', 'Enregistrer la page'], ['Ctrl+U', 'Code source'],
   ['Ctrl+R / F5', 'Recharger'], ['Ctrl+Maj+R', 'Recharger sans cache'], ['Alt+← / Alt+→', 'Précédent / suivant'],

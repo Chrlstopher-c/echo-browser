@@ -64,6 +64,7 @@ pub fn perform(action: crate::shortcuts::Action) {
             if bypass_cache { browser.reload_ignore_cache() } else { browser.reload() }
         }),
         Action::FocusAddress => focus_address(),
+        Action::Reader => crate::reader::toggle_active(),
         Action::DismissOverlay => super::dismiss_overlays(),
         Action::ToggleDevTools => super::context::toggle_devtools(),
         // F11 ne fait que sortir du plein ecran : c'est la page qui y entre, pas nous.

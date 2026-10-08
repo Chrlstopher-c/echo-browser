@@ -95,11 +95,11 @@ de recherche, et en dessous les dernières adresses consultées, les onglets dé
 - [x] Page locale `ui/public/nouvel-onglet.*` (06/10) : champ centré, actif au clavier, sans framework ;
       c'est la page d'accueil (`search::HOME`) — gain mesuré : repos 536 → 460 Mo, et chaque nouvel onglet ne
       coûte plus un rendu Google (~100 Mo). Moteur de recherche dupliqué dans le JS : à rapprocher de `search.rs`
-- [ ] Palette : suggestions ci-dessous (nécessite un pont page → cœur pour lire historique/onglets)
-- [ ] Suggestions : historique récent, onglets ouverts, presse-papiers, favoris
+- [x] Palette : suggestions sous la barre d'adresse (08/10, E12 S1) — reste : la même dans la page nouvel onglet
+- [x] Suggestions : historique, onglets ouverts, favoris (presse-papiers non : lecture silencieuse = fuite)
 - [ ] Chaque ligne porte son favicon et son action à droite
-- [ ] Navigation entière au clavier, entrée pour valider, échap pour fermer
-- [ ] Même palette sur Ctrl+L et Ctrl+K
+- [x] Navigation entière au clavier, entrée pour valider, échap pour fermer
+- [x] Même palette sur Ctrl+L et Ctrl+K
 
 ## 4. Les bulles d'aide
 
@@ -197,7 +197,7 @@ debout à la première requête.
 - [ ] Codecs H.264/AAC : construire/obtenir un CEF avec codecs propriétaires (Twitch, Netflix, Spotify)
 - [ ] Mise en sourdine d'un onglet
 - [ ] Les extensions déclarées en ligne de commande demandent encore une relance
-- [ ] Mode lecture
+- [x] Mode lecture (08/10, E12 S3)
 - [x] Permissions : caméra, micro, notifications, position, presse-papiers (06/10)
 - [ ] Écran de gestion des permissions retenues par site (aujourd'hui retenues sans pouvoir les revoir ; `permissions::forget_site` existe)
 - [ ] Empreinte de version sur les fichiers servis à l'interface

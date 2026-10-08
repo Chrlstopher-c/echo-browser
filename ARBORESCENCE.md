@@ -119,6 +119,8 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `core/shell/src/files.rs` — ouvrir des fichiers et des dossiers locaux dans le navigateur — Ctrl+O (dialogue du systeme,
 - `core/shell/src/filtering.rs` — soumettre chaque requete du navigateur au bouclier, et appliquer sa decision.
 - `core/shell/src/flags.rs` — les drapeaux Chromium imposes au demarrage, et pourquoi chacun est la.
+- `core/shell/src/forms/fill.js`
+- `core/shell/src/forms/mod.rs` — les fiches de formulaire (identite, adresse) — lues dans le reglage synchronise `forms.cards`,
 - `core/shell/src/identity.rs` — ce que le navigateur declare de lui-meme aux sites qu'il visite.
 - `core/shell/src/injection/filter.rs` — glisser le traitement du bouclier dans le flux HTML de la page,
 - `core/shell/src/injection/mod.rs` — appliquer dans la page ce que le blocage reseau ne peut pas faire —
@@ -200,6 +202,7 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `tools/test-extension-query.sh`
 - `tools/test-extension-tabs.sh`
 - `tools/test-folders.sh`
+- `tools/test-forms.sh`
 - `tools/test-help-profiles.sh`
 - `tools/test-hide-element.sh`
 - `tools/test-inspect.sh`
@@ -211,6 +214,7 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `tools/test-never-sleep.sh`
 - `tools/test-occlusion.sh`
 - `tools/test-page-state.sh`
+- `tools/test-palette.sh`
 - `tools/test-popup.sh`
 - `tools/test-profiles.sh`
 - `tools/test-routines.sh`
@@ -258,8 +262,10 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `ui/src/address/load-progress.tsx` — trait de progression au bas du champ d'adresse. Il suit l'avancement reel ;
 - `ui/src/address/reload-button.tsx` — bouton recharger qui devient arreter pendant le chargement — l'icone tourne pour
 - `ui/src/address/security-mark.tsx` — indicateur de securite du champ d'adresse, d'apres l'etat que le coeur connait.
+- `ui/src/address/suggestion-list.tsx` — la liste de suggestions sous l'adresse — onglets ouverts, favoris, historique ; la ligne choisie au
 - `ui/src/address/top-controls.tsx` — rangee de controles compacts — precedent, suivant, rechargement, repli de la barre.
 - `ui/src/address/use-address-field.ts` — etat du champ d'adresse — brouillon de saisie, focus, selection, validation.
+- `ui/src/address/use-suggestions.ts` — suggestions de l'adresse pendant la saisie — demande au coeur (apres une courte pause de frappe),
 - `ui/src/admin/admin-accounts.tsx` — la liste des comptes de l'administration — e-mail, dates, version, taille du coffre, sessions — et
 - `ui/src/admin/admin-charts.tsx` — les visuels du tableau de bord — tuiles chiffrees, barres par jour sur 30 jours, jauges par nom.
 - `ui/src/admin/admin-data.ts` — lire le tableau de bord rendu par le service (forme libre cote contrat) en types surs, sans
@@ -281,6 +287,8 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `ui/src/extensions/extensions-sheet.tsx` — feuille des extensions — installation, inventaire, gestion complete.
 - `ui/src/extensions/install-field.tsx` — champ d'installation d'une extension — saisie, refus lisible, ouverture du catalogue.
 - `ui/src/extensions/use-extensions.ts` — commandes du panneau des extensions — installation par le catalogue, bascule,
+- `ui/src/forms/form-cards.ts` — les fiches de formulaire (identite, contact, adresse) — lues dans le reglage synchronise
+- `ui/src/forms/forms-section.tsx` — Reglages → Formulaires — les fiches que le clic droit « Remplir : … » verse dans les champs vides
 - `ui/src/help/discover-strip.tsx` — bandeau « a decouvrir », une seule fois par machine : ou trouver l'Aide, la securite du site et
 - `ui/src/help/help-content.ts` — le contenu de l'Aide — ce qu'Echo sait faire, ou le trouver, et un bouton qui y mene. Les textes
 - `ui/src/help/help-page.tsx` — page Aide — ce qu'Echo sait faire, ou le trouver (avec un bouton qui y mene), et les raccourcis.
@@ -326,7 +334,7 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `ui/src/shared/design/confirm-strip.tsx` — confirmation en place d'une action destructrice — pas de boite modale, la ligne
 - `ui/src/shared/design/empty-state.tsx` — etat vide d'un panneau — pas d'illustration, une phrase et un motif discret.
 - `ui/src/shared/design/icon-button.tsx` — bouton icone — unique forme cliquable des rangees de controle de la barre.
-- `ui/src/shared/design/icons-page.tsx` — icones des outils de page — activite reseau, masquer et reafficher un element. Meme trace que
+- `ui/src/shared/design/icons-page.tsx` — icones des outils de page — activite reseau, masquer et reafficher un element, lecture. Meme
 - `ui/src/shared/design/icons.tsx` — jeu d'icones du chrome. Traits de 1.5px, grille 16, aucun remplissage sauf mention.
 - `ui/src/shared/design/list-row.tsx` — ligne standard d'une liste de feuille — icone, contenu, actions au survol.
 - `ui/src/shared/design/motion.ts` — rythme du mouvement — une seule courbe, des durees courtes, jamais de rebond.
