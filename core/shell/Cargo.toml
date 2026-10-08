@@ -11,6 +11,7 @@ path = "src/main.rs"
 
 [dependencies]
 cef = "152"
+echo-account.workspace = true
 echo-contract.workspace = true
 echo-shield.workspace = true
 echo-extensions.workspace = true

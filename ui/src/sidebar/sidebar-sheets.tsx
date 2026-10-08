@@ -27,6 +27,8 @@ function SheetBody({ model }: { model: SidebarModel }): ReactElement | null {
         onCodecs={(action) => core.send(videoRequest(action))}
         update={core.state.update}
         onCheckUpdate={() => core.send({ kind: 'checkForUpdates' })}
+        account={core.state.account}
+        send={core.send}
         onDevTools={model.tabs.devTools} />
     case null:
       return null

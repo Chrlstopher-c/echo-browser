@@ -39,7 +39,9 @@ strip --strip-unneeded "$STAGE/cef/libcef.so" "$STAGE/cef/libffmpeg.so"
 
 # Marqueur de l'archive : sa version, et le depot ou chercher les suivantes (mise a jour automatique).
 REPO="$(git remote get-url origin | sed -E 's#(git@github.com:|https://github.com/)##; s#\.git$##')"
-printf '{"version":"%s","repo":"%s"}\n' "$VERSION" "$REPO" > "$STAGE/release.json"
+# Adresse du service de compte : dans .env.local (hors depot), jamais dans un fichier suivi.
+SYNC="$(sed -n 's/^ECHO_SYNC_URL=//p' .env.local 2>/dev/null | tail -1)"
+printf '{"version":"%s","repo":"%s","sync":"%s"}\n' "$VERSION" "$REPO" "$SYNC" > "$STAGE/release.json"
 
 cat > "$STAGE/echo-browser.sh" <<'EOF'
 #!/usr/bin/env bash

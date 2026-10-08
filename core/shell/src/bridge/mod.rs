@@ -13,7 +13,7 @@ pub mod library;
 pub mod publish;
 
 pub use extensions::publish_extensions;
-pub use library::publish_permissions;
+pub use library::{publish_bookmarks, publish_permissions, publish_settings};
 pub use publish::{
     reset_tab_scroll, set_tab_dirty, set_tab_media, set_tab_favicon, set_tab_scroll, take_pending_scroll,
     publish_filter_lists, publish_initial_state, publish_shield, publish_tab, publish_tabs,
@@ -210,6 +210,9 @@ fn apply(request: UiRequest) {
         UiRequest::RemoveVideoCodecs => crate::codecs::remove(),
         UiRequest::DismissVideoCodecs { forever } => crate::codecs::dismiss(forever),
         UiRequest::CheckForUpdates => crate::update::check(true),
+        UiRequest::AccountSignIn { email, password, create } => crate::account::sign_in(email, password, create),
+        UiRequest::AccountSignOut => crate::account::sign_out(),
+        UiRequest::AccountSync => crate::account::sync_now(),
 
         UiRequest::AddBookmark { id } => library::add_bookmark(id),
         UiRequest::RemoveBookmark { url } => library::remove_bookmark(&url),
@@ -354,7 +357,7 @@ const PAGES_URL: &str = "echo://ui/pages.html";
 
 /// Ouvre la page demandee, ou revient sur l'onglet qui la montre deja (dans le profil courant).
 fn open_page(page: &str) {
-    if !matches!(page, "reglages" | "bibliotheque" | "extensions") {
+    if !matches!(page, "reglages" | "bibliotheque" | "extensions" | "bienvenue") {
         return;
     }
     let url = format!("{PAGES_URL}#{page}");

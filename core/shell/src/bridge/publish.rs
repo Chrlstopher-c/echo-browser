@@ -20,6 +20,7 @@ pub fn publish_initial_state() {
     library::publish_permissions();
     crate::codecs::publish();
     crate::update::publish();
+    crate::account::publish();
     publish_filter_lists();
 }
 

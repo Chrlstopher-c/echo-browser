@@ -4,6 +4,7 @@
 //! se relance lui-meme avec `--type=`. Tout ce qui precede `execute_process` est donc
 //! execute une fois par processus.
 
+mod account;
 mod anchor;
 mod anchor_watch;
 mod app;

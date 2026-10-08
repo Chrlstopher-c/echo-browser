@@ -23,6 +23,7 @@ Chaque dossier de `core/` correspond à une préoccupation du produit, pas à un
 | `library/` | Favoris, historique, téléchargements, réglages, permissions (SQLite) | Ne parle jamais à Chromium |
 | `extensions/` | Inventaire et installation des extensions Chrome | Ne dessine rien |
 | `terminal/` | Pseudo-terminal qui survit à la page (tampon borné, reprise par position) | Ne connaît ni Chromium ni l'interface |
+| `account/` | Compte Echo : chiffrement de bout en bout, appels au service, fusion à trois voies, passe de synchro | Ne connaît ni Chromium ni la session (reçoit et rend des valeurs) |
 
 `shield` est délibérément ignorant de CEF : il se teste seul
 (`cargo run -p echo-shield --example rapport --release`) et pourrait servir ailleurs.
@@ -68,3 +69,14 @@ Chaque dossier de `core/` correspond à une préoccupation du produit, pas à un
   prend toute la fenêtre. Une vue de largeur nulle sort de la disposition (largeur ≥ 1).
 - **Hors du cœur** : `mcp/` (serveur MCP Python, parle à la prise Unix), `ui/public/` (pages statiques servies sous `echo://`).
 - **Aucun test ne touche au navigateur de l'utilisateur** : instances de test isolées (`ECHO_RUN_DIR`, `ECHO_CONTROL_NAME`).
+
+## Frontières ajoutées le 08/10
+
+- **`compte/`** (hors du cœur) : service de compte Echo, Cloudflare Worker + D1 (TypeScript, pnpm, wrangler). Il ne voit
+  jamais une donnée lisible : il garde une empreinte de la clé d'accès et des blobs chiffrés. Son adresse et l'identifiant
+  de la base ne sont JAMAIS dans le dépôt (`.env.local`, `compte/wrangler.toml` ignorés ; `wrangler.toml.example` suivi).
+- **`core/account/`** ne dépend ni de CEF ni de la session : `shell/src/account/` lit les valeurs locales sur le fil de
+  l'interface, la passe réseau tourne à part, puis les écritures sont appliquées sur le fil de l'interface.
+- **Mise à jour** (`shell/src/update/`) : la bascule de version et le retour arrière vivent dans le lanceur de l'archive,
+  pas dans le binaire (un binaire cassé ne peut pas se réparer lui-même).
+

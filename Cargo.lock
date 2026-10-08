@@ -554,6 +554,7 @@ dependencies = [
  "anyhow",
  "base64 0.22.1",
  "cef",
+ "echo-account",
  "echo-contract",
  "echo-extensions",
  "echo-library",

@@ -78,6 +78,7 @@ wrap_browser_process_handler! {
             crate::extension_profiles::start();
             crate::extension_tabs::start_workers();
             crate::update::start();
+            crate::account::start();
             if std::env::var_os("ECHO_NO_ANCHOR").is_none() {
                 crate::anchor::create(client.clone().as_mut());
                 crate::anchor_watch::start();
@@ -144,7 +145,7 @@ fn restore_or_open() {
         Some(snapshot) => (snapshot, true),
         None if restore_enabled() => match crate::restart::load_last(&data_dir) {
             Some(snapshot) => (snapshot, false),
-            None => return crate::bridge::open_tab(&home_url()),
+            None => return open_first_page(),
         },
         None => return crate::bridge::open_tab(&home_url()),
     };
@@ -214,6 +215,18 @@ fn home_url() -> String {
 
 /// L'interface du navigateur. Toujours la meme : `--url=` designe la page a ouvrir
 /// dans l'onglet, pas la surface qui affiche la barre laterale.
+/// Premier lancement (aucune session) : la presentation d'Echo, tant qu'elle n'a pas ete vue ; sinon l'accueil.
+fn open_first_page() {
+    let seen = crate::session::with(|s| {
+        echo_library::settings::all(&s.library)
+            .into_iter()
+            .any(|(key, value)| key == "onboarding.done" && value == echo_library::settings::Value::Flag(true))
+    })
+    .unwrap_or(true);
+    let welcome = std::env::var_os("ECHO_NO_WELCOME").is_none() && !seen;
+    crate::bridge::open_tab(&if welcome { "echo://ui/pages.html#bienvenue".to_string() } else { home_url() });
+}
+
 fn startup_url() -> String {
     STARTUP_URL.to_string()
 }

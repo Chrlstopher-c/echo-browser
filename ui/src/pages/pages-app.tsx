@@ -15,6 +15,7 @@ import { useProfileNames } from '../spaces/use-profile-names'
 import { useContainers } from '../tabs/use-containers'
 import { usePageRoute, type PageId } from './use-page-route'
 import { usePageTheme } from './use-page-theme'
+import { WelcomePage } from './welcome-page'
 
 const PAGES: Array<{ id: PageId; label: string; icon: ReactElement }> = [
   { id: 'reglages', label: 'Réglages', icon: <IconSettings size={15} /> },
@@ -62,17 +63,25 @@ function Content({ page }: { page: PageId }): ReactElement {
         onCodecs={(action) => send(videoRequest(action))}
         update={state.update}
         onCheckUpdate={() => send({ kind: 'checkForUpdates' })}
+        account={state.account}
+        send={send}
       onDevTools={() => send({ kind: 'openDevTools', id: state.activeId ?? 0 })}
     />
   )
+}
+
+function Welcome(): ReactElement {
+  const { state, send } = useCore()
+  return <WelcomePage account={state.account} send={send} />
 }
 
 export function PagesApp(): ReactElement {
   usePageTheme()
   const [page, go] = usePageRoute()
   useEffect(() => {
-    document.title = PAGES.find((p) => p.id === page)?.label ?? 'Echo'
+    document.title = page === 'bienvenue' ? 'Bienvenue' : PAGES.find((p) => p.id === page)?.label ?? 'Echo'
   }, [page])
+  if (page === 'bienvenue') return <Welcome />
   return (
     <div className="fond-espace min-h-screen bg-shell">
       <div className="mx-auto flex max-w-4xl gap-8 px-8 py-10">

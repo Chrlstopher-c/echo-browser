@@ -110,6 +110,11 @@ export type UiRequest =
   // --- Mise a jour ---
   /** Verifie la derniere release et la prepare si elle est plus recente. */
   | { kind: 'checkForUpdates' }
+  // --- Compte Echo ---
+  /** Se connecter, ou creer le compte (`create`). Le mot de passe ne quitte pas la machine. */
+  | { kind: 'accountSignIn'; email: string; password: string; create: boolean }
+  | { kind: 'accountSignOut' }
+  | { kind: 'accountSync' }
 
 /** Ce que le coeur renvoie a l'interface. */
 export type CoreEvent =
@@ -139,6 +144,19 @@ export type CoreEvent =
   | { kind: 'permissionsChanged'; grants: PermissionGrantView[] }
   | { kind: 'videoCodecsChanged'; codecs: VideoCodecsView }
   | { kind: 'updateChanged'; update: UpdateView }
+  | { kind: 'accountChanged'; account: AccountView }
+
+/** Le compte Echo de cette machine. */
+export interface AccountView {
+  /** Un service de compte est configure. */
+  available: boolean
+  email: string | null
+  /** Connexion ou synchronisation en cours. */
+  busy: boolean
+  /** Derniere synchronisation reussie (secondes Unix). */
+  lastSync: number | null
+  error: string | null
+}
 
 /** Ou en est la mise a jour de la version installee. */
 export type UpdateStatus =

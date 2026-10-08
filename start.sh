@@ -7,6 +7,11 @@ export CEF_PATH="${CEF_PATH:-$HOME/.local/share/cef}"
 export ECHO_DATA_DIR="${ECHO_DATA_DIR:-$HOME/.local/share/echo-browser}"
 export LD_LIBRARY_PATH="${LD_LIBRARY_PATH:-}:$CEF_PATH"
 export ECHO_UI_DIR="${ECHO_UI_DIR:-$PWD/ui/dist}"
+# Adresse du service de compte Echo : dans .env.local (hors depot public).
+if [ -z "${ECHO_SYNC_URL:-}" ] && [ -f .env.local ]; then
+  ECHO_SYNC_URL="$(sed -n 's/^ECHO_SYNC_URL=//p' .env.local | tail -1)"
+  export ECHO_SYNC_URL
+fi
 
 if [ ! -f "$CEF_PATH/libcef.so" ]; then
   echo "libcef.so introuvable dans $CEF_PATH — lancer d'abord : bash tools/fetch-cef.sh" >&2

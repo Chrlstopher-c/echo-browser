@@ -138,6 +138,12 @@ pub enum UiRequest {
     // --- Mise a jour ---
     /// Verifie la derniere release et la prepare si elle est plus recente.
     CheckForUpdates,
+
+    // --- Compte Echo ---
+    /// Se connecter, ou creer le compte (`create`). Le mot de passe ne quitte pas la machine (cles derivees ici).
+    AccountSignIn { email: String, password: String, create: bool },
+    AccountSignOut,
+    AccountSync,
 }
 
 /// Ce que le coeur renvoie a l'interface.
@@ -173,6 +179,22 @@ pub enum CoreEvent {
     PermissionResolved { id: u64 },
     VideoCodecsChanged { codecs: VideoCodecsView },
     UpdateChanged { update: UpdateView },
+    AccountChanged { account: AccountView },
+}
+
+/// Le compte Echo de cette machine.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AccountView {
+    /// Un service de compte est configure.
+    pub available: bool,
+    /// Adresse du compte connecte.
+    pub email: Option<String>,
+    /// Connexion ou synchronisation en cours.
+    pub busy: bool,
+    /// Derniere synchronisation reussie (secondes Unix).
+    pub last_sync: Option<i64>,
+    pub error: Option<String>,
 }
 
 /// Ou en est la mise a jour de la version installee.

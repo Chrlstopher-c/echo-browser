@@ -60,3 +60,11 @@ Ports : sonde de présence `127.0.0.1:4330` ; port de débogage local `127.0.0.1
 
 `BRIEF.md` (le quoi) · `EPICS.md` (stories, critères exécutables) · `STATE.md` (état, décisions, pièges) ·
 `TODO.md` (backlog) · `ARCHITECTURE.md` (domaines et frontières) · `ARBORESCENCE.md` (carte des fichiers, générée).
+
+## Compte Echo (synchronisation)
+
+Le service vit dans `compte/` (Cloudflare Worker + D1, offre gratuite). Déployer le sien : `cd compte && pnpm install`,
+`cp wrangler.toml.example wrangler.toml`, `pnpm exec wrangler d1 create echo-compte` (identifiant dans wrangler.toml),
+`pnpm exec wrangler d1 execute echo-compte --remote --file schema.sql`, `pnpm exec wrangler secret put SECRET_SEL`,
+`pnpm exec wrangler deploy`, puis mettre l'adresse dans `.env.local` : `ECHO_SYNC_URL=https://…`.
+

@@ -8,7 +8,8 @@ import { SectionLabel } from '../shared/design/section-label'
 import { SpacePicker } from '../spaces/space-picker'
 import { readStoredScheme, type SpaceController } from '../spaces/use-space'
 import type { ContainerActions } from '../tabs/use-containers'
-import type { PermissionGrantView, UpdateView, VideoCodecsView } from '../shared/contract'
+import type { AccountView, PermissionGrantView, UiRequest, UpdateView, VideoCodecsView } from '../shared/contract'
+import { AccountSection } from '../account/account-section'
 import { AboutSection } from './about-section'
 import { ContainersSection } from './containers-section'
 import { ProfilesSection } from './profiles-section'
@@ -30,6 +31,8 @@ export interface SettingsSheetProps {
   onCodecs: (action: VideoAction) => void
   update: UpdateView | null
   onCheckUpdate: () => void
+  account: AccountView | null
+  send: (request: UiRequest) => void
   onDevTools: () => void
 }
 
@@ -70,9 +73,10 @@ function CoreSections({ settings }: { settings: SettingsController }): ReactElem
 
 export function SettingsSheet(props: SettingsSheetProps): ReactElement {
   const { settings, space, containers, profiles, grants, onForgetGrant, codecs, onCodecs, onDevTools } = props
-  const { update, onCheckUpdate } = props
+  const { update, onCheckUpdate, account, send } = props
   return (
     <div className="flex flex-col gap-3">
+      {account !== null && <AccountSection account={account} send={send} />}
       {space !== undefined && <AppearanceSection space={space} />}
       <ProfilesSection profiles={profiles} scheme={space?.space.scheme ?? readStoredScheme()} />
       <ContainersSection actions={containers} />

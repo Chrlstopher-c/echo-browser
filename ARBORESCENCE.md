@@ -16,6 +16,26 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `README.md`
 - `STATE.md`
 - `TODO.md`
+- `compte/.gitignore`
+- `compte/package.json`
+- `compte/pnpm-lock.yaml`
+- `compte/pnpm-workspace.yaml`
+- `compte/schema.sql`
+- `compte/src/acces.ts` — comptes et sessions. Le serveur ne voit jamais le mot de passe : il recoit une cle d'acces derivee
+- `compte/src/coffre.ts` — le coffre d'un compte — des elements par type (reglages, favoris…), chiffres sur la machine,
+- `compte/src/index.ts` — point d'entree du service de compte Echo — aiguillage des routes et conversion des refus.
+- `compte/src/outils.ts` — briques partagees du service — reponses JSON, empreintes, aleatoire, lecture des corps.
+- `compte/test/compte.test.mjs`
+- `compte/tsconfig.json`
+- `compte/wrangler.toml.example`
+- `core/account/Cargo.toml`
+- `core/account/src/api.rs` — parler au service de compte (Worker). Inscription et connexion derivent les cles ici ; seule la cle
+- `core/account/src/crypto.rs` — le chiffrement de bout en bout. Le mot de passe ne quitte jamais la machine : PBKDF2 en tire une
+- `core/account/src/lib.rs`
+- `core/account/src/merge.rs` — fusionner a trois voies (derniere version synchronisee, version locale, version du service), pour
+- `core/account/src/store.rs` — ce que la machine garde du compte — adresse, jeton, cle de chiffrement, et pour chaque type la
+- `core/account/src/sync.rs` — une passe de synchronisation. Entree : les valeurs locales de chaque type ; sortie : celles a
+- `core/account/tests/deux_machines.rs`
 - `core/contract/Cargo.toml`
 - `core/contract/src/lib.rs`
 - `core/extensions/Cargo.toml`
@@ -38,6 +58,8 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `core/library/src/settings.rs` — les reglages du navigateur, et leurs valeurs par defaut.
 - `core/library/tests/library.rs`
 - `core/shell/Cargo.toml`
+- `core/shell/src/account/local.rs`
+- `core/shell/src/account/mod.rs`
 - `core/shell/src/anchor.rs` — le point d'ancrage des extensions. Les API d'extension de Chrome (`tabs.create`,
 - `core/shell/src/anchor_watch.rs` — reperer les onglets que les extensions ouvrent dans la fenetre d'ancrage et les
 - `core/shell/src/app.rs` — le point de contact avec Chromium — drapeaux au demarrage, creation de la fenetre.
@@ -127,6 +149,7 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `tools/gen-arborescence.py`
 - `tools/package-release.sh`
 - `tools/release-installer.sh`
+- `tools/test-account-sync.sh`
 - `tools/test-codecs-install.sh`
 - `tools/test-codecs-prompt.sh`
 - `tools/test-containers.sh`
@@ -180,6 +203,8 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `ui/public/terminal.html`
 - `ui/public/terminal.js`
 - `ui/public/theme.js`
+- `ui/src/account/account-form.tsx` — formulaire du compte Echo — creer un compte ou se connecter. Le mot de passe part vers le coeur
+- `ui/src/account/account-section.tsx` — Reglages → Compte — l'etat de la synchronisation, et la connexion quand il n'y a pas de compte.
 - `ui/src/address/address-field.tsx` — champ d'adresse compact — l'hote seul au repos, l'URL complete a la saisie,
 - `ui/src/address/load-progress.tsx` — trait de progression au bas du champ d'adresse. Il suit l'avancement reel ;
 - `ui/src/address/reload-button.tsx` — bouton recharger qui devient arreter pendant le chargement — l'icone tourne pour
@@ -214,6 +239,7 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `ui/src/pages/pages-app.tsx` — les pages pleine largeur d'Echo — reglages et bibliotheque — dans un onglet, la ou la
 - `ui/src/pages/use-page-route.ts` — la section affichee, lue dans l'ancre de l'adresse (#reglages, #bibliotheque).
 - `ui/src/pages/use-page-theme.ts` — la page prend la teinte et le schema choisis dans la barre (stockage local partage),
+- `ui/src/pages/welcome-page.tsx` — presentation d'Echo au premier lancement (facon Arc) — quelques ecrans, puis le compte Echo a creer,
 - `ui/src/restart/restart-screen.tsx` — ecran d'attente plein cadre pendant la relance du navigateur. Il vit quelques
 - `ui/src/restart/restart-strip.tsx` — bande de relance — propose le redemarrage sans l'imposer, jamais bloquante.
 - `ui/src/settings/about-section.tsx` — Reglages → A propos — version d'Echo, etat de la mise a jour, verification a la demande.

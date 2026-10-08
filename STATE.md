@@ -59,6 +59,22 @@
   Une page déjà ouverte garde l'ancienne teinte dans ses angles jusqu'au rechargement.
 
 
+## Compte Echo synchronisé (0.6.0, 08/10)
+- Service : `compte/` (Worker + D1, offre gratuite), déployé (`pnpm exec wrangler deploy` dans compte/), adresse dans
+  `.env.local` (ECHO_SYNC_URL) → `start.sh` l'exporte, `package-release.sh` la met dans `release.json` (`sync`).
+  Routes `/v1/{sel,inscription,connexion,deconnexion,coffre,coffre/:type,compte}` ; 10 échecs/15 min → 429 ; sel fictif
+  stable pour une adresse inconnue (pas d'énumération) ; écriture du coffre avec version de base (409 si concurrence).
+  Calcul serveur minimal (SHA-256) : l'offre gratuite limite à 10 ms de CPU par requête. Tests : `cd compte && pnpm dev`
+  puis `node test/compte.test.mjs` (COMPTE_URL pour viser le service en ligne ; nettoyer les comptes `essai-%`).
+- Chiffrement (`core/account/crypto.rs`, ring) : PBKDF2-SHA256 600 000 → HKDF → clé d'accès (envoyée) / clé de chiffrement
+  (jamais envoyée) ; AES-256-GCM avec le type en données associées. Fusion à trois voies (`merge.rs`) : réglages par clé,
+  favoris par url, extensions par profil en ensembles. Synchro : connexion, +10 s au démarrage, toutes les 10 min, bouton.
+- Synchronisé : 14 réglages choisis (`account/local.rs`), favoris, extensions par profil (déclarées sur la machine qui ne les
+  a pas). Jamais : cookies, mots de passe, historique. Compte local : `<données>/compte.json` (0600).
+- Premier lancement (aucune session, `onboarding.done` faux) : `pages.html#bienvenue` (3 écrans + compte, « Passer ») ;
+  `ECHO_NO_WELCOME=1` pour les essais. Tests : `tools/test-account-sync.sh` (deux instances), `cargo test -p echo-account
+  -- --ignored` avec COMPTE_URL (deux machines au niveau de la crate).
+
 ## Mise à jour automatique (0.5.0, 08/10)
 - `core/shell/src/update/` : archive installée reconnue par `release.json` (version + dépôt, écrit par package-release) ;
   vérification 30 s après le démarrage puis toutes les 6 h (`ECHO_UPDATE_URL`, `ECHO_UPDATE_DELAY_S` pour les essais) ;

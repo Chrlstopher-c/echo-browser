@@ -13,6 +13,7 @@ import type {
   ShieldView,
   TabId,
   TabView,
+  AccountView,
   UpdateView,
   VideoCodecsView,
 } from './contract'
@@ -56,6 +57,8 @@ export interface CoreState {
   codecs: VideoCodecsView | null
   /** Mise a jour de la version installee, null tant que le coeur n'a rien dit. */
   update: UpdateView | null
+  /** Compte Echo, null tant que le coeur n'a rien dit. */
+  account: AccountView | null
 }
 
 export interface PermissionRequest {
@@ -86,6 +89,7 @@ export const EMPTY_CORE_STATE: CoreState = {
   grants: [],
   codecs: null,
   update: null,
+  account: null,
 }
 
 function withShield(state: CoreState, id: TabId, view: ShieldView): CoreState {
@@ -162,6 +166,8 @@ export function reduceCore(state: CoreState, event: CoreEvent): CoreState {
       return { ...state, codecs: event.codecs }
     case 'updateChanged':
       return { ...state, update: event.update }
+    case 'accountChanged':
+      return { ...state, account: event.account }
   }
 }
 
