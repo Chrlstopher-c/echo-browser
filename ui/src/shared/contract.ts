@@ -21,7 +21,9 @@ export type UiRequest =
   /** Reveille d'avance un onglet endormi que la souris survole. */
   | { kind: 'warmTab'; id: TabId }
   /** Ouvre une page pleine largeur d'Echo dans un onglet, ou y revient. */
-  | { kind: 'openPage'; page: 'reglages' | 'bibliotheque' | 'extensions' | 'admin' }
+  | { kind: 'openPage'; page: 'reglages' | 'bibliotheque' | 'extensions' | 'admin' | 'aide' }
+  /** Ouvrir un panneau de la barre (`network`, `shield`, `extensions`) — depuis l'Aide par exemple. */
+  | { kind: 'openSidebarSheet'; sheet: string }
   /** Referme les outils de developpement ancres. */
   | { kind: 'closeDevTools' }
   /** La poignee de la fenetre d'extension a ete tiree. */
@@ -135,6 +137,9 @@ export type UiRequest =
   | { kind: 'networkBlockHost'; host: string; blocked: boolean }
   /** Isolement strict du site de l'onglet actif : aucune requete vers un autre site. */
   | { kind: 'networkSetStrict'; strict: boolean }
+  // --- Profils ---
+  /** Supprimer (`delete`) ou reinitialiser un profil ; le profil principal ne se supprime pas. */
+  | { kind: 'profileForget'; id: string; delete: boolean }
   // --- Routines (suites de sites ouvertes souvent) ---
   | { kind: 'routineAccept'; fingerprint: string; name: string }
   | { kind: 'routineDismiss'; fingerprint: string }
@@ -185,6 +190,8 @@ export type CoreEvent =
   | { kind: 'accountVault'; kinds: VaultKindView[] }
   /** Tableau de bord tel que le service le rend (forme lue par `admin/admin-data.ts`), ou l'erreur. */
   | { kind: 'adminData'; summary: unknown; accounts: unknown; signals: unknown; error: string | null }
+  /** La barre doit ouvrir ce panneau. */
+  | { kind: 'sidebarSheetRequested'; sheet: string }
   /** Une page surveillee a change depuis la visite precedente. */
   | { kind: 'pageChanged'; url: string; added: string[]; removed: string[] }
   /** Une suite de sites revient : proposition de routine. */

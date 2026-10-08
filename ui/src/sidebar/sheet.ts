@@ -7,5 +7,5 @@ export const SHEET_TITLE: Record<SheetId, string> = {
   library: 'Bibliothèque',
   extensions: 'Extensions',
   settings: 'Réglages',
-  network: 'Réseau',
+  network: 'Sécurité et réseau',
 }

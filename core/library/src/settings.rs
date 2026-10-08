@@ -61,6 +61,7 @@ pub fn defaults() -> Vec<(&'static str, Value)> {
         ("sync.history", Value::Flag(true)),
         ("sync.mode", Value::Text("auto".into())),
         ("signals.share", Value::Flag(false)),
+        ("profiles.list", Value::Text(String::new())),
         ("onboarding.done", Value::Flag(false)),
     ]
 }

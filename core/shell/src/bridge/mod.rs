@@ -241,6 +241,13 @@ fn apply(request: UiRequest) {
         }
         UiRequest::AccountInspect => crate::account::inspect(),
         UiRequest::AccountDelete => crate::account::delete(),
+        UiRequest::OpenSidebarSheet { sheet } => {
+            if matches!(sheet.as_str(), "network" | "shield" | "extensions") {
+                crate::window::reveal_chrome(true, session::with(|s| s.chrome.clone()).flatten().as_ref());
+                publish(&CoreEvent::SidebarSheetRequested { sheet });
+            }
+        }
+        UiRequest::ProfileForget { id, delete } => crate::profiles::forget(&id, delete),
         UiRequest::RoutineAccept { fingerprint, name } => crate::routines::accept(&fingerprint, &name),
         UiRequest::RoutineDismiss { fingerprint } => crate::routines::dismiss(&fingerprint),
         UiRequest::RoutineOpen { id } => crate::routines::open(id),
@@ -407,7 +414,7 @@ pub(crate) fn open_page_by_name(page: &str) {
 }
 
 fn open_page(page: &str) {
-    if !matches!(page, "reglages" | "bibliotheque" | "extensions" | "bienvenue" | "admin") {
+    if !matches!(page, "reglages" | "bibliotheque" | "extensions" | "bienvenue" | "admin" | "aide") {
         return;
     }
     let url = format!("{PAGES_URL}#{page}");

@@ -15,6 +15,8 @@ export interface AddressFieldProps {
   tab: TabView | null
   onSubmit: (input: string) => void
   onResetZoom: () => void
+  /** Clic sur le cadenas : la securite du site. */
+  onOpenSecurity?: () => void
   /** Incremente pour donner le focus au champ depuis l'exterieur. */
   focusToken: number
 }
@@ -57,7 +59,8 @@ function ZoomBadge({ zoom, onReset }: { zoom: number; onReset: () => void }): Re
   )
 }
 
-export function AddressField({ tab, onSubmit, onResetZoom, focusToken }: AddressFieldProps): ReactElement {
+export function AddressField(props: AddressFieldProps): ReactElement {
+  const { tab, onSubmit, onResetZoom, focusToken, onOpenSecurity } = props
   const field = useAddressField(tab, onSubmit, focusToken)
   const security = tab === null || tab.url.length === 0 || tab.url === 'about:blank' ? 'blank' : tab.security
   return (
@@ -65,7 +68,7 @@ export function AddressField({ tab, onSubmit, onResetZoom, focusToken }: Address
       className={`relative flex h-9 min-w-0 items-center gap-2 overflow-hidden rounded-full bg-field px-3.5
         shadow-field transition-colors duration-100 ${field.editing ? 'ring-1 ring-guard/60' : 'hover:bg-hover'}`}
     >
-      <SecurityMark security={security} />
+      <SecurityMark security={security} onOpen={onOpenSecurity} />
       <input
         ref={field.inputRef}
         value={field.value}

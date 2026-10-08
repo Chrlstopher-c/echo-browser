@@ -7,6 +7,7 @@ import type { DownloadsSummary } from '../library/downloads/download-reading'
 import { IconButton } from '../shared/design/icon-button'
 import { IconLibrary, IconPuzzle, IconSettings, IconTerminal } from '../shared/design/icons'
 import { IconActivity } from '../shared/design/icons-page'
+import { IconHelp } from '../shared/design/icons'
 import { ShieldButton } from '../shield/shield-button'
 import type { SheetId } from './sheet'
 
@@ -20,7 +21,7 @@ export interface UtilityRowProps {
   onToggle: (sheet: SheetId) => void
   onOpenTerminal: () => void
   /** Reglages et bibliotheque s'ouvrent en page pleine largeur, dans un onglet. */
-  onOpenPage: (page: 'reglages' | 'bibliotheque' | 'extensions') => void
+  onOpenPage: (page: 'reglages' | 'bibliotheque' | 'extensions' | 'aide') => void
 }
 
 function PendingDot(): ReactElement {
@@ -33,7 +34,7 @@ export function UtilityRow(props: UtilityRowProps): ReactElement {
     <div className={`flex items-center gap-0.5 ${compact ? 'flex-col' : ''}`}>
       <ShieldButton shield={shield} open={open === 'shield'} compact={compact} onClick={() => onToggle('shield')} />
       {!compact && <span className="flex-1" />}
-      <IconButton label="Réseau" onClick={() => onToggle('network')} active={open === 'network'}>
+      <IconButton label="Sécurité et réseau" onClick={() => onToggle('network')} active={open === 'network'}>
         <IconActivity size={15} />
       </IconButton>
       <IconButton label="Claude Code" onClick={onOpenTerminal}>
@@ -49,6 +50,9 @@ export function UtilityRow(props: UtilityRowProps): ReactElement {
       </IconButton>
       <IconButton label="Réglages" onClick={() => onOpenPage('reglages')}>
         <IconSettings size={15} />
+      </IconButton>
+      <IconButton label="Aide (F1)" onClick={() => onOpenPage('aide')}>
+        <IconHelp size={15} />
       </IconButton>
     </div>
   )

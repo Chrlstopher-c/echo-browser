@@ -1,6 +1,7 @@
 // Responsabilite : modele complet de la barre — coeur, gestes, largeur, feuilles, espace, domaines.
 
 import { useCallback, useEffect, useState } from 'react'
+import type { SheetId } from './sheet'
 import { useExtensionMenu, type ExtensionMenuController } from '../extensions/extension-menu'
 import { useExtensions, type ExtensionsController } from '../extensions/use-extensions'
 import { useLibrary, type LibraryController } from '../library/use-library'
@@ -65,7 +66,7 @@ export function useSidebar(): SidebarModel {
   const extensionMenu = useExtensionMenu()
   const width = useSidebarWidth(send)
   const sheet = useSheet()
-  const space = useSpace(send)
+  const space = useSpace(send, profiles)
   const domains = useDomains(send, state)
   const [localFocus, setLocalFocus] = useState(0)
 
@@ -80,6 +81,19 @@ export function useSidebar(): SidebarModel {
     if (state.addressFocusToken > 0) focusAddress()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.addressFocusToken])
+
+  // L'Aide (page a part) demande un panneau de la barre : on l'ouvre.
+  const requested = state.sheetRequest
+  useEffect(() => {
+    if (requested === null) return
+    const known: SheetId[] = ['network', 'shield', 'extensions']
+    const target = known.find((id) => id === requested.sheet)
+    if (target !== undefined) {
+      width.expand()
+      sheet.open(target)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [requested?.token])
 
   useKeyboard({ tabs, activeId: state.activeId, space, focusAddress })
 

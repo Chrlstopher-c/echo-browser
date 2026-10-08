@@ -174,6 +174,14 @@ pub enum UiRequest {
     /// Isolement strict du site de l'onglet actif : aucune requete vers un autre site.
     NetworkSetStrict { strict: bool },
 
+    /// Ouvrir un panneau de la barre (`network`, `shield`, `extensions`) — depuis l'Aide par exemple.
+    OpenSidebarSheet { sheet: String },
+
+    // --- Profils ---
+    /// Supprimer (`delete`) ou reinitialiser un profil : onglets fermes, sessions effacees tout de suite, le reste des
+    /// donnees au prochain lancement. Le profil principal ne se supprime pas.
+    ProfileForget { id: String, delete: bool },
+
     // --- Routines (suites de sites ouvertes souvent) ---
     RoutineAccept { fingerprint: String, name: String },
     RoutineDismiss { fingerprint: String },
@@ -239,6 +247,8 @@ pub enum CoreEvent {
         signals: serde_json::Value,
         error: Option<String>,
     },
+    /// La barre doit ouvrir ce panneau.
+    SidebarSheetRequested { sheet: String },
     /// Une page surveillee a change depuis la visite precedente.
     PageChanged { url: String, added: Vec<String>, removed: Vec<String> },
     /// Une suite de sites revient : proposition de routine.

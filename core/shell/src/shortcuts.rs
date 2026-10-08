@@ -23,6 +23,7 @@ mod key {
     pub const NUMPAD_0: i32 = 0x60;
     pub const ADD: i32 = 0x6B;
     pub const SUBTRACT: i32 = 0x6D;
+    pub const F1: i32 = 0x70;
     pub const F5: i32 = 0x74;
     pub const F11: i32 = 0x7A;
     pub const F12: i32 = 0x7B;
@@ -58,6 +59,7 @@ pub enum Action {
     Back,
     Forward,
     Zoom(ZoomStep),
+    Help,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -94,6 +96,7 @@ pub fn resolve(code: i32, unmodified: u16, modifiers: u32) -> Option<Action> {
         (true, true, false, key::TAB) | (true, false, false, key::PAGE_UP) => Some(Action::PreviousTab),
         (false, false, true, key::LEFT) => Some(Action::Back),
         (false, false, true, key::RIGHT) => Some(Action::Forward),
+        (false, false, false, key::F1) => Some(Action::Help),
         (false, false, false, key::F5) => Some(Action::Reload { bypass_cache: false }),
         (false, false, false, key::F12) => Some(Action::ToggleDevTools),
         (false, false, false, key::F11) => Some(Action::ToggleFullscreen),

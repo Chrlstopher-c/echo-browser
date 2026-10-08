@@ -11,6 +11,7 @@ import { TabsArea } from '../tabs/tabs-area'
 import { CodecsStrip } from './codecs-strip'
 import { RoutineStrip } from '../routines/routine-strip'
 import { PageChangeStrip } from '../watch/page-change-strip'
+import { DiscoverStrip } from '../help/discover-strip'
 import { SyncStrip } from './sync-strip'
 import { UpdateStrip } from './update-strip'
 import { NoticeStrip } from './notice-strip'
@@ -63,6 +64,7 @@ function ColumnHeader({ model }: { model: SidebarModel }): ReactElement {
           if (active !== null) tabs.setZoom(active.id, 1)
         }}
         focusToken={model.addressFocusToken}
+        onOpenSecurity={() => model.sheet.open('network')}
       />
       <Extensions model={model} />
     </header>
@@ -76,6 +78,7 @@ function ColumnFooter({ model }: { model: SidebarModel }): ReactElement {
       <RestartStrip pending={extensions.restartPending} count={extensions.pending} onRestart={extensions.restart} />
       <PermissionStrip requests={core.state.permissions} send={core.send} />
       <CodecsStrip codecs={core.state.codecs} send={core.send} />
+      <DiscoverStrip send={core.send} />
       <PageChangeStrip change={core.state.pageChange} />
       <RoutineStrip proposal={core.state.routineProposal} send={core.send} />
       <SyncStrip account={core.state.account} send={core.send} />
@@ -94,9 +97,10 @@ function ColumnFooter({ model }: { model: SidebarModel }): ReactElement {
       <SpaceStrip
         current={space.space.id}
         scheme={space.space.scheme}
+        profiles={model.profiles.list}
         onSelect={space.select}
+        onCreate={() => space.select(model.profiles.create(''))}
         onToggleScheme={space.toggleScheme}
-        nameOf={model.profiles.nameOf}
       />
     </footer>
   )

@@ -125,3 +125,9 @@ Le coffre est chiffré sur la machine : le serveur ne peut pas le lire, le table
   surveillée, contenu modifié côté serveur, nouvelle visite → bandeau avec la ligne ajoutée.
 - S7 Mémoire de structure : « Masquer cet élément » (clic droit) retenu par empreinte de structure de page, appliqué aux
   pages de même gabarit. Critère : élément masqué sur un article → masqué sur un autre article du même site.
+
+## E11 — Découvrabilité et profils (retour de Chris, 08/10 matin)
+- S1 Page Aide (F1, bouton « ? ») : fonctions, où les trouver, bouton qui y mène, raccourcis ; bandeau « À découvrir ».
+- S2 Cadenas de l'adresse → Sécurité et réseau (domaines, poids, journal, blocages).
+- S3 Profils : créer, renommer, teinte, réinitialiser, supprimer (sessions effacées tout de suite, données au
+  lancement suivant). Critère : `tools/test-help-profiles.sh` vert.

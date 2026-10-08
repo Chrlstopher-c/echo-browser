@@ -2,11 +2,12 @@
 
 import { useEffect, useState } from 'react'
 
-export type PageId = 'reglages' | 'bibliotheque' | 'extensions' | 'bienvenue' | 'admin'
+export type PageId = 'reglages' | 'bibliotheque' | 'extensions' | 'bienvenue' | 'admin' | 'aide'
 
 function read(): PageId {
   const hash = window.location.hash.slice(1)
-  return hash === 'bibliotheque' || hash === 'extensions' || hash === 'bienvenue' || hash === 'admin' ? hash : 'reglages'
+  const known: PageId[] = ['bibliotheque', 'extensions', 'bienvenue', 'admin', 'aide']
+  return known.find((page) => page === hash) ?? 'reglages'
 }
 
 export function usePageRoute(): [PageId, (next: PageId) => void] {

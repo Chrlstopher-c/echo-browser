@@ -469,3 +469,13 @@ export function IconImage(props: IconProps): ReactElement {
     </Glyph>
   )
 }
+
+/** Aide : un point d'interrogation dans un cercle. */
+export function IconHelp(props: IconProps): ReactElement {
+  return (
+    <Glyph {...props}>
+      <circle cx="8" cy="8" r="5.6" />
+      <path d="M6.4 6.4a1.7 1.7 0 0 1 3.2.6c0 1.1-1.6 1.4-1.6 2.4M8 11.2v.1" />
+    </Glyph>
+  )
+}

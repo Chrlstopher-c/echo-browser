@@ -9,21 +9,20 @@ import {
   buildSpace,
   DEFAULT_SCHEME,
   DEFAULT_SPACE,
-  HUES,
   isScheme,
-  isSpaceId,
   SCHEME_TOKENS,
   type Scheme,
   type Space,
-  type SpaceId,
 } from './space-palette'
+import type { ProfileNames } from './use-profile-names'
 
 const SPACE_KEY = 'echo.space'
 const SCHEME_KEY = 'echo.scheme'
 
 export interface SpaceController {
   space: Space
-  select: (id: SpaceId) => void
+  /** Passe au profil `id`. */
+  select: (id: string) => void
   /** Passe a l'espace suivant ou precedent, en boucle. */
   cycle: (direction: 1 | -1) => void
   toggleScheme: () => void
@@ -35,8 +34,9 @@ function overlayTheme(space: Space): OverlayTheme {
   return { shell, card, hover, hairline, ink, inkMuted, inkFaint, hi, lo, tint, danger: SCHEME_TOKENS[space.scheme].danger }
 }
 
-export function readStoredSpace(): SpaceId {
-  return readLocal(SPACE_KEY, (raw) => (typeof raw === 'string' && isSpaceId(raw) ? raw : null)) ?? DEFAULT_SPACE
+export function readStoredSpace(): string {
+  return readLocal(SPACE_KEY, (raw) => (typeof raw === 'string' && /^[A-Za-z0-9_-]{1,40}$/.test(raw) ? raw : null))
+    ?? DEFAULT_SPACE
 }
 
 export function readStoredScheme(): Scheme {
@@ -56,14 +56,17 @@ function usePublishSpace(space: Space, send: (request: UiRequest) => void): void
   }, [space, send])
 }
 
-export function useSpace(send: (request: UiRequest) => void): SpaceController {
-  const [id, setId] = useState<SpaceId>(readStoredSpace)
+export function useSpace(send: (request: UiRequest) => void, profiles: ProfileNames): SpaceController {
+  const [stored, setId] = useState<string>(readStoredSpace)
   const [scheme, setScheme] = useState<Scheme>(readStoredScheme)
-  const space = useMemo(() => buildSpace(id, scheme), [id, scheme])
+  // Un profil supprime (ici ou sur une autre machine) : retour au profil principal.
+  const id = profiles.list.some((p) => p.id === stored) ? stored : DEFAULT_SPACE
+  const hue = profiles.hueOf(id)
+  const space = useMemo(() => buildSpace(id, scheme, hue), [id, scheme, hue])
 
   usePublishSpace(space, send)
 
-  const select = useCallback((next: SpaceId): void => {
+  const select = useCallback((next: string): void => {
     setId(next)
     writeLocal(SPACE_KEY, next)
   }, [])
@@ -78,11 +81,12 @@ export function useSpace(send: (request: UiRequest) => void): SpaceController {
 
   const cycle = useCallback(
     (direction: 1 | -1): void => {
-      const index = HUES.findIndex((candidate) => candidate.id === id)
-      const next = HUES[(index + direction + HUES.length) % HUES.length]
+      const list = profiles.list
+      const index = list.findIndex((candidate) => candidate.id === id)
+      const next = list[(index + direction + list.length) % list.length]
       if (next !== undefined) select(next.id)
     },
-    [id, select],
+    [id, select, profiles.list],
   )
 
   return { space, select, cycle, toggleScheme }

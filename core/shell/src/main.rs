@@ -83,6 +83,7 @@ fn main() -> anyhow::Result<()> {
         return Ok(());
     }
     launch::keep(targets);
+    profiles::wipe_pending();
 
     init_logging();
     let settings = browser_settings();

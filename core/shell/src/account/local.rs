@@ -8,10 +8,10 @@ use serde_json::{json, Value};
 use tracing::warn;
 
 /// Reglages partages entre machines. Pas la largeur des outils, ni le profil affiche : ils dependent de l'ecran.
-const SYNCED: [&str; 14] = [
+const SYNCED: [&str; 15] = [
     "shield.enabled", "shield.strict", "search.engine", "startup.restore_tabs", "downloads.ask_location",
     "privacy.send_do_not_track", "privacy.clear_on_exit", "session.restore", "tabs.sleepEnabled",
-    "tabs.sleepAfterMinutes", "tabs.neverSleep", "tabs.containers", "profiles.names", "video.codecsPrompt",
+    "tabs.sleepAfterMinutes", "tabs.neverSleep", "tabs.containers", "profiles.names", "profiles.list", "video.codecsPrompt",
 ];
 
 fn to_json(value: &Setting) -> Value {

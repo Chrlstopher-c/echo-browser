@@ -48,7 +48,7 @@ def until(cond, label, tries=40):
 call = connect()
 page = f"http://localhost:{PORT}/"
 tab = call(op="open", url=page)["id"]; time.sleep(3)
-assert ui("(()=>{const b=document.querySelector('[aria-label=\"Réseau\"]');b.click();return !!b})()"), "bouton Reseau absent"
+assert ui("(()=>{const b=document.querySelector('[aria-label=\"Sécurité et réseau\"]');b.click();return !!b})()"), "bouton Reseau absent"
 until(lambda: "127.0.0.1" in ui("document.body.innerText") and "localhost" in ui("document.body.innerText"), "domaines absents du panneau")
 print("panneau : domaines de la page et tiers visibles")
 segment0 = "(t)=>{const b=[...document.querySelectorAll('button,[role=tab]')].find(x=>x.innerText.trim()===t);b.click();return 1}"
@@ -83,7 +83,7 @@ tab = call(op="open", url=page)["id"]; time.sleep(3)
 assert hits() == avant, "regle perdue a la relance"
 print("regle gardee a la relance")
 regles = json.load(open(f"{W}/data/reseau.json")); regles["blocked"] = {}; regles["strict"] = []
-assert ui("(()=>{document.querySelector('[aria-label=\"Réseau\"]').click();return 1})()") == 1; time.sleep(1)
+assert ui("(()=>{document.querySelector('[aria-label=\"Sécurité et réseau\"]').click();return 1})()") == 1; time.sleep(1)
 until(lambda: "Débloquer" in ui("document.body.innerText"), "bouton Debloquer absent")
 ui("(()=>{[...document.querySelectorAll('button')].find(x=>x.innerText.trim()==='Débloquer').click();return 1})()"); time.sleep(1)
 call(op="navigate", id=tab, url=page); time.sleep(3)

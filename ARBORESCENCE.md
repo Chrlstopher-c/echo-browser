@@ -200,6 +200,7 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `tools/test-extension-query.sh`
 - `tools/test-extension-tabs.sh`
 - `tools/test-folders.sh`
+- `tools/test-help-profiles.sh`
 - `tools/test-hide-element.sh`
 - `tools/test-inspect.sh`
 - `tools/test-ipc-origin.sh`
@@ -280,6 +281,9 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `ui/src/extensions/extensions-sheet.tsx` — feuille des extensions — installation, inventaire, gestion complete.
 - `ui/src/extensions/install-field.tsx` — champ d'installation d'une extension — saisie, refus lisible, ouverture du catalogue.
 - `ui/src/extensions/use-extensions.ts` — commandes du panneau des extensions — installation par le catalogue, bascule,
+- `ui/src/help/discover-strip.tsx` — bandeau « a decouvrir », une seule fois par machine : ou trouver l'Aide, la securite du site et
+- `ui/src/help/help-content.ts` — le contenu de l'Aide — ce qu'Echo sait faire, ou le trouver, et un bouton qui y mene. Les textes
+- `ui/src/help/help-page.tsx` — page Aide — ce qu'Echo sait faire, ou le trouver (avec un bouton qui y mene), et les raccourcis.
 - `ui/src/library/bookmarks/bookmarks-panel.tsx` — panneau des favoris — ajout de la page courante, liste reordonnable, retrait au survol.
 - `ui/src/library/bookmarks/use-bookmarks.ts` — commandes des favoris — ajout depuis l'onglet courant, retrait, reordonnancement.
 - `ui/src/library/devices/devices-panel.tsx` — Bibliotheque → Machines — les onglets ouverts sur les autres machines du compte Echo, a rouvrir ici.
@@ -308,7 +312,7 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `ui/src/settings/about-section.tsx` — Reglages → A propos — version d'Echo, etat de la mise a jour, verification a la demande.
 - `ui/src/settings/containers-section.tsx` — conteneurs dans les reglages — nom et retrait ; l'ouverture se fait depuis la liste d'onglets.
 - `ui/src/settings/grants-section.tsx` — les autorisations retenues par site (camera, micro, position…) et leur retrait.
-- `ui/src/settings/profiles-section.tsx` — les profils dans les reglages — renommer chacun ; leur couleur est celle de leur pastille.
+- `ui/src/settings/profiles-section.tsx` — les profils dans les reglages — chacun est une identite (onglets, comptes, extensions a part) :
 - `ui/src/settings/setting-catalogue.ts` — habillage des reglages — pour chaque cle que le coeur livre, un groupe, un libelle
 - `ui/src/settings/setting-row.tsx` — une ligne de reglage — libelle, explication, et le controle qui va avec son type.
 - `ui/src/settings/settings-sheet.tsx` — feuille des reglages — apparence tenue par l'interface, puis les reglages du coeur par theme.
@@ -374,9 +378,9 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `ui/src/sidebar/utility-row.tsx` — rangee d'outils au bas de la barre — bouclier, reseau, bibliotheque, extensions, reglages.
 - `ui/src/spaces/apply-space.ts` — poser les jetons d'un espace sur le document. Les utilitaires Tailwind lisent
 - `ui/src/spaces/space-palette.ts` — les espaces — une teinte (graphite, sable…) dans l'un des deux schemas, clair ou sombre.
-- `ui/src/spaces/space-picker.tsx` — choix de l'espace dans les reglages — une pastille par teinte, la courante cochee.
-- `ui/src/spaces/space-strip.tsx` — bande des espaces au pied de la barre — un point par teinte (le courant etire en trait) et
-- `ui/src/spaces/use-profile-names.ts` — les noms des profils (les pastilles du bas de la barre), enregistres dans `profiles.names`.
+- `ui/src/spaces/space-picker.tsx` — choix de la teinte du profil dans les reglages — une pastille par teinte, la courante cochee.
+- `ui/src/spaces/space-strip.tsx` — bande des profils au pied de la barre — un point par profil, a sa teinte (le courant etire en
+- `ui/src/spaces/use-profile-names.ts` — les profils (identites facon Arc) — leur liste, leur nom et leur teinte, enregistres dans le reglage
 - `ui/src/spaces/use-space.ts` — espace courant (teinte + schema clair/sombre) — choix persistes, jetons poses sur le
 - `ui/src/stage/dev-toolbar.tsx` — leviers de simulation poses sur la scene — son, sommeil, telechargement, plein ecran.
 - `ui/src/stage/page-stage.tsx` — scene de developpement — la place de la page, dans un cadre flottant aux coins

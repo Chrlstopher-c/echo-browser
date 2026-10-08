@@ -39,15 +39,16 @@ export interface SettingsSheetProps {
   onDevTools: () => void
 }
 
-function AppearanceSection({ space }: { space: SpaceController }): ReactElement {
+function AppearanceSection({ space, profiles }: { space: SpaceController; profiles: ProfileNames }): ReactElement {
   return (
     <section>
       <SectionLabel aside={<span className="text-[10.5px] text-ink-faint">{space.space.name}</span>}>
         Espace
       </SectionLabel>
-      <SpacePicker current={space.space.id} scheme={space.space.scheme} onSelect={space.select} />
+      <SpacePicker current={space.space.hue} scheme={space.space.scheme}
+        onSelect={(hue) => profiles.setHue(space.space.id, hue)} />
       <p className="px-2 pt-1 text-[11px] leading-snug text-ink-faint">
-        Teinte de la barre et du cadre autour de la page. Le choix est propre à cet ordinateur.
+        Teinte du profil courant : sa pastille, la barre et le cadre autour de la page.
       </p>
     </section>
   )
@@ -80,7 +81,7 @@ export function SettingsSheet(props: SettingsSheetProps): ReactElement {
   return (
     <div className="flex flex-col gap-3">
       {account !== null && <AccountSection account={account} vault={vault} send={send} />}
-      {space !== undefined && <AppearanceSection space={space} />}
+      {space !== undefined && <AppearanceSection space={space} profiles={profiles} />}
       <ProfilesSection profiles={profiles} scheme={space?.space.scheme ?? readStoredScheme()} />
       <ContainersSection actions={containers} />
       <GrantsSection grants={grants} onForget={onForgetGrant} />

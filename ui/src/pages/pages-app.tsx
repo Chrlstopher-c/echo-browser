@@ -8,8 +8,9 @@ import { SettingsSheet } from '../settings/settings-sheet'
 import { videoRequest } from '../settings/video-section'
 import { useSettings } from '../settings/use-settings'
 import { AdminPage } from '../admin/admin-page'
+import { HelpPage } from '../help/help-page'
 import { useAdmin } from '../admin/use-admin'
-import { IconLibrary, IconLock, IconPuzzle, IconSettings } from '../shared/design/icons'
+import { IconHelp, IconLibrary, IconLock, IconPuzzle, IconSettings } from '../shared/design/icons'
 import { ExtensionsSheet } from '../extensions/extensions-sheet'
 import { useExtensions } from '../extensions/use-extensions'
 import { useCore } from '../shared/use-core'
@@ -23,6 +24,7 @@ const PAGES: Array<{ id: PageId; label: string; icon: ReactElement }> = [
   { id: 'reglages', label: 'Réglages', icon: <IconSettings size={15} /> },
   { id: 'bibliotheque', label: 'Bibliothèque', icon: <IconLibrary size={15} /> },
   { id: 'extensions', label: 'Extensions', icon: <IconPuzzle size={15} /> },
+  { id: 'aide', label: 'Aide', icon: <IconHelp size={15} /> },
   { id: 'admin', label: 'Administration', icon: <IconLock size={15} /> },
 ]
 
@@ -61,6 +63,7 @@ function Content({ page }: { page: PageId }): ReactElement {
   if (page === 'bibliotheque') return <LibrarySheet controller={library} />
   if (page === 'extensions') return <ExtensionsSheet controller={extensions} />
   if (page === 'admin' && state.account?.admin === true) return <Admin />
+  if (page === 'aide') return <HelpPage send={send} />
   return (
     <SettingsSheet
       settings={settings}

@@ -27,7 +27,9 @@ export interface SpaceTokens {
 }
 
 export interface Space {
-  id: SpaceId
+  /** Le profil (identifiant libre) ; sa teinte est `hue`. */
+  id: string
+  hue: SpaceId
   name: string
   scheme: Scheme
   tokens: SpaceTokens
@@ -106,9 +108,10 @@ function lightTokens({ h, s, accent }: Hue): SpaceTokens {
   }
 }
 
-export function buildSpace(id: SpaceId, scheme: Scheme): Space {
-  const hue = HUES.find((candidate) => candidate.id === id) ?? HUES[0]!
-  return { id: hue.id, name: hue.name, scheme, tokens: scheme === 'dark' ? darkTokens(hue) : lightTokens(hue) }
+/** L'espace d'un profil : `id` est le profil, `hueId` sa teinte (par defaut la teinte de meme nom). */
+export function buildSpace(id: string, scheme: Scheme, hueId?: SpaceId): Space {
+  const hue = HUES.find((candidate) => candidate.id === (hueId ?? id)) ?? HUES[0]!
+  return { id, hue: hue.id, name: hue.name, scheme, tokens: scheme === 'dark' ? darkTokens(hue) : lightTokens(hue) }
 }
 
 /** Jetons qui dependent du schema clair/sombre, pas de la teinte. */

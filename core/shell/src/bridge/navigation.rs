@@ -75,6 +75,7 @@ fn perform_page(action: crate::shortcuts::Action) {
         Action::Back => travel(false),
         Action::Forward => travel(true),
         Action::Library => super::open_page_by_name("bibliotheque"),
+        Action::Help => super::open_page_by_name("aide"),
         Action::Print => with_browser(|browser| {
             if let Some(host) = browser.host() {
                 host.print();

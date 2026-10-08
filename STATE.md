@@ -59,6 +59,17 @@
   Une page déjà ouverte garde l'ancienne teinte dans ses angles jusqu'au rechargement.
 
 
+## Découvrabilité et profils (retour de Chris, 08/10 matin)
+
+- Page **Aide** (`ui/src/help`, bouton « ? » en bas de la barre, F1) : chaque fonction, où la trouver, bouton qui y
+  mène (ouvre les panneaux de la barre via `OpenSidebarSheet`), raccourcis. Bandeau « À découvrir » une fois par machine.
+- Le **cadenas** de l'adresse ouvre « Sécurité et réseau » (ex-panneau Réseau).
+- **Profils** : liste réglable `profiles.list` (synchronisée ; migration des 5 d'origine et de `profiles.names`) —
+  créer (« + » des pastilles, Réglages → Profils), renommer, teinte, réinitialiser, supprimer. Côté cœur
+  `profiles::forget` : onglets fermés, cookies effacés tout de suite, dossiers effacés au lancement suivant
+  (`profils-a-effacer.json`), extensions du profil retirées. Le profil principal (`graphite`) ne se supprime pas.
+- Test : `tools/test-help-profiles.sh`.
+
 ## Raccourcis et fichiers locaux (demande de Chris, 08/10)
 
 - Lettres lues dans le caractère produit (disposition du clavier), plus dans le code de touche : en AZERTY, le code
