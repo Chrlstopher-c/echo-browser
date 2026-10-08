@@ -3,6 +3,7 @@
 import type { ReactElement } from 'react'
 import { AddressField } from '../address/address-field'
 import { ExtensionBar } from '../extensions/extension-bar'
+import { DownloadStrip } from '../library/downloads/download-strip'
 import { FindBar } from '../find/find-bar'
 import { ExtensionMenu } from '../extensions/extension-menu'
 import { TopControls } from '../address/top-controls'
@@ -94,6 +95,7 @@ function ColumnFooter({ model }: { model: SidebarModel }): ReactElement {
       <RoutineStrip proposal={core.state.routineProposal} send={core.send} />
       <SyncStrip account={core.state.account} send={core.send} />
       <UpdateStrip update={core.state.update} send={core.send} />
+      <DownloadStrip downloads={library.downloads} />
       <NoticeStrip notice={core.notice} send={core.send} />
       <UtilityRow
         shield={core.shield}
