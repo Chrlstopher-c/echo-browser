@@ -162,6 +162,8 @@ pub enum UiRequest {
     AdminDeleteAccount { id: String },
     /// Donner ou retirer l'acces administrateur.
     AdminSetFlag { id: String, admin: bool },
+    /// Fiche d'un compte : usage par jour et par action, machines, coffre par type.
+    AdminAccountDetail { id: String },
 }
 
 /// Ce que le coeur renvoie a l'interface.
@@ -204,6 +206,8 @@ pub enum CoreEvent {
     AccountVault { kinds: Vec<VaultKindView> },
     /// Tableau de bord tel que le service le rend (`summary` : chiffres, `accounts` : comptes), ou l'erreur.
     AdminData { summary: serde_json::Value, accounts: serde_json::Value, error: Option<String> },
+    /// Fiche d'un compte telle que le service la rend, ou l'erreur.
+    AdminAccount { detail: serde_json::Value, error: Option<String> },
 }
 
 /// Ou en est la mise a jour de la version installee.

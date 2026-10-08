@@ -7,6 +7,7 @@ import { PushButton } from '../shared/design/push-button'
 import { SearchField } from '../shared/design/search-field'
 import type { AdminAccount } from './admin-data'
 import { bytes, when } from './admin-format'
+import { AccountDetail } from './admin-detail'
 import type { AdminController } from './use-admin'
 
 function AccountRow({ account, admin }: { account: AdminAccount; admin: AdminController }): ReactElement {
@@ -18,23 +19,28 @@ function AccountRow({ account, admin }: { account: AdminAccount; admin: AdminCon
         onConfirm={() => { setAsking(false); admin.remove(account.id) }} />
     )
   }
+  const opened = admin.opened === account.id
   return (
-    <div className="flex items-center gap-3 border-t border-hairline px-1 py-2">
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-[12.5px] text-ink">
-          {account.email}
-          {account.admin && <span className="ml-2 rounded-md px-1.5 text-[10px] text-guard shadow-field">admin</span>}
-        </p>
-        <p className="numerique truncate text-[10.5px] text-ink-faint">
-          créé {when(account.createdAt)} · vu {when(account.seenAt)} · {account.version ?? 'version inconnue'} ·
-          {' '}{bytes(account.bytes)} · {account.sessions} session(s)
-        </p>
+    <div className="border-t border-hairline">
+      <div className="flex items-center gap-3 px-1 py-2">
+        <button type="button" className="min-w-0 flex-1 text-left" title="Voir la fiche"
+          onClick={() => admin.open(opened ? null : account.id)}>
+          <p className="truncate text-[12.5px] text-ink">
+            {account.email}
+            {account.admin && <span className="ml-2 rounded-md px-1.5 text-[10px] text-guard shadow-field">admin</span>}
+          </p>
+          <p className="numerique truncate text-[10.5px] text-ink-faint">
+            créé {when(account.createdAt)} · vu {when(account.seenAt)} · {account.version ?? 'version inconnue'} ·
+            {' '}{bytes(account.bytes)} · {account.sessions} session(s)
+          </p>
+        </button>
+        <PushButton onClick={() => admin.setAdmin(account.id, !account.admin)}>
+          {account.admin ? 'Retirer admin' : 'Rendre admin'}
+        </PushButton>
+        <PushButton onClick={() => admin.signOut(account.id)}>Déconnecter</PushButton>
+        <PushButton tone="danger" onClick={() => setAsking(true)}>Supprimer</PushButton>
       </div>
-      <PushButton onClick={() => admin.setAdmin(account.id, !account.admin)}>
-        {account.admin ? 'Retirer admin' : 'Rendre admin'}
-      </PushButton>
-      <PushButton onClick={() => admin.signOut(account.id)}>Déconnecter</PushButton>
-      <PushButton tone="danger" onClick={() => setAsking(true)}>Supprimer</PushButton>
+      {opened && <AccountDetail detail={admin.detail} />}
     </div>
   )
 }

@@ -86,6 +86,15 @@ if (CLE_ADMIN) essai('tableau de bord : cle exigee, chiffres, version, deconnexi
   const [compte] = (await admin('GET', `/v1/admin/comptes?q=${encodeURIComponent(e)}`)).corps.comptes
   assert.equal(compte.email, e); assert.equal(compte.version, '9.9.9'); assert.ok(compte.octets > 0)
   assert.ok(!JSON.stringify(resume).includes('DONNEES-CHIFFREES'), 'le resume ne contient jamais le coffre')
+  await new Promise((r) => setTimeout(r, 300))
+  const fiche = (await admin('GET', `/v1/admin/comptes/${compte.id}`)).corps
+  assert.equal(fiche.compte.email, e)
+  const actions = fiche.parAction.map((x) => x.action)
+  assert.ok(actions.includes('synchro') && actions.includes('ecriture:favoris') && actions.includes('inscription'), actions)
+  assert.equal(fiche.machines.length, 1); assert.equal(fiche.machines[0].version, '9.9.9')
+  assert.equal(fiche.coffre[0].type, 'favoris'); assert.ok(!JSON.stringify(fiche).includes('DONNEES-CHIFFREES'))
+  const usage = (await admin('GET', '/v1/admin/resume')).corps
+  assert.ok(usage.actifsParJour.length >= 1 && usage.plusActifs.some((p) => p.email === e), 'usage global')
   assert.equal((await appel('GET', '/v1/moi', undefined, jeton)).corps.admin, false)
   assert.equal((await appel('GET', '/v1/admin/resume', undefined, jeton)).statut, 403)
   const rendre = await fetch(`${URL_SERVICE}/v1/admin/comptes/${compte.id}/admin`, { method: 'POST',

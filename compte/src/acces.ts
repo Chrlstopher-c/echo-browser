@@ -2,10 +2,10 @@
 // sur la machine (PBKDF2 + HKDF) et n'en garde qu'une empreinte salee. Jetons de session : empreinte seulement.
 
 import {
-  aleatoire, attendre, base64, depuisBase64, egal, hmac, json, lireJson, normaliserEmail, Refus, sha256, texte,
-  type Env,
+  aleatoire, attendre, base64, depuisBase64, egal, hmac, json, lireJson, noterCompte, normaliserEmail, Refus, sha256,
+  texte, type Env,
 } from './outils'
-import { noterActivite } from './activite'
+import { noterActivite, versionDe } from './activite'
 
 const ITERATIONS_PAR_DEFAUT = 600_000
 const DUREE_SESSION_MS = 90 * 24 * 3600 * 1000
@@ -26,10 +26,17 @@ function cleAcces(champ: unknown): Uint8Array {
   return cle
 }
 
-async function ouvrirSession(env: Env, compte: string): Promise<string> {
+async function ouvrirSession(requete: Request, env: Env, compte: string): Promise<string> {
   const jeton = aleatoire(32)
-  await env.DB.prepare('INSERT INTO sessions (empreinte_jeton, compte, expire_le) VALUES (?, ?, ?)')
-    .bind(await sha256(jeton), compte, Date.now() + DUREE_SESSION_MS).run()
+  const empreinte = await sha256(jeton)
+  const maintenant = Date.now()
+  await env.DB.batch([
+    env.DB.prepare('INSERT INTO sessions (empreinte_jeton, compte, expire_le) VALUES (?, ?, ?)')
+      .bind(empreinte, compte, maintenant + DUREE_SESSION_MS),
+    env.DB.prepare('INSERT INTO machines (empreinte_jeton, compte, cree_le, vu_le, version) VALUES (?, ?, ?, ?, ?)')
+      .bind(empreinte, compte, maintenant, maintenant, versionDe(requete)),
+  ])
+  noterCompte(requete, compte)
   return base64(jeton)
 }
 
@@ -58,7 +65,7 @@ export async function inscription(requete: Request, env: Env): Promise<Response>
   await env.DB.prepare(
     'INSERT INTO comptes (id, email, empreinte_acces, sel_serveur, sel_client, iterations, cree_le) VALUES (?, ?, ?, ?, ?, ?, ?)',
   ).bind(id, email, await sha256(selServeur, cle), base64(selServeur), selClient, iterations, Date.now()).run()
-  return json({ jeton: await ouvrirSession(env, id) }, 201)
+  return json({ jeton: await ouvrirSession(requete, env, id) }, 201)
 }
 
 export async function connexion(requete: Request, env: Env): Promise<Response> {
@@ -76,7 +83,7 @@ export async function connexion(requete: Request, env: Env): Promise<Response> {
     await env.DB.prepare('INSERT INTO echecs (email, le) VALUES (?, ?)').bind(email, Date.now()).run()
     throw new Refus(401, 'adresse ou mot de passe incorrect')
   }
-  return json({ jeton: await ouvrirSession(env, compte.id) })
+  return json({ jeton: await ouvrirSession(requete, env, compte.id) })
 }
 
 /** Le compte d'une requete authentifiee (en-tete `Authorization: Bearer <jeton>`). */
@@ -84,10 +91,12 @@ export async function compteDe(requete: Request, env: Env): Promise<string> {
   const entete = requete.headers.get('authorization') ?? ''
   const jeton = entete.startsWith('Bearer ') ? entete.slice(7) : ''
   if (jeton.length === 0) throw new Refus(401, 'session absente')
+  const empreinte = await sha256(depuisBase64(jeton))
   const session = await env.DB.prepare('SELECT compte, expire_le FROM sessions WHERE empreinte_jeton = ?')
-    .bind(await sha256(depuisBase64(jeton))).first<{ compte: string; expire_le: number }>()
+    .bind(empreinte).first<{ compte: string; expire_le: number }>()
   if (session === null || session.expire_le < Date.now()) throw new Refus(401, 'session expiree')
-  attendre(requete, noterActivite(env, session.compte, requete))
+  noterCompte(requete, session.compte)
+  attendre(requete, noterActivite(env, session.compte, empreinte, requete))
   return session.compte
 }
 
@@ -95,7 +104,11 @@ export async function deconnexion(requete: Request, env: Env): Promise<Response>
   const entete = requete.headers.get('authorization') ?? ''
   const jeton = entete.startsWith('Bearer ') ? entete.slice(7) : ''
   if (jeton.length > 0) {
-    await env.DB.prepare('DELETE FROM sessions WHERE empreinte_jeton = ?').bind(await sha256(depuisBase64(jeton))).run()
+    const empreinte = await sha256(depuisBase64(jeton))
+    await env.DB.batch([
+      env.DB.prepare('DELETE FROM sessions WHERE empreinte_jeton = ?').bind(empreinte),
+      env.DB.prepare('DELETE FROM machines WHERE empreinte_jeton = ?').bind(empreinte),
+    ])
   }
   return new Response(null, { status: 204 })
 }
@@ -110,6 +123,8 @@ export async function effacerCompte(env: Env, compte: string): Promise<void> {
   await env.DB.batch([
     env.DB.prepare('DELETE FROM activite WHERE compte = ?').bind(compte),
     env.DB.prepare('DELETE FROM admins WHERE compte = ?').bind(compte),
+    env.DB.prepare('DELETE FROM machines WHERE compte = ?').bind(compte),
+    env.DB.prepare('DELETE FROM usage WHERE compte = ?').bind(compte),
     env.DB.prepare('DELETE FROM coffre WHERE compte = ?').bind(compte),
     env.DB.prepare('DELETE FROM sessions WHERE compte = ?').bind(compte),
     env.DB.prepare('DELETE FROM comptes WHERE id = ?').bind(compte),

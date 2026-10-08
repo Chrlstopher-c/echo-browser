@@ -34,6 +34,24 @@ export async function verifierAdmin(requete: Request, env: Env): Promise<void> {
   }
 }
 
+const USAGE_GARDE_J = 90
+
+/** Usage par compte : actifs par jour, synchros par jour, ecritures par type, les plus actifs, machines. */
+function lecturesUsage(db: D1Database, maintenant: number): D1PreparedStatement[] {
+  const depuis = (jours: number): string => jour(maintenant - jours * JOUR_MS)
+  return [
+    db.prepare('SELECT jour, COUNT(DISTINCT compte) AS n FROM usage WHERE jour >= ? GROUP BY jour ORDER BY jour')
+      .bind(depuis(30)),
+    db.prepare("SELECT jour, SUM(n) AS n FROM usage WHERE jour >= ? AND cle = 'synchro' GROUP BY jour ORDER BY jour")
+      .bind(depuis(30)),
+    db.prepare(`SELECT substr(cle, 10) AS type, SUM(n) AS n FROM usage WHERE jour >= ? AND cle LIKE 'ecriture:%'
+      GROUP BY type ORDER BY n DESC`).bind(depuis(30)),
+    db.prepare(`SELECT c.id, c.email, SUM(u.n) AS n FROM usage u JOIN comptes c ON c.id = u.compte WHERE u.jour >= ?
+      GROUP BY u.compte ORDER BY n DESC LIMIT 10`).bind(depuis(7)),
+    db.prepare('SELECT COUNT(*) AS n, SUM(vu_le > ?) AS actives FROM machines').bind(maintenant - 7 * JOUR_MS),
+  ]
+}
+
 /** Les lectures du resume, dans l'ordre ou `resume` les range. */
 function lectures(db: D1Database, maintenant: number): D1PreparedStatement[] {
   const il = (jours: number): number => maintenant - jours * JOUR_MS
@@ -55,13 +73,18 @@ function lectures(db: D1Database, maintenant: number): D1PreparedStatement[] {
     db.prepare(`SELECT COALESCE(version, 'inconnue') AS version, COUNT(*) AS n FROM activite WHERE vu_le > ?
       GROUP BY version ORDER BY n DESC`).bind(il(30)),
     db.prepare("SELECT COUNT(*) AS n FROM echecs WHERE le > ? AND email <> '#admin'").bind(il(1)),
+    ...lecturesUsage(db, maintenant),
   ]
 }
 
 export async function resume(env: Env): Promise<Response> {
-  const [comptes, inscriptions, actifs, sessions, coffre, requetes, routes, versions, echecs] =
+  await env.DB.prepare('DELETE FROM usage WHERE jour < ?').bind(jour(Date.now() - USAGE_GARDE_J * JOUR_MS)).run()
+  const [comptes, inscriptions, actifs, sessions, coffre, requetes, routes, versions, echecs, ...usage] =
     await env.DB.batch(lectures(env.DB, Date.now()))
+  const [actifsParJour, synchros, ecritures, plusActifs, machines] = usage
   return json({
+    actifsParJour: actifsParJour?.results, synchros: synchros?.results, ecritures: ecritures?.results,
+    plusActifs: plusActifs?.results, machines: machines?.results[0],
     comptes: comptes.results[0], inscriptions: inscriptions.results, actifs: actifs.results[0],
     sessions: sessions.results[0], coffre: coffre.results, requetes: requetes.results, routes: routes.results,
     versions: versions.results, echecsConnexion24h: echecs.results[0],
@@ -81,8 +104,11 @@ export async function listeComptes(requete: Request, env: Env): Promise<Response
 }
 
 export async function deconnecterCompte(env: Env, id: string): Promise<Response> {
-  const fait = await env.DB.prepare('DELETE FROM sessions WHERE compte = ?').bind(id).run()
-  return json({ sessionsFermees: fait.meta.changes })
+  const [fait] = await env.DB.batch([
+    env.DB.prepare('DELETE FROM sessions WHERE compte = ?').bind(id),
+    env.DB.prepare('DELETE FROM machines WHERE compte = ?').bind(id),
+  ])
+  return json({ sessionsFermees: fait?.meta.changes ?? 0 })
 }
 
 /** Donne ou retire l'acces administrateur a un compte. */
@@ -90,7 +116,8 @@ export async function changerAdmin(requete: Request, env: Env, id: string): Prom
   const admin = (await lireJson(requete)).admin === true
   const existe = await env.DB.prepare('SELECT 1 FROM comptes WHERE id = ?').bind(id).first()
   if (existe === null) throw new Refus(404, 'compte introuvable')
-  await env.DB.prepare(admin ? 'INSERT OR IGNORE INTO admins (compte) VALUES (?)' : 'DELETE FROM admins WHERE compte = ?')
+  const sql = admin ? 'INSERT OR IGNORE INTO admins (compte) VALUES (?)' : 'DELETE FROM admins WHERE compte = ?'
+  await env.DB.prepare(sql)
     .bind(id).run()
   return json({ admin })
 }

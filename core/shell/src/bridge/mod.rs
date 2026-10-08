@@ -219,6 +219,7 @@ fn apply(request: UiRequest) {
         UiRequest::AdminSignOutAccount { id } => crate::account::admin_sign_out(&id),
         UiRequest::AdminDeleteAccount { id } => crate::account::admin_delete(&id),
         UiRequest::AdminSetFlag { id, admin } => crate::account::admin_set_flag(&id, admin),
+        UiRequest::AdminAccountDetail { id } => crate::account::admin_detail(&id),
 
         UiRequest::AddBookmark { id } => library::add_bookmark(id),
         UiRequest::RemoveBookmark { url } => library::remove_bookmark(&url),

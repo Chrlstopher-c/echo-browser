@@ -9,6 +9,16 @@ export interface Env {
 }
 
 const CONTEXTES = new WeakMap<Request, ExecutionContext>()
+const COMPTES = new WeakMap<Request, string>()
+
+/** Retient le compte d'une requete authentifiee (pour l'usage par compte, compte a la fin de la requete). */
+export function noterCompte(requete: Request, compte: string): void {
+  COMPTES.set(requete, compte)
+}
+
+export function compteConnu(requete: Request): string | null {
+  return COMPTES.get(requete) ?? null
+}
 
 /** Rattache une requete a son contexte d'execution, pour les travaux d'arriere-plan (`attendre`). */
 export function lier(requete: Request, contexte: ExecutionContext): void {

@@ -23,6 +23,27 @@ export interface AdminSummary {
   versions: NamedCount[]
   storage: Array<NamedCount & { bytes: number }>
   routes: NamedCount[]
+  activeByDay: DayCount[]
+  syncsByDay: DayCount[]
+  writesByType: NamedCount[]
+  topUsers: Array<NamedCount & { id: string }>
+  machines: { total: number; active: number }
+}
+
+export interface AdminMachine {
+  createdAt: number
+  seenAt: number
+  version: string | null
+  /** Fin de la session, null si elle est fermee. */
+  expiresAt: number | null
+}
+
+export interface AdminDetail {
+  account: AdminAccount
+  byDay: DayCount[]
+  byAction: NamedCount[]
+  machines: AdminMachine[]
+  vault: Array<{ type: string; version: number; bytes: number; updatedAt: number }>
 }
 
 export interface AdminAccount {
@@ -39,7 +60,8 @@ export interface AdminAccount {
 type Fields = Record<string, unknown>
 
 function fields(value: unknown): Fields {
-  return typeof value === 'object' && value !== null && !Array.isArray(value) ? Object.fromEntries(Object.entries(value)) : {}
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) return {}
+  return Object.fromEntries(Object.entries(value))
 }
 
 function list(value: unknown): Fields[] {
@@ -67,6 +89,35 @@ export function readSummary(raw: unknown): AdminSummary | null {
     versions: list(r['versions']).map((v) => ({ name: str(v['version']), count: num(v['n']) })),
     storage: list(r['coffre']).map((c) => ({ name: str(c['type']), count: num(c['n']), bytes: num(c['octets']) })),
     routes: list(r['routes']).map((x) => ({ name: str(x['route']), count: num(x['n']) })),
+    activeByDay: days(r['actifsParJour']),
+    syncsByDay: days(r['synchros']),
+    writesByType: list(r['ecritures']).map((x) => ({ name: str(x['type']), count: num(x['n']) })),
+    topUsers: list(r['plusActifs']).map((x) => ({ id: str(x['id']), name: str(x['email']), count: num(x['n']) })),
+    machines: { total: num(fields(r['machines'])['n']), active: num(fields(r['machines'])['actives']) },
+  }
+}
+
+function days(raw: unknown): DayCount[] {
+  return list(raw).map((d) => ({ day: str(d['jour']), count: num(d['n']), errors: 0 }))
+}
+
+export function readDetail(raw: unknown): AdminDetail | null {
+  const r = fields(raw)
+  const account = readAccounts([r['compte']])[0]
+  if (account === undefined || account.id === '') return null
+  return {
+    account,
+    byDay: days(r['parJour']),
+    byAction: list(r['parAction']).map((x) => ({ name: str(x['action']), count: num(x['n']) })),
+    machines: list(r['machines']).map((m) => ({
+      createdAt: num(m['creeLe']),
+      seenAt: num(m['vuLe']),
+      version: maybeStr(m['version']),
+      expiresAt: maybeNum(m['expireLe']),
+    })),
+    vault: list(r['coffre']).map((c) => ({
+      type: str(c['type']), version: num(c['version']), bytes: num(c['octets']), updatedAt: num(c['majLe']),
+    })),
   }
 }
 

@@ -24,6 +24,7 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `compte/src/acces.ts` — comptes et sessions. Le serveur ne voit jamais le mot de passe : il recoit une cle d'acces derivee
 - `compte/src/activite.ts` — ce que le service sait de l'usage, sans rien du contenu — derniere activite d'un compte (et la
 - `compte/src/admin/api.ts` — API du tableau de bord des createurs — chiffres d'usage et gestion des comptes. Jamais le contenu du
+- `compte/src/admin/fiche.ts` — la fiche d'un compte pour l'administration — usage par jour et par action (30 jours), machines
 - `compte/src/admin/page.ts` — la page du tableau de bord des createurs. Autonome (HTML, style et script en ligne), elle ne
 - `compte/src/admin/routes.ts` — aiguillage du tableau de bord — la page (`/admin`, publique : elle ne contient aucune donnee) et son
 - `compte/src/coffre.ts` — le coffre d'un compte — des elements par type (reglages, favoris…), chiffres sur la machine,
@@ -226,6 +227,7 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `ui/src/admin/admin-accounts.tsx` — la liste des comptes de l'administration — e-mail, dates, version, taille du coffre, sessions — et
 - `ui/src/admin/admin-charts.tsx` — les visuels du tableau de bord — tuiles chiffrees, barres par jour sur 30 jours, jauges par nom.
 - `ui/src/admin/admin-data.ts` — lire le tableau de bord rendu par le service (forme libre cote contrat) en types surs, sans
+- `ui/src/admin/admin-detail.tsx` — fiche d'un compte dans l'administration — requetes par jour (30 j), actions, machines connectees,
 - `ui/src/admin/admin-format.ts` — mise en forme des chiffres du tableau de bord (tailles, dates, nombres).
 - `ui/src/admin/admin-page.tsx` — page Administration d'Echo (comptes administrateurs) — chiffres du service, activite, coffre par
 - `ui/src/admin/use-admin.ts` — etat de la section Administration — relit le tableau de bord a l'ouverture, toutes les minutes et a

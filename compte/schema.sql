@@ -44,3 +44,21 @@ CREATE TABLE IF NOT EXISTS compteurs (
 CREATE TABLE IF NOT EXISTS admins (
   compte TEXT PRIMARY KEY
 );
+-- Usage par compte et par jour : nombre de requetes par action (`synchro`, `ecriture:favoris`…). Garde 90 jours.
+CREATE TABLE IF NOT EXISTS usage (
+  jour TEXT NOT NULL,
+  compte TEXT NOT NULL,
+  cle TEXT NOT NULL,
+  n INTEGER NOT NULL,
+  PRIMARY KEY (jour, compte, cle)
+);
+CREATE INDEX IF NOT EXISTS usage_compte ON usage (compte, jour);
+-- Machines connectees : une ligne par session (empreinte du jeton), sans nom de machine.
+CREATE TABLE IF NOT EXISTS machines (
+  empreinte_jeton TEXT PRIMARY KEY,
+  compte TEXT NOT NULL,
+  cree_le INTEGER NOT NULL,
+  vu_le INTEGER NOT NULL,
+  version TEXT
+);
+CREATE INDEX IF NOT EXISTS machines_compte ON machines (compte);

@@ -4,6 +4,7 @@
 import { json } from '../outils'
 import type { Env } from '../outils'
 import { changerAdmin, deconnecterCompte, listeComptes, resume, supprimerCompte, verifierAdmin } from './api'
+import { ficheCompte } from './fiche'
 import { PAGE_ADMIN } from './page'
 
 const ENTETES_PAGE = {
@@ -31,5 +32,6 @@ export async function routeAdmin(requete: Request, env: Env): Promise<Response |
   if (id !== undefined && methode === 'POST' && action === '/deconnexion') return deconnecterCompte(env, id)
   if (id !== undefined && methode === 'POST' && action === '/admin') return changerAdmin(requete, env, id)
   if (id !== undefined && methode === 'DELETE' && action === undefined) return supprimerCompte(env, id)
+  if (id !== undefined && methode === 'GET' && action === undefined) return ficheCompte(env, id)
   return json({ erreur: 'introuvable' }, 404)
 }

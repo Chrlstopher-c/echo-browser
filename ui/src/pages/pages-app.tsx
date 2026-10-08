@@ -82,7 +82,7 @@ function Content({ page }: { page: PageId }): ReactElement {
 
 function Admin(): ReactElement {
   const { state, send } = useCore()
-  return <AdminPage admin={useAdmin(send, state.admin)} />
+  return <AdminPage admin={useAdmin(send, state.admin, state.adminAccount)} />
 }
 
 function Welcome(): ReactElement {
@@ -99,7 +99,7 @@ export function PagesApp(): ReactElement {
   }, [page])
   if (page === 'bienvenue') return <Welcome />
   return (
-    <div className="fond-espace min-h-screen bg-shell">
+    <div className="fond-espace h-screen overflow-y-auto bg-shell">
       <div className={`mx-auto flex gap-8 px-8 py-10 ${page === 'admin' ? 'max-w-6xl' : 'max-w-4xl'}`}>
         <Nav page={page} go={go} admin={admin} />
         <main className="min-w-0 flex-1 rounded-tile bg-card p-5 shadow-card">

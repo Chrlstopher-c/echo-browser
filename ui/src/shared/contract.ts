@@ -126,6 +126,8 @@ export type UiRequest =
   /** Supprimer un compte et tout son coffre. Definitif. */
   | { kind: 'adminDeleteAccount'; id: string }
   | { kind: 'adminSetFlag'; id: string; admin: boolean }
+  /** Fiche d'un compte : usage par jour et par action, machines, coffre par type. */
+  | { kind: 'adminAccountDetail'; id: string }
 
 /** Ce que le coeur renvoie a l'interface. */
 export type CoreEvent =
@@ -162,6 +164,8 @@ export type CoreEvent =
   | { kind: 'accountVault'; kinds: VaultKindView[] }
   /** Tableau de bord tel que le service le rend (forme lue par `admin/admin-data.ts`), ou l'erreur. */
   | { kind: 'adminData'; summary: unknown; accounts: unknown; error: string | null }
+  /** Fiche d'un compte telle que le service la rend (lue par `admin/admin-data.ts`), ou l'erreur. */
+  | { kind: 'adminAccount'; detail: unknown; error: string | null }
 
 export interface RemoteMachineView {
   name: string

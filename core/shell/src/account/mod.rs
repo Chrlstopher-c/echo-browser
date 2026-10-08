@@ -137,8 +137,8 @@ pub fn sync_now() {
     );
 }
 
-pub use admin::{delete_account as admin_delete, refresh as admin_refresh, set_flag as admin_set_flag,
-    sign_out_account as admin_sign_out};
+pub use admin::{delete_account as admin_delete, detail as admin_detail, refresh as admin_refresh,
+    set_flag as admin_set_flag, sign_out_account as admin_sign_out};
 
 /// L'interface a change un reglage : celui de l'historique se reflete dans l'etat du compte, et part tout de suite.
 pub fn setting_changed(key: &str) {

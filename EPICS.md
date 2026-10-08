@@ -91,6 +91,11 @@ Le coffre est chiffré sur la machine : le serveur ne peut pas le lire, le table
   Actions : déconnecter un compte partout, supprimer un compte. Neumorphisme clair/sombre comme Echo.
   Critère : service local, deux comptes créés par le test → le tableau de bord montre 2 comptes, leurs tailles, la
   version d'Echo ; la suppression d'un compte depuis le tableau de bord l'empêche de se reconnecter ; sans la clé : 401.
+- S1b Administration détaillée (demande de Chris, 08/10) : usage global (utilisateurs actifs par jour, synchros par jour,
+  écritures par type), usage PAR utilisateur (requêtes par jour sur 30 j, par type d'action, machines connectées avec
+  date de connexion, dernière activité et version, coffre par type avec version et date), les plus actifs sur 7 j.
+  Métadonnées seulement (comptages, dates, tailles), jamais de contenu ni de nom de machine ; usage gardé 90 jours.
+  Critère : service local, un compte qui synchronise → sa fiche montre ses requêtes du jour, sa machine et ses types.
 - S2 Signaux anonymes (socle des idées collectives : sites malveillants, habitudes, etc.). Réglage « Partager des signaux
   anonymes », coupé par défaut (consentement). Envoyés sans compte ni identifiant stable, par lots, domaine seulement
   (jamais l'adresse complète), agrégés par jour ; un chiffre n'est montré qu'au-delà de k installations distinctes ;

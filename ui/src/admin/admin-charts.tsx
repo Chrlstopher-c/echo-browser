@@ -28,7 +28,8 @@ export function Panel({ title, children }: { title: ReactElement | string; child
 /** Une barre par jour (les jours sans valeur a zero) ; la part d'erreurs en rouge au pied. */
 export function DayBars({ days }: { days: DayCount[] }): ReactElement {
   const byDay = new Map(days.map((d) => [d.day, d]))
-  const span = Array.from({ length: DAYS }, (_, i) => new Date(Date.now() - (DAYS - 1 - i) * DAY_MS).toISOString().slice(0, 10))
+  const span = Array.from({ length: DAYS },
+    (_, i) => new Date(Date.now() - (DAYS - 1 - i) * DAY_MS).toISOString().slice(0, 10))
   const max = Math.max(1, ...days.map((d) => d.count))
   return (
     <div>
@@ -39,7 +40,8 @@ export function DayBars({ days }: { days: DayCount[] }): ReactElement {
           const errors = d?.errors ?? 0
           return (
             <div key={day} title={`${day} : ${count}${errors > 0 ? ` (${errors} erreurs)` : ''}`}
-              className="relative min-h-[2px] flex-1 rounded-t-[3px] bg-tint" style={{ height: `${(count / max) * 100}%` }}>
+              className="relative min-h-[2px] flex-1 rounded-t-[3px] bg-tint"
+              style={{ height: `${(count / max) * 100}%` }}>
               {errors > 0 && (
                 <div className="absolute inset-x-0 bottom-0 rounded-t-[3px] bg-danger"
                   style={{ height: `${(errors / count) * 100}%` }} />

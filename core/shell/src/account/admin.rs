@@ -60,6 +60,24 @@ fn act(id: &str, method: &'static str, suffix: &str, body: Option<Value>) {
     with_session(move |client, token| client.admin(token, method, &path, body).map(drop), QUERY.lock().clone());
 }
 
+/// Fiche d'un compte (lecture seule), diffusee a part du tableau de bord.
+pub fn detail(id: &str) {
+    let (Some(url), Some(token)) = (super::service_url(), store::load(&super::stored_path()).map(|s| s.token)) else {
+        return;
+    };
+    if !valid_id(id) {
+        return;
+    }
+    let path = format!("/v1/admin/comptes/{id}");
+    std::thread::spawn(move || {
+        let event = match Client::new(&url).admin(&token, "GET", &path, None) {
+            Ok(detail) => CoreEvent::AdminAccount { detail, error: None },
+            Err(err) => CoreEvent::AdminAccount { detail: Value::Null, error: Some(err.to_string()) },
+        };
+        crate::containers::later(move || crate::bridge::publish(&event));
+    });
+}
+
 pub fn sign_out_account(id: &str) {
     act(id, "POST", "/deconnexion", None);
 }

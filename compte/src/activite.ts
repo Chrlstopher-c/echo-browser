@@ -2,7 +2,7 @@
 // version d'Echo), compteurs de requetes par jour. Ecrit en arriere-plan : une erreur ici ne fait pas echouer la
 // requete.
 
-import type { Env } from './outils'
+import { compteConnu, type Env } from './outils'
 
 /** Une activite n'est reecrite qu'au-dela de ce delai (une ecriture par heure et par compte au plus). */
 const PAS_ACTIVITE_MS = 3600 * 1000
@@ -20,25 +20,54 @@ export function routeDe(requete: Request): string {
   return `${requete.method} ${route}`
 }
 
+/** L'action d'une requete authentifiee, pour l'usage par compte : `synchro`, `ecriture:favoris`, `connexion`… */
+export function actionDe(requete: Request): string {
+  const { pathname } = new URL(requete.url)
+  const type = /^\/v1\/coffre\/([a-z0-9-]{1,32})$/.exec(pathname)?.[1]
+  if (type !== undefined) return `ecriture:${type}`
+  if (pathname === '/v1/coffre') return 'synchro'
+  if (pathname.startsWith('/v1/admin/')) return 'administration'
+  return pathname.replace(/^\/v1\//, '').slice(0, 32)
+}
+
+export function versionDe(requete: Request): string | null {
+  const brute = requete.headers.get('x-echo-version') ?? ''
+  return VERSION.test(brute) ? brute : null
+}
+
+/** Compteurs du jour : la route et son statut, et l'action du compte s'il est connu. */
 export async function compter(env: Env, requete: Request, statut: number): Promise<void> {
+  const route = statut === 404 ? 'introuvable 404' : `${routeDe(requete)} ${statut}`
+  const compte = compteConnu(requete)
+  const lignes = [env.DB.prepare(`INSERT INTO compteurs (jour, cle, n) VALUES (?, ?, 1)
+      ON CONFLICT (jour, cle) DO UPDATE SET n = n + 1`).bind(jour(), route)]
+  if (compte !== null && statut < 400) {
+    lignes.push(env.DB.prepare(`INSERT INTO usage (jour, compte, cle, n) VALUES (?, ?, ?, 1)
+      ON CONFLICT (jour, compte, cle) DO UPDATE SET n = n + 1`).bind(jour(), compte, actionDe(requete)))
+  }
   try {
-    await env.DB.prepare(`INSERT INTO compteurs (jour, cle, n) VALUES (?, ?, 1)
-      ON CONFLICT (jour, cle) DO UPDATE SET n = n + 1`)
-      .bind(jour(), statut === 404 ? 'introuvable 404' : `${routeDe(requete)} ${statut}`).run()
+    await env.DB.batch(lignes)
   } catch (erreur) {
-    console.error('compteur non ecrit', erreur)
+    console.error('compteurs non ecrits', erreur)
   }
 }
 
-export async function noterActivite(env: Env, compte: string, requete: Request): Promise<void> {
-  const brute = requete.headers.get('x-echo-version') ?? ''
-  const version = VERSION.test(brute) ? brute : null
+export async function noterActivite(env: Env, compte: string, empreinte: string, requete: Request): Promise<void> {
+  const version = versionDe(requete)
   const maintenant = Date.now()
+  const avant = maintenant - PAS_ACTIVITE_MS
   try {
-    await env.DB.prepare(`INSERT INTO activite (compte, vu_le, version) VALUES (?, ?, ?)
-      ON CONFLICT (compte) DO UPDATE SET vu_le = excluded.vu_le, version = COALESCE(excluded.version, activite.version)
-      WHERE activite.vu_le < ? OR activite.version IS NOT excluded.version`)
-      .bind(compte, maintenant, version, maintenant - PAS_ACTIVITE_MS).run()
+    await env.DB.batch([
+      env.DB.prepare(`INSERT INTO activite (compte, vu_le, version) VALUES (?, ?, ?)
+        ON CONFLICT (compte) DO UPDATE SET vu_le = excluded.vu_le,
+          version = COALESCE(excluded.version, activite.version)
+        WHERE activite.vu_le < ? OR activite.version IS NOT excluded.version`).bind(compte, maintenant, version, avant),
+      env.DB.prepare(`INSERT INTO machines (empreinte_jeton, compte, cree_le, vu_le, version) VALUES (?, ?, ?, ?, ?)
+        ON CONFLICT (empreinte_jeton) DO UPDATE SET vu_le = excluded.vu_le,
+          version = COALESCE(excluded.version, machines.version)
+        WHERE machines.vu_le < ? OR machines.version IS NOT excluded.version`)
+        .bind(empreinte, compte, maintenant, maintenant, version, avant),
+    ])
   } catch (erreur) {
     console.error('activite non notee', erreur)
   }

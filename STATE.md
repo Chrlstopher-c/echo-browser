@@ -64,6 +64,10 @@
 - Dans Echo : page « Administration » (pages pleine largeur + lien dans Réglages → Compte), visible seulement si le
   compte connecté porte le drapeau admin (table `admins` ; relu à chaque synchro via `/v1/moi`). Le serveur vérifie la
   session admin à CHAQUE appel : cacher la section n'est que de l'affichage. Test : `tools/test-admin.sh`.
+- Détail (S1b) : usage par compte et par jour (table `usage`, 90 j), machines par session (table `machines`, sans nom
+  de machine), fiche d'un compte (requêtes/jour, actions, machines, coffre par type), actifs/jour, synchros/jour,
+  envois par type, plus actifs. Compte de Chris admin en production (08/10).
+- Pages pleine largeur : elles défilent (le `body` garde `overflow: hidden` pour la barre).
 - Secours web : `/admin` sur le service (clé `ADMIN_KEY` en secret Wrangler ; sert aussi à nommer le 1er admin). Comptes
   (e-mail complet, choix de Chris), actifs 1/7/30 j, sessions, coffre par type (tailles), requêtes et erreurs par jour,
   routes, versions d'Echo (en-tête `X-Echo-Version` envoyé par le navigateur). Actions : déconnecter, supprimer.

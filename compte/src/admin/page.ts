@@ -167,7 +167,8 @@ function actions(c) {
 function afficherComptes(liste) {
   if (liste.length === 0) return $('#comptes').replaceChildren(el('div', { class: 'vide' }, 'Aucun compte.'))
   const badge = (c) => c.admin ? el('span', { class: 'badge' }, 'admin') : ''
-  const lignes = liste.map((c) => el('tr', {}, el('td', {}, c.email, ' ', badge(c)), el('td', { class: 'num' }, date(c.creeLe)),
+  const lignes = liste.map((c) => el('tr', {}, el('td', {}, c.email, ' ', badge(c)),
+    el('td', { class: 'num' }, date(c.creeLe)),
     el('td', { class: 'num' }, date(c.vuLe)), el('td', { class: 'num' }, c.version ?? '—'),
     el('td', { class: 'num' }, taille(c.octets)), el('td', { class: 'num' }, c.sessions), actions(c)))
   $('#comptes').replaceChildren(el('div', { class: 'defile' }, el('table', {}, el('thead', {}, el('tr', {},
