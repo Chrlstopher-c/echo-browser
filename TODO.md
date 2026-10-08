@@ -205,7 +205,7 @@ debout à la première requête.
 
 - [ ] Angles arrondis : pages en `color-scheme: dark` sans fond déclaré s'affichent en blanc (le fond par défaut est forcé) ; à traiter si ça se voit
 
-## FAIT 08/10 (0.6.0) : compte Echo + synchronisation — voir STATE.md ; reste : historique et onglets ouverts des autres machines
+## FAIT 08/10 (0.6.0) : compte Echo + synchronisation — voir STATE.md ; onglets des autres machines faits (0.7.0) ; reste : historique
 Créer un compte Echo au premier lancement (pages de présentation façon Arc : suivant, suivant, créer un compte / se
 connecter), puis synchroniser entre machines : réglages, profils, favoris, historique, onglets, liste d'extensions par
 profil. Serveur gratuit : Cloudflare Worker (authentification) + D1 (SQLite, 5 Go gratuits) ou KV/R2 ; repli possible sur

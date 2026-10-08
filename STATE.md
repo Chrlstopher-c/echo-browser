@@ -59,6 +59,14 @@
   Une page déjà ouverte garde l'ancienne teinte dans ses angles jusqu'au rechargement.
 
 
+## Onglets des autres machines + pont (0.7.0, 08/10)
+- Type `onglets` du coffre : une entrée par machine (`<données>/machine-id` aléatoire, nom = /etc/hostname, 100 pages web
+  max) ; chaque machine n'écrit que la sienne (fusion par clé). Bibliothèque → « Machines » (section absente sans autre
+  machine) ; clic = nouvel onglet. `shell/src/account/machine.rs`, `ui/src/library/devices/`.
+- Pont (`bridge/script.rs`) : l'état de départ n'était rejoué qu'au PREMIER abonné ; la page pleine largeur a plusieurs
+  abonnés → certains états manquaient jusqu'à leur prochaine publication. L'amorce garde le dernier événement de chaque
+  sorte d'état et le rejoue à chaque abonné (pas les ponctuels ni les incrémentaux par onglet).
+
 ## Releases publiées le 08/10 (nuit)
 - v0.5.0 (mise à jour automatique + correctif profil principal) puis v0.6.0 (compte Echo), rattachées au commit de la
   branche `nuit/2026-10-06` (le mode nuit interdit de pousser `main` : à faire avancer au retour de Chris).

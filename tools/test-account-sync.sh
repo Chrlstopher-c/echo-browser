@@ -7,16 +7,25 @@ cd "$(dirname "$0")/.."
 export ECHO_SYNC_URL="${COMPTE_URL:-http://127.0.0.1:8788}"
 curl -sf "$ECHO_SYNC_URL/v1/sante" >/dev/null || { echo "service de compte injoignable : $ECHO_SYNC_URL" >&2; exit 1; }
 A="$(mktemp -d)"; B="$(mktemp -d)"
-start() { # dossier nom
-  ECHO_RUN_DIR="$1/run" ECHO_DATA_DIR="$1/data" ECHO_CONTROL_NAME="$2" ./start.sh release >/dev/null
+start() { # dossier nom port
+  ECHO_RUN_DIR="$1/run" ECHO_DATA_DIR="$1/data" ECHO_CONTROL_NAME="$2" ECHO_DEVTOOLS_PORT="$3" ./start.sh release >/dev/null
 }
+PA=$((30000 + RANDOM % 10000)); PB=$((40000 + RANDOM % 10000))
 stop() { ECHO_RUN_DIR="$1/run" ./stop.sh >/dev/null 2>&1 || true; }
 trap 'stop "$A"; stop "$B"' EXIT
 mkdir -p "$A/run" "$B/run"
-start "$A" "compte-a-$$"; start "$B" "compte-b-$$"; sleep 14
-python3 - "$A" "$B" "compte-a-$$" "compte-b-$$" <<'PY'
-import json, os, socket, sqlite3, sys, time
-A, B, NA, NB = sys.argv[1:5]
+start "$A" "compte-a-$$" "$PA"; start "$B" "compte-b-$$" "$PB"; sleep 14
+uv run -q --with websocket-client python - "$A" "$B" "compte-a-$$" "compte-b-$$" "$PA" "$PB" <<'PY'
+import json, os, socket, sqlite3, sys, time, urllib.request, websocket
+A, B, NA, NB, PA, PB = sys.argv[1:7]
+def page_eval(port, prefix, js):
+    t = [t for t in json.load(urllib.request.urlopen(f"http://127.0.0.1:{port}/json/list")) if t["url"].startswith(prefix)][0]
+    ws = websocket.create_connection(t["webSocketDebuggerUrl"], suppress_origin=True)
+    ws.send(json.dumps({"id": 1, "method": "Runtime.evaluate", "params": {"expression": js, "returnByValue": True}}))
+    while (m := json.loads(ws.recv())).get("id") != 1: pass
+    ws.close(); return m["result"]["result"].get("value")
+MACHINES = ("(()=>{const b=[...document.querySelectorAll('button,[role=radio],label')].find(x=>x.innerText.trim()==='Machines');"
+            "if(!b)return 'absent';b.click();return 'ok'})()")
 def control(name):
     s = socket.socket(socket.AF_UNIX); s.connect(f"{os.environ['XDG_RUNTIME_DIR']}/echo-browser/{name}.sock")
     f = s.makefile("rw")
@@ -44,11 +53,22 @@ a(op="ui", request={"kind": "accountSync"}); time.sleep(8)
 b(op="ui", request={"kind": "accountSignIn", "email": email, "password": mdp, "create": False})
 until(lambda: any("example.org" in u for (u,) in db(B, "select url from bookmarks")), "le favori de A n'arrive pas sur B", 160)
 print("favori de A recu par B")
+b(op="ui", request={"kind": "openPage", "page": "bibliotheque"}); time.sleep(3)
+if page_eval(PB, "echo://ui/pages.html", MACHINES) != "ok":
+    onglets = json.load(open(f"{B}/data/compte.json")).get("kinds", {}).get("onglets")
+    raise AssertionError(f"section Machines absente sur B ; onglets connus de B : {json.dumps(onglets)[:600]}")
+time.sleep(1)
+texte = page_eval(PB, "echo://ui/pages.html", "document.body.innerText")
+assert "Example Domain" in texte, f"onglet de A absent des Machines de B : {texte[:300]!r}"
+print("onglets de A visibles sur B (Bibliotheque → Machines)")
 b(op="ui", request={"kind": "updateSetting", "key": "search.engine", "value": {"type": "text", "value": "duckduckgo"}})
 time.sleep(1); b(op="ui", request={"kind": "accountSync"}); time.sleep(8)
 a(op="ui", request={"kind": "accountSync"})
 until(lambda: ("s:duckduckgo",) in db(A, "select value from settings where key='search.engine'"), "le reglage de B n'arrive pas sur A")
 print("reglage de B recu par A")
+a(op="ui", request={"kind": "openPage", "page": "bibliotheque"}); time.sleep(3)
+assert page_eval(PA, "echo://ui/pages.html", MACHINES) == "absent", "A se voit elle-meme dans Machines"
+print("A ne se voit pas elle-meme")
 compte = json.load(open(f"{A}/data/compte.json"))
 assert oct(os.stat(f"{A}/data/compte.json").st_mode & 0o777) == "0o600", "fichier du compte lisible par d'autres"
 a(op="ui", request={"kind": "accountSignOut"}); time.sleep(1)

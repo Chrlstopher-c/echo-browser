@@ -145,6 +145,15 @@ export type CoreEvent =
   | { kind: 'videoCodecsChanged'; codecs: VideoCodecsView }
   | { kind: 'updateChanged'; update: UpdateView }
   | { kind: 'accountChanged'; account: AccountView }
+  /** Onglets ouverts sur les autres machines du compte. */
+  | { kind: 'remoteTabsChanged'; machines: RemoteMachineView[] }
+
+export interface RemoteMachineView {
+  name: string
+  /** Derniere publication de ses onglets (secondes Unix). */
+  updated: number
+  tabs: Array<{ url: string; title: string }>
+}
 
 /** Le compte Echo de cette machine. */
 export interface AccountView {

@@ -12,8 +12,13 @@ use crate::store::{KindState, Stored};
 use crate::crypto;
 
 /// Ce qui se synchronise, et comment le fusionner.
-pub const KINDS: [(&str, Shape); 3] =
-    [("reglages", Shape::Map), ("favoris", Shape::KeyedList("url")), ("extensions", Shape::SetMap)];
+/// `onglets` : une entree par machine (ses onglets ouverts) ; chacune ne modifie que la sienne.
+pub const KINDS: [(&str, Shape); 4] = [
+    ("reglages", Shape::Map),
+    ("favoris", Shape::KeyedList("url")),
+    ("extensions", Shape::SetMap),
+    ("onglets", Shape::Map),
+];
 
 pub struct Outcome {
     /// Valeurs a ecrire localement (seulement celles qui changent).

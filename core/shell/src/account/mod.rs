@@ -4,6 +4,7 @@
 //! sinon celle fixee a la compilation (jamais dans le depot public).
 
 mod local;
+mod machine;
 
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -38,11 +39,12 @@ fn stored_path() -> PathBuf {
 
 pub fn publish() {
     let stored = store::load(&stored_path());
+    machine::publish(stored.as_ref().and_then(|s| s.kinds.get("onglets")).map(|k| &k.base));
     let account = AccountView {
         available: service_url().is_some(),
         email: stored.as_ref().map(|s| s.email.clone()),
         busy: BUSY.load(Ordering::SeqCst),
-        last_sync: stored.and_then(|s| s.last_sync),
+        last_sync: stored.as_ref().and_then(|s| s.last_sync),
         error: LAST_ERROR.lock().clone(),
     };
     crate::bridge::publish(&CoreEvent::AccountChanged { account });
@@ -102,7 +104,8 @@ pub fn sign_out() {
 pub fn sync_now() {
     let Some(mut stored) = store::load(&stored_path()) else { return };
     let Some(session) = stored.session() else { return };
-    let locals = local::read();
+    let mut locals = local::read();
+    locals.insert("onglets".to_string(), machine::local_value(stored.kinds.get("onglets").map(|k| &k.base)));
     background(
         move |client| {
             let outcome = echo_account::sync::run(&client, &session, &mut stored, &locals)?;

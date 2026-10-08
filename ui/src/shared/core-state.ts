@@ -14,6 +14,7 @@ import type {
   TabId,
   TabView,
   AccountView,
+  RemoteMachineView,
   UpdateView,
   VideoCodecsView,
 } from './contract'
@@ -59,6 +60,8 @@ export interface CoreState {
   update: UpdateView | null
   /** Compte Echo, null tant que le coeur n'a rien dit. */
   account: AccountView | null
+  /** Onglets des autres machines du compte. */
+  remoteMachines: RemoteMachineView[]
 }
 
 export interface PermissionRequest {
@@ -90,6 +93,7 @@ export const EMPTY_CORE_STATE: CoreState = {
   codecs: null,
   update: null,
   account: null,
+  remoteMachines: [],
 }
 
 function withShield(state: CoreState, id: TabId, view: ShieldView): CoreState {
@@ -168,6 +172,8 @@ export function reduceCore(state: CoreState, event: CoreEvent): CoreState {
       return { ...state, update: event.update }
     case 'accountChanged':
       return { ...state, account: event.account }
+    case 'remoteTabsChanged':
+      return { ...state, remoteMachines: event.machines }
   }
 }
 

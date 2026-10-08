@@ -76,3 +76,6 @@
   gagne, par type). Critère : deux instances, même compte, un favori ajouté sur l'une apparaît sur l'autre.
 - S4 Premier lancement façon Arc : présentation en quelques écrans, puis créer un compte / se connecter / passer.
 - S5 Réglages → Compte : état, synchroniser maintenant, se déconnecter.
+- S6 Onglets des autres machines : chaque machine publie ses onglets ouverts (chiffrés, 100 au plus) ; Bibliothèque →
+  « Sur vos autres machines » (nom de la machine, onglets cliquables). Critère : deux instances, les onglets de A
+  apparaissent sur B, A ne se voit pas elle-même.

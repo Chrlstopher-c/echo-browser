@@ -59,6 +59,7 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `core/library/tests/library.rs`
 - `core/shell/Cargo.toml`
 - `core/shell/src/account/local.rs`
+- `core/shell/src/account/machine.rs`
 - `core/shell/src/account/mod.rs`
 - `core/shell/src/anchor.rs` — le point d'ancrage des extensions. Les API d'extension de Chrome (`tabs.create`,
 - `core/shell/src/anchor_watch.rs` — reperer les onglets que les extensions ouvrent dans la fenetre d'ancrage et les
@@ -226,6 +227,7 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `ui/src/extensions/use-extensions.ts` — commandes du panneau des extensions — installation par le catalogue, bascule,
 - `ui/src/library/bookmarks/bookmarks-panel.tsx` — panneau des favoris — ajout de la page courante, liste reordonnable, retrait au survol.
 - `ui/src/library/bookmarks/use-bookmarks.ts` — commandes des favoris — ajout depuis l'onglet courant, retrait, reordonnancement.
+- `ui/src/library/devices/devices-panel.tsx` — Bibliotheque → Machines — les onglets ouverts sur les autres machines du compte Echo, a rouvrir ici.
 - `ui/src/library/downloads/download-badge.tsx` — badge des telechargements en cours sur le bouton bibliotheque — un anneau qui avance.
 - `ui/src/library/downloads/download-reading.ts` — lecture d'un telechargement — progression, libelle d'etat, agregat pour le badge.
 - `ui/src/library/downloads/downloads-panel.tsx` — panneau des telechargements — progression en direct, ouverture, dossier, annulation, oubli.

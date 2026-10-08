@@ -180,6 +180,24 @@ pub enum CoreEvent {
     VideoCodecsChanged { codecs: VideoCodecsView },
     UpdateChanged { update: UpdateView },
     AccountChanged { account: AccountView },
+    /// Onglets ouverts sur les autres machines du compte.
+    RemoteTabsChanged { machines: Vec<RemoteMachineView> },
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RemoteMachineView {
+    pub name: String,
+    /// Derniere publication de ses onglets (secondes Unix).
+    pub updated: i64,
+    pub tabs: Vec<RemoteTabView>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RemoteTabView {
+    pub url: String,
+    pub title: String,
 }
 
 /// Le compte Echo de cette machine.
