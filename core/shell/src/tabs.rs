@@ -462,6 +462,21 @@ impl Tabs {
     }
 
     /// Deplace un onglet a une nouvelle position dans la liste.
+    /// Place de l'onglet dans la liste.
+    pub fn index_of(&self, id: TabId) -> Option<usize> {
+        self.entries.iter().position(|tab| tab.id == id)
+    }
+
+    /// Range un onglet ouvert par `opener` juste apres lui, derriere ceux qu'il a deja ouverts (comme Chrome).
+    pub fn place_after_opener(&mut self, id: TabId, opener: TabId) {
+        let Some(mut at) = self.index_of(opener) else { return };
+        while self.entries.get(at + 1).is_some_and(|t| t.opener == Some(opener) && t.id != id) {
+            at += 1;
+        }
+        let Some(from) = self.index_of(id) else { return };
+        self.move_to(id, if from > at { at + 1 } else { at });
+    }
+
     pub fn move_to(&mut self, id: TabId, to: usize) {
         let Some(from) = self.entries.iter().position(|tab| tab.id == id) else { return };
         let tab = self.entries.remove(from);

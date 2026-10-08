@@ -120,14 +120,27 @@ fn perform_page(action: crate::shortcuts::Action) {
         Action::Zoom(step) => {
             if let Some((id, zoom, _)) = active {
                 set_zoom(id, match step {
-                    ZoomStep::In => zoom * 1.1,
-                    ZoomStep::Out => zoom / 1.1,
+                    ZoomStep::In => next_zoom(zoom, true),
+                    ZoomStep::Out => next_zoom(zoom, false),
                     ZoomStep::Reset => 1.0,
                 });
             }
         }
         _ => {}
     }
+}
+
+/// Paliers de zoom de Chrome et Firefox : 90, 100, 110, 125, 150 %… plutot que des multiples de 1,1.
+const ZOOM_STEPS: [f32; 17] =
+    [0.25, 0.33, 0.5, 0.67, 0.75, 0.8, 0.9, 1.0, 1.1, 1.25, 1.5, 1.75, 2.0, 2.5, 3.0, 4.0, 5.0];
+
+fn next_zoom(current: f32, up: bool) -> f32 {
+    let found = if up {
+        ZOOM_STEPS.iter().copied().find(|step| *step > current + 0.001)
+    } else {
+        ZOOM_STEPS.iter().rev().copied().find(|step| *step < current - 0.001)
+    };
+    found.unwrap_or(current)
 }
 
 /// Ctrl+S telecharge la page ; Ctrl+U ouvre son code source dans un onglet.
@@ -144,16 +157,20 @@ fn save_or_source(save: bool, url: &str) {
     }
 }
 
-/// Onglets fermes, le plus recent en dernier : (adresse, conteneur). Ctrl+Maj+T rouvre le dernier.
-static CLOSED: parking_lot::Mutex<Vec<(String, Option<String>)>> = parking_lot::Mutex::new(Vec::new());
+/// Onglets fermes, le plus recent en dernier : (adresse, conteneur, place). Ctrl+Maj+T rouvre le dernier a sa place.
+static CLOSED: parking_lot::Mutex<Vec<(String, Option<String>, Option<usize>)>> = parking_lot::Mutex::new(Vec::new());
 const CLOSED_KEPT: usize = 25;
 
 /// Retient un onglet qui va etre ferme (pages web seulement).
 pub fn remember_closed(id: echo_contract::TabId) {
-    let tab = session::with(|s| s.tabs.get_mut(id).map(|t| (t.url.clone(), t.container.clone()))).flatten();
-    if let Some((url, container)) = tab.filter(|(url, _)| url.starts_with("http") || url.starts_with("file:")) {
+    let tab = session::with(|s| {
+        let index = s.tabs.index_of(id);
+        s.tabs.get_mut(id).map(|t| (t.url.clone(), t.container.clone(), index))
+    })
+    .flatten();
+    if let Some((url, container, index)) = tab.filter(|(url, _, _)| url.starts_with("http") || url.starts_with("file:")) {
         let mut closed = CLOSED.lock();
-        closed.push((url, container));
+        closed.push((url, container, index));
         if closed.len() > CLOSED_KEPT {
             closed.remove(0);
         }
@@ -162,8 +179,10 @@ pub fn remember_closed(id: echo_contract::TabId) {
 
 fn reopen_closed() {
     let last = CLOSED.lock().pop();
-    if let Some((url, container)) = last {
-        super::open_tab_in(&url, container.as_deref());
+    if let Some((url, container, index)) = last {
+        if let (Some(id), Some(index)) = (super::open_tab_in(&url, container.as_deref()), index) {
+            session::with(|s| s.tabs.move_to(id, index));
+        }
         publish_tabs();
     }
 }
@@ -275,6 +294,15 @@ pub(super) fn current_url() -> String {
 #[cfg(test)]
 mod tests {
     use super::normalize;
+
+    #[test]
+    fn paliers_de_zoom() {
+        assert_eq!(super::next_zoom(1.0, true), 1.1);
+        assert_eq!(super::next_zoom(1.1, true), 1.25);
+        assert_eq!(super::next_zoom(1.0, false), 0.9);
+        assert_eq!(super::next_zoom(1.21, false), 1.1);
+        assert_eq!(super::next_zoom(5.0, true), 5.0);
+    }
 
     #[test]
     fn une_adresse_reste_une_adresse() {

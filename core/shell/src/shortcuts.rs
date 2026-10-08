@@ -75,7 +75,11 @@ pub enum ZoomStep {
 /// La lettre tapee : le caractere sans modificateur s'il en est une (un caractere de controle Ctrl+lettre, 1 a 26,
 /// compte aussi), sinon la lettre du code de touche.
 fn letter(code: i32, unmodified: u16) -> Option<char> {
-    let control = (1..=26).contains(&unmodified).then(|| char::from(b'a' + (unmodified - 1) as u8));
+    // Avec Ctrl, Chromium rend le caractere en code de controle (caractere & 0x1F) : sur une touche lettre c'est la
+    // lettre, mais Ctrl+0 donnerait 16 (« p ») et Ctrl+& 6 (« f »). Le code de controle ne vaut donc que pour une
+    // touche lettre (ou sans code).
+    let letter_key = code == 0 || (0x41..=0x5A).contains(&code);
+    let control = (letter_key && (1..=26).contains(&unmodified)).then(|| char::from(b'a' + (unmodified - 1) as u8));
     char::from_u32(u32::from(unmodified))
         .filter(char::is_ascii_alphabetic)
         .map(|c| c.to_ascii_lowercase())
@@ -144,7 +148,7 @@ fn zoom(code: i32, unmodified: u16, ctrl: bool) -> Option<Action> {
         (Some('+' | '='), _) | (_, key::OEM_PLUS | key::ADD) => Some(Action::Zoom(ZoomStep::In)),
         (Some('-'), _) | (_, key::OEM_MINUS | key::SUBTRACT) => Some(Action::Zoom(ZoomStep::Out)),
         (Some('0' | 'à'), _) | (_, key::NUMPAD_0) => Some(Action::Zoom(ZoomStep::Reset)),
-        (_, key::DIGIT_0) if ch.is_none_or(|c| c == '\0') => Some(Action::Zoom(ZoomStep::Reset)),
+        (_, key::DIGIT_0) if ch.is_none_or(|c| u32::from(c) < 0x20) => Some(Action::Zoom(ZoomStep::Reset)),
         _ => None,
     }
 }
@@ -154,6 +158,20 @@ mod tests {
     use super::*;
 
     const CTRL: u32 = MOD_CTRL;
+
+    #[test]
+    fn ctrl_zero_remet_le_zoom_sur_toutes_les_dispositions() {
+        let reset = Some(Action::Zoom(ZoomStep::Reset));
+        assert_eq!(resolve(key::DIGIT_0, u16::from(b'0'), CTRL), reset);
+        assert_eq!(resolve(key::DIGIT_0, 'à' as u16, CTRL), reset);
+        assert_eq!(resolve(key::DIGIT_0, 0, CTRL), reset);
+        assert_eq!(resolve(key::NUMPAD_0, 0, CTRL), reset);
+        assert_eq!(resolve(0x46, u16::from(b'f'), CTRL), Some(Action::Find));
+        // Codes de controle que Chromium fabrique avec Ctrl : « 0 » & 0x1F = 16, « & » & 0x1F = 6.
+        assert_eq!(resolve(key::DIGIT_0, 16, CTRL), reset);
+        assert_eq!(resolve(key::DIGIT_1, 6, CTRL), Some(Action::SelectTab(0)));
+        assert_eq!(resolve(0x46, 6, CTRL), Some(Action::Find));
+    }
 
     #[test]
     fn azerty_la_lettre_tapee_compte_pas_la_position() {
@@ -213,7 +231,7 @@ wrap_keyboard_handler! {
                     return 0;
                 }
             }
-            debug!(?action, "raccourci");
+            debug!(?action, code = event.windows_key_code, ch = event.unmodified_character, mods = event.modifiers, "raccourci");
             crate::bridge::perform(action);
             1
         }

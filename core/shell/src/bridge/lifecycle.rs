@@ -69,6 +69,7 @@ pub fn page_opens_window(browser_id: i32, url: &str, background: bool) -> bool {
             if let Some(tab) = s.tabs.get_mut(id) {
                 tab.opener = Some(opener);
             }
+            s.tabs.place_after_opener(id, opener);
             s.tabs.refresh_visibility();
         });
         if background {
@@ -100,7 +101,23 @@ pub(super) fn move_to_container(id: TabId, container: Option<String>) {
     }
     let url = session::with(|s| s.tabs.wake_url(id)).flatten();
     let Some(url) = url else { return };
-    open_tab_in(&url, container.as_deref());
+    let (index, was_active) = session::with(|s| (s.tabs.index_of(id), s.tabs.active_id() == Some(id))).unwrap_or_default();
+    let Some(new) = open_tab_in(&url, container.as_deref()) else { return };
+    // Le nouvel onglet prend la place, l'epingle et le dossier de l'ancien.
+    session::with(|s| {
+        let kept = s.tabs.get_mut(id).map(|t| (t.pinned, t.folder.clone(), t.keep_awake));
+        if let (Some((pinned, folder, awake)), Some(tab)) = (kept, s.tabs.get_mut(new)) {
+            tab.pinned = pinned;
+            tab.folder = folder;
+            tab.keep_awake = awake;
+        }
+        if let Some(index) = index {
+            s.tabs.move_to(new, index);
+        }
+    });
+    if was_active {
+        select_tab(new);
+    }
     close_tab(id);
     publish_tabs();
 }
