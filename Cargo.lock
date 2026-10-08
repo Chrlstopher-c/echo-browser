@@ -594,6 +594,7 @@ dependencies = [
  "echo-shield",
  "echo-terminal",
  "image",
+ "libc",
  "parking_lot",
  "rfd",
  "serde",

@@ -19,8 +19,9 @@ pub fn open_tab_like_active(url: &str) {
     open_tab_in(url, container.as_deref());
 }
 
-/// Ouvre un onglet dans le conteneur donne (`None` : contexte commun).
-pub fn open_tab_in(url: &str, container: Option<&str>) {
+/// Ouvre un onglet dans le conteneur donne (`None` : contexte commun). Rend l'onglet, sauf si l'ouverture est
+/// repoussee (profil du conteneur pas encore pret).
+pub fn open_tab_in(url: &str, container: Option<&str>) -> Option<TabId> {
     // Sans conteneur explicite, l'onglet prend les comptes du profil affiche.
     let profile = session::with(|s| crate::profiles::container_for(&s.tabs.space())).flatten();
     let container = container.or(profile.as_deref());
@@ -31,15 +32,13 @@ pub fn open_tab_in(url: &str, container: Option<&str>) {
             publish_tabs();
         }
     }) {
-        return;
+        return None;
     }
     dismiss_overlays();
-    let Some((mut client, host)) = session::with(|s| (s.client.clone(), s.tabs.host())) else {
-        return;
-    };
+    let (mut client, host) = session::with(|s| (s.client.clone(), s.tabs.host()))?;
     let Some(view) = crate::window::create_view(client.as_mut(), url, 0, container) else {
         warn!(%url, "vue d'onglet non creee");
-        return;
+        return None;
     };
     if let Some(host) = host {
         let mut child = View::from(&view);
@@ -50,7 +49,35 @@ pub fn open_tab_in(url: &str, container: Option<&str>) {
         if let Some(tab) = s.tabs.get_mut(id) {
             tab.container = container.map(str::to_string);
         }
+        id
+    })
+}
+
+/// Une page ouvre une fenetre (`window.open`, lien `target=_blank`) : l'adresse s'ouvre dans un onglet normal du
+/// conteneur de la page, rattache a elle (retour a sa fermeture, connexion Google finie). La fenetre native n'est
+/// pas creee : dans CEF, la pause des service workers d'extensions (voir `extension_tabs/workers.rs`) la figerait
+/// sur about:blank. Revers assume (choix de Chris, 08/10) : la page n'a pas de `window.opener` vers qui ecrire.
+/// Faux si la fenetre n'est pas pour nous (adresse vide, page qui n'est pas un onglet) : Chromium la cree alors.
+pub fn page_opens_window(browser_id: i32, url: &str, background: bool) -> bool {
+    let web = ["http://", "https://", "file://"].iter().any(|scheme| url.starts_with(scheme));
+    let opener = session::with(|s| s.tabs.by_browser(browser_id).map(|t| (t.id, t.container.clone()))).flatten();
+    let (true, Some((opener, container))) = (web, opener) else { return false };
+    let url = url.to_string();
+    crate::containers::later(move || {
+        let Some(id) = open_tab_in(&url, container.as_deref()) else { return };
+        session::with(|s| {
+            if let Some(tab) = s.tabs.get_mut(id) {
+                tab.opener = Some(opener);
+            }
+            s.tabs.refresh_visibility();
+        });
+        if background {
+            publish_tabs();
+        } else {
+            select_tab(id);
+        }
     });
+    true
 }
 
 /// Tant que le profil du conteneur n'est pas pret, repousse `job` de quelques instants. Vrai si repousse.

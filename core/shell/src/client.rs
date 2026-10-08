@@ -357,6 +357,28 @@ wrap_life_span_handler! {
             self.live.opened();
         }
 
+        /// Une page ouvre une fenetre : un onglet d'Echo a sa place (voir `bridge::page_opens_window`).
+        fn on_before_popup(
+            &self,
+            browser: Option<&mut Browser>,
+            _frame: Option<&mut Frame>,
+            _popup_id: i32,
+            target_url: Option<&CefString>,
+            _target_frame_name: Option<&CefString>,
+            target_disposition: WindowOpenDisposition,
+            _user_gesture: i32,
+            _popup_features: Option<&PopupFeatures>,
+            _window_info: Option<&mut WindowInfo>,
+            _client: Option<&mut Option<Client>>,
+            _settings: Option<&mut BrowserSettings>,
+            _extra_info: Option<&mut Option<DictionaryValue>>,
+            _no_javascript_access: Option<&mut i32>,
+        ) -> i32 {
+            let (Some(browser), Some(url)) = (browser, target_url) else { return 0 };
+            let background = target_disposition == WindowOpenDisposition::NEW_BACKGROUND_TAB;
+            i32::from(crate::bridge::page_opens_window(browser.identifier(), &url.to_string(), background))
+        }
+
         /// Sans ce rappel, une page qui appelle `window.close()` ferme la fenetre entiere d'Echo.
         fn do_close(&self, browser: Option<&mut Browser>) -> i32 {
             browser.map_or(0, |b| i32::from(crate::bridge::page_asks_close(b.identifier())))

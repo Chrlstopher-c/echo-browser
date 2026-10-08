@@ -59,6 +59,19 @@
   Une page déjà ouverte garde l'ancienne teinte dans ses angles jusqu'au rechargement.
 
 
+## Popups, reprise de session, arrêt (08/10 soir)
+
+- **Popups** : depuis la 0.4.0, toute fenêtre `window.open` qui garde `window.opener` restait sur about:blank. Cause
+  mesurée : l'auto-attachement du débogueur au niveau du navigateur (pause des service workers d'extensions,
+  `extension_tabs/workers.rs`) fige ces fenêtres dans CEF, quel que soit le filtre (sessions non aplaties refusées,
+  « tab » + « page » refusés ensemble, relance des cibles sans effet). **Choix de Chris** : les extensions gardent tout,
+  les popups s'ouvrent en onglet normal (`on_before_popup` → `bridge::page_opens_window`), sans `window.opener`,
+  rattachées à leur page (retour à la fermeture, connexion Google finie par rechargement).
+- **Reprise de session** : dossier, épinglage, historique d'un onglet rouvert vivant allaient à l'onglet actif (pas
+  au rouvert) — `open_tab_in` rend maintenant l'onglet créé.
+- **Arrêt par signal** (`shutdown.rs`) : SIGTERM/SIGINT/SIGHUP enregistrent d'abord les onglets, puis rendent la main
+  au gestionnaire de Chromium (qui finit proprement : état local, profils).
+
 ## E12 — palette, formulaires, lecture (autonomie, 08/10 après-midi) — release 0.10.0, main à jour
 
 - **Palette d'adresse** (`ui/src/address/use-suggestions.ts`, `suggest::for_address`) : en tapant, onglets ouverts,

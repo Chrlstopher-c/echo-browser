@@ -7,11 +7,13 @@
   exacte des pages (saisies, médias), routines (suites de sites), masquer un élément retenu par gabarit.
 
 ## SUITE
-- BUG antérieur au 08/10 (vérifié sur le binaire du début de journée) : une fenêtre ouverte par `window.open` vers une
-  page `file://` reste sur about:blank (`tools/test-popup.sh`, sway de test). À reproduire en http et sur Hyprland.
-- Bancs liés à Hyprland (`hyprctl`) : `test-occlusion.sh` ; `test-contextmenu.sh` accepte maintenant `SWAYSOCK`.
-- `test-folders.sh` : clics à coordonnées fixes, décalés depuis l'entrée « Garder éveillé » du menu (07/10) → à refaire
-  avec l'op `menu`/`key` plutôt que des positions.
+- FAIT 08/10 soir : popups `window.open` blanches depuis la 0.4.0 → ouvertes en onglet (voir STATE) ; reprise de
+  session qui donnait dossier/épinglage au mauvais onglet ; arrêt par signal qui perdait les derniers changements ;
+  `test-folders.sh` refait par événements DOM ; `test-popup.sh` en http + sway.
+- Bancs liés à Hyprland (`hyprctl`) : `test-occlusion.sh`. `test-contextmenu.sh` et `test-popup.sh` : passer
+  `SWAYSOCK` sur le sway de test (sinon « 0 fenêtres »).
+- Popups sans `window.opener` (choix de Chris, 08/10) : si un site en a vraiment besoin (paiement, OAuth par message),
+  piste : pause des service workers par une autre voie que l'auto-attachement navigateur (qui fige les popups de CEF).
 - Extensions : la déclaration externe est lue par Chromium pour TOUS les profils (dossier `External Extensions` à la
   racine des données) → chaque profil télécharge son exemplaire (quelques Mo, désactivé là où il n'est pas voulu).
   Pas de voie par profil connue sans revenir au chargement dépaqueté (cassé, mesuré le 10/09). À étudier à part.

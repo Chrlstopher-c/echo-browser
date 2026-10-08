@@ -139,6 +139,10 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `core/shell/src/persist.rs` — sauvegarder les onglets au fil de l'eau, pour les retrouver apres une fermeture
 - `core/shell/src/presence.rs`
 - `core/shell/src/profiles.rs` — les profils (espaces facon Arc). Chacun a sa liste d'onglets et, sauf le profil par
+- `core/shell/src/reader/LICENSE-readability`
+- `core/shell/src/reader/lecture.js`
+- `core/shell/src/reader/mod.rs` — le mode lecture — l'article de la page (extrait par Readability, celui de Firefox) affiche seul,
+- `core/shell/src/reader/readability.js`
 - `core/shell/src/restart.rs` — relancer le navigateur sans perdre ce qui etait ouvert.
 - `core/shell/src/roundness.rs` — les angles arrondis de la page. Une vue web est un rectangle natif que Chromium ne sait
 - `core/shell/src/routines.rs` — routines dans le navigateur — suit les sites ouverts a la suite (seance = visites a moins de 15 min
@@ -217,6 +221,7 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `tools/test-palette.sh`
 - `tools/test-popup.sh`
 - `tools/test-profiles.sh`
+- `tools/test-reader.sh`
 - `tools/test-routines.sh`
 - `tools/test-scheme.sh`
 - `tools/test-shield-toggle.sh`

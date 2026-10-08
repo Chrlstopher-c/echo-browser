@@ -77,6 +77,7 @@ wrap_browser_process_handler! {
             });
             crate::extension_profiles::start();
             crate::extension_tabs::start_workers();
+            crate::shutdown::watch();
             crate::update::start();
             crate::account::start();
             crate::signals::start();
@@ -164,10 +165,10 @@ fn restore_or_open() {
             crate::session::with(|s| s.tabs.adopt_asleep(tab));
             continue;
         }
-        crate::bridge::open_tab_in(url, tab.container.as_deref());
-        let opened = crate::session::with(|s| s.tabs.active_id()).flatten();
-        if let Some(id) = opened {
-            let (history, position, pinned) = (tab.history.clone(), tab.position, tab.pinned);
+        // L'onglet ouvert, pas l'actif : sinon dossier, epinglage et historique allaient a un autre onglet.
+        if let Some(id) = crate::bridge::open_tab_in(url, tab.container.as_deref()) {
+            let (history, position) = (tab.history.clone(), tab.position);
+            let (pinned, keep_awake) = (tab.pinned, tab.keep_awake);
             let folder = tab.folder.clone();
             let space = if tab.space.is_empty() { crate::profiles::DEFAULT.to_string() } else { tab.space.clone() };
             crate::page_state::adopt(id, tab.state.clone());
@@ -175,6 +176,7 @@ fn restore_or_open() {
                 s.tabs.restore_history(id, history, position);
                 if let Some(entry) = s.tabs.get_mut(id) {
                     entry.pinned = pinned;
+                    entry.keep_awake = keep_awake;
                     entry.folder = folder;
                     entry.space = space;
                 }
