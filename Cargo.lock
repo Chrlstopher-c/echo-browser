@@ -502,7 +502,7 @@ dependencies = [
 
 [[package]]
 name = "echo-account"
-version = "0.6.0"
+version = "0.7.0"
 dependencies = [
  "anyhow",
  "base64 0.22.1",
@@ -515,7 +515,7 @@ dependencies = [
 
 [[package]]
 name = "echo-contract"
-version = "0.6.0"
+version = "0.7.0"
 dependencies = [
  "serde",
  "serde_json",
@@ -523,7 +523,7 @@ dependencies = [
 
 [[package]]
 name = "echo-extensions"
-version = "0.6.0"
+version = "0.7.0"
 dependencies = [
  "anyhow",
  "serde",
@@ -537,7 +537,7 @@ dependencies = [
 
 [[package]]
 name = "echo-library"
-version = "0.6.0"
+version = "0.7.0"
 dependencies = [
  "anyhow",
  "parking_lot",
@@ -549,7 +549,7 @@ dependencies = [
 
 [[package]]
 name = "echo-shell"
-version = "0.6.0"
+version = "0.7.0"
 dependencies = [
  "anyhow",
  "base64 0.22.1",
@@ -574,7 +574,7 @@ dependencies = [
 
 [[package]]
 name = "echo-shield"
-version = "0.6.0"
+version = "0.7.0"
 dependencies = [
  "adblock",
  "anyhow",
@@ -589,7 +589,7 @@ dependencies = [
 
 [[package]]
 name = "echo-terminal"
-version = "0.6.0"
+version = "0.7.0"
 dependencies = [
  "anyhow",
  "parking_lot",

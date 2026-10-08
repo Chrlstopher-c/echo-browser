@@ -68,10 +68,11 @@
   sorte d'état et le rejoue à chaque abonné (pas les ponctuels ni les incrémentaux par onglet).
 
 ## Releases publiées le 08/10 (nuit)
-- v0.5.0 (mise à jour automatique + correctif profil principal) puis v0.6.0 (compte Echo), rattachées au commit de la
+- v0.5.0 (mise à jour automatique + correctif profil principal), v0.6.0 (compte Echo), v0.7.0 (onglets des autres
+  machines, pont), rattachées au commit de la
   branche `nuit/2026-10-06` (le mode nuit interdit de pousser `main` : à faire avancer au retour de Chris).
 - Vérifié pour de vrai : une 0.5.0 téléchargée de GitHub et installée (`installer.sh`, HOME temporaire) a trouvé la 0.6.0,
-  l'a vérifiée, préparée, puis a basculé au redémarrage (0.5.0 gardée en `.precedent`, essai validé).
+  l'a vérifiée, préparée, puis a basculé au redémarrage (0.5.0 gardée en `.precedent`, essai validé) ; idem 0.6.0 → 0.7.0.
 
 ## Compte Echo synchronisé (0.6.0, 08/10)
 - Service : `compte/` (Worker + D1, offre gratuite), déployé (`pnpm exec wrangler deploy` dans compte/), adresse dans
