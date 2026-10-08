@@ -16,7 +16,7 @@ const SEED: DownloadView[] = [
     received: 118_400_000,
     total: 118_400_000,
     state: 'complete',
-    startedAt: Date.now() - 2 * 3_600_000,
+    startedAt: Math.floor(Date.now() / 1000) - 2 * 3600,
   },
   {
     id: 2,
@@ -26,7 +26,7 @@ const SEED: DownloadView[] = [
     received: 2_100_000,
     total: 6_400_000,
     state: 'failed',
-    startedAt: Date.now() - 40 * 60_000,
+    startedAt: Math.floor(Date.now() / 1000) - 40 * 60,
   },
 ]
 
@@ -87,7 +87,7 @@ export class FakeDownloads {
       received: 0,
       total: pick.total,
       state: 'running',
-      startedAt: Date.now(),
+      startedAt: Math.floor(Date.now() / 1000),
     }
     this.items = [item, ...this.items]
     this.emit(this.snapshot())

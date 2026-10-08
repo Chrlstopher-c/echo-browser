@@ -45,7 +45,9 @@ mod search;
 mod store;
 mod session;
 mod shortcuts;
+mod privacy;
 mod shutdown;
+mod system_theme;
 mod signals;
 mod sleep;
 mod suggest;
@@ -87,6 +89,7 @@ fn main() -> anyhow::Result<()> {
     }
     launch::keep(targets);
     profiles::wipe_pending();
+    privacy::wipe_if_asked();
 
     init_logging();
     let settings = browser_settings();

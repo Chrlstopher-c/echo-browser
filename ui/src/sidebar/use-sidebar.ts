@@ -66,7 +66,7 @@ export function useSidebar(): SidebarModel {
   const extensionMenu = useExtensionMenu()
   const width = useSidebarWidth(send)
   const sheet = useSheet()
-  const space = useSpace(send, profiles)
+  const space = useSpace(send, profiles, state.systemDark)
   const domains = useDomains(send, state)
   const [localFocus, setLocalFocus] = useState(0)
 

@@ -3,7 +3,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { HistoryEntryView, UiRequest } from '../../shared/contract'
-import { startOfDay } from '../../shared/format'
+import { fromCoreTime, startOfDay } from '../../shared/format'
 
 /** Delai entre la derniere frappe et la requete au coeur. */
 const SEARCH_DELAY_MS = 180
@@ -40,7 +40,7 @@ type Send = (request: UiRequest) => void
 export function groupByDay(entries: HistoryEntryView[]): HistoryDay[] {
   const days: HistoryDay[] = []
   for (const entry of entries) {
-    const day = startOfDay(entry.visitedAt)
+    const day = startOfDay(fromCoreTime(entry.visitedAt))
     const last = days.at(-1)
     if (last !== undefined && last.day === day) last.entries.push(entry)
     else days.push({ day, entries: [entry] })

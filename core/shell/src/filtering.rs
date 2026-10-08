@@ -88,7 +88,17 @@ wrap_resource_request_handler! {
             let kind = resource_kind(request.resource_type());
             let method = CefString::from(&request.method()).to_string();
             let page = if main_frame { url.as_str() } else { top.as_str() };
-            let blocked = self.verdict(request, &url, page, &source, kind, &method);
+            // Le compteur « bloqués sur cette page » repart de zero a chaque nouvelle page de l'onglet.
+            let tab_key = u32::try_from(browser_id).unwrap_or(0);
+            if main_frame {
+                self.shield.reset_tab(tab_key);
+            }
+            let blocked = self.verdict(request, (&url, page, &source), kind, &method, tab_key);
+            if blocked.is_none() && DO_NOT_TRACK.load(std::sync::atomic::Ordering::Relaxed) {
+                for name in ["DNT", "Sec-GPC"] {
+                    request.set_header_by_name(Some(&CefString::from(name)), Some(&CefString::from("1")), 1);
+                }
+            }
             crate::network::started(crate::network::Started {
                 browser: browser_id,
                 id: request.identifier(),
@@ -129,8 +139,8 @@ wrap_resource_request_handler! {
 impl ShieldResourceHandler {
     /// La raison de bloquer : regle de l'utilisateur d'abord (toujours appliquee), puis le bouclier si le site n'est
     /// pas en exception (une exception vaut pour le site entier, cadres externes compris).
-    fn verdict(&self, request: &mut Request, url: &str, page: &str, source: &str, kind: &str, method: &str)
-        -> Option<&'static str> {
+    fn verdict(&self, request: &mut Request, (url, page, source): (&str, &str, &str), kind: &str, method: &str,
+        tab_key: u32) -> Option<&'static str> {
         crate::identity::apply(request);
         if let Some(reason) = crate::network::rule_verdict(url, page) {
             return Some(reason);
@@ -138,7 +148,7 @@ impl ShieldResourceHandler {
         if !page.is_empty() && !self.shield.is_active_for(page) {
             return None;
         }
-        match self.shield.decide(0, url, source, kind, method) {
+        match self.shield.decide(tab_key, url, source, kind, method) {
             Verdict::Allow => None,
             Verdict::Block { .. } | Verdict::Redirect { .. } => Some("bouclier"),
         }
@@ -201,4 +211,14 @@ mod tests {
         assert!(!est_interne("https://ads.example.com/track.js"));
         assert!(!est_interne("http://www.google.com/"));
     }
+}
+
+/// Reglage « Demander à ne pas être suivi », lu ici sur le thread reseau (la session n'y est pas accessible).
+static DO_NOT_TRACK: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(true);
+
+/// Relit les reglages qui touchent aux requetes ; a appeler sur le thread interface au demarrage et a chaque changement.
+pub fn refresh_settings() {
+    use echo_library::settings::Value;
+    let dnt = crate::session::with(|s| echo_library::settings::get(&s.library, "privacy.send_do_not_track")).flatten();
+    DO_NOT_TRACK.store(!matches!(dnt, Some(Value::Flag(false))), std::sync::atomic::Ordering::Relaxed);
 }

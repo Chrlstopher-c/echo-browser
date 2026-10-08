@@ -4,11 +4,11 @@
 import { useEffect } from 'react'
 import { applySpace } from '../spaces/apply-space'
 import { buildSpace } from '../spaces/space-palette'
-import { readStoredScheme, readStoredSpace } from '../spaces/use-space'
+import { readSchemeNow, readStoredSpace } from '../spaces/use-space'
 
 export function usePageTheme(): void {
   useEffect(() => {
-    const apply = (): void => applySpace(buildSpace(readStoredSpace(), readStoredScheme()))
+    const apply = (): void => applySpace(buildSpace(readStoredSpace(), readSchemeNow()))
     apply()
     window.addEventListener('storage', apply)
     return () => window.removeEventListener('storage', apply)

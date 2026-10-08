@@ -27,7 +27,7 @@ export class FakeShield {
   private blockedTotal = 1_284
   private sites = new Map<TabId, SiteShield>()
   private lists: FilterListView[] = [...SEED_LISTS]
-  private refreshedAt: number | null = Date.now() - 3 * 3_600_000
+  private refreshedAt: number | null = Math.floor(Date.now() / 1000) - 3 * 3600
   private refreshTimer: ReturnType<typeof setTimeout> | null = null
 
   constructor(private readonly emit: Emit) {}
@@ -109,7 +109,7 @@ export class FakeShield {
     if (this.refreshTimer !== null) return
     this.refreshTimer = setTimeout(() => {
       this.refreshTimer = null
-      this.refreshedAt = Date.now()
+      this.refreshedAt = Math.floor(Date.now() / 1000)
       this.lists = this.lists.map((list) =>
         list.enabled && list.rules !== null ? { ...list, rules: list.rules + 12 } : list,
       )

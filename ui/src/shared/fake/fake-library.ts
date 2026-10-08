@@ -28,7 +28,7 @@ function seedHistory(now: number): HistoryEntryView[] {
     ['https://doc.rust-lang.org/book/', 'The Rust Programming Language', 3 * DAY + 4 * HOUR, 11],
     ['https://www.figma.com/', 'Figma', 4 * DAY + HOUR, 8],
   ]
-  return rows.map(([url, title, ago, visits]) => ({ url, title, favicon: null, visitedAt: now - ago, visits }))
+  return rows.map(([url, title, ago, visits]) => ({ url, title, favicon: null, visitedAt: Math.floor((now - ago) / 1000), visits }))
 }
 
 type Emit = (event: CoreEvent) => void

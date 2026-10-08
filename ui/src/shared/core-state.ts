@@ -84,6 +84,8 @@ export interface CoreState {
   network: NetworkView | null
   /** Fiche du compte ouvert dans l'administration. */
   adminAccount: { detail: unknown; error: string | null } | null
+  /** Theme du bureau, pour le choix « Système ». */
+  systemDark: boolean | null
 }
 
 export interface PermissionRequest {
@@ -119,6 +121,7 @@ export const EMPTY_CORE_STATE: CoreState = {
   vault: null,
   admin: null,
   adminAccount: null,
+  systemDark: null,
   network: null,
   routineProposal: null,
   pageChange: null,
@@ -221,6 +224,8 @@ export function reduceCore(state: CoreState, event: CoreEvent): CoreState {
       return { ...state, network: event.network }
     case 'adminAccount':
       return { ...state, adminAccount: { detail: event.detail, error: event.error } }
+    case 'systemScheme':
+      return { ...state, systemDark: event.dark }
     case 'adminData':
       return {
         ...state,

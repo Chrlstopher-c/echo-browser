@@ -78,6 +78,8 @@ wrap_browser_process_handler! {
             crate::extension_profiles::start();
             crate::extension_tabs::start_workers();
             crate::shutdown::watch();
+            crate::filtering::refresh_settings();
+            crate::system_theme::watch();
             crate::update::start();
             crate::account::start();
             crate::signals::start();
@@ -213,7 +215,11 @@ fn load_shield() -> std::sync::Arc<echo_shield::Shield> {
             tracing::warn!(%err, "listes de filtrage non rafraichies");
         }
         match background.load() {
-            Ok(()) => tracing::info!("bouclier operationnel"),
+            Ok(()) => {
+                tracing::info!("bouclier operationnel");
+                // Les listes viennent d'etre ecrites : sans ce rappel, le panneau garde « 0 règles ».
+                crate::containers::later(crate::bridge::publish_filter_lists);
+            }
             Err(err) => tracing::warn!(%err, "bouclier indisponible — navigation sans filtrage"),
         }
     });

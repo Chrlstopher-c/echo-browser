@@ -41,6 +41,8 @@ def touche(key):
     ev(f"(()=>{{{INPUT}.dispatchEvent(new KeyboardEvent('keydown',{{key:{json.dumps(key)},bubbles:true}}));return 1}})()")
 options = lambda: ev("[...document.querySelectorAll('[role=option]')].map(o=>o.getAttribute('aria-selected')+'|'+o.textContent)")
 base = f"http://localhost:{PORT}"
+# Les suggestions du moteur arrivent par le reseau et decaleraient les lignes : coupees ici (test-settings les couvre).
+call(op="ui", request={"kind": "updateSetting", "key": "search.suggest", "value": {"type": "flag", "value": False}})
 call(op="open", url=f"{base}/alpha.html"); time.sleep(2)
 call(op="open", url=f"{base}/beta.html"); time.sleep(2)
 beta = [t for t in call(op="tabs")["tabs"] if "beta" in t["url"]][0]

@@ -1,7 +1,7 @@
 // Responsabilite : lecture d'un telechargement — progression, libelle d'etat, agregat pour le badge.
 
 import type { DownloadView } from '../../shared/contract'
-import { formatBytes, formatRelative } from '../../shared/format'
+import { formatBytes, formatRelative, fromCoreTime } from '../../shared/format'
 
 /** Part recue, ou null quand la taille totale est inconnue. */
 export function progressOf(item: DownloadView): number | null {
@@ -18,7 +18,7 @@ export function stateLabel(item: DownloadView, now: number = Date.now()): string
     case 'paused':
       return `En pause · ${formatBytes(item.received)} reçus`
     case 'complete':
-      return `${formatBytes(item.received)} · ${formatRelative(item.startedAt, now)}`
+      return `${formatBytes(item.received)} · ${formatRelative(fromCoreTime(item.startedAt), now)}`
     case 'cancelled':
       return 'Annulé'
     case 'failed':

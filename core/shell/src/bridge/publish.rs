@@ -76,7 +76,8 @@ pub fn publish_shield() {
     // L'interface lit l'etat du bouclier sous l'identifiant de l'onglet actif : l'envoyer sous un autre
     // (l'ancien 0 fixe) lui faisait afficher « actif » par defaut, quel que soit l'etat reel.
     let Some((id, state)) = session::with(|s| {
-        let tally = s.shield.tally(0);
+        let browser = s.tabs.active().and_then(|t| t.browser()).map_or(0, |b| b.identifier());
+        let tally = s.shield.tally(u32::try_from(browser).unwrap_or(0));
         let view = ShieldView {
             enabled: s.shield.is_enabled(),
             active_here: s.shield.is_active_for(&url),

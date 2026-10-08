@@ -12,7 +12,7 @@ import { PushButton } from '../../shared/design/push-button'
 import { SearchField } from '../../shared/design/search-field'
 import { SectionLabel } from '../../shared/design/section-label'
 import { SiteMark } from '../../shared/design/site-mark'
-import { formatCount, formatDay, formatTime } from '../../shared/format'
+import { formatCount, formatDay, formatTime, fromCoreTime } from '../../shared/format'
 import { readUrl } from '../../shared/url-shape'
 import type { HistoryController, HistoryDay } from './use-history'
 
@@ -29,7 +29,7 @@ function HistoryRow({ entry, controller }: { entry: HistoryEntryView; controller
             className="numerique shrink-0 rounded bg-ink/8 px-1 text-[10px] text-ink-faint">×{entry.visits}</span>
         )}
         <span className="numerique shrink-0 text-[10.5px] text-ink-faint group-hover:hidden">
-          {formatTime(entry.visitedAt)}
+          {formatTime(fromCoreTime(entry.visitedAt))}
         </span>
         <span className="hidden group-hover:block">
           <RowAction label="Retirer de l'historique" onClick={() => controller.remove(entry)} danger>

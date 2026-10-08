@@ -2,6 +2,11 @@
 
 const DAY_MS = 86_400_000
 
+/** Le coeur horodate en secondes Unix ; l'affichage raisonne en millisecondes. */
+export function fromCoreTime(seconds: number): number {
+  return seconds * 1000
+}
+
 /** Compteur lisible : espace fine insecable tous les trois chiffres. */
 export function formatCount(value: number): string {
   return value.toLocaleString('fr-FR').replace(/ | /g, ' ')

@@ -1,9 +1,7 @@
 // Responsabilite : habillage des reglages — pour chaque cle que le coeur livre, un groupe, un libelle
-// en francais, une explication, et la forme du controle. Une cle inconnue tombe dans « Autres ».
+// en francais, une explication, et la forme du controle. Une cle inconnue n'est pas montree.
 
-import type { SettingValue } from '../shared/contract'
-
-export type SettingGroupId = 'navigation' | 'privacy' | 'page' | 'tabs' | 'downloads' | 'system' | 'other'
+export type SettingGroupId = 'navigation' | 'privacy' | 'tabs' | 'downloads' | 'system'
 
 export interface SettingGroup {
   id: SettingGroupId
@@ -13,11 +11,9 @@ export interface SettingGroup {
 export const SETTING_GROUPS: SettingGroup[] = [
   { id: 'navigation', title: 'Navigation' },
   { id: 'privacy', title: 'Vie privée' },
-  { id: 'page', title: 'Affichage des pages' },
   { id: 'tabs', title: 'Onglets' },
   { id: 'downloads', title: 'Téléchargements' },
   { id: 'system', title: 'Système' },
-  { id: 'other', title: 'Autres' },
 ]
 
 export interface NumberShape {
@@ -27,6 +23,11 @@ export interface NumberShape {
   unit: string
 }
 
+export interface ChoiceOption {
+  id: string
+  label: string
+}
+
 export interface SettingDefinition {
   group: SettingGroupId
   label: string
@@ -34,140 +35,88 @@ export interface SettingDefinition {
   detail: string
   /** Pour un nombre : bornes, pas, unite. */
   number?: NumberShape
-  /** Pour un texte : exemple affiche quand le champ est vide, et police a chasse fixe. */
+  /** Pour un texte a valeurs fermees : la liste des choix. */
+  choices?: ChoiceOption[]
+  /** Pour un texte libre : exemple affiche quand le champ est vide. */
   placeholder?: string
-  mono?: boolean
 }
 
+/** Moteurs proposes ; les identifiants sont ceux du coeur (`core/shell/src/search.rs`). */
+export const SEARCH_ENGINES: ChoiceOption[] = [
+  { id: 'google', label: 'Google' },
+  { id: 'duckduckgo', label: 'DuckDuckGo' },
+  { id: 'qwant', label: 'Qwant' },
+  { id: 'ecosia', label: 'Ecosia' },
+  { id: 'bing', label: 'Bing' },
+  { id: 'startpage', label: 'Startpage' },
+  { id: 'brave', label: 'Brave Search' },
+]
+
+/** Seuls les reglages decrits ici sont montres : une cle interne du coeur n'apparait jamais dans la feuille. */
 export const SETTING_CATALOGUE: Record<string, SettingDefinition> = {
-  'signals.share': {
-    group: 'privacy',
-    label: 'Partager des signaux anonymes',
-    detail: 'Chaque jour, des comptes de domaines visités et de traqueurs bloqués, sans compte ni identifiant, jamais '
-      + 'd’adresse complète. Aide à repérer les sites malveillants. Coupé par défaut.',
-  },
   'search.engine': {
     group: 'navigation',
     label: 'Moteur de recherche',
-    detail: 'Adresse utilisée quand la saisie n’est pas une URL. « %s » est remplacé par les termes.',
-    placeholder: 'https://…/search?q=%s',
-    mono: true,
+    detail: 'Utilisé quand ce qui est tapé dans l’adresse n’est pas une adresse de site.',
+    choices: SEARCH_ENGINES,
   },
-  'home.url': {
+  'search.suggest': {
     group: 'navigation',
-    label: 'Page d’accueil',
-    detail: 'Page ouverte dans chaque nouvel onglet.',
-    placeholder: 'https://',
-    mono: true,
+    label: 'Suggestions du moteur',
+    detail: 'Pendant la frappe, le moteur propose des recherches. Ce qui est tapé lui est alors envoyé.',
   },
   'session.restore': {
     group: 'navigation',
     label: 'Retrouver la session',
     detail: 'Rouvre les onglets de la dernière session au démarrage.',
   },
-  'newtab.focusAddress': {
-    group: 'navigation',
-    label: 'Curseur dans l’adresse',
-    detail: 'Un nouvel onglet place le curseur dans le champ d’adresse, prêt à taper.',
-  },
-  'privacy.doNotTrack': {
+  'privacy.send_do_not_track': {
     group: 'privacy',
     label: 'Demander à ne pas être suivi',
-    detail: 'Envoie l’en-tête « Do Not Track » aux sites. Ils restent libres de l’ignorer.',
+    detail: 'Envoie aux sites les signaux « Do Not Track » et « Global Privacy Control ». Ils restent libres de les '
+      + 'ignorer, mais la loi en impose certains.',
   },
-  'privacy.thirdPartyCookies': {
+  'privacy.clear_on_exit': {
     group: 'privacy',
-    label: 'Cookies tiers',
-    detail: 'Autorise les cookies posés par un autre domaine que celui de la page. Coupé, certains sites cassent.',
+    label: 'Tout effacer à la fermeture',
+    detail: 'Historique, cookies et cache disparaissent quand Echo se ferme. Les comptes sont alors déconnectés.',
   },
-  'privacy.clearOnExit': {
+  'signals.share': {
     group: 'privacy',
-    label: 'Effacer à la fermeture',
-    detail: 'Supprime cookies et historique quand le navigateur se ferme.',
-  },
-  'privacy.httpsOnly': {
-    group: 'privacy',
-    label: 'HTTPS seulement',
-    detail: 'Tente toujours la version chiffrée d’un site, et prévient si elle n’existe pas.',
-  },
-  'page.defaultZoom': {
-    group: 'page',
-    label: 'Zoom par défaut',
-    detail: 'Taille des pages avant tout ajustement par onglet.',
-    number: { min: 50, max: 200, step: 10, unit: '%' },
-  },
-  'page.minimumFontSize': {
-    group: 'page',
-    label: 'Taille minimale du texte',
-    detail: 'Aucun texte n’est rendu plus petit que cette valeur. 0 laisse les sites décider.',
-    number: { min: 0, max: 24, step: 1, unit: 'px' },
-  },
-  'page.smoothScrolling': {
-    group: 'page',
-    label: 'Défilement fluide',
-    detail: 'Anime le défilement au clavier et à la molette.',
+    label: 'Partager des signaux anonymes',
+    detail: 'Chaque jour, des comptes de domaines visités et de traqueurs bloqués, sans compte ni identifiant, jamais '
+      + 'd’adresse complète. Aide à repérer les sites malveillants. Coupé par défaut.',
   },
   'tabs.sleepEnabled': {
     group: 'tabs',
     label: 'Endormir les onglets inactifs',
-    detail: 'Libère la mémoire des onglets qu’on ne regarde plus. Ils se réveillent au clic.',
+    detail: 'Libère la mémoire des onglets qu’on ne regarde plus. Ils se réveillent au clic, à la même position.',
   },
   'tabs.sleepAfterMinutes': {
     group: 'tabs',
     label: 'Délai avant sommeil',
-    detail: 'Temps d’inactivité avant qu’un onglet s’endorme.',
+    detail: 'Temps d’inactivité avant qu’un onglet s’endorme. Plus court seulement si la mémoire de l’ordinateur '
+      + 'vient à manquer.',
     number: { min: 5, max: 240, step: 5, unit: 'min' },
   },
   'tabs.neverSleep': {
     group: 'tabs',
     label: 'Sites qui ne dorment jamais',
-    detail: 'Messageries et courrier, séparés par des virgules : leurs onglets restent éveillés.',
-    mono: true,
+    detail: 'Messageries et courrier : leurs onglets restent éveillés pour recevoir les messages. Un site par virgule.',
+    placeholder: 'mail.example.com, chat.example.com',
   },
-  'tabs.confirmCloseMany': {
-    group: 'tabs',
-    label: 'Confirmer la fermeture',
-    detail: 'Demande confirmation avant de fermer une fenêtre à plusieurs onglets.',
-  },
-  'downloads.directory': {
-    group: 'downloads',
-    label: 'Dossier de réception',
-    detail: 'Où les fichiers téléchargés sont écrits.',
-    placeholder: '/home/…/Téléchargements',
-    mono: true,
-  },
-  'downloads.askWhere': {
+  'downloads.ask_location': {
     group: 'downloads',
     label: 'Demander où enregistrer',
-    detail: 'Ouvre un sélecteur de dossier à chaque téléchargement.',
+    detail: 'Ouvre un sélecteur à chaque téléchargement. Sinon, tout va dans le dossier Téléchargements.',
   },
-  'system.hardwareAcceleration': {
+  'updates.auto': {
     group: 'system',
-    label: 'Accélération matérielle',
-    detail: 'Confie le rendu à la carte graphique. À couper si l’affichage se corrompt.',
-  },
-  'system.devTools': {
-    group: 'system',
-    label: 'Outils de développement',
-    detail: 'Autorise l’inspecteur de page (F12).',
-  },
-  'experimental.webgpu': {
-    group: 'system',
-    label: 'WebGPU',
-    detail: 'Active l’API graphique expérimentale. Peut rendre certaines pages instables.',
+    label: 'Mises à jour automatiques',
+    detail: 'Echo télécharge les nouvelles versions et propose de redémarrer pour les appliquer.',
   },
 }
 
-/** Libelle de repli pour une cle que le catalogue ne connait pas : « privacy.fooBar » → « Foo bar ». */
-export function fallbackLabel(key: string): string {
-  const tail = key.split('.').at(-1) ?? key
-  const spaced = tail.replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase()
-  return spaced.charAt(0).toUpperCase() + spaced.slice(1)
-}
-
-export function definitionOf(key: string, value: SettingValue): SettingDefinition {
-  const known = SETTING_CATALOGUE[key]
-  if (known !== undefined) return known
-  const fallback: SettingDefinition = { group: 'other', label: fallbackLabel(key), detail: key, mono: true }
-  return value.type === 'number' ? { ...fallback, number: { min: 0, max: 10_000, step: 1, unit: '' } } : fallback
+export function definitionOf(key: string): SettingDefinition | null {
+  return SETTING_CATALOGUE[key] ?? null
 }

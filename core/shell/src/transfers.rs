@@ -53,7 +53,11 @@ wrap_download_handler! {
             }
             if let Some(callback) = callback {
                 let target = download_dir().join(&name);
-                callback.cont(Some(&CefString::from(target.to_string_lossy().as_ref())), 0);
+                if ask_location() {
+                    ask_then_continue(callback.clone(), target);
+                } else {
+                    callback.cont(Some(&CefString::from(target.to_string_lossy().as_ref())), 0);
+                }
             }
             info!(%name, "telechargement demarre");
             notice(format!("Téléchargement de {name}…"));
@@ -75,6 +79,46 @@ wrap_download_handler! {
             record(item, "");
         }
     }
+}
+
+/// Reglage « Demander où enregistrer ».
+fn ask_location() -> bool {
+    use echo_library::settings::Value;
+    let value = crate::session::with(|s| echo_library::settings::get(&s.library, "downloads.ask_location")).flatten();
+    matches!(value, Some(Value::Flag(true)))
+}
+
+thread_local! {
+    /// Telechargements en attente du selecteur, rendus au thread interface par numero.
+    static WAITING: std::cell::RefCell<Vec<(u64, BeforeDownloadCallback)>> = const { std::cell::RefCell::new(Vec::new()) };
+}
+static NEXT_WAIT: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(1);
+
+/// Le selecteur du portail (celui du bureau ; la boite de CEF faisait tomber Echo) choisit le fichier ;
+/// Chromium attend la reponse. Annule si l'utilisateur ferme le selecteur.
+fn ask_then_continue(callback: BeforeDownloadCallback, target: std::path::PathBuf) {
+    let wait = NEXT_WAIT.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+    WAITING.with(|w| w.borrow_mut().push((wait, callback)));
+    std::thread::spawn(move || {
+        let mut dialog = rfd::FileDialog::new().set_title("Enregistrer le fichier");
+        if let Some(dir) = target.parent() {
+            dialog = dialog.set_directory(dir);
+        }
+        if let Some(name) = target.file_name() {
+            dialog = dialog.set_file_name(name.to_string_lossy());
+        }
+        let chosen = dialog.save_file();
+        crate::containers::later(move || {
+            let Some(callback) = WAITING.with(|w| {
+                let mut w = w.borrow_mut();
+                w.iter().position(|(id, _)| *id == wait).map(|at| w.remove(at).1)
+            }) else { return };
+            match chosen {
+                Some(path) => callback.cont(Some(&CefString::from(path.to_string_lossy().as_ref())), 0),
+                None => info!("enregistrement annule"),
+            }
+        });
+    });
 }
 
 /// Dossier de destination : celui du bureau s'il est declare, sinon le classique.

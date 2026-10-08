@@ -171,6 +171,7 @@ fn apply(request: UiRequest) {
         UiRequest::SetColorScheme { dark } => {
             let browsers = session::with(|s| s.tabs.browsers()).unwrap_or_default();
             crate::scheme::set(dark, &browsers);
+            crate::system_theme::publish();
         }
         UiRequest::SetAccent { color } => {
             let host = session::with(|s| s.tabs.host()).flatten();
@@ -243,7 +244,8 @@ fn apply(request: UiRequest) {
         UiRequest::AccountDelete => crate::account::delete(),
         UiRequest::Suggest { query } => {
             let items = crate::suggest::for_address(&query);
-            publish(&CoreEvent::Suggestions { query, items });
+            publish(&CoreEvent::Suggestions { query: query.clone(), items });
+            crate::suggest::fetch_engine(query);
         }
         UiRequest::OpenSidebarSheet { sheet } => {
             if matches!(sheet.as_str(), "network" | "shield" | "extensions") {
@@ -284,6 +286,7 @@ fn apply(request: UiRequest) {
             library::update_setting(&key, &value);
             crate::account::setting_changed(&key);
             crate::signals::setting_changed(&key);
+            crate::filtering::refresh_settings();
         }
         UiRequest::OpenExtensionManager => {
             open_tab(echo_extensions::profile::MANAGE_PAGE);

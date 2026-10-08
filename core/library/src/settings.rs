@@ -41,6 +41,7 @@ pub fn defaults() -> Vec<(&'static str, Value)> {
         ("shield.enabled", Value::Flag(true)),
         ("shield.strict", Value::Flag(false)),
         ("search.engine", Value::Text("google".into())),
+        ("search.suggest", Value::Flag(true)),
         ("startup.restore_tabs", Value::Flag(true)),
         ("downloads.ask_location", Value::Flag(false)),
         ("appearance.space", Value::Text("graphite".into())),
@@ -90,6 +91,11 @@ pub fn all(library: &Library) -> Vec<(String, Value)> {
             (key.to_string(), value)
         })
         .collect()
+}
+
+/// Valeur courante d'un reglage (enregistree, sinon par defaut).
+pub fn get(library: &Library, key: &str) -> Option<Value> {
+    all(library).into_iter().find(|(k, _)| k == key).map(|(_, v)| v)
 }
 
 /// Enregistre un reglage. Refuse une cle inconnue : l'interface ne doit pas

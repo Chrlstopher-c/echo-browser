@@ -83,7 +83,7 @@ export function ExtensionRow({ item, controller }: ExtensionRowProps): ReactElem
         </button>
         {item.pending && <PendingMark />}
         <Remove item={item} controller={controller} />
-        <Toggle checked={item.enabled} label={`Activer ${item.name}`}
+        <Toggle checked={item.enabled} label={item.name}
           onChange={(next) => controller.setEnabled(item.id, next)} />
       </div>
       <AnimatePresence initial={false}>

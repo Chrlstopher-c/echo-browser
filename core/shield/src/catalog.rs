@@ -29,13 +29,13 @@ impl Subscription {
 /// Les souscriptions actives par defaut — celles d'uBlock Origin, plus la liste francaise.
 pub fn default_subscriptions() -> Vec<Subscription> {
     vec![
-        Subscription::new("easylist", "EasyList — publicites",
+        Subscription::new("easylist", "EasyList — publicités",
             "https://easylist.to/easylist/easylist.txt", true),
         Subscription::new("easyprivacy", "EasyPrivacy — traqueurs",
             "https://easylist.to/easylist/easyprivacy.txt", true),
         Subscription::new("ubo-filters", "uBlock Origin — filtres",
             "https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/filters.txt", true),
-        Subscription::new("ubo-privacy", "uBlock Origin — vie privee",
+        Subscription::new("ubo-privacy", "uBlock Origin — vie privée",
             "https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/privacy.txt", true),
         Subscription::new("ubo-badware", "uBlock Origin — sites malveillants",
             "https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/badware.txt", true),
@@ -43,12 +43,12 @@ pub fn default_subscriptions() -> Vec<Subscription> {
             "https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/quick-fixes.txt", true),
         Subscription::new("ubo-unbreak", "uBlock Origin — anti-casse",
             "https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/unbreak.txt", true),
-        Subscription::new("liste-fr", "Liste FR — publicites francophones",
+        Subscription::new("liste-fr", "Liste FR — publicités francophones",
             "https://easylist-downloads.adblockplus.org/liste_fr.txt", true),
-        Subscription::new("peter-lowe", "Peter Lowe — regies et traqueurs",
+        Subscription::new("peter-lowe", "Peter Lowe — régies et traqueurs",
             "https://pgl.yoyo.org/adservers/serverlist.php?hostformat=adblockplus&showintro=0&mimetype=plaintext", true),
         Subscription::new("easylist-cookie", "EasyList Cookie — bandeaux de consentement",
-            "https://secure.fanboy.co.nz/fanboy-cookiemonster.txt", false),
+            "https://secure.fanboy.co.nz/fanboy-cookiemonster.txt", true),
         Subscription::new("fanboy-annoyances", "Fanboy — nuisances et surcouches",
             "https://secure.fanboy.co.nz/fanboy-annoyance.txt", false),
     ]

@@ -262,6 +262,8 @@ pub enum CoreEvent {
     NetworkChanged { network: NetworkView },
     /// Fiche d'un compte telle que le service la rend, ou l'erreur.
     AdminAccount { detail: serde_json::Value, error: Option<String> },
+    /// Theme du bureau : sombre, clair, ou sans preference.
+    SystemScheme { dark: Option<bool> },
 }
 
 /// Ou en est la mise a jour de la version installee.

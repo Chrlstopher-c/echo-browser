@@ -205,6 +205,8 @@ export type CoreEvent =
   | { kind: 'networkChanged'; network: NetworkView }
   /** Fiche d'un compte telle que le service la rend (lue par `admin/admin-data.ts`), ou l'erreur. */
   | { kind: 'adminAccount'; detail: unknown; error: string | null }
+  /** Theme du bureau ; null : aucune preference exprimee. */
+  | { kind: 'systemScheme'; dark: boolean | null }
 
 /** Ou en est la mise a jour de la version installee. */
 export type UpdateStatus =
@@ -456,7 +458,8 @@ export interface PermissionGrantView {
 
 /** Une suggestion de l'adresse : onglet ouvert (a activer), favori ou historique. */
 export interface SuggestionView {
-  kind: 'tab' | 'bookmark' | 'history'
+  /** « search » : les termes tapes ; « query » : une suggestion du moteur. */
+  kind: 'search' | 'query' | 'tab' | 'bookmark' | 'history'
   title: string
   url: string
   tab: TabId | null

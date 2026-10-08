@@ -22,15 +22,11 @@ export interface SettingsController {
   update: (key: string, value: SettingValue) => void
 }
 
-/** Reglages geres par leur propre ecran, jamais listes dans la feuille de reglages. */
-const HIDDEN = new Set(['tabs.folders', 'tabs.containers', 'profiles.names', 'sync.history', 'sync.mode', 'forms.cards'])
-
 export function groupSettings(settings: SettingView[]): SettingSection[] {
-  const entries: SettingEntry[] = settings.filter((item) => !HIDDEN.has(item.key)).map((item) => ({
-    key: item.key,
-    value: item.value,
-    definition: definitionOf(item.key, item.value),
-  }))
+  const entries: SettingEntry[] = settings.flatMap((item) => {
+    const definition = definitionOf(item.key)
+    return definition === null ? [] : [{ key: item.key, value: item.value, definition }]
+  })
   return SETTING_GROUPS.map((group) => ({
     group,
     entries: entries.filter((entry) => entry.definition.group === group.id),

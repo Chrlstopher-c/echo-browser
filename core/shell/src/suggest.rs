@@ -44,7 +44,7 @@ pub fn suggest(query: &str) -> Value {
 pub fn for_address(query: &str) -> Vec<echo_contract::SuggestionView> {
     let found = suggest(query);
     let mut seen = std::collections::HashSet::new();
-    let mut items = Vec::new();
+    let mut items = search_row(query).into_iter().collect::<Vec<_>>();
     for (section, kind) in [("tabs", "tab"), ("bookmarks", "bookmark"), ("history", "history")] {
         for entry in found[section].as_array().into_iter().flatten() {
             let url = entry["url"].as_str().unwrap_or_default().to_string();
@@ -60,4 +60,57 @@ pub fn for_address(query: &str) -> Vec<echo_contract::SuggestionView> {
         }
     }
     items
+}
+
+/// Une ligne de recherche : `kind` « search » pour les termes tapes, « query » pour une suggestion du moteur.
+fn search_item(kind: &str, terms: &str) -> echo_contract::SuggestionView {
+    echo_contract::SuggestionView {
+        kind: kind.to_string(),
+        title: terms.to_string(),
+        url: crate::search::query_url(terms),
+        tab: None,
+    }
+}
+
+/// « Rechercher … sur le moteur » en tete, sauf si la saisie est deja une adresse.
+fn search_row(query: &str) -> Option<echo_contract::SuggestionView> {
+    let terms = query.trim();
+    let is_address = crate::bridge::normalize(terms) != crate::search::query_url(terms);
+    (!terms.is_empty() && !is_address).then(|| search_item("search", terms))
+}
+
+/// Suggestions du moteur, si le reglage les autorise : demandees hors du thread interface, puis la liste complete
+/// est republiee (la barre ignore une reponse arrivee apres une nouvelle frappe).
+pub fn fetch_engine(query: String) {
+    use echo_library::settings::Value;
+    let allowed = crate::session::with(|s| echo_library::settings::get(&s.library, "search.suggest")).flatten();
+    if matches!(allowed, Some(Value::Flag(false))) || search_row(&query).is_none() {
+        return;
+    }
+    let url = crate::search::suggest_url(query.trim());
+    std::thread::spawn(move || {
+        let agent: ureq::Agent = ureq::Agent::config_builder()
+            .timeout_global(Some(std::time::Duration::from_millis(1500)))
+            .build()
+            .into();
+        let body = match agent.get(&url).call().and_then(|mut r| r.body_mut().read_to_string()) {
+            Ok(body) => body,
+            Err(error) => {
+                tracing::debug!(%error, "suggestions du moteur indisponibles");
+                return;
+            }
+        };
+        let found = crate::search::parse_suggestions(&body);
+        if found.is_empty() {
+            return;
+        }
+        crate::containers::later(move || {
+            let mut items = for_address(&query);
+            let typed = query.trim().to_lowercase();
+            let extra = found.iter().filter(|t| t.to_lowercase() != typed).take(4).map(|t| search_item("query", t));
+            let at = usize::from(items.first().is_some_and(|i| i.kind == "search"));
+            items.splice(at..at, extra);
+            crate::bridge::publish(&echo_contract::CoreEvent::Suggestions { query, items });
+        });
+    });
 }
