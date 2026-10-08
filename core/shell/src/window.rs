@@ -146,6 +146,23 @@ fn place_chrome(window: &Window) {
 }
 
 /// Fixe la largeur reclamee par la barre laterale et relance la disposition.
+/// En dessous de cette largeur de fenetre, la barre se replie d'elle-meme : la page garde de la place.
+const NARROW_BELOW: i32 = 900;
+static NARROW: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+
+fn note_width(width: i32) {
+    let narrow = width > 0 && width < NARROW_BELOW;
+    if NARROW.swap(narrow, Ordering::Relaxed) != narrow {
+        debug!(width, narrow, "fenetre etroite ou non");
+        crate::bridge::publish(&echo_contract::CoreEvent::WindowNarrow { narrow });
+    }
+}
+
+/// Fenetre etroite (republiee a l'interface quand elle se recharge).
+pub fn is_narrow() -> bool {
+    NARROW.load(Ordering::Relaxed)
+}
+
 /// Largeur courante de la barre.
 pub fn chrome_width_now() -> i32 {
     CHROME_WIDTH_NOW.load(Ordering::Relaxed)
@@ -263,6 +280,7 @@ wrap_window_delegate! {
             if let Some(window) = view.and_then(|view| view.window()) {
                 place_chrome(&window);
                 crate::devtools::place();
+                note_width(View::from(&window).bounds().width);
             }
         }
     }

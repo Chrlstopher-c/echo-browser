@@ -88,6 +88,10 @@ export interface CoreState {
   systemDark: boolean | null
   /** Incremente a chaque Ctrl+F. */
   findToken: number
+  /** Fenetre etroite : la barre se replie d'elle-meme. */
+  narrow: boolean
+  /** Incremente a chaque Ctrl+Alt+S. */
+  sidebarToggleToken: number
   find: { count: number; current: number }
 }
 
@@ -126,6 +130,8 @@ export const EMPTY_CORE_STATE: CoreState = {
   adminAccount: null,
   systemDark: null,
   findToken: 0,
+  narrow: false,
+  sidebarToggleToken: 0,
   find: { count: 0, current: 0 },
   network: null,
   routineProposal: null,
@@ -195,6 +201,10 @@ export function reduceCore(state: CoreState, event: CoreEvent): CoreState {
       return reduceLibrary(state, event)
     case 'fullscreenChanged':
       return { ...state, fullscreen: event.active }
+    case 'windowNarrow':
+      return { ...state, narrow: event.narrow }
+    case 'toggleSidebarRequested':
+      return { ...state, sidebarToggleToken: state.sidebarToggleToken + 1 }
     case 'findRequested':
       return { ...state, findToken: state.findToken + 1 }
     case 'findResult':

@@ -1,2 +1,7 @@
 :root { --shell: #222326; }
-html, body { margin: 0; height: 100%; background: var(--shell); overflow: hidden; }
+html, body { margin: 0; height: 100%; background: var(--shell); overflow: hidden; cursor: e-resize; }
+/* Poignee visible : la barre repliee se rouvre en approchant la souris du bord gauche. */
+body::after {
+  content: ''; position: absolute; left: 1px; top: 50%; width: 3px; height: 44px; margin-top: -22px;
+  border-radius: 2px; background: rgba(140, 140, 150, 0.55);
+}

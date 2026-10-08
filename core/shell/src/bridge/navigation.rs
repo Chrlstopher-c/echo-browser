@@ -76,6 +76,7 @@ pub fn perform(action: crate::shortcuts::Action) {
         }),
         Action::FocusAddress => focus_address(),
         Action::Find => focus_find(),
+        Action::ToggleSidebar => publish(&CoreEvent::ToggleSidebarRequested),
         Action::Reader => crate::reader::toggle_active(),
         Action::DismissOverlay => super::dismiss_overlays(),
         Action::ToggleDevTools => super::context::toggle_devtools(),

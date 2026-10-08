@@ -19,21 +19,35 @@ function readStored(): boolean {
   return readLocal(STORE_KEY, (raw) => (typeof raw === 'boolean' ? raw : null)) ?? false
 }
 
-export function useSidebarWidth(send: (request: UiRequest) => void): SidebarWidth {
-  const [collapsed, setCollapsed] = useState<boolean>(readStored)
+/**
+ * `narrow` : fenetre etroite. La barre s'y replie d'elle-meme sans toucher au choix enregistre, qui revient quand la
+ * fenetre s'elargit ; un depli manuel en fenetre etroite ne vaut que pour ce passage.
+ */
+export function useSidebarWidth(send: (request: UiRequest) => void, narrow: boolean): SidebarWidth {
+  const [stored, setStored] = useState<boolean>(readStored)
+  const [narrowCollapsed, setNarrowCollapsed] = useState(true)
+  const collapsed = narrow ? narrowCollapsed : stored
 
   useEffect(() => {
     send({ kind: 'setChromeWidth', pixels: widthFor() })
-    send({ kind: 'setSidebarCollapsed', collapsed: readStored() })
   }, [send])
+  useEffect(() => {
+    if (narrow) setNarrowCollapsed(true)
+  }, [narrow])
+  useEffect(() => {
+    send({ kind: 'setSidebarCollapsed', collapsed })
+  }, [send, collapsed])
 
   const apply = useCallback(
     (next: boolean): void => {
-      setCollapsed(next)
+      if (narrow) {
+        setNarrowCollapsed(next)
+        return
+      }
+      setStored(next)
       writeLocal(STORE_KEY, next)
-      send({ kind: 'setSidebarCollapsed', collapsed: next })
     },
-    [send],
+    [narrow],
   )
 
   const toggle = useCallback((): void => apply(!collapsed), [apply, collapsed])

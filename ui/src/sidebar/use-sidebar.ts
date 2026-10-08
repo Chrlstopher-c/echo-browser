@@ -67,12 +67,18 @@ export function useSidebar(): SidebarModel {
   const containers = useContainers(send, state.settings)
   const profiles = useProfileNames(send, state.settings)
   const extensionMenu = useExtensionMenu()
-  const width = useSidebarWidth(send)
+  const width = useSidebarWidth(send, state.narrow)
   const sheet = useSheet()
   const space = useSpace(send, profiles, state.systemDark)
   const domains = useDomains(send, state)
   const [localFocus, setLocalFocus] = useState(0)
   const find = useFind(send, state.findToken, state.activeId)
+
+  // Ctrl+Alt+S relaye par le coeur.
+  useEffect(() => {
+    if (state.sidebarToggleToken > 0) width.toggle()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.sidebarToggleToken])
 
   // Ctrl+F : la barre se deplie et quitte un panneau ouvert pour montrer la recherche.
   useEffect(() => {

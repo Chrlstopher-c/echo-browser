@@ -63,6 +63,8 @@ pub enum Action {
     Reader,
     /// Ctrl+F : recherche dans la page.
     Find,
+    /// Ctrl+Alt+S : replier ou deplier la barre.
+    ToggleSidebar,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -95,8 +97,10 @@ pub fn resolve(code: i32, unmodified: u16, modifiers: u32) -> Option<Action> {
     if let Some(action) = zoom(code, unmodified, ctrl && !alt) {
         return Some(action);
     }
-    if let (true, true, Some('r')) = (ctrl, alt, letter(code, unmodified)) {
-        return Some(Action::Reader);
+    match (ctrl, alt, letter(code, unmodified)) {
+        (true, true, Some('r')) => return Some(Action::Reader),
+        (true, true, Some('s')) => return Some(Action::ToggleSidebar),
+        _ => {}
     }
     if let (true, false, Some(l)) = (ctrl, alt, letter(code, unmodified)) {
         return ctrl_letter(l, shift);

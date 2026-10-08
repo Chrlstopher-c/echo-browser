@@ -261,6 +261,10 @@ pub enum CoreEvent {
     Suggestions { query: String, items: Vec<SuggestionView> },
     /// La barre doit ouvrir ce panneau.
     SidebarSheetRequested { sheet: String },
+    /// La fenetre passe sous (ou repasse au-dessus de) la largeur ou la barre se replie d'elle-meme.
+    WindowNarrow { narrow: bool },
+    /// Ctrl+Alt+S : replier ou deplier la barre.
+    ToggleSidebarRequested,
     /// Une page surveillee a change depuis la visite precedente.
     PageChanged { url: String, added: Vec<String>, removed: Vec<String> },
     /// Une suite de sites revient : proposition de routine.

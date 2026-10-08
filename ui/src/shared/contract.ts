@@ -178,6 +178,8 @@ export type CoreEvent =
   /** Le coeur demande le focus sur le champ d'adresse (raccourci clavier). */
   | { kind: 'focusAddressRequested' }
   | { kind: 'findRequested' }
+  | { kind: 'windowNarrow'; narrow: boolean }
+  | { kind: 'toggleSidebarRequested' }
   | { kind: 'findResult'; count: number; current: number }
   /** Le navigateur va se relancer : l'interface montre son ecran d'attente. */
   | { kind: 'restarting'; reason: string }

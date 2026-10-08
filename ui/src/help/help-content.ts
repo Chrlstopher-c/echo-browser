@@ -76,6 +76,8 @@ export const HELP: HelpSection[] = [
       { title: 'Palette d’adresse', how: 'Ctrl+K (ou Ctrl+L) puis tapez : onglets ouverts, favoris et historique '
         + 'apparaissent sous l’adresse ; ↓/↑ puis Entrée. Un onglet déjà ouvert est rejoint, pas dupliqué. La première '
         + 'ligne lance la recherche ; le moteur se choisit dans Réglages → Navigation.' },
+      { title: 'Barre repliée', how: 'Ctrl+Alt+S ou le bouton en haut de la barre la replie ; la poignée au bord '
+        + 'gauche la fait revenir. Dans une fenêtre étroite, elle se replie d’elle-même.' },
       { title: 'Rechercher dans la page', how: 'Ctrl+F, ou clic droit → « Rechercher dans la page » : le nombre '
         + 'd’occurrences s’affiche, Entrée passe à la suivante, Maj+Entrée à la précédente, Échap ferme.' },
       { title: 'Reprise exacte', how: 'Ce que vous aviez tapé et la position des vidéos reviennent après une relance '
@@ -112,5 +114,5 @@ export const SHORTCUTS: Array<[string, string]> = [
   ['Ctrl+P', 'Imprimer'], ['Ctrl+S', 'Enregistrer la page'], ['Ctrl+U', 'Code source'],
   ['Ctrl+R / F5', 'Recharger'], ['Ctrl+Maj+R', 'Recharger sans cache'], ['Alt+← / Alt+→', 'Précédent / suivant'],
   ['Ctrl+ + / Ctrl+ − / Ctrl+0', 'Zoom'], ['Échap / F11', 'Quitter le plein écran'], ['F12 / Ctrl+Maj+I', 'Outils de développement'],
-  ['F1', 'Cette aide'],
+  ['Ctrl+Alt+S', 'Replier ou déplier la barre'], ['F1', 'Cette aide'],
 ]

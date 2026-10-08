@@ -158,6 +158,8 @@ fn apply(request: UiRequest) {
         UiRequest::SetChromeWidth { pixels } => {
             let chrome = session::with(|s| s.chrome.clone()).flatten();
             crate::window::set_chrome_width(pixels as i32, chrome.as_ref());
+            // Demande faite au chargement de la barre : elle apprend alors si la fenetre est etroite.
+            publish(&CoreEvent::WindowNarrow { narrow: crate::window::is_narrow() });
         }
         UiRequest::SetSidebarCollapsed { collapsed } => {
             let chrome = session::with(|s| s.chrome.clone()).flatten();
