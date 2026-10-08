@@ -6,9 +6,10 @@ import type { ReactElement } from 'react'
 import { IconRefresh } from '../shared/design/icons'
 import { PushButton } from '../shared/design/push-button'
 import { AdminAccounts } from './admin-accounts'
+import { AdminSignalsPanel } from './admin-signals'
 import { DayBars, Gauges, Panel, Tile } from './admin-charts'
 import type { AdminSummary } from './admin-data'
-import { bytes, count, kindLabel } from './admin-format'
+import { actionLabel, bytes, count, kindLabel } from './admin-format'
 import type { AdminController } from './use-admin'
 
 function Tiles({ s }: { s: AdminSummary }): ReactElement {
@@ -67,7 +68,10 @@ function Summary({ s }: { s: AdminSummary }): ReactElement {
         </Panel>
         <Panel title="Coffre par type"><Gauges rows={storage} format={bytes} /></Panel>
       </div>
-      <Panel title="Routes · 7 jours"><Gauges rows={s.routes} format={count} /></Panel>
+      <Panel title="Routes · 7 jours">
+        <Gauges rows={s.routes.map((r) => ({ ...r, name: /^[A-Z]+ \//.test(r.name) ? r.name : actionLabel(r.name) }))}
+          format={count} />
+      </Panel>
     </>
   )
 }
@@ -85,6 +89,10 @@ export function AdminPage({ admin }: { admin: AdminController }): ReactElement {
       {admin.summary === null
         ? admin.error === null && <p className="text-[12px] text-ink-faint">Lecture du service…</p>
         : <><Summary s={admin.summary} /><Usage s={admin.summary} open={admin.open} /></>}
+      <section className="flex flex-col gap-2">
+        <h2 className="px-1 text-[10.5px] font-semibold tracking-[0.12em] text-ink-faint uppercase">Signaux partagés</h2>
+        <AdminSignalsPanel signals={admin.signals} />
+      </section>
       <Panel title="Comptes"><AdminAccounts admin={admin} /></Panel>
     </div>
   )

@@ -6,6 +6,10 @@ export interface Env {
   SECRET_SEL: string
   /** Cle du tableau de bord des createurs ; absente, le tableau de bord est ferme. */
   ADMIN_KEY?: string
+  /** Installations minimales pour qu'un signal soit montre (anonymat). 3 par defaut. */
+  SEUIL_K?: string
+  /** Lots de signaux acceptes par adresse et par jour (3 par defaut ; plus haut pour les essais locaux). */
+  MAX_LOTS_ADRESSE?: string
 }
 
 const CONTEXTES = new WeakMap<Request, ExecutionContext>()

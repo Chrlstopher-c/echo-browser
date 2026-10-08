@@ -109,6 +109,22 @@ if (CLE_ADMIN) essai('tableau de bord : cle exigee, chiffres, version, deconnexi
   assert.equal((await admin('GET', `/v1/admin/comptes?q=${encodeURIComponent(e)}`)).corps.comptes.length, 0)
 })
 
+essai('signaux : lot du jour refuse en double, jour futur refuse, seuil k', async () => {
+  const hier = new Date(Date.now() - 86_400_000).toISOString().slice(0, 10)
+  const jeton = () => Buffer.from(crypto.getRandomValues(new Uint8Array(16))).toString('hex')
+  const lot = (j) => ({ jour: hier, jeton: j, version: '9.9.9', sites: { 'exemple-k.org': 2 }, bloques: { 'pub.example': 3 } })
+  const j = jeton()
+  assert.equal((await appel('POST', '/v1/signaux', lot(j))).corps.recu, 2)
+  assert.equal((await appel('POST', '/v1/signaux', lot(j))).corps.deja, true)
+  assert.equal((await appel('POST', '/v1/signaux', { ...lot(jeton()), jour: '2999-01-01' })).statut, 400)
+  if (CLE_ADMIN) {
+    const vue = (await admin('GET', '/v1/admin/signaux')).corps
+    assert.ok(vue.lotsParJour.some((l) => l.jour === hier))
+    const visible = vue.sites.some((s) => s.cle === 'exemple-k.org')
+    assert.equal(visible, vue.seuil <= 1, `seuil ${vue.seuil} : un seul envoi ne doit pas suffire a sortir`)
+  }
+})
+
 let echecs = 0
 for (const [nom, f] of essais) {
   try { await f(); console.log(`ok  ${nom}`) } catch (e) { echecs++; console.log(`ECHEC ${nom} : ${e.message}`) }

@@ -62,3 +62,27 @@ CREATE TABLE IF NOT EXISTS machines (
   version TEXT
 );
 CREATE INDEX IF NOT EXISTS machines_compte ON machines (compte);
+-- Signaux anonymes (opt-in) : aucun compte, aucun identifiant stable. Un lot par installation et par jour, repere par un
+-- jeton aleatoire qui change chaque jour (pour compter les installations distinctes sans pouvoir les suivre).
+CREATE TABLE IF NOT EXISTS signaux_lots (
+  jour TEXT NOT NULL,
+  jeton TEXT NOT NULL,
+  version TEXT,
+  PRIMARY KEY (jour, jeton)
+);
+-- Agregats : (jour, type, cle) → nombre d'installations qui l'ont signale, et total.
+CREATE TABLE IF NOT EXISTS signaux (
+  jour TEXT NOT NULL,
+  type TEXT NOT NULL,
+  cle TEXT NOT NULL,
+  installs INTEGER NOT NULL,
+  total INTEGER NOT NULL,
+  PRIMARY KEY (jour, type, cle)
+);
+-- Limite d'envoi des signaux : empreinte (HMAC du jour + adresse IP, jamais l'adresse elle-meme), effacee apres 2 jours.
+CREATE TABLE IF NOT EXISTS signaux_limite (
+  jour TEXT NOT NULL,
+  empreinte TEXT NOT NULL,
+  n INTEGER NOT NULL,
+  PRIMARY KEY (jour, empreinte)
+);

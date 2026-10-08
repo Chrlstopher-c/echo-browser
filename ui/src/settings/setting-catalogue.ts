@@ -40,6 +40,12 @@ export interface SettingDefinition {
 }
 
 export const SETTING_CATALOGUE: Record<string, SettingDefinition> = {
+  'signals.share': {
+    group: 'privacy',
+    label: 'Partager des signaux anonymes',
+    detail: 'Chaque jour, des comptes de domaines visités et de traqueurs bloqués, sans compte ni identifiant, jamais '
+      + 'd’adresse complète. Aide à repérer les sites malveillants. Coupé par défaut.',
+  },
   'search.engine': {
     group: 'navigation',
     label: 'Moteur de recherche',

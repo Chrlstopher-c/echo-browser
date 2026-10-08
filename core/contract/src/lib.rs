@@ -223,7 +223,13 @@ pub enum CoreEvent {
     /// Ce que le service garde du compte, en reponse a `AccountInspect`.
     AccountVault { kinds: Vec<VaultKindView> },
     /// Tableau de bord tel que le service le rend (`summary` : chiffres, `accounts` : comptes), ou l'erreur.
-    AdminData { summary: serde_json::Value, accounts: serde_json::Value, error: Option<String> },
+    AdminData {
+        summary: serde_json::Value,
+        accounts: serde_json::Value,
+        /// Signaux anonymes agreges (seulement au-dela du seuil k).
+        signals: serde_json::Value,
+        error: Option<String>,
+    },
     /// Une suite de sites revient : proposition de routine.
     RoutineProposed { proposal: RoutineProposalView },
     RoutinesChanged { routines: Vec<RoutineView> },

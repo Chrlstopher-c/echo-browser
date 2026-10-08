@@ -6,8 +6,9 @@
 - E10 (idées) : panneau Réseau (domaines, octets, tiers, blocage par site, isolement strict, journal d'accès), reprise
   exacte des pages (saisies, médias), routines (suites de sites), masquer un élément retenu par gabarit.
 
-## SUITE (E9 S2 puis IDEES.md)
-- Signaux anonymes partagés (opt-in, coupé par défaut) : socle des fonctions collectives (sites malveillants, habitudes).
+## SUITE
+- Signaux anonymes (E9 S2) : codés et testés ; DÉPLOYER le service (tables + deploy) avec Chris, puis les fonctions
+  collectives (sites malveillants, habitudes) dessus (E9 S3+, IDEES.md).
 - Release 0.8.0 quand Chris a validé (main + tag, CI verte).
 
 ## RETOURS DE CHRIS DU 06/10 SOIR — liste de reprise (ne rien perdre ; détail et critères dans EPICS.md E6)

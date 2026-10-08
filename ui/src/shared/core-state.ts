@@ -69,7 +69,7 @@ export interface CoreState {
   /** Contenu du coffre du compte, null tant qu'il n'a pas ete demande. */
   vault: VaultKindView[] | null
   /** Tableau de bord des createurs, null tant qu'il n'a pas ete demande. */
-  admin: { summary: unknown; accounts: unknown; error: string | null } | null
+  admin: { summary: unknown; accounts: unknown; signals: unknown; error: string | null } | null
   /** Routine proposee, en attente d'une reponse. */
   routineProposal: RoutineProposalView | null
   routines: RoutineView[]
@@ -206,7 +206,10 @@ export function reduceCore(state: CoreState, event: CoreEvent): CoreState {
     case 'adminAccount':
       return { ...state, adminAccount: { detail: event.detail, error: event.error } }
     case 'adminData':
-      return { ...state, admin: { summary: event.summary, accounts: event.accounts, error: event.error } }
+      return {
+        ...state,
+        admin: { summary: event.summary, accounts: event.accounts, signals: event.signals, error: event.error },
+      }
   }
 }
 

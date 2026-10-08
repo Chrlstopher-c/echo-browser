@@ -177,7 +177,7 @@ export type CoreEvent =
   /** Ce que le service garde du compte, en reponse a `accountInspect`. */
   | { kind: 'accountVault'; kinds: VaultKindView[] }
   /** Tableau de bord tel que le service le rend (forme lue par `admin/admin-data.ts`), ou l'erreur. */
-  | { kind: 'adminData'; summary: unknown; accounts: unknown; error: string | null }
+  | { kind: 'adminData'; summary: unknown; accounts: unknown; signals: unknown; error: string | null }
   /** Une suite de sites revient : proposition de routine. */
   | { kind: 'routineProposed'; proposal: RoutineProposalView }
   | { kind: 'routinesChanged'; routines: RoutineView[] }

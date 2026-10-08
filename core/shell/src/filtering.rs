@@ -99,6 +99,9 @@ wrap_resource_request_handler! {
                 blocked,
                 main_frame,
             });
+            if blocked == Some("bouclier") {
+                crate::signals::note_blocked(&url);
+            }
             if blocked.is_some() {
                 debug!(%url, %source, %kind, ?blocked, "requete bloquee");
                 return ReturnValue::CANCEL;

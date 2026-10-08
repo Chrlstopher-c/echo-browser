@@ -2,6 +2,7 @@
 
 import { connexion, deconnexion, etat, inscription, moi, sel, supprimer } from './acces'
 import { ecrire, lire } from './coffre'
+import { recevoir } from './signaux'
 import { compter } from './activite'
 import { routeAdmin } from './admin/routes'
 import { attendre, json, lier, Refus, type Env } from './outils'
@@ -20,6 +21,7 @@ async function router(requete: Request, env: Env): Promise<Response> {
   if (methode === 'GET' && pathname === '/v1/coffre') return lire(requete, env)
   if (methode === 'GET' && pathname === '/v1/moi') return moi(requete, env)
   if (methode === 'GET' && pathname === '/v1/etat') return etat(requete, env)
+  if (methode === 'POST' && pathname === '/v1/signaux') return recevoir(requete, env)
   const type = /^\/v1\/coffre\/([^/]+)$/.exec(pathname)?.[1]
   if (methode === 'PUT' && type !== undefined) return ecrire(requete, env, type)
   return json({ erreur: 'introuvable' }, 404)

@@ -272,6 +272,7 @@ fn apply(request: UiRequest) {
         UiRequest::UpdateSetting { key, value } => {
             library::update_setting(&key, &value);
             crate::account::setting_changed(&key);
+            crate::signals::setting_changed(&key);
         }
         UiRequest::OpenExtensionManager => {
             open_tab(echo_extensions::profile::MANAGE_PAGE);

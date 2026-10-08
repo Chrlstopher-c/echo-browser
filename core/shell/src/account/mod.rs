@@ -24,7 +24,7 @@ use tracing::{info, warn};
 static BUSY: AtomicBool = AtomicBool::new(false);
 static LAST_ERROR: Mutex<Option<String>> = Mutex::new(None);
 
-pub(super) fn service_url() -> Option<String> {
+pub(crate) fn service_url() -> Option<String> {
     std::env::var("ECHO_SYNC_URL").ok()
         .or_else(|| {
             let dir = crate::update::install_dir()?;

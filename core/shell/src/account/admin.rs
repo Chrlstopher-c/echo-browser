@@ -18,13 +18,16 @@ fn with_session(job: impl FnOnce(&Client, &str) -> anyhow::Result<()> + Send + '
         let read = action.and_then(|()| {
             let summary = client.admin(&token, "GET", "/v1/admin/resume", None)?;
             let path = format!("/v1/admin/comptes?q={}", encode(&query));
-            Ok((summary, client.admin(&token, "GET", &path, None)?["comptes"].clone()))
+            let accounts = client.admin(&token, "GET", &path, None)?["comptes"].clone();
+            let signals = client.admin(&token, "GET", "/v1/admin/signaux", None).unwrap_or(Value::Null);
+            Ok((summary, accounts, signals))
         });
         let event = match read {
-            Ok((summary, accounts)) => CoreEvent::AdminData { summary, accounts, error: None },
+            Ok((summary, accounts, signals)) => CoreEvent::AdminData { summary, accounts, signals, error: None },
             Err(err) => {
                 warn!(%err, "administration");
-                CoreEvent::AdminData { summary: Value::Null, accounts: Value::Null, error: Some(err.to_string()) }
+                let error = Some(err.to_string());
+                CoreEvent::AdminData { summary: Value::Null, accounts: Value::Null, signals: Value::Null, error }
             }
         };
         crate::containers::later(move || crate::bridge::publish(&event));

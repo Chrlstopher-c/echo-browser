@@ -133,3 +133,37 @@ export function readAccounts(raw: unknown): AdminAccount[] {
     admin: c['admin'] === 1 || c['admin'] === true,
   }))
 }
+
+/** Signaux anonymes agreges : seules les cles vues par au moins `threshold` installations un meme jour. */
+export interface AdminSignals {
+  threshold: number
+  batchesByDay: DayCount[]
+  versions: NamedCount[]
+  sites: SignalKey[]
+  blocked: SignalKey[]
+}
+
+export interface SignalKey {
+  key: string
+  total: number
+  /** Installations le jour ou elles etaient le plus nombreuses. */
+  installs: number
+  days: number
+}
+
+function keys(raw: unknown): SignalKey[] {
+  return list(raw).map((k) => ({ key: str(k['cle']), total: num(k['total']), installs: num(k['installs']),
+    days: num(k['jours']) }))
+}
+
+export function readSignals(raw: unknown): AdminSignals | null {
+  const r = fields(raw)
+  if (Object.keys(r).length === 0) return null
+  return {
+    threshold: num(r['seuil']),
+    batchesByDay: days(r['lotsParJour']),
+    versions: list(r['versions']).map((v) => ({ name: str(v['version']), count: num(v['n']) })),
+    sites: keys(r['sites']),
+    blocked: keys(r['bloques']),
+  }
+}

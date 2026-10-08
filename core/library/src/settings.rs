@@ -60,6 +60,7 @@ pub fn defaults() -> Vec<(&'static str, Value)> {
         ("updates.auto", Value::Flag(true)),
         ("sync.history", Value::Flag(true)),
         ("sync.mode", Value::Text("auto".into())),
+        ("signals.share", Value::Flag(false)),
         ("onboarding.done", Value::Flag(false)),
     ]
 }

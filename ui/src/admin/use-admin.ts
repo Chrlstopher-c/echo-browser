@@ -5,7 +5,8 @@ import { useEffect, useMemo, useState } from 'react'
 import type { UiRequest } from '../shared/contract'
 import type { CoreState } from '../shared/core-state'
 import {
-  readAccounts, readDetail, readSummary, type AdminAccount, type AdminDetail, type AdminSummary,
+  readAccounts, readDetail, readSignals, readSummary, type AdminAccount, type AdminDetail, type AdminSignals,
+  type AdminSummary,
 } from './admin-data'
 
 const REFRESH_MS = 60_000
@@ -13,6 +14,7 @@ const TYPING_MS = 250
 
 export interface AdminController {
   summary: AdminSummary | null
+  signals: AdminSignals | null
   accounts: AdminAccount[]
   error: string | null
   query: string
@@ -48,8 +50,10 @@ export function useAdmin(
   }, [send, query])
   const summary = useMemo(() => readSummary(data?.summary), [data])
   const accounts = useMemo(() => readAccounts(data?.accounts), [data])
+  const signals = useMemo(() => readSignals(data?.signals), [data])
   return {
     summary,
+    signals,
     accounts,
     error: data?.error ?? null,
     query,

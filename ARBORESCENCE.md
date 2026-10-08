@@ -31,6 +31,7 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `compte/src/coffre.ts` — le coffre d'un compte — des elements par type (reglages, favoris…), chiffres sur la machine,
 - `compte/src/index.ts` — point d'entree du service de compte Echo — aiguillage des routes et conversion des refus.
 - `compte/src/outils.ts` — briques partagees du service — reponses JSON, empreintes, aleatoire, lecture des corps.
+- `compte/src/signaux.ts` — signaux anonymes partages par les navigateurs qui l'ont choisi. Recus par lots (un par installation
 - `compte/test/compte.test.mjs`
 - `compte/tsconfig.json`
 - `compte/wrangler.toml.example`
@@ -67,6 +68,7 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `core/library/src/routines.rs` — les routines — suites de sites que l'utilisateur ouvre souvent dans le meme ordre. Chaque suite
 - `core/library/src/schema.rs` — la forme de la base et sa mise a niveau.
 - `core/library/src/settings.rs` — les reglages du navigateur, et leurs valeurs par defaut.
+- `core/library/src/signals.rs` — les signaux anonymes en attente d'envoi — comptes par jour de domaines visites et d'hotes bloques,
 - `core/library/tests/library.rs`
 - `core/network/Cargo.toml`
 - `core/network/src/lib.rs`
@@ -138,6 +140,7 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `core/shell/src/selftest.rs` — rejouer sans main les manipulations d'onglets, pour verifier
 - `core/shell/src/session.rs` — l'etat vivant du navigateur — les onglets, l'interface, le bouclier.
 - `core/shell/src/shortcuts.rs` — les raccourcis clavier du navigateur, interceptes avant la page.
+- `core/shell/src/signals.rs` — signaux anonymes (reglage `signals.share`, coupe par defaut). Seulement s'il est active : les
 - `core/shell/src/sleep.rs` — endormir periodiquement les onglets inactifs pour rendre leur memoire.
 - `core/shell/src/store.rs` — installer une extension depuis le Chrome Web Store sans quitter Echo. La boutique
 - `core/shell/src/suggest.rs` — les suggestions de la page « nouvel onglet » — onglets ouverts, favoris et
@@ -206,6 +209,7 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `tools/test-scheme.sh`
 - `tools/test-shield-toggle.sh`
 - `tools/test-sidebar-anim.sh`
+- `tools/test-signals.sh`
 - `tools/test-sleep-scroll.sh`
 - `tools/test-trim-alive.sh`
 - `tools/test-update.sh`
@@ -252,6 +256,7 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `ui/src/admin/admin-detail.tsx` — fiche d'un compte dans l'administration — requetes par jour (30 j), actions, machines connectees,
 - `ui/src/admin/admin-format.ts` — mise en forme des chiffres du tableau de bord (tailles, dates, nombres).
 - `ui/src/admin/admin-page.tsx` — page Administration d'Echo (comptes administrateurs) — chiffres du service, activite, coffre par
+- `ui/src/admin/admin-signals.tsx` — Administration → signaux partages — ce que les navigateurs ayant choisi de partager envoient
 - `ui/src/admin/use-admin.ts` — etat de la section Administration — relit le tableau de bord a l'ouverture, toutes les minutes et a
 - `ui/src/app.tsx` — composition de la fenetre — la barre, l'ecran de relance, l'effacement en plein
 - `ui/src/context-menu/main.tsx` — point d'entree du menu contextuel, page a part servie au-dessus du contenu.

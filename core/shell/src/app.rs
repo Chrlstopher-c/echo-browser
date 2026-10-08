@@ -79,6 +79,7 @@ wrap_browser_process_handler! {
             crate::extension_tabs::start_workers();
             crate::update::start();
             crate::account::start();
+            crate::signals::start();
             if std::env::var_os("ECHO_NO_ANCHOR").is_none() {
                 crate::anchor::create(client.clone().as_mut());
                 crate::anchor_watch::start();

@@ -5,6 +5,7 @@ import { json } from '../outils'
 import type { Env } from '../outils'
 import { changerAdmin, deconnecterCompte, listeComptes, resume, supprimerCompte, verifierAdmin } from './api'
 import { ficheCompte } from './fiche'
+import { lireSignaux } from '../signaux'
 import { PAGE_ADMIN } from './page'
 
 const ENTETES_PAGE = {
@@ -27,6 +28,7 @@ export async function routeAdmin(requete: Request, env: Env): Promise<Response |
   if (!pathname.startsWith('/v1/admin/')) return null
   await verifierAdmin(requete, env)
   if (methode === 'GET' && pathname === '/v1/admin/resume') return resume(env)
+  if (methode === 'GET' && pathname === '/v1/admin/signaux') return lireSignaux(env)
   if (methode === 'GET' && pathname === '/v1/admin/comptes') return listeComptes(requete, env)
   const [, id, action] = /^\/v1\/admin\/comptes\/([0-9a-f-]{36})(\/deconnexion|\/admin)?$/.exec(pathname) ?? []
   if (id !== undefined && methode === 'POST' && action === '/deconnexion') return deconnecterCompte(env, id)

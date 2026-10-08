@@ -208,3 +208,17 @@ fn un_element_masque_l_est_pour_tout_le_gabarit() {
     assert!(hidden::clear(&lib, "g1"));
     assert!(hidden::selectors(&lib, "g1").is_empty());
 }
+
+#[test]
+fn signaux_en_attente_par_jour() {
+    use echo_library::signals;
+    let lib = library();
+    let c = |k: &str, key: &str, n: u32| (k.to_string(), key.to_string(), n);
+    signals::add(&lib, "2026-10-07", &[c("sites", "a.fr", 2), c("bloques", "pub.net", 5)]);
+    signals::add(&lib, "2026-10-07", &[c("sites", "a.fr", 1)]);
+    signals::add(&lib, "2026-10-08", &[c("sites", "b.fr", 1)]);
+    assert_eq!(signals::days(&lib), ["2026-10-07", "2026-10-08"]);
+    assert_eq!(signals::top(&lib, "2026-10-07", "sites", 10), [("a.fr".to_string(), 3)]);
+    signals::forget_day(&lib, "2026-10-07");
+    assert_eq!(signals::days(&lib), ["2026-10-08"]);
+}

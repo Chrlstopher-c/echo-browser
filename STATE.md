@@ -59,6 +59,17 @@
   Une page déjà ouverte garde l'ancienne teinte dans ses angles jusqu'au rechargement.
 
 
+## Signaux anonymes partagés (E9 S2, nuit du 08/10) — PAS ENCORE DÉPLOYÉ sur le service de production
+
+- Réglage « Partager des signaux anonymes » (`signals.share`, Vie privée), coupé par défaut. Activé seulement : domaines
+  visités et hôtes bloqués par le bouclier comptés par jour (`signals_day`) ; chaque jour fini part en un lot sans
+  compte, jeton aléatoire neuf (aucun identifiant stable), puis est effacé ; coupé → tout ce qui attendait est effacé.
+- Service : `POST /v1/signaux` (jour fini de moins de 8 j, doublon refusé, 3 lots par adresse et par jour via empreinte
+  HMAC jour+IP effacée après 2 j), agrégats `signaux` (installations, total), gardés 90 j. Administration : section
+  « Signaux partagés », clés montrées seulement au-delà de k installations un même jour (`SEUIL_K`, 3).
+- À faire au déploiement : `wrangler d1 execute --remote --file schema.sql` (3 tables ajoutées) puis `wrangler deploy`.
+- Test : `tools/test-signals.sh` (rien sans accord, lot envoyé puis effacé, seuil k).
+
 ## E10 — idées de Chris, première vague (nuit du 08/10)
 
 - Réseau (`core/network`, `shell/src/network.rs`, `ui/src/network`) : chaque requête notée par onglet (500 dernières,

@@ -41,6 +41,7 @@ mod search;
 mod store;
 mod session;
 mod shortcuts;
+mod signals;
 mod sleep;
 mod suggest;
 mod tabs;

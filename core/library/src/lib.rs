@@ -12,6 +12,7 @@ pub mod permissions;
 pub mod routines;
 pub mod schema;
 pub mod settings;
+pub mod signals;
 
 use parking_lot::Mutex;
 use rusqlite::Connection;
