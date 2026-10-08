@@ -188,7 +188,13 @@ export interface AccountView {
   history: boolean
   /** Le compte ouvre l'administration (drapeau pose sur le serveur). */
   admin: boolean
+  /** Mode de synchronisation (reglage `sync.mode`). */
+  mode: SyncMode
+  /** Des modifications locales attendent d'etre envoyees. */
+  pending: boolean
 }
+
+export type SyncMode = 'realtime' | 'auto' | 'manual'
 
 /** Un type de donnees tel que le service le garde. */
 export interface VaultKindView {

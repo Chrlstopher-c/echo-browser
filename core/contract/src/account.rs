@@ -35,6 +35,10 @@ pub struct AccountView {
     pub history: bool,
     /// Le compte ouvre l'administration (drapeau pose sur le serveur).
     pub admin: bool,
+    /// Mode de synchronisation : `realtime`, `auto` ou `manual` (reglage `sync.mode`).
+    pub mode: String,
+    /// Des modifications locales attendent d'etre envoyees.
+    pub pending: bool,
 }
 
 /// Un type de donnees tel que le service le garde.

@@ -28,9 +28,17 @@ pub struct Stored {
     pub kinds: BTreeMap<String, KindState>,
     #[serde(default)]
     pub last_sync: Option<i64>,
+    /// Le compte ouvre l'administration (gardé pour l'afficher dès le lancement, relu à chaque contrôle).
+    #[serde(default)]
+    pub admin: bool,
 }
 
 impl Stored {
+    /// Le service a-t-il une version d'un type que cette machine n'a pas encore fusionnee ?
+    pub fn behind(&self, remote: &BTreeMap<String, u64>) -> bool {
+        remote.iter().any(|(kind, version)| self.kinds.get(kind).map(|k| k.version) != Some(*version))
+    }
+
     pub fn from_session(session: &Session) -> Self {
         Self {
             email: session.email.clone(),

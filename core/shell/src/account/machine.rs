@@ -48,8 +48,14 @@ pub fn local_value(known: Option<&Value>) -> Value {
             .collect()
     })
     .unwrap_or_default();
-    let now = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_secs()).unwrap_or(0);
-    all.insert(id(), json!({"nom": name(), "maj": now, "onglets": tabs}));
+    let me = id();
+    let unchanged = all.get(&me).is_some_and(|m| m["onglets"] == json!(tabs) && m["nom"] == json!(name()));
+    if !unchanged {
+        // Date changee seulement quand les onglets changent : sinon chaque synchro renverrait la meme liste, et les
+        // autres machines resynchroniseraient sans fin.
+        let now = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_secs()).unwrap_or(0);
+        all.insert(me, json!({"nom": name(), "maj": now, "onglets": tabs}));
+    }
     Value::Object(all)
 }
 

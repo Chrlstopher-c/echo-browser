@@ -70,8 +70,32 @@ fn drain() {
     loop {
         let Some(request) = INBOX.lock().pop_front() else { return };
         debug!(?request, "demande de l'interface");
+        let tabs_change =
+            matches!(request, UiRequest::NewTab { .. } | UiRequest::CloseTab { .. } | UiRequest::PinTab { .. });
+        let touches_synced = changes_synced_data(&request);
         apply(request);
+        if touches_synced {
+            crate::account::schedule::touch();
+        } else if tabs_change {
+            crate::account::schedule::touch_soft();
+        }
     }
+}
+
+/// Demandes qui modifient une donnee synchronisee par le compte (reglages, favoris, historique, extensions, onglets).
+fn changes_synced_data(request: &UiRequest) -> bool {
+    matches!(
+        request,
+        UiRequest::UpdateSetting { .. }
+            | UiRequest::AddBookmark { .. }
+            | UiRequest::RemoveBookmark { .. }
+            | UiRequest::MoveBookmark { .. }
+            | UiRequest::RemoveHistoryEntry { .. }
+            | UiRequest::ClearHistory
+            | UiRequest::InstallExtension { .. }
+            | UiRequest::RemoveExtension { .. }
+            | UiRequest::SetShieldEnabled { .. }
+    )
 }
 
 fn apply(request: UiRequest) {
@@ -212,7 +236,9 @@ fn apply(request: UiRequest) {
         UiRequest::CheckForUpdates => crate::update::check(true),
         UiRequest::AccountSignIn { email, password, create } => crate::account::sign_in(email, password, create),
         UiRequest::AccountSignOut => crate::account::sign_out(),
-        UiRequest::AccountSync => crate::account::sync_now(),
+        UiRequest::AccountSync => {
+            crate::account::sync_now();
+        }
         UiRequest::AccountInspect => crate::account::inspect(),
         UiRequest::AccountDelete => crate::account::delete(),
         UiRequest::AdminRefresh { query } => crate::account::admin_refresh(query),

@@ -137,3 +137,19 @@ export async function moi(requete: Request, env: Env): Promise<Response> {
   const admin = await env.DB.prepare('SELECT 1 FROM admins WHERE compte = ?').bind(compte).first()
   return json({ admin: admin !== null })
 }
+
+/** Controle leger pour la synchro automatique : version de chaque type du coffre, et le drapeau admin. Lecture seule :
+ * pas de compteur ecrit pour cette route (elle est appelee souvent). */
+export async function etat(requete: Request, env: Env): Promise<Response> {
+  const compte = await compteDe(requete, env)
+  const [versions, admin] = await env.DB.batch([
+    env.DB.prepare('SELECT type, version FROM coffre WHERE compte = ?').bind(compte),
+    env.DB.prepare('SELECT 1 AS oui FROM admins WHERE compte = ?').bind(compte),
+  ])
+  const parType: Record<string, number> = {}
+  for (const ligne of versions?.results ?? []) {
+    const { type, version } = ligne as { type: string; version: number } // Justification : colonnes de la requete.
+    parType[type] = version
+  }
+  return json({ versions: parType, admin: (admin?.results.length ?? 0) > 0 })
+}

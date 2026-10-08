@@ -59,6 +59,19 @@
   Une page déjà ouverte garde l'ancienne teinte dans ses angles jusqu'au rechargement.
 
 
+## Synchro automatique (consigne de Chris, 08/10)
+
+- Modes (`sync.mode`, par machine) : temps réel (lot 5 s, contrôle `/v1/etat` chaque minute), automatique (défaut :
+  lot 60 s, contrôle 5 min), manuelle. Synchro au lancement (1,5 s). Onglets et visites : lots espacés (2 min / 10 min).
+- Jamais de perte : une modification locale faite pendant l'aller-retour n'est pas écrasée (le type garde son ancienne
+  base et repart à la passe suivante) ; conflit 409 → nouvelle passe 5 s après ; erreur → nouvel essai 30 s.
+- Drapeau admin gardé dans `compte.json` : la section est là dès le lancement. Alerte en bas de la barre si pas à jour
+  (erreur, synchro trop ancienne, ou modifications en attente en manuel). Test : `tools/test-account-auto.sh`.
+- Budget gratuit Cloudflare (100 000 requêtes/jour, 100 000 lignes écrites/jour) : une seule écriture de compteur par
+  requête, `/v1/etat` n'écrit rien. Estimation par machine et par jour : ~2 500 requêtes en temps réel (8 h actives),
+  ~500 en automatique → 10 utilisateurs × 2 machines tiennent même tous en temps réel (~50 000 requêtes, ~60 000
+  écritures). Au-delà de ~15 machines en temps réel permanent, surveiller le tableau de bord.
+
 ## Tableau de bord des créateurs (E9 S1, 08/10)
 
 - Dans Echo : page « Administration » (pages pleine largeur + lien dans Réglages → Compte), visible seulement si le

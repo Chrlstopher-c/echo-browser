@@ -23,6 +23,7 @@ pub fn current_ids() -> Vec<String> {
 
 /// Enregistre le registre, en donne la copie au pont et lui fait reappliquer la regle dans chaque profil.
 pub fn save(registry: &Registry) {
+    crate::account::schedule::touch();
     if let Err(err) = crate::session::with(|s| s.extensions.save_registry(registry)).unwrap_or(Ok(())) {
         warn!(%err, "registre des extensions par profil non enregistre");
     }

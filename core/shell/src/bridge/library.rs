@@ -138,7 +138,9 @@ pub fn clear_history() {
 
 /// Enregistre une visite. Appele a chaque page arrivee a son terme.
 pub fn record_visit(url: &str, title: &str) {
-    session::with(|s| history::record(&s.library, url, title, None));
+    if session::with(|s| history::record(&s.library, url, title, None)) == Some(true) {
+        crate::account::schedule::touch_soft();
+    }
 }
 
 /// Applique un reglage, ou previent l'interface s'il est refuse.

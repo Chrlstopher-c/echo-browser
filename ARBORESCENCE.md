@@ -69,6 +69,7 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `core/shell/src/account/local.rs`
 - `core/shell/src/account/machine.rs`
 - `core/shell/src/account/mod.rs`
+- `core/shell/src/account/schedule.rs`
 - `core/shell/src/account/vault.rs`
 - `core/shell/src/anchor.rs` — le point d'ancrage des extensions. Les API d'extension de Chrome (`tabs.create`,
 - `core/shell/src/anchor_watch.rs` — reperer les onglets que les extensions ouvrent dans la fenetre d'ancrage et les
@@ -159,6 +160,7 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `tools/gen-arborescence.py`
 - `tools/package-release.sh`
 - `tools/release-installer.sh`
+- `tools/test-account-auto.sh`
 - `tools/test-account-sync.sh`
 - `tools/test-admin.sh`
 - `tools/test-codecs-install.sh`
@@ -217,6 +219,7 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `ui/src/account/account-form.tsx` — formulaire du compte Echo — creer un compte ou se connecter. Le mot de passe part vers le coeur
 - `ui/src/account/account-manage.tsx` — Reglages → Compte, une fois connecte — etat de la synchronisation, historique synchronise ou non,
 - `ui/src/account/account-section.tsx` — Reglages → Compte — la connexion quand il n'y a pas de compte, sa gestion sinon.
+- `ui/src/account/sync-health.ts` — dire si la machine est a jour avec son compte — selon le mode, l'anciennete de la derniere synchro,
 - `ui/src/account/vault-panel.tsx` — Reglages → Compte → donnees stockees — ce que le service garde, type par type, dechiffre sur cette
 - `ui/src/address/address-field.tsx` — champ d'adresse compact — l'hote seul au repos, l'URL complete a la saisie,
 - `ui/src/address/load-progress.tsx` — trait de progression au bas du champ d'adresse. Il suit l'avancement reel ;
@@ -319,6 +322,7 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `ui/src/sidebar/sidebar-sheets.tsx` — choix de la feuille affichee sur la liste d'onglets.
 - `ui/src/sidebar/sidebar.tsx` — la barre laterale — toujours la colonne entiere. Repliee, le coeur la retire de la
 - `ui/src/sidebar/simulation-mark.tsx` — marqueur visible quand le faux coeur de developpement alimente l'interface.
+- `ui/src/sidebar/sync-strip.tsx` — alerte en bas de la barre quand la machine n'est pas a jour avec son compte Echo, avec la synchro
 - `ui/src/sidebar/update-strip.tsx` — annoncer qu'une nouvelle version d'Echo est prete, et proposer le redemarrage qui l'applique.
 - `ui/src/sidebar/use-keyboard.ts` — raccourcis clavier quand la barre a le focus. Quand la page l'a, Chromium les
 - `ui/src/sidebar/use-reveal-on-hover.ts` — la barre repliee se cache quand la souris la quitte, apres un court delai

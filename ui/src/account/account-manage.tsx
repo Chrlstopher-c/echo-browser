@@ -2,10 +2,11 @@
 // donnees stockees sur le serveur, et suppression complete du compte.
 
 import { useState, type ReactElement } from 'react'
-import type { AccountView, UiRequest, VaultKindView } from '../shared/contract'
+import type { AccountView, SyncMode, UiRequest, VaultKindView } from '../shared/contract'
 import { ConfirmStrip } from '../shared/design/confirm-strip'
 import { IconRefresh, IconTrash } from '../shared/design/icons'
 import { PushButton } from '../shared/design/push-button'
+import { Segmented } from '../shared/design/segmented'
 import { Toggle } from '../shared/design/toggle'
 import { VaultPanel } from './vault-panel'
 
@@ -15,6 +16,18 @@ function since(seconds: number | null): string {
   if (minutes < 1) return 'synchronisé à l’instant'
   if (minutes < 60) return `synchronisé il y a ${minutes} min`
   return `synchronisé il y a ${Math.round(minutes / 60)} h`
+}
+
+const MODES: Array<{ id: SyncMode; label: string }> = [
+  { id: 'realtime', label: 'Temps réel' },
+  { id: 'auto', label: 'Automatique' },
+  { id: 'manual', label: 'Manuelle' },
+]
+
+const MODE_DETAIL: Record<SyncMode, string> = {
+  realtime: 'Vos modifications partent en quelques secondes, les autres machines sont vérifiées chaque minute.',
+  auto: 'Vos modifications partent par lots dans la minute, les autres machines sont vérifiées toutes les 5 min.',
+  manual: 'Rien ne part sans vous : le bouton Synchroniser envoie et reçoit tout.',
 }
 
 export interface AccountManageProps {
@@ -73,6 +86,14 @@ export function AccountManage({ account, vault, send }: AccountManageProps): Rea
           Synchroniser
         </PushButton>
         <PushButton onClick={() => send({ kind: 'accountSignOut' })}>Se déconnecter</PushButton>
+      </div>
+      <div className="flex flex-col gap-2 px-2 py-2">
+        <div>
+          <p className="text-[12.5px] text-ink">Synchronisation</p>
+          <p className="text-[11px] leading-snug text-ink-faint">{MODE_DETAIL[account.mode]}</p>
+        </div>
+        <Segmented<SyncMode> name="mode-synchro" segments={MODES} value={account.mode}
+          onChange={(mode) => send({ kind: 'updateSetting', key: 'sync.mode', value: { type: 'text', value: mode } })} />
       </div>
       <Row title="Synchroniser l’historique" detail="Les 1 000 dernières adresses visitées, chiffrées de bout en bout.">
         <Toggle checked={account.history} label="Synchroniser l’historique"

@@ -65,11 +65,15 @@ function lectures(db: D1Database, maintenant: number): D1PreparedStatement[] {
       .bind(maintenant),
     db.prepare(`SELECT type, COUNT(*) AS n, SUM(length(donnees)) AS octets FROM coffre GROUP BY type
       ORDER BY octets DESC`),
-    db.prepare(`SELECT jour, SUM(n) AS n, SUM(CASE WHEN substr(cle, -3) >= '500' THEN n ELSE 0 END) AS erreurs,
-      SUM(CASE WHEN substr(cle, -3) BETWEEN '400' AND '499' THEN n ELSE 0 END) AS refus
-      FROM compteurs WHERE jour >= ? GROUP BY jour ORDER BY jour`).bind(jour(il(30))),
-    db.prepare(`SELECT substr(cle, 1, length(cle) - 4) AS route, SUM(n) AS n FROM compteurs WHERE jour >= ?
-      GROUP BY route ORDER BY n DESC LIMIT 12`).bind(jour(il(7))),
+    db.prepare(`SELECT jour, SUM(n) AS n, SUM(erreurs) AS erreurs, SUM(refus) AS refus FROM (
+        SELECT jour, n, CASE WHEN substr(cle, -3) >= '500' THEN n ELSE 0 END AS erreurs,
+          CASE WHEN substr(cle, -3) BETWEEN '400' AND '499' THEN n ELSE 0 END AS refus FROM compteurs WHERE jour >= ?
+        UNION ALL SELECT jour, n, 0, 0 FROM usage WHERE jour >= ?)
+      GROUP BY jour ORDER BY jour`).bind(jour(il(30)), jour(il(30))),
+    db.prepare(`SELECT route, SUM(n) AS n FROM (
+        SELECT substr(cle, 1, length(cle) - 4) AS route, n FROM compteurs WHERE jour >= ?
+        UNION ALL SELECT cle AS route, n FROM usage WHERE jour >= ?)
+      GROUP BY route ORDER BY n DESC LIMIT 12`).bind(jour(il(7)), jour(il(7))),
     db.prepare(`SELECT COALESCE(version, 'inconnue') AS version, COUNT(*) AS n FROM activite WHERE vu_le > ?
       GROUP BY version ORDER BY n DESC`).bind(il(30)),
     db.prepare("SELECT COUNT(*) AS n FROM echecs WHERE le > ? AND email <> '#admin'").bind(il(1)),

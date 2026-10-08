@@ -144,6 +144,17 @@ impl Client {
             .unwrap_or_default())
     }
 
+    /// Controle leger : version de chaque type du coffre sur le service, et le drapeau admin.
+    pub fn state(&self, token: &str) -> anyhow::Result<(std::collections::BTreeMap<String, u64>, bool)> {
+        let (status, body) = self.call("GET", "/v1/etat", Some(token), None)?;
+        anyhow::ensure!(status == 200, error_of(status, &body));
+        let versions = body["versions"]
+            .as_object()
+            .map(|all| all.iter().map(|(k, v)| (k.clone(), v.as_u64().unwrap_or(0))).collect())
+            .unwrap_or_default();
+        Ok((versions, body["admin"].as_bool().unwrap_or(false)))
+    }
+
     /// Le compte ouvre-t-il l'administration ?
     pub fn is_admin(&self, token: &str) -> anyhow::Result<bool> {
         let (status, body) = self.call("GET", "/v1/moi", Some(token), None)?;

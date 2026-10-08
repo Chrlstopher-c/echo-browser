@@ -35,18 +35,18 @@ export function versionDe(requete: Request): string | null {
   return VERSION.test(brute) ? brute : null
 }
 
-/** Compteurs du jour : la route et son statut, et l'action du compte s'il est connu. */
+/** Une seule ecriture par requete (offre gratuite : 100 000 lignes ecrites par jour) : l'usage du compte quand il est
+ * connu et que la requete a reussi, sinon le compteur de la route et de son statut. */
 export async function compter(env: Env, requete: Request, statut: number): Promise<void> {
-  const route = statut === 404 ? 'introuvable 404' : `${routeDe(requete)} ${statut}`
   const compte = compteConnu(requete)
-  const lignes = [env.DB.prepare(`INSERT INTO compteurs (jour, cle, n) VALUES (?, ?, 1)
-      ON CONFLICT (jour, cle) DO UPDATE SET n = n + 1`).bind(jour(), route)]
-  if (compte !== null && statut < 400) {
-    lignes.push(env.DB.prepare(`INSERT INTO usage (jour, compte, cle, n) VALUES (?, ?, ?, 1)
-      ON CONFLICT (jour, compte, cle) DO UPDATE SET n = n + 1`).bind(jour(), compte, actionDe(requete)))
-  }
+  const ligne = compte !== null && statut < 400
+    ? env.DB.prepare(`INSERT INTO usage (jour, compte, cle, n) VALUES (?, ?, ?, 1)
+        ON CONFLICT (jour, compte, cle) DO UPDATE SET n = n + 1`).bind(jour(), compte, actionDe(requete))
+    : env.DB.prepare(`INSERT INTO compteurs (jour, cle, n) VALUES (?, ?, 1)
+        ON CONFLICT (jour, cle) DO UPDATE SET n = n + 1`)
+      .bind(jour(), statut === 404 ? 'introuvable 404' : `${routeDe(requete)} ${statut}`)
   try {
-    await env.DB.batch(lignes)
+    await ligne.run()
   } catch (erreur) {
     console.error('compteurs non ecrits', erreur)
   }

@@ -9,22 +9,19 @@ mod local;
 mod machine;
 mod vault;
 
+pub(crate) mod schedule;
+
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicBool, Ordering};
 
-use cef::*;
 use echo_account::api::Client;
 use echo_account::store::{self, Stored};
 use echo_contract::{AccountView, CoreEvent};
 use parking_lot::Mutex;
 use tracing::{info, warn};
 
-const FIRST_SYNC_MS: i64 = 10_000;
-const SYNC_EVERY_MS: i64 = 10 * 60 * 1000;
 
 static BUSY: AtomicBool = AtomicBool::new(false);
-/// Le compte connecte ouvre l'administration (relu a chaque synchronisation).
-static ADMIN: AtomicBool = AtomicBool::new(false);
 static LAST_ERROR: Mutex<Option<String>> = Mutex::new(None);
 
 pub(super) fn service_url() -> Option<String> {
@@ -52,7 +49,9 @@ pub fn publish() {
         last_sync: stored.as_ref().and_then(|s| s.last_sync),
         error: LAST_ERROR.lock().clone(),
         history: history::enabled(),
-        admin: stored.is_some() && ADMIN.load(Ordering::SeqCst),
+        admin: stored.as_ref().is_some_and(|s| s.admin),
+        mode: schedule::mode().as_str().to_string(),
+        pending: schedule::pending(),
     };
     crate::bridge::publish(&CoreEvent::AccountChanged { account });
 }
@@ -91,13 +90,12 @@ pub fn sign_in(email: String, password: String, create: bool) {
                 warn!(%err, "compte non enregistre sur la machine");
             }
             info!(email = %session.email, "compte connecte");
-            crate::containers::later(sync_now);
+            crate::containers::later(|| { sync_now(); });
         },
     );
 }
 
 pub fn sign_out() {
-    ADMIN.store(false, Ordering::SeqCst);
     let path = stored_path();
     let token = store::load(&path).map(|s| s.token);
     store::forget(&path);
@@ -109,32 +107,74 @@ pub fn sign_out() {
     publish();
 }
 
-pub fn sync_now() {
-    let Some(mut stored) = store::load(&stored_path()) else { return };
-    let Some(session) = stored.session() else { return };
+/// Types dont l'application locale peut ecraser une modification faite pendant la synchro : verifies avant d'ecrire.
+const GUARDED: [&str; 3] = ["reglages", "favoris", "extensions"];
+
+/// Lance une synchronisation ; rend faux si une autre tourne deja (ou pas de compte). Ne perd rien : une modification
+/// locale faite pendant l'aller-retour n'est pas ecrasee (ce type est garde tel quel et repart a la passe suivante).
+pub fn sync_now() -> bool {
+    let Some(mut stored) = store::load(&stored_path()) else { return false };
+    let Some(session) = stored.session() else { return false };
+    if BUSY.load(Ordering::SeqCst) {
+        return false;
+    }
     let mut locals = local::read();
     locals.insert("onglets".to_string(), machine::local_value(stored.kinds.get("onglets").map(|k| &k.base)));
     if history::enabled() {
         locals.insert("historique".to_string(), history::local_value());
     }
+    schedule::snapshot_taken();
+    let before = stored.kinds.clone();
+    let sent: std::collections::BTreeMap<String, serde_json::Value> =
+        GUARDED.iter().filter_map(|k| Some((k.to_string(), locals.get(*k)?.clone()))).collect();
     background(
         move |client| {
-            let outcome = echo_account::sync::run(&client, &session, &mut stored, &locals)?;
-            ADMIN.store(client.is_admin(&session.token).unwrap_or(false), Ordering::SeqCst);
-            stored.last_sync = Some(std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH)?.as_secs() as i64);
-            Ok((stored, outcome))
+            Ok(echo_account::sync::run(&client, &session, &mut stored, &locals).map(|outcome| {
+                stored.admin = client.state(&session.token).map(|(_, admin)| admin).unwrap_or(stored.admin);
+                stored.last_sync = Some(echo_library::now());
+                (stored, outcome)
+            }))
         },
-        |(stored, outcome)| {
-            local::apply(&outcome.writes);
-            if let Some(merged) = outcome.writes.get("historique") {
-                history::apply(merged);
+        move |result| match result {
+            Ok((stored, outcome)) => finish_sync(stored, outcome, &before, &sent),
+            Err(err) => {
+                warn!(%err, "synchronisation");
+                *LAST_ERROR.lock() = Some(err.to_string());
+                schedule::sync_failed();
             }
-            if let Err(err) = store::save(&stored_path(), &stored) {
-                warn!(%err, "etat de synchronisation non enregistre");
-            }
-            info!(ecrits = outcome.writes.len(), reportes = outcome.postponed.len(), "synchronisation faite");
         },
     );
+    true
+}
+
+fn finish_sync(
+    mut stored: Stored,
+    mut outcome: echo_account::sync::Outcome,
+    before: &std::collections::BTreeMap<String, echo_account::store::KindState>,
+    sent: &std::collections::BTreeMap<String, serde_json::Value>,
+) {
+    let now = local::read();
+    let mut again = !outcome.postponed.is_empty();
+    for kind in GUARDED {
+        if outcome.writes.contains_key(kind) && now.get(kind) != sent.get(kind) {
+            // Modifie ici pendant la synchro : on n'ecrase pas, et la base reste l'ancienne pour la prochaine fusion.
+            outcome.writes.remove(kind);
+            match before.get(kind) {
+                Some(state) => stored.kinds.insert(kind.to_string(), state.clone()),
+                None => stored.kinds.remove(kind),
+            };
+            again = true;
+        }
+    }
+    local::apply(&outcome.writes);
+    if let Some(merged) = outcome.writes.get("historique") {
+        history::apply(merged);
+    }
+    if let Err(err) = store::save(&stored_path(), &stored) {
+        warn!(%err, "etat de synchronisation non enregistre");
+    }
+    info!(ecrits = outcome.writes.len(), reportes = outcome.postponed.len(), again, "synchronisation faite");
+    schedule::sync_done(again);
 }
 
 pub use admin::{delete_account as admin_delete, detail as admin_detail, refresh as admin_refresh,
@@ -142,9 +182,9 @@ pub use admin::{delete_account as admin_delete, detail as admin_detail, refresh 
 
 /// L'interface a change un reglage : celui de l'historique se reflete dans l'etat du compte, et part tout de suite.
 pub fn setting_changed(key: &str) {
-    if key == history::SETTING {
+    if key == history::SETTING || key == schedule::MODE_SETTING {
         publish();
-        sync_now();
+        schedule::mode_changed();
     }
 }
 
@@ -172,25 +212,7 @@ pub fn delete() {
     );
 }
 
-/// Arme la synchronisation periodique (si un compte est connecte).
+/// Synchronisation automatique : au lancement, apres chaque lot de modifications, et controle periodique du service.
 pub fn start() {
-    schedule(FIRST_SYNC_MS);
-}
-
-fn schedule(delay_ms: i64) {
-    let mut task = SyncTask::new(0);
-    post_delayed_task(ThreadId::UI, Some(&mut task), delay_ms);
-}
-
-wrap_task! {
-    struct SyncTask {
-        unused: i32,
-    }
-
-    impl Task {
-        fn execute(&self) {
-            sync_now();
-            schedule(SYNC_EVERY_MS);
-        }
-    }
+    schedule::start();
 }
