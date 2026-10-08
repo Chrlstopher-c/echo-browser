@@ -21,6 +21,7 @@ pub fn publish_initial_state() {
     crate::codecs::publish();
     crate::update::publish();
     crate::account::publish();
+    crate::routines::publish();
     publish_filter_lists();
 }
 

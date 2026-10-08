@@ -58,3 +58,20 @@ pub struct NetRequestView {
     pub bytes: u64,
     pub duration_ms: Option<u64>,
 }
+
+/// Une suite de sites ouverte souvent dans le meme ordre, proposee comme routine.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RoutineProposalView {
+    pub fingerprint: String,
+    pub sites: Vec<String>,
+    pub urls: Vec<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RoutineView {
+    pub id: i64,
+    pub name: String,
+    pub urls: Vec<String>,
+}

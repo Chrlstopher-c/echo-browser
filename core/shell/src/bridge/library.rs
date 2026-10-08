@@ -140,6 +140,7 @@ pub fn clear_history() {
 pub fn record_visit(url: &str, title: &str) {
     if session::with(|s| history::record(&s.library, url, title, None)) == Some(true) {
         crate::account::schedule::touch_soft();
+        crate::routines::visited(url);
     }
 }
 

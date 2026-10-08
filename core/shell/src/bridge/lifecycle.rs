@@ -146,6 +146,7 @@ fn wake_tab(id: TabId) {
         host.add_child_view(Some(&mut View::from(&view)));
     }
     session::with(|s| s.tabs.wake_with(id, view));
+    crate::page_state::arm(id);
 }
 
 /// Les sites dont l'onglet ne doit jamais dormir (reglage `tabs.neverSleep`, separes par des virgules).

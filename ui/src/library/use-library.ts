@@ -1,7 +1,7 @@
 // Responsabilite : modele de la bibliotheque — section affichee (persistee), favoris, historique, telechargements.
 
 import { useCallback, useState } from 'react'
-import type { RemoteMachineView, UiRequest } from '../shared/contract'
+import type { RemoteMachineView, RoutineView, UiRequest } from '../shared/contract'
 import type { CoreState } from '../shared/core-state'
 import { readLocal, writeLocal } from '../shared/local-store'
 import { activeTabOf } from '../shared/core-state'
@@ -9,10 +9,10 @@ import { useBookmarks, type BookmarksController } from './bookmarks/use-bookmark
 import { useDownloads, type DownloadsController } from './downloads/use-downloads'
 import { useHistory, type HistoryController } from './history/use-history'
 
-export type LibrarySection = 'bookmarks' | 'history' | 'downloads' | 'devices'
+export type LibrarySection = 'bookmarks' | 'history' | 'downloads' | 'routines' | 'devices'
 
 const STORE_KEY = 'echo.library.section'
-const SECTIONS: LibrarySection[] = ['bookmarks', 'history', 'downloads', 'devices']
+const SECTIONS: LibrarySection[] = ['bookmarks', 'history', 'downloads', 'routines', 'devices']
 
 export interface LibraryController {
   section: LibrarySection
@@ -23,6 +23,8 @@ export interface LibraryController {
   /** Onglets des autres machines du compte. */
   machines: RemoteMachineView[]
   openUrl: (url: string) => void
+  routines: RoutineView[]
+  send: (request: UiRequest) => void
 }
 
 function isSection(value: unknown): value is LibrarySection {
@@ -45,5 +47,8 @@ export function useLibrary(send: (request: UiRequest) => void, state: CoreState)
   const openUrl = useCallback((url: string): void => send({ kind: 'newTab', url }), [send])
   // Sans autre machine, la section n'existe pas : on retombe sur les favoris.
   const shown = section === 'devices' && state.remoteMachines.length === 0 ? 'bookmarks' : section
-  return { section: shown, setSection, bookmarks, history, downloads, machines: state.remoteMachines, openUrl }
+  return {
+    section: shown, setSection, bookmarks, history, downloads, machines: state.remoteMachines, openUrl,
+    routines: state.routines, send,
+  }
 }

@@ -17,6 +17,8 @@ import type {
   RemoteMachineView,
   VaultKindView,
   NetworkView,
+  RoutineProposalView,
+  RoutineView,
   UpdateView,
   VideoCodecsView,
 } from './contract'
@@ -68,6 +70,9 @@ export interface CoreState {
   vault: VaultKindView[] | null
   /** Tableau de bord des createurs, null tant qu'il n'a pas ete demande. */
   admin: { summary: unknown; accounts: unknown; error: string | null } | null
+  /** Routine proposee, en attente d'une reponse. */
+  routineProposal: RoutineProposalView | null
+  routines: RoutineView[]
   /** Reseau de l'onglet actif, tant que le panneau est ouvert. */
   network: NetworkView | null
   /** Fiche du compte ouvert dans l'administration. */
@@ -108,6 +113,8 @@ export const EMPTY_CORE_STATE: CoreState = {
   admin: null,
   adminAccount: null,
   network: null,
+  routineProposal: null,
+  routines: [],
 }
 
 function withShield(state: CoreState, id: TabId, view: ShieldView): CoreState {
@@ -190,6 +197,10 @@ export function reduceCore(state: CoreState, event: CoreEvent): CoreState {
       return { ...state, remoteMachines: event.machines }
     case 'accountVault':
       return { ...state, vault: event.kinds }
+    case 'routineProposed':
+      return { ...state, routineProposal: event.proposal }
+    case 'routinesChanged':
+      return { ...state, routines: event.routines }
     case 'networkChanged':
       return { ...state, network: event.network }
     case 'adminAccount':

@@ -86,11 +86,17 @@ wrap_load_handler! {
                 if let Some(browser) = browser {
                     crate::bridge::set_tab_dirty(browser.identifier(), false);
                     crate::bridge::reset_tab_scroll(browser.identifier());
+                    crate::page_state::navigated(browser.identifier());
                 }
                 if url.starts_with("http") || url.starts_with("file:") {
                     frame.execute_java_script(
                         Some(&CefString::from(crate::sleep::DIRTY_WATCHER)),
                         Some(&CefString::from("echo://sleep")),
+                        0,
+                    );
+                    frame.execute_java_script(
+                        Some(&CefString::from(crate::page_state::WATCHER)),
+                        Some(&CefString::from("echo://etat")),
                         0,
                     );
                 }
@@ -146,6 +152,10 @@ wrap_load_handler! {
                 frame.execute_java_script(Some(&CefString::from(crate::store::BUTTON_SCRIPT)), Some(&CefString::from("echo://store")), 0);
             }
             if frame.is_main() == 1 && url.starts_with("http") {
+                let browser_id = browser.as_ref().map(|b| b.identifier());
+                if let Some(script) = browser_id.and_then(crate::page_state::restore_script) {
+                    frame.execute_java_script(Some(&CefString::from(script.as_str())), Some(&CefString::from("echo://etat")), 0);
+                }
                 let pending = browser.and_then(|b| crate::bridge::take_pending_scroll(b.identifier()));
                 if let Some(y) = pending {
                     let script = crate::sleep::restore_script(y);
@@ -221,6 +231,12 @@ wrap_display_handler! {
             line: i32,
         ) -> i32 {
             let message = message.map(CefString::to_string).unwrap_or_default();
+            if let Some(state) = message.strip_prefix(crate::page_state::MARKER) {
+                if let Some(browser) = browser {
+                    crate::page_state::record(browser.identifier(), state);
+                }
+                return 1;
+            }
             if let Some(y) = message.strip_prefix(crate::sleep::SCROLL_MARKER).and_then(|v| v.parse::<i32>().ok()) {
                 if let Some(browser) = browser {
                     crate::bridge::set_tab_scroll(browser.identifier(), y);

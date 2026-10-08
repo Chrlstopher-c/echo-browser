@@ -5,6 +5,7 @@
 
 pub mod bookmarks;
 pub mod downloads;
+pub mod hidden;
 pub mod history;
 pub mod journal;
 pub mod permissions;

@@ -8,6 +8,7 @@ import { BookmarksPanel } from './bookmarks/bookmarks-panel'
 import { DownloadsPanel } from './downloads/downloads-panel'
 import { HistoryPanel } from './history/history-panel'
 import { DevicesPanel } from './devices/devices-panel'
+import { RoutinesPanel } from '../routines/routines-panel'
 import type { LibraryController, LibrarySection } from './use-library'
 
 function RunningDot(): ReactElement {
@@ -20,6 +21,7 @@ function segmentsOf(controller: LibraryController): Array<Segment<LibrarySection
     { id: 'bookmarks', label: 'Favoris' },
     { id: 'history', label: 'Historique' },
     { id: 'downloads', label: 'Fichiers', badge: running ? <RunningDot /> : null },
+    { id: 'routines', label: 'Routines' },
     ...(controller.machines.length > 0 ? [{ id: 'devices' as const, label: 'Machines' }] : []),
   ]
 }
@@ -32,6 +34,8 @@ function Panel({ controller }: { controller: LibraryController }): ReactElement 
       return <HistoryPanel controller={controller.history} />
     case 'downloads':
       return <DownloadsPanel controller={controller.downloads} />
+    case 'routines':
+      return <RoutinesPanel routines={controller.routines} send={controller.send} />
     case 'devices':
       return <DevicesPanel machines={controller.machines} onOpen={controller.openUrl} />
   }

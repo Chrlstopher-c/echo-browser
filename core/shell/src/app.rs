@@ -166,6 +166,7 @@ fn restore_or_open() {
             let (history, position, pinned) = (tab.history.clone(), tab.position, tab.pinned);
             let folder = tab.folder.clone();
             let space = if tab.space.is_empty() { crate::profiles::DEFAULT.to_string() } else { tab.space.clone() };
+            crate::page_state::adopt(id, tab.state.clone());
             crate::session::with(|s| {
                 s.tabs.restore_history(id, history, position);
                 if let Some(entry) = s.tabs.get_mut(id) {

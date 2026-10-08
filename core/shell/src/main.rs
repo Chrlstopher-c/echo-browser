@@ -34,6 +34,7 @@ mod presence;
 mod selftest;
 mod restart;
 mod roundness;
+mod routines;
 mod scheme;
 mod search;
 mod store;

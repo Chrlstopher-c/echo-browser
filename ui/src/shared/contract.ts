@@ -128,6 +128,11 @@ export type UiRequest =
   | { kind: 'networkBlockHost'; host: string; blocked: boolean }
   /** Isolement strict du site de l'onglet actif : aucune requete vers un autre site. */
   | { kind: 'networkSetStrict'; strict: boolean }
+  // --- Routines (suites de sites ouvertes souvent) ---
+  | { kind: 'routineAccept'; fingerprint: string; name: string }
+  | { kind: 'routineDismiss'; fingerprint: string }
+  | { kind: 'routineOpen'; id: number }
+  | { kind: 'routineRemove'; id: number }
   // --- Administration (comptes administrateurs seulement ; le service verifie a chaque appel) ---
   /** Relire le tableau de bord, comptes filtres par `query` (adresse e-mail). */
   | { kind: 'adminRefresh'; query: string }
@@ -173,6 +178,9 @@ export type CoreEvent =
   | { kind: 'accountVault'; kinds: VaultKindView[] }
   /** Tableau de bord tel que le service le rend (forme lue par `admin/admin-data.ts`), ou l'erreur. */
   | { kind: 'adminData'; summary: unknown; accounts: unknown; error: string | null }
+  /** Une suite de sites revient : proposition de routine. */
+  | { kind: 'routineProposed'; proposal: RoutineProposalView }
+  | { kind: 'routinesChanged'; routines: RoutineView[] }
   /** Reseau de l'onglet actif (panneau ouvert seulement). */
   | { kind: 'networkChanged'; network: NetworkView }
   /** Fiche d'un compte telle que le service la rend (lue par `admin/admin-data.ts`), ou l'erreur. */
@@ -503,4 +511,17 @@ export interface NetRequestView {
   status: number | null
   bytes: number
   durationMs: number | null
+}
+
+/** Une suite de sites ouverte souvent dans le meme ordre, proposee comme routine. */
+export interface RoutineProposalView {
+  fingerprint: string
+  sites: string[]
+  urls: string[]
+}
+
+export interface RoutineView {
+  id: number
+  name: string
+  urls: string[]
 }

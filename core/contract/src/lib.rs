@@ -8,7 +8,7 @@ mod network;
 
 use serde::{Deserialize, Serialize};
 
-pub use network::{JournalEntryView, NetDomainView, NetRequestView, NetworkView};
+pub use network::{JournalEntryView, NetDomainView, NetRequestView, NetworkView, RoutineProposalView, RoutineView};
 pub use account::{AccountView, RemoteMachineView, RemoteTabView, VaultKindView, VaultLineView};
 
 pub type TabId = u32;
@@ -165,6 +165,12 @@ pub enum UiRequest {
     /// Isolement strict du site de l'onglet actif : aucune requete vers un autre site.
     NetworkSetStrict { strict: bool },
 
+    // --- Routines (suites de sites ouvertes souvent) ---
+    RoutineAccept { fingerprint: String, name: String },
+    RoutineDismiss { fingerprint: String },
+    RoutineOpen { id: i64 },
+    RoutineRemove { id: i64 },
+
     // --- Administration (comptes administrateurs seulement ; le service verifie a chaque appel) ---
     /// Relire le tableau de bord, comptes filtres par `query` (adresse e-mail).
     AdminRefresh { query: String },
@@ -218,6 +224,9 @@ pub enum CoreEvent {
     AccountVault { kinds: Vec<VaultKindView> },
     /// Tableau de bord tel que le service le rend (`summary` : chiffres, `accounts` : comptes), ou l'erreur.
     AdminData { summary: serde_json::Value, accounts: serde_json::Value, error: Option<String> },
+    /// Une suite de sites revient : proposition de routine.
+    RoutineProposed { proposal: RoutineProposalView },
+    RoutinesChanged { routines: Vec<RoutineView> },
     /// Reseau de l'onglet actif (panneau ouvert seulement).
     NetworkChanged { network: NetworkView },
     /// Fiche d'un compte telle que le service la rend, ou l'erreur.

@@ -47,6 +47,9 @@ pub struct TabSnapshot {
     pub container: Option<String>,
     #[serde(default)]
     pub keep_awake: bool,
+    /// Saisies et position des medias de la page (voir `page_state`).
+    #[serde(default)]
+    pub state: Option<String>,
 }
 
 impl TabSnapshot {

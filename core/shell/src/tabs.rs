@@ -375,6 +375,7 @@ impl Tabs {
     pub fn adopt_asleep(&mut self, snapshot: &crate::restart::TabSnapshot) {
         let Some(url) = snapshot.current() else { return };
         let id = self.next_id;
+        crate::page_state::adopt(id, snapshot.state.clone());
         self.next_id += 1;
         self.entries.push(Tab {
             id,
@@ -451,6 +452,7 @@ impl Tabs {
                     container: tab.container.clone(),
                     space: tab.space.clone(),
                     scroll: tab.scroll,
+                    state: crate::page_state::get(tab.id),
                     title: tab.title.clone(),
                     favicon: tab.favicon.clone(),
                 })

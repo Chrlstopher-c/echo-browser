@@ -241,6 +241,10 @@ fn apply(request: UiRequest) {
         }
         UiRequest::AccountInspect => crate::account::inspect(),
         UiRequest::AccountDelete => crate::account::delete(),
+        UiRequest::RoutineAccept { fingerprint, name } => crate::routines::accept(&fingerprint, &name),
+        UiRequest::RoutineDismiss { fingerprint } => crate::routines::dismiss(&fingerprint),
+        UiRequest::RoutineOpen { id } => crate::routines::open(id),
+        UiRequest::RoutineRemove { id } => crate::routines::remove(id),
         UiRequest::NetworkWatch { on } => crate::network::watch(on),
         UiRequest::NetworkFocus { host } => crate::network::focus(host),
         UiRequest::NetworkBlockHost { host, blocked } => crate::network::block_host(&host, blocked),

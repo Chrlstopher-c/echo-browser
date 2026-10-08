@@ -196,3 +196,15 @@ fn une_suite_n_est_comptee_qu_une_fois_par_fenetre() {
         assert!(routines::observe(&lib, &suite, 600).is_none());
     }
 }
+
+#[test]
+fn un_element_masque_l_est_pour_tout_le_gabarit() {
+    use echo_library::hidden;
+    let lib = library();
+    assert!(hidden::add(&lib, "g1", "div.banniere", "journal.fr"));
+    hidden::add(&lib, "g1", "div.banniere", "journal.fr");
+    assert_eq!(hidden::selectors(&lib, "g1"), ["div.banniere"]);
+    assert!(hidden::selectors(&lib, "g2").is_empty());
+    assert!(hidden::clear(&lib, "g1"));
+    assert!(hidden::selectors(&lib, "g1").is_empty());
+}
