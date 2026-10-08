@@ -146,3 +146,68 @@ risque dans un projet open source.
   titre et paragraphes restent.
 - Chaque story : point d'entrée visible + ligne dans l'Aide.
 - Fait le 08/10 : S1 (`test-palette.sh`), S2 (`test-forms.sh`), S3 (`test-reader.sh`), captures clair/sombre.
+
+## E13→E17 — Viser 10/10 sur les cinq axes de l'audit UX du 08/10 (demande de Chris, 09/10, autonomie)
+Source : audit Opus (scratchpad/audit/RAPPORT.md, résumé dans STATE.md). Notes de départ : navigation 5, esthétique 7,5,
+grand public 4, finition 4,5, fonctions face à Chrome/Firefox/Zen/Arc 6,5. Écartés volontairement : gestionnaire de
+mots de passe (Proton Pass), traduction de page (service tiers). Chaque story : point d'entrée visible + ligne d'Aide,
+clair ET sombre, test `tools/test-*.sh` isolé. Fin : régression complète, contre-audit, release 0.11.0.
+
+### E13 — Navigation
+- [ ] S1 Recherche dans la page : Ctrl+F (et clic droit « Rechercher dans la page ») ouvre une barre flottante, compteur
+  « 3/12 », Entrée / Maj+Entrée, Échap ferme et efface. VERIFY: `test-find.sh` (compte, suivant, fermeture).
+- [ ] S2 Palette : 1re ligne « Rechercher « … » sur <moteur> », suggestions du moteur (réglage, coupable), police du
+  texte (pas monospace), pas de cadenas pendant la frappe, liste large qui déborde de la barre. VERIFY: `test-palette.sh`.
+- [ ] S3 Moteur au choix dans une liste (Google, DuckDuckGo, Qwant, Ecosia, Bing, Startpage, Brave) au lieu d'un champ
+  « %s ». VERIFY: test qui change le moteur → URL de recherche suivie.
+- [ ] S4 Positions : Ctrl+Maj+T rouvre à sa place ; popup et lien « nouvel onglet » juste sous le parent ; passage en
+  conteneur garde la place. VERIFY: test d'index.
+- [ ] S5 Plein écran : Échap en sort ; bord à bord (ni marge ni coins). VERIFY: test + capture.
+- [ ] S6 Zoom : paliers de Chrome (90/100/110/125/150…), pastille qui réserve sa place, Ctrl+0 / Ctrl+à. VERIFY: test.
+- [ ] S7 Fenêtre étroite : barre repliée d'office sous 900 px, poignée visible, raccourci Ctrl+Alt+S. VERIFY: test.
+- [ ] S8 Navigation demandée pendant le réveil d'un onglet endormi : jamais perdue. VERIFY: test.
+
+### E14 — Finition
+- [ ] S1 Dates de l'historique et des fichiers (secondes ≠ millisecondes). VERIFY: test vitest + capture.
+- [ ] S2 Réglages : section « Autres » supprimée ; thème Clair / Sombre / Système ; sommaire. VERIFY: test DOM.
+- [ ] S3 Bouclier : compteur de l'onglet actif ; vrais nombres de règles dès le 1er lancement ; accents ; listes sous
+  « Avancé » ; bandeaux de cookies coupés par défaut. VERIFY: test deux onglets → deux chiffres.
+- [ ] S4 Favoris : Ctrl+D confirme (bulle « Ajouté aux favoris ») + étoile dans l'adresse ; pages internes et pages
+  d'erreur ni en favori ni dans l'historique. VERIFY: test.
+- [ ] S5 Téléchargements : progression visible, bulle cliquable (Ouvrir / Afficher le dossier). VERIFY: test.
+- [ ] S6 Chromium en français (pages d'erreur, DevTools). VERIFY: page d'erreur lue en français.
+- [ ] S7 Mode lecture : titre unique, une seule famille de police, taille et largeur réglables. VERIFY: test-reader.
+- [ ] S8 Icônes de repli : initiale teintée pour un épinglé ou un onglet sans favicon, logo Echo pour les pages
+  internes. VERIFY: test DOM + capture.
+
+### E15 — Grand public et accessibilité
+- [ ] S1 Contraste ≥ 4,5:1 pour tout texte (clair et sombre). VERIFY: test qui calcule les contrastes des jetons.
+- [ ] S2 Onglets au clavier : `tablist`/`tab`, `aria-selected`, flèches, Entrée, Suppr. VERIFY: test DOM.
+- [ ] S3 Profils : cible ≥ 24 px, nom du profil actif visible, libellés aria justes. VERIFY: test DOM.
+- [ ] S4 Cadenas honnête : certificat invalide = « Non sécurisé » rouge ; http = « Non sécurisé » en toutes lettres ;
+  résumé en langage courant en tête du panneau. VERIFY: test (page http + état d'erreur de certificat).
+- [ ] S5 Veille selon la mémoire réellement libre, plus un nombre d'onglets ; réglage qui dit vrai ; icône « garder
+  éveillé » distincte du thème. VERIFY: test 6 onglets, rien ne dort avant le délai réglé.
+- [ ] S6 Bouton Claude Code montré seulement si `claude` est installé ; extensions : « Catalogue » en bouton principal,
+  phrase juste ; interrupteurs étiquetés selon leur état. VERIFY: test DOM.
+- [ ] S7 Accueil qui configure : thème, moteur, import, puis compte ; pas de bulle d'astuce pendant l'accueil ; l'accueil
+  ne reste pas dans l'historique ; afficher le mot de passe. VERIFY: test du parcours.
+- [ ] S8 Recherche dans l'Aide. VERIFY: test DOM.
+
+### E16 — Profils = identités
+- [ ] S1 Un seul profil au premier lancement (les profils existants ne bougent pas). VERIFY: test premier lancement.
+- [ ] S2 Historique, favoris, dossiers, suggestions et nouvel onglet propres à chaque profil. VERIFY: test
+  Personnel/Travail sans fuite.
+- [ ] S3 Conteneur visible (couleur + nom sur la ligne d'onglet) ; clic droit de lien « Ouvrir dans un conteneur ».
+- [ ] S4 Navigation privée : Ctrl+Maj+N, onglet en mémoire seule (rien sur disque, pas d'historique), aspect distinct.
+  VERIFY: test (aucun cookie ni historique après fermeture).
+
+### E17 — Face aux concurrents
+- [ ] S1 Import Chrome / Firefox / Chromium (favoris + historique) depuis l'accueil et les Réglages. VERIFY: test avec
+  profils factices.
+- [ ] S2 Effacer les données de navigation (Ctrl+Maj+Suppr) : période, historique, cookies, cache. VERIFY: test.
+- [ ] S3 Nouvel onglet : tuiles avec icônes, plus de champ en double. VERIFY: capture.
+- [ ] S4 Clic droit : « Rechercher « sélection » », bascules cochées, lecture seulement si article ; Ctrl+Maj+C copie
+  l'adresse. VERIFY: test-contextmenu.
+- [ ] S5 Couper le son d'un onglet depuis son indicateur audio. VERIFY: test.
+- [ ] S6 Fiches de formulaire proposées au focus d'un champ reconnu. VERIFY: test-forms.
