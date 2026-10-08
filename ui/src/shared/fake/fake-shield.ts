@@ -114,7 +114,7 @@ export class FakeShield {
         list.enabled && list.rules !== null ? { ...list, rules: list.rules + 12 } : list,
       )
       this.emit(this.snapshotLists())
-      this.emit({ kind: 'notice', level: 'info', message: 'Listes de filtres à jour.' })
+      this.emit({ kind: 'notice', level: 'info', message: 'Listes de filtres à jour.', actions: [] })
     }, REFRESH_MS)
   }
 }

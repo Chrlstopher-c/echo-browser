@@ -8,7 +8,7 @@ import { formatZoom } from '../shared/format'
 import { QUICK } from '../shared/design/motion'
 import { readUrl } from '../shared/url-shape'
 import { LoadProgress } from './load-progress'
-import { IconSearch } from '../shared/design/icons'
+import { IconSearch, IconStar, IconStarFilled } from '../shared/design/icons'
 import { SecurityMark } from './security-mark'
 import { SuggestionList } from './suggestion-list'
 import { useSuggestions, type Suggestions } from './use-suggestions'
@@ -26,6 +26,21 @@ export interface AddressFieldProps {
   send: (request: UiRequest) => void
   /** Incremente pour donner le focus au champ depuis l'exterieur. */
   focusToken: number
+  /** La page est-elle dans les favoris ? `null` : page interne, pas d'etoile. */
+  bookmarked: boolean | null
+  onToggleBookmark: () => void
+}
+
+function BookmarkStar({ on, onToggle }: { on: boolean; onToggle: () => void }): ReactElement {
+  const label = on ? 'Retirer des favoris' : 'Ajouter aux favoris (Ctrl+D)'
+  return (
+    <button type="button" title={label} aria-label={label} aria-pressed={on}
+      onPointerDown={(event) => event.stopPropagation()} onClick={onToggle}
+      className={`z-10 -mr-1 grid shrink-0 place-items-center rounded-full p-1 transition-colors duration-100
+        ${on ? 'text-warn' : 'text-ink-faint hover:text-ink'}`}>
+      {on ? <IconStarFilled size={13} /> : <IconStar size={13} />}
+    </button>
+  )
 }
 
 function RestingHost({ url }: { url: string }): ReactElement {
@@ -105,12 +120,15 @@ export function AddressField(props: AddressFieldProps): ReactElement {
         <AddressInput field={field} list={list} />
         {!field.editing && (
           <div className={`pointer-events-none absolute inset-y-0 left-[39px] flex items-center
-            ${tab !== null && Math.abs(tab.zoom - 1) > 0.001 ? 'right-[58px]' : 'right-3.5'}
+            ${tab !== null && Math.abs(tab.zoom - 1) > 0.001 ? 'right-[80px]' : 'right-[34px]'}
             overflow-hidden text-[12.5px] leading-none`}>
             <RestingHost url={tab?.url ?? ''} />
           </div>
         )}
         {!field.editing && tab !== null && <ZoomBadge zoom={tab.zoom} onReset={onResetZoom} />}
+        {!field.editing && props.bookmarked !== null && (
+          <BookmarkStar on={props.bookmarked} onToggle={props.onToggleBookmark} />
+        )}
         <LoadProgress loading={tab?.loading ?? false} progress={tab?.progress ?? 0} />
       </div>
       <SuggestionList items={list.items} selected={list.selected} onPick={list.pick} />

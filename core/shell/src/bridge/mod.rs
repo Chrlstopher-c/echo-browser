@@ -351,6 +351,7 @@ pub(super) fn notify_error(message: &str) {
     publish(&CoreEvent::Notice {
         level: echo_contract::NoticeLevel::Error,
         message: message.to_string(),
+        actions: Vec::new(),
     });
 }
 

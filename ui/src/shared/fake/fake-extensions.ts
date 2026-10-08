@@ -93,7 +93,7 @@ export class FakeExtensions {
         this.setEnabled(request.id, request.enabled)
         return true
       case 'openExtensionManager':
-        this.emit({ kind: 'notice', level: 'info', message: 'Gestionnaire Chromium indisponible en développement.' })
+        this.emit({ kind: 'notice', level: 'info', message: 'Gestionnaire Chromium indisponible en développement.', actions: [] })
         return true
       case 'restartBrowser':
         this.restart()
@@ -106,14 +106,14 @@ export class FakeExtensions {
   private install(source: string): void {
     const id = /[a-p]{32}/.exec(source)?.[0] ?? null
     if (id === null) {
-      this.emit({ kind: 'notice', level: 'info', message: 'Catalogue ouvert dans un onglet.' })
+      this.emit({ kind: 'notice', level: 'info', message: 'Catalogue ouvert dans un onglet.', actions: [] })
       return
     }
     if (this.items.some((item) => item.id === id)) {
-      this.emit({ kind: 'notice', level: 'warning', message: 'Cette extension est déjà installée.' })
+      this.emit({ kind: 'notice', level: 'warning', message: 'Cette extension est déjà installée.', actions: [] })
       return
     }
-    this.emit({ kind: 'notice', level: 'info', message: 'Fiche ouverte : Chromium demande les permissions.' })
+    this.emit({ kind: 'notice', level: 'info', message: 'Fiche ouverte : Chromium demande les permissions.', actions: [] })
     setTimeout(() => {
       const name = CATALOGUE_NAMES[this.items.length % CATALOGUE_NAMES.length] ?? 'Extension'
       const added: ExtensionView = {
@@ -126,7 +126,7 @@ export class FakeExtensions {
       this.items = [...this.items, added]
       this.restartPending = true
       this.emit(this.snapshot())
-      this.emit({ kind: 'notice', level: 'info', message: `${name} installée.` })
+      this.emit({ kind: 'notice', level: 'info', message: `${name} installée.`, actions: [] })
     }, STORE_MS)
   }
 
@@ -136,7 +136,7 @@ export class FakeExtensions {
     this.items = this.items.filter((item) => item.id !== id)
     this.restartPending = true
     this.emit(this.snapshot())
-    this.emit({ kind: 'notice', level: 'info', message: `${gone.name} retirée.` })
+    this.emit({ kind: 'notice', level: 'info', message: `${gone.name} retirée.`, actions: [] })
   }
 
   private setEnabled(id: string, enabled: boolean): void {

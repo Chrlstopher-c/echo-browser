@@ -73,7 +73,7 @@ export class FakeLibrary {
       case 'clearHistory':
         this.history = []
         this.emit(this.snapshotHistory())
-        this.emit({ kind: 'notice', level: 'info', message: 'Historique effacé.' })
+        this.emit({ kind: 'notice', level: 'info', message: 'Historique effacé.', actions: [] })
         return true
       case 'searchHistory':
         this.terms = request.terms.trim().toLowerCase()
@@ -107,13 +107,13 @@ export class FakeLibrary {
     const tab = this.findTab(id)
     if (tab === undefined) return
     if (this.bookmarks.some((item) => item.url === tab.url)) {
-      this.emit({ kind: 'notice', level: 'info', message: 'Déjà dans les favoris.' })
+      this.emit({ kind: 'notice', level: 'info', message: 'Déjà dans les favoris.', actions: [] })
       return
     }
     const added: BookmarkView = { url: tab.url, title: tab.title, favicon: tab.favicon, addedAt: Date.now() }
     this.bookmarks = [...this.bookmarks, added]
     this.emit(this.snapshotBookmarks())
-    this.emit({ kind: 'notice', level: 'info', message: 'Ajouté aux favoris.' })
+    this.emit({ kind: 'notice', level: 'info', message: 'Ajouté aux favoris.', actions: [] })
   }
 
   private moveBookmark(url: string, to: number): void {

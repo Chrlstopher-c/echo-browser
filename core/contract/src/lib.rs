@@ -235,7 +235,8 @@ pub enum CoreEvent {
     FindResult { count: i32, current: i32 },
     /// Le navigateur va se relancer : l'interface montre son ecran d'attente.
     Restarting { reason: String },
-    Notice { level: NoticeLevel, message: String },
+    /// Message bref ; `actions` : boutons qui renvoient une requete au coeur (« Ouvrir », « Modifier »…).
+    Notice { level: NoticeLevel, message: String, actions: Vec<NoticeAction> },
     /// Un site demande une permission : l'interface pose la question a l'utilisateur.
     PermissionRequested { id: u64, origin: String, kinds: Vec<String> },
     /// Les decisions de permission retenues, par site.
@@ -459,4 +460,19 @@ pub struct SuggestionView {
     pub title: String,
     pub url: String,
     pub tab: Option<TabId>,
+}
+
+/// Un bouton d'une notification : son libelle et la requete qu'il envoie.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct NoticeAction {
+    pub label: String,
+    pub request: UiRequest,
+}
+
+impl CoreEvent {
+    /// Notification sans bouton.
+    pub fn notice(level: NoticeLevel, message: impl Into<String>) -> Self {
+        CoreEvent::Notice { level, message: message.into(), actions: Vec::new() }
+    }
 }

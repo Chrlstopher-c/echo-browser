@@ -102,6 +102,11 @@ fn from_contract(value: &SettingValue) -> settings::Value {
 }
 
 /// Met en favori la page de l'onglet donne.
+/// Une page du web ou un fichier local, pas une page interne.
+pub fn is_web(url: &str) -> bool {
+    ["http://", "https://", "file://"].iter().any(|scheme| url.starts_with(scheme))
+}
+
 pub fn add_bookmark(id: echo_contract::TabId) {
     let entry = session::with(|s| {
         let tab = s.tabs.get_mut(id)?;
@@ -109,11 +114,23 @@ pub fn add_bookmark(id: echo_contract::TabId) {
     })
     .flatten();
     let Some((url, title)) = entry else { return };
-    if url.is_empty() {
+    // Les pages d'Echo (reglages, bibliotheque, aide) ne sont pas des sites : rien a mettre en favori.
+    if url.is_empty() || !is_web(&url) {
         return;
     }
     session::with(|s| bookmarks::add(&s.library, &url, &title, None));
     publish_bookmarks();
+    super::publish(&CoreEvent::Notice {
+        level: echo_contract::NoticeLevel::Info,
+        message: format!("Ajouté aux favoris : {title}"),
+        actions: vec![
+            echo_contract::NoticeAction { label: "Retirer".into(), request: echo_contract::UiRequest::RemoveBookmark { url } },
+            echo_contract::NoticeAction {
+                label: "Voir les favoris".into(),
+                request: echo_contract::UiRequest::OpenPage { page: "bibliotheque".into() },
+            },
+        ],
+    });
 }
 
 pub fn remove_bookmark(url: &str) {
@@ -136,8 +153,26 @@ pub fn clear_history() {
     publish_history("");
 }
 
+/// Pages dont le chargement a echoue (certificat, reseau) : leur page d'erreur n'est pas une visite.
+static FAILED: parking_lot::Mutex<Vec<String>> = parking_lot::Mutex::new(Vec::new());
+
+pub fn note_failed_load(url: &str) {
+    let mut failed = FAILED.lock();
+    failed.push(url.to_string());
+    if failed.len() > 20 {
+        failed.remove(0);
+    }
+}
+
 /// Enregistre une visite. Appele a chaque page arrivee a son terme.
 pub fn record_visit(url: &str, title: &str) {
+    let failed = {
+        let mut list = FAILED.lock();
+        list.iter().position(|u| u == url).map(|at| list.remove(at)).is_some()
+    };
+    if failed || !is_web(url) {
+        return;
+    }
     if session::with(|s| history::record(&s.library, url, title, None)) == Some(true) {
         crate::account::schedule::touch_soft();
         crate::routines::visited(url);
@@ -151,10 +186,7 @@ pub fn update_setting(key: &str, value: &SettingValue) {
     match outcome {
         Some(Err(reason)) => {
             warn!(%reason, "reglage refuse");
-            super::publish(&CoreEvent::Notice {
-                level: echo_contract::NoticeLevel::Error,
-                message: reason,
-            });
+            super::publish(&CoreEvent::notice(echo_contract::NoticeLevel::Error, reason));
         }
         _ => {
             // Le meme interrupteur existe dans le bouclier et dans les reglages : les deux doivent agir.

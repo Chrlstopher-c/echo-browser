@@ -21,10 +21,7 @@ pub fn copy_image(url: &str) {
             }
         };
         crate::containers::later(move || {
-            crate::bridge::publish(&echo_contract::CoreEvent::Notice {
-                level: echo_contract::NoticeLevel::Info,
-                message,
-            });
+            crate::bridge::publish(&echo_contract::CoreEvent::notice(echo_contract::NoticeLevel::Info, message));
         });
     });
 }

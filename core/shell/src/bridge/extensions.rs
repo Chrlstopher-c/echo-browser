@@ -40,7 +40,7 @@ pub(super) fn install_extension(source: &str) {
         (true, true) => "Extension ajoutée à ce profil.",
         (true, false) => "Cette extension est déjà dans ce profil.",
     };
-    publish(&CoreEvent::Notice { level: echo_contract::NoticeLevel::Info, message: message.to_string() });
+    publish(&CoreEvent::notice(echo_contract::NoticeLevel::Info, message));
     publish_extensions();
 }
 

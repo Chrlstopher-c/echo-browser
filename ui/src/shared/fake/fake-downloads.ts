@@ -55,10 +55,10 @@ export class FakeDownloads {
   public handle(request: UiRequest): boolean {
     switch (request.kind) {
       case 'openDownload':
-        this.emit({ kind: 'notice', level: 'info', message: `Ouverture de ${this.nameOf(request.id)}.` })
+        this.emit({ kind: 'notice', level: 'info', message: `Ouverture de ${this.nameOf(request.id)}.`, actions: [] })
         return true
       case 'revealDownload':
-        this.emit({ kind: 'notice', level: 'info', message: 'Dossier ouvert dans le gestionnaire de fichiers.' })
+        this.emit({ kind: 'notice', level: 'info', message: 'Dossier ouvert dans le gestionnaire de fichiers.', actions: [] })
         return true
       case 'cancelDownload':
         this.cancel(request.id)

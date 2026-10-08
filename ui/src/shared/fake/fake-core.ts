@@ -173,10 +173,10 @@ class FakeCore implements CoreBridge {
   private handleMisc(request: UiRequest): void {
     switch (request.kind) {
       case 'openDevTools':
-        this.emit({ kind: 'notice', level: 'info', message: 'DevTools indisponibles en développement.' })
+        this.emit({ kind: 'notice', level: 'info', message: 'DevTools indisponibles en développement.', actions: [] })
         return
       case 'openTerminal':
-        this.emit({ kind: 'notice', level: 'info', message: 'Le terminal de Claude Code est absent en développement.' })
+        this.emit({ kind: 'notice', level: 'info', message: 'Le terminal de Claude Code est absent en développement.', actions: [] })
         return
       case 'exitFullscreen':
         this.setFullscreen(false)

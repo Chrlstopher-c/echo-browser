@@ -183,7 +183,7 @@ export type CoreEvent =
   | { kind: 'findResult'; count: number; current: number }
   /** Le navigateur va se relancer : l'interface montre son ecran d'attente. */
   | { kind: 'restarting'; reason: string }
-  | { kind: 'notice'; level: NoticeLevel; message: string }
+  | { kind: 'notice'; level: NoticeLevel; message: string; actions: NoticeAction[] }
   /** Un site demande une permission : l'interface pose la question. */
   | { kind: 'permissionRequested'; id: number; origin: string; kinds: string[] }
   | { kind: 'permissionResolved'; id: number }
@@ -470,4 +470,10 @@ export interface SuggestionView {
   title: string
   url: string
   tab: TabId | null
+}
+
+/** Bouton d'une notification : il renvoie sa requete au coeur. */
+export interface NoticeAction {
+  label: string
+  request: UiRequest
 }

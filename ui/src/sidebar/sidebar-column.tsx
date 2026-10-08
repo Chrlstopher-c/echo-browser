@@ -68,6 +68,13 @@ function ColumnHeader({ model }: { model: SidebarModel }): ReactElement {
         onOpenSecurity={() => model.sheet.open('network')}
         suggestions={core.state.suggestions}
         send={core.send}
+        bookmarked={active === null || !/^(https?|file):/.test(active.url)
+          ? null : core.state.bookmarks.some((b) => b.url === active.url)}
+        onToggleBookmark={() => {
+          if (active === null) return
+          const known = core.state.bookmarks.some((b) => b.url === active.url)
+          core.send(known ? { kind: 'removeBookmark', url: active.url } : { kind: 'addBookmark', id: active.id })
+        }}
       />
       <FindBar find={model.find} result={core.state.find} />
       <Extensions model={model} />
@@ -87,7 +94,7 @@ function ColumnFooter({ model }: { model: SidebarModel }): ReactElement {
       <RoutineStrip proposal={core.state.routineProposal} send={core.send} />
       <SyncStrip account={core.state.account} send={core.send} />
       <UpdateStrip update={core.state.update} send={core.send} />
-      <NoticeStrip notice={core.notice} />
+      <NoticeStrip notice={core.notice} send={core.send} />
       <UtilityRow
         shield={core.shield}
         open={sheet.current}

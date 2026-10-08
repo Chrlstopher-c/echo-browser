@@ -168,7 +168,18 @@ fn record(item: &DownloadItem, fallback_name: &str) {
     crate::session::with(|s| downloads::upsert(&s.library, &download));
     crate::bridge::library::publish_downloads();
     if finished {
-        notice(format!("Téléchargé : {name} (dossier Téléchargements)"));
+        let id = download.id;
+        crate::bridge::publish(&echo_contract::CoreEvent::Notice {
+            level: echo_contract::NoticeLevel::Info,
+            message: format!("Téléchargé : {name}"),
+            actions: vec![
+                echo_contract::NoticeAction { label: "Ouvrir".into(), request: echo_contract::UiRequest::OpenDownload { id } },
+                echo_contract::NoticeAction {
+                    label: "Afficher dans le dossier".into(),
+                    request: echo_contract::UiRequest::RevealDownload { id },
+                },
+            ],
+        });
     }
 }
 
@@ -177,7 +188,7 @@ static ANNOUNCED: std::sync::LazyLock<Mutex<std::collections::HashSet<u32>>> =
     std::sync::LazyLock::new(|| Mutex::new(std::collections::HashSet::new()));
 
 fn notice(message: String) {
-    crate::bridge::publish(&echo_contract::CoreEvent::Notice { level: echo_contract::NoticeLevel::Info, message });
+    crate::bridge::publish(&echo_contract::CoreEvent::notice(echo_contract::NoticeLevel::Info, message));
 }
 
 fn state_of(item: &DownloadItem) -> State {

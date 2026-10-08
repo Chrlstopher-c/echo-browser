@@ -139,7 +139,7 @@ wrap_load_handler! {
         fn on_load_error(
             &self,
             _browser: Option<&mut Browser>,
-            _frame: Option<&mut Frame>,
+            frame: Option<&mut Frame>,
             error_code: Errorcode,
             error_text: Option<&CefString>,
             failed_url: Option<&CefString>,
@@ -147,6 +147,10 @@ wrap_load_handler! {
             let url = failed_url.map(CefString::to_string).unwrap_or_default();
             let texte = error_text.map(CefString::to_string).unwrap_or_default();
             tracing::warn!(%url, %texte, code = error_code.get_raw(), "chargement en echec");
+            // ERR_ABORTED (-3) : navigation remplacee par une autre, pas une page d'erreur.
+            if frame.is_some_and(|f| f.is_main() == 1) && error_code.get_raw() != -3 {
+                crate::bridge::library::note_failed_load(&url);
+            }
         }
 
         fn on_load_end(&self, browser: Option<&mut Browser>, frame: Option<&mut Frame>, _status: i32) {

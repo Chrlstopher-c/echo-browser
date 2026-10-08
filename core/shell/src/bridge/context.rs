@@ -158,6 +158,7 @@ fn copy(value: &str) {
             publish(&CoreEvent::Notice {
                 level: echo_contract::NoticeLevel::Info,
                 message: "Copié.".to_string(),
+                actions: Vec::new(),
             });
         }
         None => notify_error("copie impossible : interface injoignable"),

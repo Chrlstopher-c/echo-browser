@@ -1,6 +1,6 @@
 // Responsabilite : etat de l'interface derive des evenements du coeur. Reducteur pur, sans effet de bord.
 
-import type {
+import type { NoticeAction,
   BookmarkView,
   CoreEvent,
   DownloadView,
@@ -27,6 +27,7 @@ import type {
 export interface Notice {
   level: NoticeLevel
   message: string
+  actions: NoticeAction[]
   /** Horodatage : sert de cle de rendu pour rejouer l'animation sur un message identique. */
   at: number
 }
@@ -214,7 +215,7 @@ export function reduceCore(state: CoreState, event: CoreEvent): CoreState {
     case 'restarting':
       return { ...state, restarting: event.reason }
     case 'notice':
-      return { ...state, notice: { level: event.level, message: event.message, at: Date.now() } }
+      return { ...state, notice: { level: event.level, message: event.message, actions: event.actions, at: Date.now() } }
     case 'permissionRequested':
     case 'permissionsChanged':
     case 'permissionResolved':
