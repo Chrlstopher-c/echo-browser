@@ -4,6 +4,22 @@ export interface Env {
   DB: D1Database
   /** Secret du serveur : sel fictif deterministe pour les adresses inconnues (pas d'enumeration des comptes). */
   SECRET_SEL: string
+  /** Cle du tableau de bord des createurs ; absente, le tableau de bord est ferme. */
+  ADMIN_KEY?: string
+}
+
+const CONTEXTES = new WeakMap<Request, ExecutionContext>()
+
+/** Rattache une requete a son contexte d'execution, pour les travaux d'arriere-plan (`attendre`). */
+export function lier(requete: Request, contexte: ExecutionContext): void {
+  CONTEXTES.set(requete, contexte)
+}
+
+/** Laisse `travail` finir apres la reponse (compteurs, activite). */
+export function attendre(requete: Request, travail: Promise<unknown>): void {
+  const contexte = CONTEXTES.get(requete)
+  if (contexte === undefined) void travail
+  else contexte.waitUntil(travail)
 }
 
 export class Refus extends Error {

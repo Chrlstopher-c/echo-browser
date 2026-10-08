@@ -75,6 +75,9 @@ Chaque dossier de `core/` correspond à une préoccupation du produit, pas à un
 - **`compte/`** (hors du cœur) : service de compte Echo, Cloudflare Worker + D1 (TypeScript, pnpm, wrangler). Il ne voit
   jamais une donnée lisible : il garde une empreinte de la clé d'accès et des blobs chiffrés. Son adresse et l'identifiant
   de la base ne sont JAMAIS dans le dépôt (`.env.local`, `compte/wrangler.toml` ignorés ; `wrangler.toml.example` suivi).
+  `compte/src/admin/` : tableau de bord des créateurs (page + API sous clé) — lit comptes, dates, tailles, compteurs ;
+  jamais le coffre. `compte/src/activite.ts` : dernière activité par compte et compteurs par jour.
+
 - **`core/account/`** ne dépend ni de CEF ni de la session : `shell/src/account/` lit les valeurs locales sur le fil de
   l'interface, la passe réseau tourne à part, puis les écritures sont appliquées sur le fil de l'interface.
 - **Mise à jour** (`shell/src/update/`) : la bascule de version et le retour arrière vivent dans le lanceur de l'archive,

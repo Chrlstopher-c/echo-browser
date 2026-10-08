@@ -22,6 +22,10 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `compte/pnpm-workspace.yaml`
 - `compte/schema.sql`
 - `compte/src/acces.ts` — comptes et sessions. Le serveur ne voit jamais le mot de passe : il recoit une cle d'acces derivee
+- `compte/src/activite.ts` — ce que le service sait de l'usage, sans rien du contenu — derniere activite d'un compte (et la
+- `compte/src/admin/api.ts` — API du tableau de bord des createurs — chiffres d'usage et gestion des comptes. Jamais le contenu du
+- `compte/src/admin/page.ts` — la page du tableau de bord des createurs. Autonome (HTML, style et script en ligne), elle ne
+- `compte/src/admin/routes.ts` — aiguillage du tableau de bord — la page (`/admin`, publique : elle ne contient aucune donnee) et son
 - `compte/src/coffre.ts` — le coffre d'un compte — des elements par type (reglages, favoris…), chiffres sur la machine,
 - `compte/src/index.ts` — point d'entree du service de compte Echo — aiguillage des routes et conversion des refus.
 - `compte/src/outils.ts` — briques partagees du service — reponses JSON, empreintes, aleatoire, lecture des corps.
@@ -335,5 +339,4 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `ui/src/tabs/use-tab-actions.ts` — traduire les gestes sur les onglets en requetes du contrat.
 - `ui/src/tabs/use-tab-menu.ts` — menu contextuel de la zone des onglets — ouvert au clic droit sur un onglet, un dossier
 - `ui/tsconfig.json`
-- `ui/tsconfig.tsbuildinfo`
 - `ui/vite.config.ts`

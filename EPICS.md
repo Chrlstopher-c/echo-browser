@@ -79,3 +79,20 @@
 - S6 Onglets des autres machines : chaque machine publie ses onglets ouverts (chiffrés, 100 au plus) ; Bibliothèque →
   « Sur vos autres machines » (nom de la machine, onglets cliquables). Critère : deux instances, les onglets de A
   apparaissent sur B, A ne se voit pas elle-même.
+
+## E9 — Tableau de bord des créateurs + signaux partagés (demande de Chris, 08/10)
+Règle : on voit ce qui se passe (comptes, usage, santé du service) sans jamais pouvoir lire les données de quelqu'un.
+Le coffre est chiffré sur la machine : le serveur ne peut pas le lire, le tableau de bord non plus.
+- S1 Tableau de bord (page servie par le Worker, `/admin`, clé d'administration en secret Wrangler, comparée en temps
+  constant ; Cloudflare Access peut s'ajouter devant sans code). Chiffres : comptes (total, inscriptions par jour sur
+  30 j, actifs 1/7/30 j), sessions ouvertes, volume du coffre par type, requêtes et erreurs par jour, versions d'Echo
+  en usage. Comptes listés avec leur e-mail complet (choix de Chris), recherche par e-mail.
+  Actions : déconnecter un compte partout, supprimer un compte. Neumorphisme clair/sombre comme Echo.
+  Critère : service local, deux comptes créés par le test → le tableau de bord montre 2 comptes, leurs tailles, la
+  version d'Echo ; la suppression d'un compte depuis le tableau de bord l'empêche de se reconnecter ; sans la clé : 401.
+- S2 Signaux anonymes (socle des idées collectives : sites malveillants, habitudes, etc.). Réglage « Partager des signaux
+  anonymes », coupé par défaut (consentement). Envoyés sans compte ni identifiant stable, par lots, domaine seulement
+  (jamais l'adresse complète), agrégés par jour ; un chiffre n'est montré qu'au-delà de k installations distinctes ;
+  conservation limitée (90 j). Critère : sans opt-in, rien ne part (vérifié sur le réseau) ; avec, le tableau de bord
+  montre les agrégats et rien d'individuel.
+- S3+ Fonctions collectives bâties sur S2 (une story chacune, à cadrer avec IDEES.md).

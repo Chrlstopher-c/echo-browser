@@ -1,5 +1,6 @@
 # Copier en wrangler.toml (ignore par git) et y mettre l'identifiant de la base D1 cree par
-# `pnpm exec wrangler d1 create echo-compte`. Secret : `pnpm exec wrangler secret put SECRET_SEL` (aleatoire).
+# `pnpm exec wrangler d1 create echo-compte`. Secrets (aleatoires) : `pnpm exec wrangler secret put SECRET_SEL`, et
+# `pnpm exec wrangler secret put ADMIN_KEY` (24 caracteres au moins) pour ouvrir le tableau de bord `/admin`.
 name = "echo-compte"
 main = "src/index.ts"
 compatibility_date = "2026-09-01"

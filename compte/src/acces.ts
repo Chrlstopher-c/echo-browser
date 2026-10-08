@@ -2,8 +2,10 @@
 // sur la machine (PBKDF2 + HKDF) et n'en garde qu'une empreinte salee. Jetons de session : empreinte seulement.
 
 import {
-  aleatoire, base64, depuisBase64, egal, hmac, json, lireJson, normaliserEmail, Refus, sha256, texte, type Env,
+  aleatoire, attendre, base64, depuisBase64, egal, hmac, json, lireJson, normaliserEmail, Refus, sha256, texte,
+  type Env,
 } from './outils'
+import { noterActivite } from './activite'
 
 const ITERATIONS_PAR_DEFAUT = 600_000
 const DUREE_SESSION_MS = 90 * 24 * 3600 * 1000
@@ -85,6 +87,7 @@ export async function compteDe(requete: Request, env: Env): Promise<string> {
   const session = await env.DB.prepare('SELECT compte, expire_le FROM sessions WHERE empreinte_jeton = ?')
     .bind(await sha256(depuisBase64(jeton))).first<{ compte: string; expire_le: number }>()
   if (session === null || session.expire_le < Date.now()) throw new Refus(401, 'session expiree')
+  attendre(requete, noterActivite(env, session.compte, requete))
   return session.compte
 }
 
@@ -98,11 +101,16 @@ export async function deconnexion(requete: Request, env: Env): Promise<Response>
 }
 
 export async function supprimer(requete: Request, env: Env): Promise<Response> {
-  const compte = await compteDe(requete, env)
+  await effacerCompte(env, await compteDe(requete, env))
+  return new Response(null, { status: 204 })
+}
+
+/** Efface un compte et tout ce que le service en garde. */
+export async function effacerCompte(env: Env, compte: string): Promise<void> {
   await env.DB.batch([
+    env.DB.prepare('DELETE FROM activite WHERE compte = ?').bind(compte),
     env.DB.prepare('DELETE FROM coffre WHERE compte = ?').bind(compte),
     env.DB.prepare('DELETE FROM sessions WHERE compte = ?').bind(compte),
     env.DB.prepare('DELETE FROM comptes WHERE id = ?').bind(compte),
   ])
-  return new Response(null, { status: 204 })
 }

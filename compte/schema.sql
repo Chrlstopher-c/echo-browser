@@ -27,3 +27,16 @@ CREATE TABLE IF NOT EXISTS echecs (
   le INTEGER NOT NULL
 );
 CREATE INDEX IF NOT EXISTS echecs_email ON echecs (email, le);
+-- Tableau de bord : derniere activite de chaque compte et version d'Echo qui l'a faite (rien du contenu).
+CREATE TABLE IF NOT EXISTS activite (
+  compte TEXT PRIMARY KEY,
+  vu_le INTEGER NOT NULL,
+  version TEXT
+);
+-- Compteurs par jour (AAAA-MM-JJ) : requetes par route et statut.
+CREATE TABLE IF NOT EXISTS compteurs (
+  jour TEXT NOT NULL,
+  cle TEXT NOT NULL,
+  n INTEGER NOT NULL,
+  PRIMARY KEY (jour, cle)
+);

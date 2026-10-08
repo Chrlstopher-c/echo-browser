@@ -59,6 +59,14 @@
   Une page déjà ouverte garde l'ancienne teinte dans ses angles jusqu'au rechargement.
 
 
+## Tableau de bord des créateurs (E9 S1, 08/10)
+
+- `/admin` sur le service de compte (page autonome, clé `ADMIN_KEY` en secret Wrangler ; sans clé : 404). Comptes
+  (e-mail complet, choix de Chris), actifs 1/7/30 j, sessions, coffre par type (tailles), requêtes et erreurs par jour,
+  routes, versions d'Echo (en-tête `X-Echo-Version` envoyé par le navigateur). Actions : déconnecter, supprimer.
+- Jamais le contenu du coffre : chiffré sur les machines. Tables ajoutées : `activite`, `compteurs` (CREATE IF NOT EXISTS).
+- Test : `compte/test/compte.test.mjs` (avec `ADMIN_KEY`).
+
 ## Historique synchronisé, données du compte, réveil des extensions (08/10)
 
 - Historique dans le coffre (type `historique`, réglage `sync.history` actif par défaut) : les 1 000 adresses les plus

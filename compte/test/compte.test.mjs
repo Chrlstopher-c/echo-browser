@@ -64,6 +64,35 @@ essai('coffre : versions, conflit 409, session requise, deconnexion, suppression
   assert.equal((await appel('POST', '/v1/connexion', { email: e, cleAcces: k })).statut, 401)
 })
 
+const CLE_ADMIN = process.env.ADMIN_KEY
+async function admin(methode, chemin, cleAdmin = CLE_ADMIN) {
+  const r = await fetch(URL_SERVICE + chemin, { method: methode, headers: { authorization: `Bearer ${cleAdmin}` } })
+  const texte = await r.text()
+  return { statut: r.status, corps: texte ? JSON.parse(texte) : null }
+}
+
+if (CLE_ADMIN) essai('tableau de bord : cle exigee, chiffres, version, deconnexion et suppression', async () => {
+  assert.equal((await admin('GET', '/v1/admin/resume', 'mauvaise-cle')).statut, 401)
+  const page = await fetch(URL_SERVICE + '/admin')
+  assert.equal(page.status, 200); assert.match(await page.text(), /Tableau de bord/)
+  const e = email('admin'); const k = cle(); const sel = b64(crypto.getRandomValues(new Uint8Array(16)))
+  const { jeton } = (await appel('POST', '/v1/inscription', { email: e, cleAcces: k, sel, iterations: 600000 })).corps
+  await fetch(URL_SERVICE + '/v1/coffre', { headers: { authorization: `Bearer ${jeton}`, 'x-echo-version': '9.9.9' } })
+  await appel('PUT', '/v1/coffre/favoris', { base: 0, donnees: 'DONNEES-CHIFFREES' }, jeton)
+  const resume = (await admin('GET', '/v1/admin/resume')).corps
+  assert.ok(resume.comptes.n >= 1); assert.ok(resume.sessions.n >= 1)
+  assert.ok(resume.versions.some((v) => v.version === '9.9.9'))
+  assert.ok(resume.requetes.some((r) => r.n > 0))
+  const [compte] = (await admin('GET', `/v1/admin/comptes?q=${encodeURIComponent(e)}`)).corps.comptes
+  assert.equal(compte.email, e); assert.equal(compte.version, '9.9.9'); assert.ok(compte.octets > 0)
+  assert.ok(!JSON.stringify(resume).includes('DONNEES-CHIFFREES'), 'le resume ne contient jamais le coffre')
+  assert.equal((await admin('POST', `/v1/admin/comptes/${compte.id}/deconnexion`)).corps.sessionsFermees, 1)
+  assert.equal((await appel('GET', '/v1/coffre', undefined, jeton)).statut, 401)
+  assert.equal((await admin('DELETE', `/v1/admin/comptes/${compte.id}`)).statut, 204)
+  assert.equal((await appel('POST', '/v1/connexion', { email: e, cleAcces: k })).statut, 401)
+  assert.equal((await admin('GET', `/v1/admin/comptes?q=${encodeURIComponent(e)}`)).corps.comptes.length, 0)
+})
+
 let echecs = 0
 for (const [nom, f] of essais) {
   try { await f(); console.log(`ok  ${nom}`) } catch (e) { echecs++; console.log(`ECHEC ${nom} : ${e.message}`) }

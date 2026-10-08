@@ -56,23 +56,25 @@ impl Client {
         let url = format!("{}{path}", self.base);
         let agent = agent();
         let auth = token.map(|t| format!("Bearer {t}"));
+        let version = env!("CARGO_PKG_VERSION");
         let mut response = match (method, body) {
             ("GET", _) => {
-                let mut request = agent.get(&url);
+                let mut request = agent.get(&url).header("X-Echo-Version", version);
                 if let Some(auth) = &auth {
                     request = request.header("Authorization", auth);
                 }
                 request.call()?
             }
             ("DELETE", _) => {
-                let mut request = agent.delete(&url);
+                let mut request = agent.delete(&url).header("X-Echo-Version", version);
                 if let Some(auth) = &auth {
                     request = request.header("Authorization", auth);
                 }
                 request.call()?
             }
             (method, body) => {
-                let mut request = if method == "PUT" { agent.put(&url) } else { agent.post(&url) };
+                let mut request = if method == "PUT" { agent.put(&url) } else { agent.post(&url) }
+                    .header("X-Echo-Version", version);
                 if let Some(auth) = &auth {
                     request = request.header("Authorization", auth);
                 }

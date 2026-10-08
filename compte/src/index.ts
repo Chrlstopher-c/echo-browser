@@ -2,12 +2,16 @@
 
 import { connexion, deconnexion, inscription, sel, supprimer } from './acces'
 import { ecrire, lire } from './coffre'
-import { json, Refus, type Env } from './outils'
+import { compter } from './activite'
+import { routeAdmin } from './admin/routes'
+import { attendre, json, lier, Refus, type Env } from './outils'
 
 async function router(requete: Request, env: Env): Promise<Response> {
   const { pathname } = new URL(requete.url)
   const methode = requete.method
   if (methode === 'GET' && pathname === '/v1/sante') return json({ ok: true })
+  const admin = await routeAdmin(requete, env)
+  if (admin !== null) return admin
   if (methode === 'POST' && pathname === '/v1/sel') return sel(requete, env)
   if (methode === 'POST' && pathname === '/v1/inscription') return inscription(requete, env)
   if (methode === 'POST' && pathname === '/v1/connexion') return connexion(requete, env)
@@ -19,14 +23,21 @@ async function router(requete: Request, env: Env): Promise<Response> {
   return json({ erreur: 'introuvable' }, 404)
 }
 
+async function repondre(requete: Request, env: Env): Promise<Response> {
+  try {
+    return await router(requete, env)
+  } catch (erreur) {
+    if (erreur instanceof Refus) return json({ erreur: erreur.message }, erreur.statut)
+    console.error(erreur)
+    return json({ erreur: 'erreur interne' }, 500)
+  }
+}
+
 export default {
-  async fetch(requete: Request, env: Env): Promise<Response> {
-    try {
-      return await router(requete, env)
-    } catch (erreur) {
-      if (erreur instanceof Refus) return json({ erreur: erreur.message }, erreur.statut)
-      console.error(erreur)
-      return json({ erreur: 'erreur interne' }, 500)
-    }
+  async fetch(requete: Request, env: Env, contexte: ExecutionContext): Promise<Response> {
+    lier(requete, contexte)
+    const reponse = await repondre(requete, env)
+    attendre(requete, compter(env, requete, reponse.status))
+    return reponse
   },
 }
