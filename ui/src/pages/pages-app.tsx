@@ -64,6 +64,7 @@ function Content({ page }: { page: PageId }): ReactElement {
         update={state.update}
         onCheckUpdate={() => send({ kind: 'checkForUpdates' })}
         account={state.account}
+        vault={state.vault}
         send={send}
       onDevTools={() => send({ kind: 'openDevTools', id: state.activeId ?? 0 })}
     />

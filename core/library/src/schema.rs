@@ -33,6 +33,10 @@ pub fn prepare(connection: &Connection) -> rusqlite::Result<()> {
             PRIMARY KEY (url, visited_at)
          );
          CREATE INDEX IF NOT EXISTS history_by_date ON history (visited_at DESC);
+         CREATE TABLE IF NOT EXISTS history_forgotten (
+            url TEXT PRIMARY KEY,
+            at  INTEGER NOT NULL
+         );
          CREATE TABLE IF NOT EXISTS downloads (
             id         INTEGER PRIMARY KEY,
             file_name  TEXT NOT NULL,

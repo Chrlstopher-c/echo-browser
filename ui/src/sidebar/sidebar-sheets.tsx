@@ -28,6 +28,7 @@ function SheetBody({ model }: { model: SidebarModel }): ReactElement | null {
         update={core.state.update}
         onCheckUpdate={() => core.send({ kind: 'checkForUpdates' })}
         account={core.state.account}
+        vault={core.state.vault}
         send={core.send}
         onDevTools={model.tabs.devTools} />
     case null:

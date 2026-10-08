@@ -13,7 +13,7 @@ pub mod library;
 pub mod publish;
 
 pub use extensions::publish_extensions;
-pub use library::{publish_bookmarks, publish_permissions, publish_settings};
+pub use library::{publish_bookmarks, publish_history, publish_permissions, publish_settings};
 pub use publish::{
     reset_tab_scroll, set_tab_dirty, set_tab_media, set_tab_favicon, set_tab_scroll, take_pending_scroll,
     publish_filter_lists, publish_initial_state, publish_shield, publish_tab, publish_tabs,
@@ -213,6 +213,8 @@ fn apply(request: UiRequest) {
         UiRequest::AccountSignIn { email, password, create } => crate::account::sign_in(email, password, create),
         UiRequest::AccountSignOut => crate::account::sign_out(),
         UiRequest::AccountSync => crate::account::sync_now(),
+        UiRequest::AccountInspect => crate::account::inspect(),
+        UiRequest::AccountDelete => crate::account::delete(),
 
         UiRequest::AddBookmark { id } => library::add_bookmark(id),
         UiRequest::RemoveBookmark { url } => library::remove_bookmark(&url),
@@ -228,7 +230,10 @@ fn apply(request: UiRequest) {
         }
         UiRequest::OpenDownload { id } => library::open_download(id, false),
         UiRequest::RevealDownload { id } => library::open_download(id, true),
-        UiRequest::UpdateSetting { key, value } => library::update_setting(&key, &value),
+        UiRequest::UpdateSetting { key, value } => {
+            library::update_setting(&key, &value);
+            crate::account::setting_changed(&key);
+        }
         UiRequest::OpenExtensionManager => {
             open_tab(echo_extensions::profile::MANAGE_PAGE);
             publish_tabs();

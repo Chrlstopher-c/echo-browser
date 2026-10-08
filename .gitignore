@@ -8,3 +8,4 @@ logs/
 .venv-mcp/
 dist-release/
 .env.local
+ui/tsconfig.tsbuildinfo

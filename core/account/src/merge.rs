@@ -12,11 +12,14 @@ pub enum Shape {
     SetMap,
     /// Liste d'objets identifies par un champ (favoris par `url`) : ajouts et retraits des deux cotes.
     KeyedList(&'static str),
+    /// Objet adresse → `{"t", "v"}` (visite) ou `{"d"}` (effacement), `*` effacant tout ce qui precede : par cle, la
+    /// date la plus recente l'emporte ; seules les `max` cles les plus recentes sont gardees (historique).
+    Latest { max: usize },
 }
 
 pub fn empty(shape: Shape) -> Value {
     match shape {
-        Shape::Map | Shape::SetMap => Value::Object(Map::new()),
+        Shape::Map | Shape::SetMap | Shape::Latest { .. } => Value::Object(Map::new()),
         Shape::KeyedList(_) => Value::Array(Vec::new()),
     }
 }
@@ -26,7 +29,31 @@ pub fn merge(shape: Shape, base: &Value, local: &Value, remote: &Value) -> Value
         Shape::Map => merge_map(base, local, remote, |b, l, r| if l != b { l.clone() } else { r.clone() }),
         Shape::SetMap => merge_map(base, local, remote, |b, l, r| merge_set(b, l, r)),
         Shape::KeyedList(key) => merge_list(key, base, local, remote),
+        Shape::Latest { max } => merge_latest(max, local, remote),
     }
+}
+
+/// Date d'une entree d'historique : sa visite ou son effacement.
+pub fn stamp(entry: &Value) -> i64 {
+    entry["v"].as_i64().or_else(|| entry["d"].as_i64()).unwrap_or(0)
+}
+
+fn merge_latest(max: usize, local: &Value, remote: &Value) -> Value {
+    let mut out = obj(remote);
+    for (key, mine) in obj(local) {
+        let keep_mine = match out.get(&key) {
+            None => true,
+            Some(theirs) => stamp(&mine) > stamp(theirs) || (stamp(&mine) == stamp(theirs) && mine.get("d").is_some()),
+        };
+        if keep_mine {
+            out.insert(key, mine);
+        }
+    }
+    let cleared = out.get("*").map(stamp).unwrap_or(i64::MIN);
+    let mut entries: Vec<(String, Value)> = out.into_iter().filter(|(k, v)| k == "*" || stamp(v) > cleared).collect();
+    entries.sort_by_key(|(k, v)| std::cmp::Reverse(if k == "*" { i64::MAX } else { stamp(v) }));
+    entries.truncate(max + 1);
+    Value::Object(entries.into_iter().collect())
 }
 
 fn obj(value: &Value) -> Map<String, Value> {
@@ -124,6 +151,22 @@ mod tests {
         let local = json!({"graphite": ["p", "x"]});
         let remote = json!({"graphite": [], "sable": ["y"]});
         assert_eq!(merge(Shape::SetMap, &base, &local, &remote), json!({"graphite": ["x"], "sable": ["y"]}));
+    }
+
+    #[test]
+    fn historique_la_date_la_plus_recente_l_emporte() {
+        let local = json!({"a": {"t": "A", "v": 5}, "b": {"d": 9}, "c": {"t": "C", "v": 2}});
+        let remote = json!({"a": {"t": "A", "v": 7}, "b": {"t": "B", "v": 8}, "d": {"t": "D", "v": 1}});
+        let merged = merge(Shape::Latest { max: 10 }, &json!({}), &local, &remote);
+        assert_eq!(merged, json!({"a": {"t": "A", "v": 7}, "b": {"d": 9}, "c": {"t": "C", "v": 2}, "d": {"t": "D", "v": 1}}));
+    }
+
+    #[test]
+    fn historique_tout_effacer_et_plafond() {
+        let local = json!({"*": {"d": 5}, "x": {"t": "X", "v": 9}});
+        let remote = json!({"a": {"t": "A", "v": 3}, "b": {"t": "B", "v": 6}, "c": {"t": "C", "v": 7}});
+        let merged = merge(Shape::Latest { max: 2 }, &json!({}), &local, &remote);
+        assert_eq!(merged, json!({"*": {"d": 5}, "x": {"t": "X", "v": 9}, "c": {"t": "C", "v": 7}}));
     }
 
     #[test]

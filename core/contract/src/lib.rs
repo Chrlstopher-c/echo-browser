@@ -3,7 +3,11 @@
 //! Ce fichier et `ui/src/shared/contract.ts` sont deux miroirs du meme contrat.
 //! Modifier l'un sans l'autre casse l'interface en silence.
 
+mod account;
+
 use serde::{Deserialize, Serialize};
+
+pub use account::{AccountView, RemoteMachineView, RemoteTabView, VaultKindView, VaultLineView};
 
 pub type TabId = u32;
 pub type DownloadId = u32;
@@ -144,6 +148,10 @@ pub enum UiRequest {
     AccountSignIn { email: String, password: String, create: bool },
     AccountSignOut,
     AccountSync,
+    /// Lire ce que le service garde du compte (dechiffre ici), pour le montrer.
+    AccountInspect,
+    /// Supprimer le compte et toutes ses donnees du service, puis se deconnecter. Definitif.
+    AccountDelete,
 }
 
 /// Ce que le coeur renvoie a l'interface.
@@ -182,37 +190,8 @@ pub enum CoreEvent {
     AccountChanged { account: AccountView },
     /// Onglets ouverts sur les autres machines du compte.
     RemoteTabsChanged { machines: Vec<RemoteMachineView> },
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct RemoteMachineView {
-    pub name: String,
-    /// Derniere publication de ses onglets (secondes Unix).
-    pub updated: i64,
-    pub tabs: Vec<RemoteTabView>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct RemoteTabView {
-    pub url: String,
-    pub title: String,
-}
-
-/// Le compte Echo de cette machine.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct AccountView {
-    /// Un service de compte est configure.
-    pub available: bool,
-    /// Adresse du compte connecte.
-    pub email: Option<String>,
-    /// Connexion ou synchronisation en cours.
-    pub busy: bool,
-    /// Derniere synchronisation reussie (secondes Unix).
-    pub last_sync: Option<i64>,
-    pub error: Option<String>,
+    /// Ce que le service garde du compte, en reponse a `AccountInspect`.
+    AccountVault { kinds: Vec<VaultKindView> },
 }
 
 /// Ou en est la mise a jour de la version installee.

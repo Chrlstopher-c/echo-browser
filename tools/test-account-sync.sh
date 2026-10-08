@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Compte Echo de bout en bout : deux instances isolees (deux « machines ») sur un service de compte (local par defaut,
 # `cd compte && pnpm dev`). A : premier lancement → presentation ; compte cree ; favori ajoute. B : connexion au meme
-# compte → recoit le favori ; change le moteur de recherche → A le recoit. Usage : COMPTE_URL=… tools/test-account-sync.sh
+# compte → recoit le favori et l'historique ; change le moteur de recherche → A le recoit ; efface une visite → A
+# l'efface ; montre les donnees du serveur dans les Reglages ; supprime le compte → plus de connexion possible. Usage : COMPTE_URL=… tools/test-account-sync.sh
 set -euo pipefail
 cd "$(dirname "$0")/.."
 export ECHO_SYNC_URL="${COMPTE_URL:-http://127.0.0.1:8788}"
@@ -66,6 +67,22 @@ time.sleep(1); b(op="ui", request={"kind": "accountSync"}); time.sleep(8)
 a(op="ui", request={"kind": "accountSync"})
 until(lambda: ("s:duckduckgo",) in db(A, "select value from settings where key='search.engine'"), "le reglage de B n'arrive pas sur A")
 print("reglage de B recu par A")
+def has_visit(home): return any("example.org" in u for (u,) in db(home, "select url from history"))
+until(lambda: has_visit(B), "l'historique de A n'arrive pas sur B")
+print("historique de A recu par B")
+(url, seen), = db(B, "select url, max(visited_at) from history where url like '%example.org%'")
+b(op="ui", request={"kind": "removeHistoryEntry", "url": url, "visitedAt": seen}); time.sleep(1)
+b(op="ui", request={"kind": "accountSync"}); time.sleep(8)
+a(op="ui", request={"kind": "accountSync"})
+until(lambda: not has_visit(A), "la visite effacee sur B reste sur A")
+print("visite effacee sur B, effacee sur A")
+b(op="ui", request={"kind": "openPage", "page": "reglages"}); time.sleep(3)
+AFFICHER = ("(()=>{const b=[...document.querySelectorAll('button')].find(x=>x.innerText.trim()==='Afficher');"
+            "if(!b)return 'absent';b.click();return 'ok'})()")
+assert page_eval(PB, "echo://ui/pages.html", AFFICHER) == "ok", "bouton des donnees stockees absent"
+until(lambda: all(k in page_eval(PB, "echo://ui/pages.html", "document.body.innerText")
+                  for k in ("Favoris", "Historique", "Réglages", "chiffrés")), "donnees du serveur non montrees")
+print("donnees du serveur montrees dans les Reglages")
 a(op="ui", request={"kind": "openPage", "page": "bibliotheque"}); time.sleep(3)
 assert page_eval(PA, "echo://ui/pages.html", MACHINES) == "absent", "A se voit elle-meme dans Machines"
 print("A ne se voit pas elle-meme")
@@ -73,5 +90,10 @@ compte = json.load(open(f"{A}/data/compte.json"))
 assert oct(os.stat(f"{A}/data/compte.json").st_mode & 0o777) == "0o600", "fichier du compte lisible par d'autres"
 a(op="ui", request={"kind": "accountSignOut"}); time.sleep(1)
 assert not os.path.exists(f"{A}/data/compte.json"), "deconnexion sans effet"
-print("OK : compte Echo synchronise entre deux machines (favori, reglage), deconnexion")
+b(op="ui", request={"kind": "accountDelete"})
+until(lambda: not os.path.exists(f"{B}/data/compte.json"), "suppression du compte sans effet sur B")
+b(op="ui", request={"kind": "accountSignIn", "email": email, "password": mdp, "create": False}); time.sleep(8)
+assert not os.path.exists(f"{B}/data/compte.json"), "connexion encore possible apres suppression"
+print("compte supprime : plus de connexion possible")
+print("OK : compte Echo synchronise entre deux machines (favori, historique, reglage), donnees montrees, deconnexion, suppression")
 PY

@@ -59,6 +59,18 @@
   Une page déjà ouverte garde l'ancienne teinte dans ses angles jusqu'au rechargement.
 
 
+## Historique synchronisé, données du compte, réveil des extensions (08/10)
+
+- Historique dans le coffre (type `historique`, réglage `sync.history` actif par défaut) : les 1 000 adresses les plus
+  récentes + les effacements (table `history_forgotten`, `*` = tout effacé) ; fusion « la date la plus récente
+  l'emporte », un effacement fait sur une machine s'applique partout. Adresses > 400 caractères non transmises.
+- Réglages → Compte : interrupteur historique, « Données stockées » (le coffre lu sur le serveur, déchiffré sur la
+  machine, type par type), « Supprimer le compte » (tout effacer côté serveur, confirmation en place).
+- Extensions : celles qui écoutent les onglets sont réveillées quand les onglets de leur profil changent ; au réveil
+  elles reçoivent l'état d'avant la veille puis l'actuel (onglet fermé pendant la veille : non annoncé).
+- Tests : `tools/test-account-sync.sh` (historique, effacement, données montrées, suppression),
+  `tools/test-extension-events.sh` (réveil après 45 s de veille).
+
 ## Onglets des autres machines + pont (0.7.0, 08/10)
 - Type `onglets` du coffre : une entrée par machine (`<données>/machine-id` aléatoire, nom = /etc/hostname, 100 pages web
   max) ; chaque machine n'écrit que la sienne (fusion par clé). Bibliothèque → « Machines » (section absente sans autre

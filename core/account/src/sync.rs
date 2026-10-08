@@ -13,12 +13,16 @@ use crate::crypto;
 
 /// Ce qui se synchronise, et comment le fusionner.
 /// `onglets` : une entree par machine (ses onglets ouverts) ; chacune ne modifie que la sienne.
-pub const KINDS: [(&str, Shape); 4] = [
+pub const KINDS: [(&str, Shape); 5] = [
     ("reglages", Shape::Map),
     ("favoris", Shape::KeyedList("url")),
     ("extensions", Shape::SetMap),
     ("onglets", Shape::Map),
+    ("historique", Shape::Latest { max: HISTORY_MAX }),
 ];
+
+/// Adresses d'historique gardees dans le coffre (les plus recentes).
+pub const HISTORY_MAX: usize = 1000;
 
 pub struct Outcome {
     /// Valeurs a ecrire localement (seulement celles qui changent).

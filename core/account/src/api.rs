@@ -20,6 +20,8 @@ pub struct Item {
     pub kind: String,
     pub version: u64,
     pub data: String,
+    /// Derniere ecriture sur le service (millisecondes Unix).
+    pub updated: i64,
 }
 
 pub enum Put {
@@ -114,6 +116,13 @@ impl Client {
         self.call("POST", "/v1/deconnexion", Some(token), None).map(drop)
     }
 
+    /// Supprime le compte et tout son coffre sur le service. Definitif.
+    pub fn delete_account(&self, token: &str) -> anyhow::Result<()> {
+        let (status, body) = self.call("DELETE", "/v1/compte", Some(token), None)?;
+        anyhow::ensure!(status == 204, error_of(status, &body));
+        Ok(())
+    }
+
     pub fn vault(&self, token: &str) -> anyhow::Result<Vec<Item>> {
         let (status, body) = self.call("GET", "/v1/coffre", Some(token), None)?;
         anyhow::ensure!(status == 200, error_of(status, &body));
@@ -126,6 +135,7 @@ impl Client {
                         kind: i["type"].as_str().unwrap_or_default().to_string(),
                         version: i["version"].as_u64().unwrap_or(0),
                         data: i["donnees"].as_str().unwrap_or_default().to_string(),
+                        updated: i["maj_le"].as_i64().unwrap_or(0),
                     })
                     .collect()
             })

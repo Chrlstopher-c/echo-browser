@@ -1,7 +1,7 @@
 // Injecte par Echo dans le service worker d'une extension, avant son premier script (pause du debogueur). Les onglets
 // d'Echo ne sont dans aucune fenetre Chrome : ni `tabs.query` ni les evenements d'onglets ne les voient. Ici, Echo
 // pousse sa liste (`__echoTabs`) ; `tabs.query` la rend avec les vrais identifiants (pont interne) et les ecouteurs
-// `onCreated/onUpdated/onRemoved/onActivated` recoivent les changements.
+// `onCreated/onUpdated/onRemoved/onActivated` recoivent les changements, y compris ceux faits pendant la veille.
 (() => {
   if (self.__echoTabsReady || !self.chrome || !chrome.tabs || !chrome.runtime) return
   self.__echoTabsReady = true
@@ -82,13 +82,13 @@
     run.then(callback, () => callback([]))
   }
 
-  async function dispatch(previous) {
+  async function dispatch(previous, current) {
     await resolveIds()
     const w = await win()
     const objects = await echoTabs()
     const objectOf = (e) => objects.find((o) => o.id === ids.get(e))
     const before = new Map(previous.tabs.map((t) => [t.e, t]))
-    for (const t of state.tabs) {
+    for (const t of current.tabs) {
       const o = objectOf(t.e)
       const p = before.get(t.e)
       if (!o) continue
@@ -101,7 +101,7 @@
       }
       if (t.active && !(p && p.active)) fire('onActivated', { tabId: o.id, windowId: w })
     }
-    const after = new Set(state.tabs.map((t) => t.e))
+    const after = new Set(current.tabs.map((t) => t.e))
     for (const p of previous.tabs) {
       const id = ids.get(p.e)
       if (after.has(p.e) || id === undefined) continue
@@ -110,10 +110,13 @@
     }
   }
 
-  self.__echoTabs = (next) => {
-    const previous = state
+  // Au reveil, Echo envoie d'abord l'etat vu avant la veille, puis l'actuel : les changements faits pendant la veille
+  // partent apres le premier script (setTimeout), une fois les ecouteurs enregistres.
+  self.__echoTabs = (next, asleep) => {
+    const previous = asleep ?? state
     state = next
     haveState()
-    if (previous !== null) dispatch(previous).catch((e) => console.error(e))
+    if (previous !== null) setTimeout(() => dispatch(previous, next).catch((e) => console.error(e)), 0)
   }
+  self.__echoListening = () => Object.values(listeners).some((l) => l.length > 0)
 })()

@@ -123,3 +123,26 @@ fn un_telechargement_se_suit_puis_s_oublie() {
     assert!(downloads::forget(&lib, 1));
     assert!(downloads::list(&lib).is_empty());
 }
+
+#[test]
+fn une_visite_effacee_ne_revient_pas_par_une_autre_machine() {
+    let lib = library();
+    let t = echo_library::now();
+    history::import(&lib, "https://a.fr", "A", t - 100);
+    assert!(history::remove(&lib, "https://a.fr", t - 100));
+    assert!(history::import(&lib, "https://a.fr", "A", t - 100));
+    assert_eq!(history::search(&lib, "").1, 0);
+    history::import(&lib, "https://a.fr", "A", t);
+    assert_eq!(history::latest(&lib, 10)[0].visited_at, t);
+    assert!(history::forgotten(&lib).iter().any(|(url, at)| url == "https://a.fr" && *at == t - 100));
+}
+
+#[test]
+fn tout_effacer_est_transmis_et_bloque_les_visites_anterieures() {
+    let lib = library();
+    history::record(&lib, "https://b.fr", "B", None);
+    assert!(history::clear(&lib));
+    assert!(history::forgotten(&lib).iter().any(|(url, _)| url == history::ALL));
+    history::import(&lib, "https://c.fr", "C", 50);
+    assert_eq!(history::search(&lib, "").1, 0);
+}

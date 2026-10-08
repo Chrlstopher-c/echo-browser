@@ -37,6 +37,7 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `core/account/src/sync.rs` — une passe de synchronisation. Entree : les valeurs locales de chaque type ; sortie : celles a
 - `core/account/tests/deux_machines.rs`
 - `core/contract/Cargo.toml`
+- `core/contract/src/account.rs`
 - `core/contract/src/lib.rs`
 - `core/extensions/Cargo.toml`
 - `core/extensions/examples/installer.rs`
@@ -58,9 +59,11 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `core/library/src/settings.rs` — les reglages du navigateur, et leurs valeurs par defaut.
 - `core/library/tests/library.rs`
 - `core/shell/Cargo.toml`
+- `core/shell/src/account/history.rs`
 - `core/shell/src/account/local.rs`
 - `core/shell/src/account/machine.rs`
 - `core/shell/src/account/mod.rs`
+- `core/shell/src/account/vault.rs`
 - `core/shell/src/anchor.rs` — le point d'ancrage des extensions. Les API d'extension de Chrome (`tabs.create`,
 - `core/shell/src/anchor_watch.rs` — reperer les onglets que les extensions ouvrent dans la fenetre d'ancrage et les
 - `core/shell/src/app.rs` — le point de contact avec Chromium — drapeaux au demarrage, creation de la fenetre.
@@ -205,7 +208,9 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `ui/public/terminal.js`
 - `ui/public/theme.js`
 - `ui/src/account/account-form.tsx` — formulaire du compte Echo — creer un compte ou se connecter. Le mot de passe part vers le coeur
-- `ui/src/account/account-section.tsx` — Reglages → Compte — l'etat de la synchronisation, et la connexion quand il n'y a pas de compte.
+- `ui/src/account/account-manage.tsx` — Reglages → Compte, une fois connecte — etat de la synchronisation, historique synchronise ou non,
+- `ui/src/account/account-section.tsx` — Reglages → Compte — la connexion quand il n'y a pas de compte, sa gestion sinon.
+- `ui/src/account/vault-panel.tsx` — Reglages → Compte → donnees stockees — ce que le service garde, type par type, dechiffre sur cette
 - `ui/src/address/address-field.tsx` — champ d'adresse compact — l'hote seul au repos, l'URL complete a la saisie,
 - `ui/src/address/load-progress.tsx` — trait de progression au bas du champ d'adresse. Il suit l'avancement reel ;
 - `ui/src/address/reload-button.tsx` — bouton recharger qui devient arreter pendant le chargement — l'icone tourne pour
@@ -330,4 +335,5 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `ui/src/tabs/use-tab-actions.ts` — traduire les gestes sur les onglets en requetes du contrat.
 - `ui/src/tabs/use-tab-menu.ts` — menu contextuel de la zone des onglets — ouvert au clic droit sur un onglet, un dossier
 - `ui/tsconfig.json`
+- `ui/tsconfig.tsbuildinfo`
 - `ui/vite.config.ts`

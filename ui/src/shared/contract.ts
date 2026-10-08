@@ -115,6 +115,10 @@ export type UiRequest =
   | { kind: 'accountSignIn'; email: string; password: string; create: boolean }
   | { kind: 'accountSignOut' }
   | { kind: 'accountSync' }
+  /** Lire ce que le service garde du compte (dechiffre ici), pour le montrer. */
+  | { kind: 'accountInspect' }
+  /** Supprimer le compte et toutes ses donnees du service, puis se deconnecter. Definitif. */
+  | { kind: 'accountDelete' }
 
 /** Ce que le coeur renvoie a l'interface. */
 export type CoreEvent =
@@ -147,6 +151,8 @@ export type CoreEvent =
   | { kind: 'accountChanged'; account: AccountView }
   /** Onglets ouverts sur les autres machines du compte. */
   | { kind: 'remoteTabsChanged'; machines: RemoteMachineView[] }
+  /** Ce que le service garde du compte, en reponse a `accountInspect`. */
+  | { kind: 'accountVault'; kinds: VaultKindView[] }
 
 export interface RemoteMachineView {
   name: string
@@ -165,6 +171,22 @@ export interface AccountView {
   /** Derniere synchronisation reussie (secondes Unix). */
   lastSync: number | null
   error: string | null
+  /** L'historique est synchronise (reglage `sync.history`). */
+  history: boolean
+}
+
+/** Un type de donnees tel que le service le garde. */
+export interface VaultKindView {
+  /** `reglages`, `favoris`, `extensions`, `onglets`, `historique`. */
+  kind: string
+  version: number
+  /** Taille chiffree sur le service, en octets. */
+  bytes: number
+  /** Derniere ecriture (millisecondes Unix). */
+  updated: number
+  count: number
+  /** Les elements lisibles (les premiers seulement). */
+  lines: Array<{ title: string; detail: string }>
 }
 
 /** Ou en est la mise a jour de la version installee. */

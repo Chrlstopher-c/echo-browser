@@ -3,8 +3,10 @@
 //! lues et ecrites sur ce fil (`local.rs`). Adresse du service : `ECHO_SYNC_URL`, sinon le marqueur de l'archive,
 //! sinon celle fixee a la compilation (jamais dans le depot public).
 
+mod history;
 mod local;
 mod machine;
+mod vault;
 
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -46,6 +48,7 @@ pub fn publish() {
         busy: BUSY.load(Ordering::SeqCst),
         last_sync: stored.as_ref().and_then(|s| s.last_sync),
         error: LAST_ERROR.lock().clone(),
+        history: history::enabled(),
     };
     crate::bridge::publish(&CoreEvent::AccountChanged { account });
 }
@@ -106,6 +109,9 @@ pub fn sync_now() {
     let Some(session) = stored.session() else { return };
     let mut locals = local::read();
     locals.insert("onglets".to_string(), machine::local_value(stored.kinds.get("onglets").map(|k| &k.base)));
+    if history::enabled() {
+        locals.insert("historique".to_string(), history::local_value());
+    }
     background(
         move |client| {
             let outcome = echo_account::sync::run(&client, &session, &mut stored, &locals)?;
@@ -114,10 +120,45 @@ pub fn sync_now() {
         },
         |(stored, outcome)| {
             local::apply(&outcome.writes);
+            if let Some(merged) = outcome.writes.get("historique") {
+                history::apply(merged);
+            }
             if let Err(err) = store::save(&stored_path(), &stored) {
                 warn!(%err, "etat de synchronisation non enregistre");
             }
             info!(ecrits = outcome.writes.len(), reportes = outcome.postponed.len(), "synchronisation faite");
+        },
+    );
+}
+
+/// L'interface a change un reglage : celui de l'historique se reflete dans l'etat du compte, et part tout de suite.
+pub fn setting_changed(key: &str) {
+    if key == history::SETTING {
+        publish();
+        sync_now();
+    }
+}
+
+/// Lit le coffre sur le service et le montre dechiffre (evenement `AccountVault`).
+pub fn inspect() {
+    let Some(session) = store::load(&stored_path()).and_then(|s| s.session()) else { return };
+    background(
+        move |client| Ok(vault::view(&session, &client.vault(&session.token)?)),
+        |kinds| crate::bridge::publish(&CoreEvent::AccountVault { kinds }),
+    );
+}
+
+/// Supprime le compte et tout ce que le service en garde, puis oublie le compte sur cette machine. Les donnees locales
+/// (favoris, historique…) restent.
+pub fn delete() {
+    let Some(stored) = store::load(&stored_path()) else { return };
+    let token = stored.token.clone();
+    background(
+        move |client| client.delete_account(&token),
+        move |()| {
+            store::forget(&stored_path());
+            info!(email = %stored.email, "compte supprime du service");
+            crate::bridge::publish(&CoreEvent::AccountVault { kinds: Vec::new() });
         },
     );
 }

@@ -74,7 +74,7 @@ export function WelcomePage({ account, send }: WelcomePageProps): ReactElement {
             <>
               <h1 className="text-[22px] font-semibold text-ink">Votre compte Echo</h1>
               <p className="max-w-md text-[13px] leading-relaxed text-ink-muted">
-                Réglages, favoris et extensions vous suivent sur toutes vos machines, chiffrés de bout en bout.
+                Réglages, favoris, extensions et historique vous suivent sur toutes vos machines, chiffrés de bout en bout.
               </p>
               {account !== null && <AccountStep account={account} send={send} />}
             </>

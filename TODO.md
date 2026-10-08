@@ -1,5 +1,13 @@
 # TODO — echo-browser
 
+## DEMANDÉ PAR CHRIS LE 08/10 — console d'administration du service de compte
+
+Interface pour nous (créateurs) : gérer ce qui se passe sur le Worker Cloudflare — nombre de comptes, inscriptions dans
+le temps, volume stocké par type, sessions actives, erreurs ; plus tard les métriques d'usage partagées (opt-in). Pouvoir
+gérer les comptes (supprimer, couper les sessions). Contrainte : JAMAIS lire les données des utilisateurs (le coffre est
+chiffré de bout en bout ; la console ne voit que des comptes, tailles et dates). À cadrer (brief 5 lignes) après la synchro
+de l'historique.
+
 ## RETOURS DE CHRIS DU 06/10 SOIR — liste de reprise (ne rien perdre ; détail et critères dans EPICS.md E6)
 
 Ordre voulu par Chris : angles → favicons → mémoire → décodeur vidéo. Puis clic droit, fermeture, dossiers, comptes.
