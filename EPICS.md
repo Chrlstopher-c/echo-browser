@@ -117,5 +117,8 @@ Le coffre est chiffré sur la machine : le serveur ne peut pas le lire, le table
   relance et réveil d'onglet. Critère : texte tapé + vidéo à 30 s → relance → texte et position revenus.
 - S6 Empreinte de comportements : séquences de navigation qui reviennent (empreinte des suites de domaines) → proposition
   de routine (ouvrir la suite d'un geste). Critère : même suite 3 fois → proposition ; acceptée → la routine l'ouvre.
+- S8 Rapport de performance (idée 12) : dans le panneau Réseau, vue « Poids » — part des tiers, poids par type, les
+  requêtes les plus lourdes et les plus lentes, alertes (image > 500 Ko, script tiers > 100 Ko). Critère : page de test
+  avec une grosse image et un script tiers lourd → les deux signalés.
 - S7 Mémoire de structure : « Masquer cet élément » (clic droit) retenu par empreinte de structure de page, appliqué aux
   pages de même gabarit. Critère : élément masqué sur un article → masqué sur un autre article du même site.

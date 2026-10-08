@@ -288,6 +288,7 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `ui/src/network/network-format.ts` — mise en forme du panneau Reseau — tailles, durees, types et raisons de blocage en francais.
 - `ui/src/network/network-journal.tsx` — journal d'acces du site de l'onglet actif — premiers contacts avec des tiers, permissions demandees
 - `ui/src/network/network-sheet.tsx` — feuille Reseau — ce que charge l'onglet actif, domaine par domaine (requetes, octets, tiers,
+- `ui/src/network/network-weight.tsx` — vue « Poids » du panneau Reseau — ce qui pese dans la page : part des tiers, poids par type, les
 - `ui/src/pages/main.tsx` — point d'entree des pages pleine largeur (reglages, bibliotheque) ouvertes dans un onglet.
 - `ui/src/pages/pages-app.tsx` — les pages pleine largeur d'Echo — reglages et bibliotheque — dans un onglet, la ou la
 - `ui/src/pages/use-page-route.ts` — la section affichee, lue dans l'ancre de l'adresse (#reglages, #bibliotheque, #admin).

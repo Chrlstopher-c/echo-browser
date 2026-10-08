@@ -75,6 +75,8 @@
 - Réseau (`core/network`, `shell/src/network.rs`, `ui/src/network`) : chaque requête notée par onglet (500 dernières,
   résumé par domaine, tiers via le domaine enregistrable), diffusée seulement panneau ouvert. Règles par site
   (`reseau.json`) : domaine bloqué sur ce site, isolement strict ; appliquées avant le bouclier, même site en exception.
+- Vue « Poids » (idée 12) : part des tiers, poids par type, requêtes les plus lourdes / lentes, alertes (image > 500 Ko,
+  script tiers > 100 Ko). Piège de banc : une image invalide est coupée par Chromium (0 octet compté).
 - Journal d'accès par site (table `site_journal`, 200 par site) : premier contact avec un tiers, permissions et décision,
   téléchargements. Onglet « Journal » du panneau Réseau.
 - Reprise exacte (`page_state.rs`) : saisies (jamais mots de passe / carte) + position des médias, dans la session,

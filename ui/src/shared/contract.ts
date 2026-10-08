@@ -6,7 +6,7 @@ import type { NetworkView, RoutineProposalView, RoutineView } from './contract-n
 
 export type { AccountView, RemoteMachineView, SyncMode, VaultKindView } from './contract-account'
 export type {
-  JournalEntryView, NetDomainView, NetRequestView, NetworkView, RoutineProposalView, RoutineView,
+  JournalEntryView, NetDomainView, NetRequestView, NetWeightView, NetworkView, RoutineProposalView, RoutineView,
 } from './contract-network'
 export type TabId = number
 export type DownloadId = number

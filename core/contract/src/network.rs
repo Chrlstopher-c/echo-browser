@@ -19,6 +19,18 @@ pub struct NetworkView {
     pub strict: bool,
     /// Journal d'acces du site, le plus recent d'abord.
     pub journal: Vec<JournalEntryView>,
+    /// Rapport de poids : octets par type, part des tiers, requetes les plus lourdes et les plus lentes.
+    pub weight: NetWeightView,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct NetWeightView {
+    /// (type, octets), les plus lourds d'abord.
+    pub by_kind: Vec<(String, u64)>,
+    pub third_party_bytes: u64,
+    pub heaviest: Vec<NetRequestView>,
+    pub slowest: Vec<NetRequestView>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

@@ -7,6 +7,9 @@
   exacte des pages (saisies, médias), routines (suites de sites), masquer un élément retenu par gabarit.
 
 ## SUITE
+- Extensions : la déclaration externe est lue par Chromium pour TOUS les profils (dossier `External Extensions` à la
+  racine des données) → chaque profil télécharge son exemplaire (quelques Mo, désactivé là où il n'est pas voulu).
+  Pas de voie par profil connue sans revenir au chargement dépaqueté (cassé, mesuré le 10/09). À étudier à part.
 - Signaux anonymes (E9 S2) : codés et testés ; DÉPLOYER le service (tables + deploy) avec Chris, puis les fonctions
   collectives (sites malveillants, habitudes) dessus (E9 S3+, IDEES.md).
 - Release 0.8.0 quand Chris a validé (main + tag, CI verte).

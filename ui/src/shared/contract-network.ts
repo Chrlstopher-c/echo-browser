@@ -14,6 +14,16 @@ export interface NetworkView {
   strict: boolean
   /** Journal d'acces du site, le plus recent d'abord. */
   journal: JournalEntryView[]
+  /** Rapport de poids : octets par type, part des tiers, requetes les plus lourdes et les plus lentes. */
+  weight: NetWeightView
+}
+
+export interface NetWeightView {
+  /** [type, octets], les plus lourds d'abord. */
+  byKind: Array<[string, number]>
+  thirdPartyBytes: number
+  heaviest: NetRequestView[]
+  slowest: NetRequestView[]
 }
 
 export interface JournalEntryView {

@@ -9,6 +9,7 @@ import { Segmented } from '../shared/design/segmented'
 import { Toggle } from '../shared/design/toggle'
 import { blockedLabel, kindLabel, size } from './network-format'
 import { NetworkJournal } from './network-journal'
+import { NetworkWeight } from './network-weight'
 
 export interface NetworkSheetProps {
   network: NetworkView | null
@@ -70,7 +71,7 @@ function Detail({ network, send }: { network: NetworkView; send: NetworkSheetPro
   )
 }
 
-type View = 'domaines' | 'journal'
+type View = 'domaines' | 'poids' | 'journal'
 
 function Totals({ network }: { network: NetworkView }): ReactElement {
   const requests = network.domains.reduce((n, d) => n + d.requests, 0)
@@ -129,9 +130,12 @@ export function NetworkSheet({ network, send }: NetworkSheetProps): ReactElement
       <Strict network={network} send={send} />
       <div className="px-2">
         <Segmented<View> name="reseau-vue" value={view} onChange={setView}
-          segments={[{ id: 'domaines', label: 'Domaines' }, { id: 'journal', label: 'Journal' }]} />
+          segments={[{ id: 'domaines', label: 'Domaines' }, { id: 'poids', label: 'Poids' },
+            { id: 'journal', label: 'Journal' }]} />
       </div>
-      {view === 'journal' ? <NetworkJournal journal={network.journal} /> : <Domains network={network} send={send} />}
+      {view === 'journal' && <NetworkJournal journal={network.journal} />}
+      {view === 'poids' && <NetworkWeight weight={network.weight} total={network.totalBytes} />}
+      {view === 'domaines' && <Domains network={network} send={send} />}
     </div>
   )
 }

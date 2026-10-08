@@ -10,7 +10,9 @@ mod network;
 
 use serde::{Deserialize, Serialize};
 
-pub use network::{JournalEntryView, NetDomainView, NetRequestView, NetworkView, RoutineProposalView, RoutineView};
+pub use network::{
+    JournalEntryView, NetDomainView, NetRequestView, NetWeightView, NetworkView, RoutineProposalView, RoutineView,
+};
 pub use library::{
     BookmarkView, DownloadState, DownloadView, HistoryEntryView, NoticeLevel, PermissionGrantView, SettingValue,
     SettingView,

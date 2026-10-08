@@ -6,9 +6,17 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 W="$(mktemp -d)"; PORT=$((20000 + RANDOM % 5000))
 cat > "$W/index.html" <<H
-<!doctype html><title>reseau</title><p>page</p><script src="http://127.0.0.1:$PORT/tiers.js"></script><img src="/logo.png">
+<!doctype html><title>reseau</title><p>page</p><script src="http://127.0.0.1:$PORT/tiers.js"></script><img src="/logo.png"><img src="/grosse.png">
 H
-echo "document.title='tiers charge'" > "$W/tiers.js"
+{ echo "document.title='tiers charge'"; head -c 150000 /dev/zero | tr '\0' ' '; } > "$W/tiers.js"
+python3 - "$W/grosse.png" <<'P'
+import os, struct, sys, zlib
+w = h = 500
+raw = b"".join(b"\x00" + os.urandom(w * 3) for _ in range(h))
+chunk = lambda t, d: struct.pack(">I", len(d)) + t + d + struct.pack(">I", zlib.crc32(t + d))
+png = b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", struct.pack(">IIBBBBB", w, h, 8, 2, 0, 0, 0))
+open(sys.argv[1], "wb").write(png + chunk(b"IDAT", zlib.compress(raw, 1)) + chunk(b"IEND", b""))
+P
 echo '<!doctype html><title>geo</title><script>navigator.geolocation.getCurrentPosition(()=>{},()=>{})</script>' > "$W/geo.html"; printf '\x89PNG' > "$W/logo.png"
 python3 -m http.server "$PORT" --directory "$W" >"$W/serveur.log" 2>&1 & SERVEUR=$!
 export ECHO_RUN_DIR="$W/run" ECHO_DATA_DIR="$W/data" ECHO_CONTROL_NAME="reseau-$$" ECHO_DEVTOOLS_PORT=$((30000 + RANDOM % 9000))
@@ -43,6 +51,16 @@ tab = call(op="open", url=page)["id"]; time.sleep(3)
 assert ui("(()=>{const b=document.querySelector('[aria-label=\"Réseau\"]');b.click();return !!b})()"), "bouton Reseau absent"
 until(lambda: "127.0.0.1" in ui("document.body.innerText") and "localhost" in ui("document.body.innerText"), "domaines absents du panneau")
 print("panneau : domaines de la page et tiers visibles")
+segment0 = "(t)=>{const b=[...document.querySelectorAll('button,[role=tab]')].find(x=>x.innerText.trim()===t);b.click();return 1}"
+ui(f"({segment0})('Poids')")
+try:
+    until(lambda: "Image lourde" in ui("document.body.innerText") and "Script tiers lourd" in ui("document.body.innerText"),
+          "rapport de poids sans alertes")
+except AssertionError:
+    texte = ui("document.body.innerText"); debut = texte.find("Tiers :")
+    raise AssertionError("rapport de poids sans alertes : " + texte[debut:debut + 600])
+print("poids : image lourde et script tiers lourd signales")
+ui(f"({segment0})('Domaines')")
 segment = "(t)=>{const b=[...document.querySelectorAll('button,[role=tab]')].find(x=>x.innerText.trim()===t);b.click();return 1}"
 ui(f"({segment})('Journal')")
 until(lambda: "Premier contact avec 127.0.0.1" in ui("document.body.innerText"), "premier contact du tiers absent du journal")

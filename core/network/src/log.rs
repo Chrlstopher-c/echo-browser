@@ -129,6 +129,36 @@ impl TabLog {
             .collect()
     }
 
+    /// Les `limit` requetes terminees les plus lourdes.
+    pub fn heaviest(&self, limit: usize) -> Vec<RequestEntry> {
+        self.ranked(limit, |e| e.bytes)
+    }
+
+    /// Les `limit` requetes terminees les plus lentes.
+    pub fn slowest(&self, limit: usize) -> Vec<RequestEntry> {
+        self.ranked(limit, |e| e.duration_ms.unwrap_or(0))
+    }
+
+    fn ranked(&self, limit: usize, key: impl Fn(&RequestEntry) -> u64) -> Vec<RequestEntry> {
+        let mut done: Vec<&RequestEntry> =
+            self.entries.iter().map(|(_, e)| e).filter(|e| e.blocked.is_none() && key(e) > 0).collect();
+        done.sort_by_key(|e| std::cmp::Reverse(key(e)));
+        done.into_iter().take(limit).cloned().collect()
+    }
+
+    /// Octets recus par type de ressource, et la part venue des tiers.
+    pub fn weight(&self) -> (BTreeMap<String, u64>, u64) {
+        let mut by_kind = BTreeMap::new();
+        let mut third = 0;
+        for (_, e) in &self.entries {
+            *by_kind.entry(e.kind.clone()).or_default() += e.bytes;
+            if e.third_party {
+                third += e.bytes;
+            }
+        }
+        (by_kind, third)
+    }
+
     pub fn total_bytes(&self) -> u64 {
         self.total_bytes
     }
@@ -155,6 +185,8 @@ mod tests {
         assert_eq!((summary[0].requests, summary[0].bytes, summary[0].third_party), (2, 1500, false));
         assert_eq!((summary[1].blocked, summary[1].third_party), (1, true));
         assert_eq!(log.recent(Some("www.example.com"), 10)[1].duration_ms, Some(40));
+        assert_eq!(log.heaviest(5)[0].url, "https://www.example.com/app.js");
+        assert_eq!(log.weight().0.get("script"), Some(&1500));
         log.navigated("https://autre.fr/");
         assert!(log.summary().is_empty());
     }

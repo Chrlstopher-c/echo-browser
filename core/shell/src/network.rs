@@ -7,7 +7,7 @@ use std::sync::atomic::{AtomicBool, AtomicI32, Ordering};
 use std::sync::OnceLock;
 
 use cef::*;
-use echo_contract::{CoreEvent, JournalEntryView, NetDomainView, NetRequestView, NetworkView};
+use echo_contract::{CoreEvent, JournalEntryView, NetDomainView, NetRequestView, NetWeightView, NetworkView};
 use echo_network::log::Outgoing;
 use echo_network::{Rules, TabLog};
 use parking_lot::{Mutex, RwLock};
@@ -164,10 +164,10 @@ fn tick() {
 fn publish(browser: i32) {
     let focus = FOCUS.lock().clone();
     let page = active_page().unwrap_or_default();
-    let (domains, requests, total_bytes) = logs()
+    let (domains, requests, total_bytes, weight) = logs()
         .lock()
         .get(&browser)
-        .map(|log| (log.summary(), log.recent(focus.as_deref(), DETAIL), log.total_bytes()))
+        .map(|log| (log.summary(), log.recent(focus.as_deref(), DETAIL), log.total_bytes(), weight_view(log)))
         .unwrap_or_default();
     let journal = echo_network::site::site_of(&page)
         .and_then(|site| crate::session::with(|s| echo_library::journal::list(&s.library, &site, JOURNAL)))
@@ -185,8 +185,23 @@ fn publish(browser: i32) {
         domains: domains.into_iter().map(domain_view).collect(),
         requests: requests.into_iter().map(request_view).collect(),
         focus,
+        weight,
     };
     crate::bridge::publish(&CoreEvent::NetworkChanged { network });
+}
+
+const RANKED: usize = 8;
+
+fn weight_view(log: &TabLog) -> NetWeightView {
+    let (by_kind, third_party_bytes) = log.weight();
+    let mut by_kind: Vec<(String, u64)> = by_kind.into_iter().filter(|(_, b)| *b > 0).collect();
+    by_kind.sort_by_key(|k| std::cmp::Reverse(k.1));
+    NetWeightView {
+        by_kind,
+        third_party_bytes,
+        heaviest: log.heaviest(RANKED).into_iter().map(request_view).collect(),
+        slowest: log.slowest(RANKED).into_iter().map(request_view).collect(),
+    }
 }
 
 fn domain_view(d: echo_network::DomainStat) -> NetDomainView {
