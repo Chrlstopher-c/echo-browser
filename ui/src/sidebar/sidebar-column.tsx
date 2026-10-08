@@ -10,6 +10,7 @@ import { SpaceStrip } from '../spaces/space-strip'
 import { TabsArea } from '../tabs/tabs-area'
 import { CodecsStrip } from './codecs-strip'
 import { RoutineStrip } from '../routines/routine-strip'
+import { PageChangeStrip } from '../watch/page-change-strip'
 import { SyncStrip } from './sync-strip'
 import { UpdateStrip } from './update-strip'
 import { NoticeStrip } from './notice-strip'
@@ -75,6 +76,7 @@ function ColumnFooter({ model }: { model: SidebarModel }): ReactElement {
       <RestartStrip pending={extensions.restartPending} count={extensions.pending} onRestart={extensions.restart} />
       <PermissionStrip requests={core.state.permissions} send={core.send} />
       <CodecsStrip codecs={core.state.codecs} send={core.send} />
+      <PageChangeStrip change={core.state.pageChange} />
       <RoutineStrip proposal={core.state.routineProposal} send={core.send} />
       <SyncStrip account={core.state.account} send={core.send} />
       <UpdateStrip update={core.state.update} send={core.send} />

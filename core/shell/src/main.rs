@@ -45,6 +45,7 @@ mod signals;
 mod sleep;
 mod suggest;
 mod tabs;
+mod watch;
 mod terminal;
 mod transfers;
 mod update;

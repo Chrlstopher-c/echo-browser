@@ -71,6 +71,7 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `core/library/src/schema.rs` — la forme de la base et sa mise a niveau.
 - `core/library/src/settings.rs` — les reglages du navigateur, et leurs valeurs par defaut.
 - `core/library/src/signals.rs` — les signaux anonymes en attente d'envoi — comptes par jour de domaines visites et d'hotes bloques,
+- `core/library/src/watched.rs` — les pages surveillees — le texte vu a la derniere visite, et ce qui a change depuis (lignes ajoutees
 - `core/library/tests/library.rs`
 - `core/network/Cargo.toml`
 - `core/network/src/lib.rs`
@@ -153,6 +154,7 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `core/shell/src/update/github.rs`
 - `core/shell/src/update/mod.rs`
 - `core/shell/src/update/stage.rs`
+- `core/shell/src/watch.rs` — pages surveillees — a chaque visite d'une page surveillee, son texte est lu et compare a celui de la
 - `core/shell/src/window.rs` — la fenetre du navigateur et la place respective de l'interface et du contenu.
 - `core/shield/Cargo.toml`
 - `core/shield/examples/rapport.rs`
@@ -216,6 +218,7 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `tools/test-trim-alive.sh`
 - `tools/test-update.sh`
 - `tools/test-warm.sh`
+- `tools/test-watch.sh`
 - `ui/.gitignore`
 - `ui/README.md`
 - `ui/bun.lock`
@@ -387,5 +390,6 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `ui/src/tabs/use-folders.ts` — les dossiers d'onglets. La liste (nom, plie ou deplie) vit dans le reglage `tabs.folders` ;
 - `ui/src/tabs/use-tab-actions.ts` — traduire les gestes sur les onglets en requetes du contrat.
 - `ui/src/tabs/use-tab-menu.ts` — menu contextuel de la zone des onglets — ouvert au clic droit sur un onglet, un dossier
+- `ui/src/watch/page-change-strip.tsx` — bandeau « cette page a changé » en bas de la barre — pour une page surveillee, les lignes ajoutees
 - `ui/tsconfig.json`
 - `ui/vite.config.ts`

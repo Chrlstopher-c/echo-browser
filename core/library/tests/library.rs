@@ -223,3 +223,20 @@ fn signaux_en_attente_par_jour() {
     signals::forget_day(&lib, "2026-10-07");
     assert_eq!(signals::days(&lib), ["2026-10-08"]);
 }
+
+#[test]
+fn page_surveillee_lignes_ajoutees_et_retirees() {
+    use echo_library::watched;
+    let lib = library();
+    let url = "https://exemple.fr/prix";
+    assert!(watched::visited(&lib, url, "a").is_none(), "non surveillee : rien");
+    watched::watch(&lib, url);
+    assert!(watched::is_watched(&lib, url));
+    assert!(watched::visited(&lib, url, "Titre\nPrix : 20 €\nStock : 3").is_none(), "premiere visite : reference");
+    assert!(watched::visited(&lib, url, "Titre\nPrix : 20 €\nStock : 3").is_none(), "identique");
+    let change = watched::visited(&lib, url, "Titre\nPrix : 18 €\nStock : 3").expect("changement");
+    assert_eq!(change.added, ["Prix : 18 €"]);
+    assert_eq!(change.removed, ["Prix : 20 €"]);
+    watched::unwatch(&lib, url);
+    assert!(!watched::is_watched(&lib, url));
+}

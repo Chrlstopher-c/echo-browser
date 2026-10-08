@@ -239,6 +239,8 @@ pub enum CoreEvent {
         signals: serde_json::Value,
         error: Option<String>,
     },
+    /// Une page surveillee a change depuis la visite precedente.
+    PageChanged { url: String, added: Vec<String>, removed: Vec<String> },
     /// Une suite de sites revient : proposition de routine.
     RoutineProposed { proposal: RoutineProposalView },
     RoutinesChanged { routines: Vec<RoutineView> },

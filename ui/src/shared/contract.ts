@@ -185,6 +185,8 @@ export type CoreEvent =
   | { kind: 'accountVault'; kinds: VaultKindView[] }
   /** Tableau de bord tel que le service le rend (forme lue par `admin/admin-data.ts`), ou l'erreur. */
   | { kind: 'adminData'; summary: unknown; accounts: unknown; signals: unknown; error: string | null }
+  /** Une page surveillee a change depuis la visite precedente. */
+  | { kind: 'pageChanged'; url: string; added: string[]; removed: string[] }
   /** Une suite de sites revient : proposition de routine. */
   | { kind: 'routineProposed'; proposal: RoutineProposalView }
   | { kind: 'routinesChanged'; routines: RoutineView[] }
@@ -329,6 +331,9 @@ export type MenuItemKind =
   | 'hideElement'
   /** Reafficher ce qui a ete masque sur le gabarit de cette page. */
   | 'unhideElements'
+  /** Surveiller la page : signaler ce qui a change a la prochaine visite. */
+  | 'watchPage'
+  | 'unwatchPage'
 
 export interface MenuEntry {
   kind: MenuItemKind

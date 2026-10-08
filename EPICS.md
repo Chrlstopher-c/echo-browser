@@ -120,5 +120,8 @@ Le coffre est chiffré sur la machine : le serveur ne peut pas le lire, le table
 - S8 Rapport de performance (idée 12) : dans le panneau Réseau, vue « Poids » — part des tiers, poids par type, les
   requêtes les plus lourdes et les plus lentes, alertes (image > 500 Ko, script tiers > 100 Ko). Critère : page de test
   avec une grosse image et un script tiers lourd → les deux signalés.
+- S9 Surveiller une page (idée 15) : clic droit « Surveiller cette page » ; à chaque visite, empreinte du texte comparée à
+  la précédente ; si elle a changé, bandeau « Cette page a changé » avec les lignes ajoutées et retirées. Critère : page
+  surveillée, contenu modifié côté serveur, nouvelle visite → bandeau avec la ligne ajoutée.
 - S7 Mémoire de structure : « Masquer cet élément » (clic droit) retenu par empreinte de structure de page, appliqué aux
   pages de même gabarit. Critère : élément masqué sur un article → masqué sur un autre article du même site.

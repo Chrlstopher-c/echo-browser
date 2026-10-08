@@ -157,6 +157,9 @@ wrap_load_handler! {
                     Some(&CefString::from("echo://gabarit")),
                     0,
                 );
+                if let Some(browser) = browser.as_deref() {
+                    crate::watch::loaded(browser, &url);
+                }
                 let browser_id = browser.as_ref().map(|b| b.identifier());
                 if let Some(script) = browser_id.and_then(crate::page_state::restore_script) {
                     frame.execute_java_script(Some(&CefString::from(script.as_str())), Some(&CefString::from("echo://etat")), 0);
@@ -239,6 +242,12 @@ wrap_display_handler! {
             if let Some(fingerprint) = message.strip_prefix(crate::page_memory::FINGERPRINT_MARKER) {
                 if let Some(browser) = browser {
                     crate::page_memory::announced(browser, fingerprint);
+                }
+                return 1;
+            }
+            if let Some(text) = message.strip_prefix(crate::watch::MARKER) {
+                if let Some(browser) = browser {
+                    crate::watch::text(browser, text);
                 }
                 return 1;
             }

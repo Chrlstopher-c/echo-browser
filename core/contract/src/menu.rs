@@ -115,6 +115,9 @@ pub enum MenuItemKind {
     HideElement,
     /// Reafficher ce qui a ete masque sur le gabarit de cette page.
     UnhideElements,
+    /// Surveiller la page : signaler ce qui a change a la prochaine visite.
+    WatchPage,
+    UnwatchPage,
 }
 
 /// Un rectangle de l'interface, en pixels, repere depuis le coin haut-gauche de la

@@ -33,7 +33,9 @@ fn theme() -> echo_contract::OverlayTheme {
 
 /// Retient la cible et demande l'ouverture du menu au-dessus de la page.
 pub fn open(click: Click, x: i32, y: i32) {
-    let target = menu::build(&click, crate::page_memory::active_has_hidden());
+    let facts =
+        menu::PageFacts { hidden_here: crate::page_memory::active_has_hidden(), watched: crate::watch::active_watched() };
+    let target = menu::build(&click, facts);
     let (width, height) = menu::size_of(&target);
     TARGET.with(|cell| *cell.borrow_mut() = Some(click));
     CLICK_POINT.with(|cell| cell.set((x, y)));
@@ -96,6 +98,8 @@ pub fn run(action: MenuItemKind) {
         MenuItemKind::Inspect => inspect(),
         MenuItemKind::HideElement => hide_element(),
         MenuItemKind::UnhideElements => crate::page_memory::unhide_active(),
+        MenuItemKind::WatchPage => crate::watch::watch_active(),
+        MenuItemKind::UnwatchPage => crate::watch::unwatch_active(),
         MenuItemKind::Bookmark => {
             let active = session::with(|s| s.tabs.active_id()).flatten();
             if let Some(id) = active {
@@ -226,5 +230,5 @@ fn clone_click(click: &Click) -> Click {
 
 /// Le menu tel qu'il sera affiche, pour les essais et le journal.
 pub fn preview(click: &Click) -> ContextTarget {
-    menu::build(click, false)
+    menu::build(click, menu::PageFacts::default())
 }

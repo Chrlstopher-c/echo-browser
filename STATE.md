@@ -86,7 +86,9 @@
   gabarit (squelette balises + classes stables, répétitions écrasées), appliqué aux pages de même gabarit DU MÊME SITE.
   Sécurité : une page peut écrire dans la console comme nos scripts — un masquage n'est cru que dans les 3 s qui suivent
   un vrai « Masquer » de l'utilisateur, et un autre site qui annonce le même gabarit ne reçoit rien.
-- Tests : `test-network.sh`, `test-page-state.sh`, `test-routines.sh`, `test-hide-element.sh`.
+- Surveiller une page (idée 15, `watch.rs`, table `watched_pages`) : clic droit « Surveiller cette page », texte lu à
+  chaque visite (seulement à notre demande, fenêtre de 15 s), lignes ajoutées/retirées montrées en bas de la barre.
+- Tests : `test-network.sh`, `test-page-state.sh`, `test-routines.sh`, `test-hide-element.sh`, `test-watch.sh`.
 
 ## Synchro automatique (consigne de Chris, 08/10)
 

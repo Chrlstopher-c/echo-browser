@@ -49,8 +49,8 @@ Ports : sonde de présence `127.0.0.1:4330` ; port de débogage local `127.0.0.1
 - `./tools/test-control.sh` — prise de pilotage ; `./tools/test-ipc-origin.sh` — une page web ne pilote pas le cœur.
 - `cargo test --workspace --exclude echo-shell` — crates sans Chromium (CI GitHub).
 - `./tools/bench-ram.sh echo|chrome [attente_s]` — mémoire (PSS) sur des pages réelles, comparée à Chrome.
-- `./tools/test-network.sh`, `test-page-state.sh`, `test-routines.sh`, `test-hide-element.sh` — panneau Réseau et
-  journal, reprise exacte, routines, mémoire de structure (servis par `tools/serveur-test.py`).
+- `./tools/test-network.sh`, `test-page-state.sh`, `test-routines.sh`, `test-hide-element.sh`, `test-watch.sh` — panneau
+  Réseau et journal, reprise exacte, routines, mémoire de structure, pages surveillées (servis par `tools/serveur-test.py`).
 - `./tools/test-account-auto.sh`, `test-admin.sh`, `test-signals.sh` — synchro automatique, administration, signaux
   anonymes (service local `compte/`).
 - **Les scripts de test lancent une instance isolée** (`ECHO_RUN_DIR`, `ECHO_CONTROL_NAME`) : ils ne touchent jamais au navigateur de l'utilisateur.

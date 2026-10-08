@@ -70,6 +70,8 @@ export interface CoreState {
   vault: VaultKindView[] | null
   /** Tableau de bord des createurs, null tant qu'il n'a pas ete demande. */
   admin: { summary: unknown; accounts: unknown; signals: unknown; error: string | null } | null
+  /** Derniere page surveillee qui a change, en attente d'etre vue. */
+  pageChange: { url: string; added: string[]; removed: string[] } | null
   /** Routine proposee, en attente d'une reponse. */
   routineProposal: RoutineProposalView | null
   routines: RoutineView[]
@@ -114,6 +116,7 @@ export const EMPTY_CORE_STATE: CoreState = {
   adminAccount: null,
   network: null,
   routineProposal: null,
+  pageChange: null,
   routines: [],
 }
 
@@ -197,6 +200,8 @@ export function reduceCore(state: CoreState, event: CoreEvent): CoreState {
       return { ...state, remoteMachines: event.machines }
     case 'accountVault':
       return { ...state, vault: event.kinds }
+    case 'pageChanged':
+      return { ...state, pageChange: { url: event.url, added: event.added, removed: event.removed } }
     case 'routineProposed':
       return { ...state, routineProposal: event.proposal }
     case 'routinesChanged':

@@ -13,6 +13,7 @@ pub mod routines;
 pub mod schema;
 pub mod settings;
 pub mod signals;
+pub mod watched;
 
 use parking_lot::Mutex;
 use rusqlite::Connection;
