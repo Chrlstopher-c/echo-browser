@@ -65,6 +65,8 @@ pub enum Action {
     Find,
     /// Ctrl+Alt+S : replier ou deplier la barre.
     ToggleSidebar,
+    /// Ctrl+Maj+N : onglet de navigation privee.
+    NewPrivateTab,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -126,6 +128,7 @@ fn ctrl_letter(letter: char, shift: bool) -> Option<Action> {
     Some(match (letter, shift) {
         ('t', false) => Action::NewTab,
         ('t', true) => Action::ReopenTab,
+        ('n', true) => Action::NewPrivateTab,
         ('w', false) => Action::CloseTab,
         ('l' | 'k', false) => Action::FocusAddress,
         ('f', false) => Action::Find,

@@ -5,6 +5,7 @@ import { motion, Reorder, useDragControls } from 'framer-motion'
 import { useRef, type KeyboardEvent, type MouseEvent, type PointerEvent, type ReactElement } from 'react'
 import type { TabView } from '../shared/contract'
 import { IconClose } from '../shared/design/icons'
+import { IconEyeOff } from '../shared/design/icons-page'
 import { PANEL, QUICK } from '../shared/design/motion'
 import { fallbackTitle } from '../shared/url-shape'
 import { AudioBars, TabMark } from './tab-mark'
@@ -63,7 +64,16 @@ function CloseAction({ onClose }: { onClose: () => void }): ReactElement {
 /** Le conteneur d'un onglet, en clair : sa couleur et son nom (comme Firefox), pas un simple point. */
 function ContainerChip({ context }: { context: string | null }): ReactElement | null {
   const id = chosenContainer(context)
-  const name = useContainerName(id)
+  const named = useContainerName(id)
+  if (id === 'prive') {
+    return (
+      <span data-container="Privé" title="Navigation privée : rien n’est gardé"
+        className="flex shrink-0 items-center gap-1 rounded-full bg-ink px-1.5 text-[10px] leading-[15px] text-shell">
+        <IconEyeOff size={9} /> Privé
+      </span>
+    )
+  }
+  const name = named
   if (id === null || name === null) return null
   return (
     <span data-container={name} title={`Conteneur : ${name}`}

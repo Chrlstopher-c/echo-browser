@@ -5,6 +5,7 @@ import { AnimatePresence, Reorder } from 'framer-motion'
 import { useEffect, useState, type ReactElement } from 'react'
 import type { TabId, TabView } from '../shared/contract'
 import { IconPlus } from '../shared/design/icons'
+import { IconEyeOff } from '../shared/design/icons-page'
 import { folderAt } from './drop-target'
 import { TabRow, type DropPoint } from './tab-row'
 import { targetIndex, type TabActions } from './use-tab-actions'
@@ -21,19 +22,29 @@ export interface TabListProps {
   onFolder: (id: TabId, folder: string) => void
 }
 
-function NewTabRow({ compact, onNew }: { compact: boolean; onNew: () => void }): ReactElement {
+function NewTabRow(props: { compact: boolean; onNew: () => void; onPrivate: () => void }): ReactElement {
+  const { compact, onNew, onPrivate } = props
   return (
-    <button
-      type="button"
-      onClick={onNew}
-      aria-label="Nouvel onglet"
-      title="Nouvel onglet (Ctrl+T)"
-      className={`flex h-8 items-center gap-2.5 rounded-row text-ink-faint transition-colors duration-100
-        hover:bg-hover hover:text-ink-muted ${compact ? 'justify-center' : 'pl-4 pr-2.5'}`}
-    >
-      <IconPlus size={14} />
-      {!compact && <span className="text-[12.5px] leading-none">Nouvel onglet</span>}
-    </button>
+    <div className="group/nouvel flex items-center">
+      <button
+        type="button"
+        onClick={onNew}
+        aria-label="Nouvel onglet"
+        title="Nouvel onglet (Ctrl+T)"
+        className={`flex h-8 flex-1 items-center gap-2.5 rounded-row text-ink-faint transition-colors duration-100
+          hover:bg-hover hover:text-ink-muted ${compact ? 'justify-center' : 'pl-4 pr-2.5'}`}
+      >
+        <IconPlus size={14} />
+        {!compact && <span className="text-[12.5px] leading-none">Nouvel onglet</span>}
+      </button>
+      {!compact && (
+        <button type="button" onClick={onPrivate} aria-label="Nouvel onglet privé"
+          title="Nouvel onglet privé (Ctrl+Maj+N)"
+          className="ml-auto grid size-7 place-items-center rounded-row text-ink-faint hover:bg-hover hover:text-ink">
+          <IconEyeOff size={13} />
+        </button>
+      )}
+    </div>
   )
 }
 
@@ -82,7 +93,8 @@ export function TabList(props: TabListProps): ReactElement {
           ))}
         </AnimatePresence>
       </Reorder.Group>
-      <NewTabRow compact={compact} onNew={() => actions.newTab()} />
+      <NewTabRow compact={compact} onNew={() => actions.newTab()}
+        onPrivate={() => actions.newTab(undefined, 'prive')} />
     </div>
   )
 }

@@ -94,6 +94,8 @@ pub enum MenuItemKind {
     FindInPage,
     OpenLinkInTab,
     /// Ouvrir le lien dans le premier, deuxieme ou troisieme conteneur.
+    /// Ouvrir le lien dans un onglet de navigation privee.
+    OpenLinkPrivate,
     OpenLinkInContainer1,
     OpenLinkInContainer2,
     OpenLinkInContainer3,

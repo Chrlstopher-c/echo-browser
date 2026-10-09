@@ -50,6 +50,8 @@ export const HELP: HelpSection[] = [
         + 'suivant.' },
       { title: 'Créer, renommer, supprimer', how: 'Le « + » à côté des pastilles crée un profil ; Réglages → Profils '
         + 'pour renommer, changer la teinte, réinitialiser ou supprimer.', action: { label: 'Réglages', request: page('reglages') } },
+      { title: 'Navigation privée', how: 'Ctrl+Maj+N, l’œil barré à côté de « Nouvel onglet », ou clic droit sur un '
+        + 'lien : rien n’est gardé (ni historique, ni cookies, ni session) et l’onglet est marqué « Privé ».' },
       { title: 'Conteneurs', how: 'Clic droit sur un onglet → ouvrir dans un conteneur, ou clic droit sur un lien → '
         + '« Ouvrir dans : … » : un second compte sur le même site, sans changer de profil. Le nom du conteneur '
         + 's’affiche sur l’onglet.' },
@@ -110,7 +112,7 @@ export const HELP: HelpSection[] = [
 ]
 
 export const SHORTCUTS: Array<[string, string]> = [
-  ['Ctrl+T', 'Nouvel onglet'], ['Ctrl+W', 'Fermer l’onglet'], ['Ctrl+Maj+T', 'Rouvrir l’onglet fermé'],
+  ['Ctrl+T', 'Nouvel onglet'], ['Ctrl+Maj+N', 'Onglet de navigation privée'], ['Ctrl+W', 'Fermer l’onglet'], ['Ctrl+Maj+T', 'Rouvrir l’onglet fermé'],
   ['Ctrl+Tab / Ctrl+Page↓', 'Onglet suivant'], ['Ctrl+Maj+Tab / Ctrl+Page↑', 'Onglet précédent'],
   ['Ctrl+1 … 9', 'Aller à l’onglet n'], ['Ctrl+L / Ctrl+K', 'Adresse et palette'], ['Ctrl+O', 'Ouvrir un fichier'],
   ['Ctrl+F', 'Rechercher dans la page'], ['Ctrl+Alt+R', 'Mode lecture'],

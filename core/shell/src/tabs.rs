@@ -467,7 +467,7 @@ impl Tabs {
             tabs: self
                 .entries
                 .iter()
-                .filter(|tab| !tab.history.is_empty())
+                .filter(|tab| !tab.history.is_empty() && !crate::containers::is_private(tab.container.as_deref()))
                 .map(|tab| crate::restart::TabSnapshot {
                     history: tab.history.clone(),
                     position: tab.position,
@@ -486,7 +486,6 @@ impl Tabs {
         }
     }
 
-    /// Deplace un onglet a une nouvelle position dans la liste.
     /// Place de l'onglet dans la liste.
     pub fn index_of(&self, id: TabId) -> Option<usize> {
         self.entries.iter().position(|tab| tab.id == id)
@@ -502,6 +501,7 @@ impl Tabs {
         self.move_to(id, if from > at { at + 1 } else { at });
     }
 
+    /// Deplace un onglet a une nouvelle position dans la liste.
     pub fn move_to(&mut self, id: TabId, to: usize) {
         let Some(from) = self.entries.iter().position(|tab| tab.id == id) else { return };
         let tab = self.entries.remove(from);

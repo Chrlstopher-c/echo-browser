@@ -74,6 +74,12 @@ pub fn run(action: MenuItemKind) {
     match action {
         MenuItemKind::OpenLinkInTab | MenuItemKind::OpenImage => open_and_show(&target_url(&click, action)),
         MenuItemKind::OpenLinkInBackground => super::open_tab_like_active(&click.link),
+        MenuItemKind::OpenLinkPrivate => {
+            if let Some(tab) = super::open_tab_in(&click.link, Some(crate::containers::PRIVATE)) {
+                super::select_tab(tab);
+            }
+            super::publish_tabs();
+        }
         MenuItemKind::OpenLinkInContainer1 => open_in_container(&click.link, 0),
         MenuItemKind::OpenLinkInContainer2 => open_in_container(&click.link, 1),
         MenuItemKind::OpenLinkInContainer3 => open_in_container(&click.link, 2),

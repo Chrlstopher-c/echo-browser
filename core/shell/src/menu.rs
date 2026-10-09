@@ -88,6 +88,7 @@ fn link_entries(link: &str, containers: &[String]) -> Vec<MenuEntry> {
     let mut entries = vec![
         MenuEntry::new(MenuItemKind::OpenLinkInTab, "Ouvrir dans un nouvel onglet"),
         MenuEntry::new(MenuItemKind::OpenLinkInBackground, "Ouvrir en arrière-plan"),
+        MenuEntry::new(MenuItemKind::OpenLinkPrivate, "Ouvrir en navigation privée"),
     ];
     let in_container =
         containers.iter().zip(KINDS).map(|(name, kind)| MenuEntry::new(kind, &format!("Ouvrir dans : {name}")));

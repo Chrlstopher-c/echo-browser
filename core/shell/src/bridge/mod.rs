@@ -415,7 +415,8 @@ pub fn publish(event: &CoreEvent) {
 /// Un conteneur choisi dans l'interface appartient au profil affiche.
 pub(super) fn scoped(container: Option<String>) -> Option<String> {
     let space = session::with(|s| s.tabs.space()).unwrap_or_else(|| crate::profiles::DEFAULT.to_string());
-    container.map(|c| crate::profiles::scope_container(&space, &c))
+    // La navigation privee n'appartient a aucun profil : son contexte est en memoire, commun, jamais ecrit.
+    container.map(|c| if c == crate::containers::PRIVATE { c } else { crate::profiles::scope_container(&space, &c) })
 }
 
 pub fn install_extension_from_store(page: &str) {

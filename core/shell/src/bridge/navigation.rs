@@ -54,6 +54,13 @@ pub(super) fn focus_find() {
 pub fn perform(action: crate::shortcuts::Action) {
     use crate::shortcuts::Action;
     match action {
+        Action::NewPrivateTab => {
+            if let Some(id) = super::open_tab_in(search::HOME, Some(crate::containers::PRIVATE)) {
+                super::select_tab(id);
+            }
+            publish_tabs();
+            focus_address();
+        }
         Action::NewTab => {
             open_tab(search::HOME);
             publish_tabs();
@@ -171,7 +178,10 @@ pub fn remember_closed(id: echo_contract::TabId) {
         s.tabs.get_mut(id).map(|t| (t.url.clone(), t.container.clone(), index))
     })
     .flatten();
-    if let Some((url, container, index)) = tab.filter(|(url, _, _)| url.starts_with("http") || url.starts_with("file:")) {
+    let kept = tab.filter(|(url, container, _)| {
+        (url.starts_with("http") || url.starts_with("file:")) && !crate::containers::is_private(container.as_deref())
+    });
+    if let Some((url, container, index)) = kept {
         let mut closed = CLOSED.lock();
         closed.push((url, container, index));
         if closed.len() > CLOSED_KEPT {

@@ -101,12 +101,14 @@ pub fn publish_tab(browser_id: i32, url: &str, title: &str, loading: bool) {
         if !loading {
             tab.record_visit(url);
         }
-        Some((tab.title.clone(), crate::tabs::Tabs::space_of_tab(tab)))
+        let private = crate::containers::is_private(tab.container.as_deref());
+        Some((tab.title.clone(), crate::tabs::Tabs::space_of_tab(tab), private))
     })
     .flatten();
 
-    let Some((title, space)) = known else { return };
-    if !loading {
+    let Some((title, space, private)) = known else { return };
+    // Navigation privee : aucune trace dans l'historique.
+    if !loading && !private {
         library::record_visit(url, &title, &space);
     }
     publish_tabs();
@@ -189,7 +191,7 @@ pub fn set_tab_title(browser_id: i32, title: &str) {
         tab.title = title.to_string();
         let current = tab.browser().and_then(|b| b.main_frame()).map(|f| CefString::from(&f.url()).to_string());
         let url = current.filter(|u| !u.is_empty()).unwrap_or_else(|| tab.url.clone());
-        Some((url, crate::tabs::Tabs::space_of_tab(tab)))
+        (!crate::containers::is_private(tab.container.as_deref())).then(|| (url, crate::tabs::Tabs::space_of_tab(tab)))
     })
     .flatten();
     if let Some((url, space)) = url {

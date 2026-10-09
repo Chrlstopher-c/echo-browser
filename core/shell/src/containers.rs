@@ -9,6 +9,15 @@ use tracing::warn;
 
 const MAX_ID_LEN: usize = 48;
 
+/// Le conteneur de navigation privee : un contexte en memoire seule (rien sur le disque), commun aux onglets prives
+/// et oublie a la fermeture d'Echo.
+pub const PRIVATE: &str = "prive";
+
+/// Le contexte d'un onglet est-il celui de la navigation privee ?
+pub fn is_private(context: Option<&str>) -> bool {
+    context == Some(PRIVATE)
+}
+
 thread_local! {
     /// Un contexte par conteneur, cree a la premiere demande et garde tant que le navigateur vit.
     static CONTEXTS: RefCell<HashMap<String, RequestContext>> = RefCell::new(HashMap::new());
@@ -56,12 +65,16 @@ pub fn context_for(id: &str) -> Option<RequestContext> {
     if let Some(known) = CONTEXTS.with(|map| map.borrow().get(id).cloned()) {
         return Some(known);
     }
-    // Chromium n'accepte un profil que comme enfant direct de la racine du cache.
+    // Chromium n'accepte un profil que comme enfant direct de la racine du cache. Sans chemin : en memoire seule.
     let path = crate::flags::data_dir().join("profile").join(format!("conteneur-{id}"));
-    let settings = RequestContextSettings {
-        cache_path: path.to_string_lossy().as_ref().into(),
-        persist_session_cookies: 1,
-        ..Default::default()
+    let settings = if id == PRIVATE {
+        RequestContextSettings { persist_session_cookies: 0, ..Default::default() }
+    } else {
+        RequestContextSettings {
+            cache_path: path.to_string_lossy().as_ref().into(),
+            persist_session_cookies: 1,
+            ..Default::default()
+        }
     };
     let mut handler = ReadyHandler::new(id.to_string());
     let context = request_context_create_context(Some(&settings), Some(&mut handler))?;
