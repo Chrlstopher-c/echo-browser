@@ -86,6 +86,15 @@ entier, une story = un test isolé (`tools/banc.sh` + `tools/banc.py` : prélude
   en tuiles ; conteneurs nommés sur l'onglet + « Ouvrir dans : … » ; couper le son ; fiches proposées au focus (la
   page ne peut que déclencher l'offre, le remplissage part d'un clic dans Echo).
 
+## Contre-audit du 09/10 et E18
+Contre-audit Opus (agent isolé, mêmes règles) : navigation 7,5, esthétique 8, grand public 6,5, finition 6,5,
+concurrents 7,5, avec 10 bugs (N1→N10). Tous corrigés (E18) : Précédent qui ramenait à l'accueil (l'accueil sort du fil
+de l'onglet), surlignages Ctrl+F effacés au changement d'onglet, pages en échec ni dans l'historique ni en tuile et
+cadenas « Page non chargée » (`Security::Failed`), `HttpsUpgrades` coupé (CEF ne revenait pas en http), thème servi
+par le cœur aux pages des autres profils et du privé (`echo://ui/data/theme`, `SetPageTheme`, `SetSchemeChoice`),
+onglet privé neutre, fiche proposée sous l'adresse (`FormOffer`), barre flottante en fenêtre étroite (`floating()`),
+« Traduire la page », Réglages → Mots de passe, textes ≥ 10,5 px. Écarts : voir EPICS E18.
+
 ## Popups, reprise de session, arrêt (08/10 soir)
 
 - **Popups** : depuis la 0.4.0, toute fenêtre `window.open` qui garde `window.opener` restait sur about:blank. Cause

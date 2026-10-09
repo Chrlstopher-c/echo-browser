@@ -223,17 +223,22 @@ clair ET sombre, test `tools/test-*.sh` isolé. Fin : régression complète, con
 
 ### E18 — Contre-audit du 09/10 (notes : navigation 7,5, esthétique 8, grand public 6,5, finition 6,5, concurrents 7,5)
 Rapport : scratchpad `contre-audit/RAPPORT.md`. Bugs N1→N10 et manques classés par impact.
-- [ ] S1 N1 : Précédent ne rouvre plus l'accueil (l'accueil n'entre pas dans le fil de l'onglet) ; `test-welcome`
+- [x] S1 N1 : Précédent ne rouvre plus l'accueil (l'accueil n'entre pas dans le fil de l'onglet) ; `test-welcome`
   vérifie vraiment `canGoBack`.
-- [ ] S2 N2 : changer d'onglet efface les surlignages de Ctrl+F.
-- [ ] S3 N3/N4 : page en échec ni dans l'historique ni en tuile ; cadenas « Page non chargée », jamais « chiffrée ».
-- [ ] S4 N5 : un site http seul reste joignable (mise à niveau https sans repli coupée).
-- [ ] S5 N6/N7 : pages internes au bon thème dans tous les profils et en privé ; sélecteur de thème synchronisé.
-- [ ] S6 N8 : onglet privé titré « Nouvel onglet » ; son nouvel onglet neutre (ni historique, ni suggestions du moteur).
-- [ ] S7 N9/N10 et textes : version 0.11.0, « Enregistrer cette page » expliqué, textes périmés, Aide (thème,
+- [x] S2 N2 : changer d'onglet efface les surlignages de Ctrl+F.
+- [x] S3 N3/N4 : page en échec ni dans l'historique ni en tuile ; cadenas « Page non chargée », jamais « chiffrée ».
+- [x] S4 N5 : un site http seul reste joignable (mise à niveau https sans repli coupée).
+- [x] S5 N6/N7 : pages internes au bon thème dans tous les profils et en privé ; sélecteur de thème synchronisé.
+- [x] S6 N8 : onglet privé titré « Nouvel onglet » ; son nouvel onglet neutre (ni historique, ni suggestions du moteur).
+- [x] S7 N9/N10 et textes : version 0.11.0, « Enregistrer cette page » expliqué, textes périmés, Aide (thème,
   téléchargements), bulle d'astuce seulement après une première vraie page.
-- [ ] S8 Proximité et clarté : fiche proposée sous l'adresse (en haut), marque d'Echo qui ne ressemble pas au son,
+- [x] S8 Proximité et clarté : fiche proposée sous l'adresse (en haut), marque d'Echo qui ne ressemble pas au son,
   « Rechercher « … » sur <moteur> », mode lecture absent du menu d'un champ, icônes distinctes, palette : favoris et
   historique avant les suggestions du moteur.
-- [ ] S9 Fenêtre étroite : Ctrl+L / Ctrl+F montrent la barre par-dessus la page sans la pousser, elle repart après.
-- [ ] S10 Concurrents : « Traduire la page » au clic droit ; Réglages → Mots de passe (Proton Pass, Bitwarden en un clic).
+- [x] S9 Fenêtre étroite : Ctrl+L / Ctrl+F montrent la barre par-dessus la page sans la pousser, elle repart après.
+- [x] S10 Concurrents : « Traduire la page » au clic droit ; Réglages → Mots de passe (Proton Pass, Bitwarden en un clic).
+- Fait le 09/10 au matin : S1→S10 (tests : welcome, security, theme-everywhere, private, menu-extras, narrow,
+  forms-offer, marks, palette). Écarts restants : outils de développement de CEF en anglais (leurs traductions ne sont
+  pas embarquées : réglage « browserLanguage » posé sans effet, essai retiré) ; pages d'erreur de Chromium qui citent
+  « Chrome » ; menus contextuels carrés (une surimpression ne peut pas être transparente) ; palette dans la largeur de
+  la barre ; extensions actives au redémarrage ; historique en initiales (pas de favicon par visite).
