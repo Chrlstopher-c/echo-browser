@@ -1,15 +1,17 @@
 // Responsabilite : le contenu du menu contextuel selon la cible — un onglet, un dossier, le fond de la liste.
 
+import { useContext, type ReactElement } from 'react'
 import { IconActivity } from '../shared/design/icons-page'
-import type { ReactElement } from 'react'
 import type { TabView } from '../shared/contract'
 import { formatZoom } from '../shared/format'
 import {
   IconClose, IconFolder, IconMoon, IconPin, IconPlus, IconReload, IconStar, IconTrash, IconUnpin, IconUser,
+  IconVolume, IconVolumeOff,
 } from '../shared/design/icons'
 import { Stepper } from '../shared/design/stepper'
 import { chosenContainer, containerColor, type ContainerActions } from './use-containers'
 import type { FolderActions } from './use-folders'
+import { TabSend } from './container-names'
 import type { TabActions } from './use-tab-actions'
 import { MenuItem, MenuSeparator } from './menu-item'
 
@@ -102,6 +104,7 @@ function ContainerItems({ tab, containers, close }: ContainerItemsProps): ReactE
 
 export function TabBody(props: Common & { tab: TabView; others: TabView[]; activeId: number | null }): ReactElement {
   const { tab, others, activeId, actions, folders, containers, close } = props
+  const send = useContext(TabSend)
   const run = (action: () => void) => (): void => {
     action()
     close()
@@ -118,6 +121,9 @@ export function TabBody(props: Common & { tab: TabView; others: TabView[]; activ
       <MenuItem icon={<IconReload size={13} />} label="Recharger" onClick={run(() => actions.reload(tab.id))} />
       <MenuItem icon={<IconActivity size={13} />} label="Garder éveillé" checked={tab.keepAwake}
         onClick={run(() => actions.keepAwake(tab.id, !tab.keepAwake))} />
+      <MenuItem icon={tab.muted ? <IconVolume size={13} /> : <IconVolumeOff size={13} />}
+        label={tab.muted ? 'Remettre le son' : 'Couper le son'}
+        onClick={run(() => send({ kind: 'setTabMuted', id: tab.id, muted: !tab.muted }))} />
       {!tab.asleep && !tab.keepAwake && tab.id !== activeId && (
         <MenuItem icon={<IconMoon size={13} />} label="Endormir" onClick={run(() => actions.sleep(tab.id))} />
       )}

@@ -374,6 +374,13 @@ wrap_life_span_handler! {
                 crate::identity::emulate(browser);
                 crate::scheme::apply(browser);
                 crate::bridge::flush_pending(browser);
+                // Un onglet rendu muet le reste apres sa veille.
+                let muted = crate::session::with(|s| s.tabs.by_browser(browser.identifier()).map(|t| t.muted)).flatten();
+                if muted == Some(true) {
+                    if let Some(host) = browser.host() {
+                        host.set_audio_muted(1);
+                    }
+                }
             }
             self.live.opened();
         }

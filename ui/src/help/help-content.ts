@@ -92,6 +92,8 @@ export const HELP: HelpSection[] = [
         + 'ou un onglet réveillé (jamais les mots de passe).' },
       { title: 'Routines', how: 'Quand vous ouvrez souvent les mêmes sites à la suite, Echo propose d’en faire une '
         + 'routine ; Bibliothèque → Routines pour les rouvrir d’un clic.', action: { label: 'Bibliothèque', request: page('bibliotheque') } },
+      { title: 'Couper le son d’un onglet', how: 'Cliquez les barres sonores sur l’onglet, ou clic droit sur l’onglet → '
+        + '« Couper le son ».' },
       { title: 'Veille des onglets', how: 'Les onglets inactifs dorment pour rendre la mémoire ; clic droit → « Garder '
         + 'éveillé » pour l’éviter.' },
       { title: 'Fichiers et dossiers', how: 'Tapez un chemin (/… ou ~/…) dans l’adresse, Ctrl+O pour choisir un fichier, '

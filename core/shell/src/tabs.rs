@@ -53,6 +53,8 @@ pub struct Tab {
     pub zoom: f32,
     /// Vrai quand la page joue du son.
     pub audible: bool,
+    /// Son coupe par l'utilisateur (Chromium le garde pour la vue ; il est reapplique au reveil).
+    pub muted: bool,
     /// Vrai quand une video ou un son est en lecture, meme muet : l'onglet ne dort jamais pendant ce temps.
     pub playing: bool,
 }
@@ -115,6 +117,7 @@ impl Tab {
             space: self.space.clone(),
             zoom: self.zoom,
             audible: self.audible,
+            muted: self.muted,
             asleep: self.asleep,
             keep_awake: self.keep_awake,
         }
@@ -232,6 +235,7 @@ impl Tabs {
             opener: None,
             zoom: 1.0,
             audible: false,
+            muted: false,
             playing: false,
         });
         self.select(id);
@@ -425,6 +429,7 @@ impl Tabs {
             opener: None,
             zoom: 1.0,
             audible: false,
+            muted: false,
             playing: false,
         });
     }

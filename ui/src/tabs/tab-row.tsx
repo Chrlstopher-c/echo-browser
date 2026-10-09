@@ -2,14 +2,14 @@
 // L'onglet actif est une carte posee : le fond glisse d'une ligne a l'autre. Saisi, il se souleve.
 
 import { motion, Reorder, useDragControls } from 'framer-motion'
-import { useRef, type KeyboardEvent, type MouseEvent, type PointerEvent, type ReactElement } from 'react'
+import { useContext, useRef, type KeyboardEvent, type MouseEvent, type PointerEvent, type ReactElement } from 'react'
 import type { TabView } from '../shared/contract'
-import { IconClose } from '../shared/design/icons'
+import { IconClose, IconVolumeOff } from '../shared/design/icons'
 import { IconEyeOff } from '../shared/design/icons-page'
 import { PANEL, QUICK } from '../shared/design/motion'
 import { fallbackTitle } from '../shared/url-shape'
 import { AudioBars, TabMark } from './tab-mark'
-import { useContainerName } from './container-names'
+import { TabSend, useContainerName } from './container-names'
 import { chosenContainer, containerColor } from './use-containers'
 
 export interface DropPoint {
@@ -84,6 +84,24 @@ function ContainerChip({ context }: { context: string | null }): ReactElement | 
   )
 }
 
+/** Le son d'un onglet : les barres quand il joue, un clic le coupe ; coupe, l'icone le dit et un clic le rend. */
+function SoundButton({ tab }: { tab: TabView }): ReactElement {
+  const send = useContext(TabSend)
+  const label = tab.muted ? 'Remettre le son de l’onglet' : 'Couper le son de l’onglet'
+  return (
+    <button type="button" aria-label={label} title={label} aria-pressed={tab.muted}
+      onPointerDown={(event) => event.stopPropagation()}
+      onClick={(event) => {
+        event.stopPropagation()
+        send({ kind: 'setTabMuted', id: tab.id, muted: !tab.muted })
+      }}
+      className={`grid size-5 shrink-0 place-items-center rounded-md hover:bg-ink/10
+        ${tab.muted ? 'text-ink-faint hover:text-ink' : 'text-guard'}`}>
+      {tab.muted ? <IconVolumeOff size={12} /> : <AudioBars />}
+    </button>
+  )
+}
+
 function RowBody({ tab, title, onClose }: { tab: TabView; title: string; onClose: () => void }): ReactElement {
   return (
     <>
@@ -91,10 +109,8 @@ function RowBody({ tab, title, onClose }: { tab: TabView; title: string; onClose
         {title}
       </span>
       <ContainerChip context={tab.container} />
-      {tab.audible && !tab.asleep && (
-        <AudioBars className="shrink-0 text-guard transition-opacity duration-100 group-hover:opacity-0" />
-      )}
-      <span className={`shrink-0 ${tab.audible ? '-ml-5' : ''}`}>
+      {((tab.audible && !tab.asleep) || tab.muted) && <SoundButton tab={tab} />}
+      <span className="shrink-0">
         <CloseAction onClose={onClose} />
       </span>
     </>

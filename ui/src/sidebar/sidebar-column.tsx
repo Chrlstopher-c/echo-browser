@@ -10,6 +10,7 @@ import { TopControls } from '../address/top-controls'
 import { RestartStrip } from '../restart/restart-strip'
 import { SpaceStrip } from '../spaces/space-strip'
 import { TabsArea } from '../tabs/tabs-area'
+import { TabSend } from '../tabs/container-names'
 import { CodecsStrip } from './codecs-strip'
 import { RoutineStrip } from '../routines/routine-strip'
 import { PageChangeStrip } from '../watch/page-change-strip'
@@ -132,9 +133,11 @@ export function SidebarColumn({ model }: { model: SidebarModel }): ReactElement 
           onContextMenu={menu.openArea}
           className={`h-full overflow-y-auto ${sheet.current === null ? '' : 'invisible'}`}
         >
-          <TabsArea tabs={core.state.tabs.filter((tab) => tab.space === model.space.space.id)}
-            activeId={core.state.activeId} actions={tabs} menu={menu}
-            folders={folders} containers={containers} compact={false} />
+          <TabSend.Provider value={core.send}>
+            <TabsArea tabs={core.state.tabs.filter((tab) => tab.space === model.space.space.id)}
+              activeId={core.state.activeId} actions={tabs} menu={menu}
+              folders={folders} containers={containers} compact={false} />
+          </TabSend.Provider>
         </div>
         <SidebarSheets model={model} />
       </div>

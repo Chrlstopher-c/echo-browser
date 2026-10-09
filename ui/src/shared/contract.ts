@@ -26,6 +26,7 @@ export type UiRequest =
   | { kind: 'suggest'; query: string }
   | { kind: 'find'; text: string; forward: boolean; next: boolean }
   | { kind: 'stopFind' }
+  | { kind: 'setTabMuted'; id: TabId; muted: boolean }
   | { kind: 'importSources' }
   | { kind: 'importBrowser'; id: string }
   | { kind: 'clearBrowsingData'; since: number; history: boolean; cookies: boolean; cache: boolean }
@@ -278,6 +279,8 @@ export interface TabView {
   zoom: number
   /** Vrai si la page joue du son. */
   audible: boolean
+  /** Son coupe par l'utilisateur. */
+  muted: boolean
   /** Vrai si l'onglet a ete mis en sommeil pour economiser la memoire. */
   asleep: boolean
   /** L'utilisateur l'a demande toujours eveille. */

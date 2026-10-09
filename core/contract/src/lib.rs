@@ -42,6 +42,8 @@ pub enum UiRequest {
     PinTab { id: TabId, pinned: bool },
     /// Garde l'onglet toujours eveille : jamais endormi ni allege.
     KeepTabAwake { id: TabId, keep: bool },
+    /// Coupe ou remet le son d'un onglet.
+    SetTabMuted { id: TabId, muted: bool },
     /// Range un onglet dans un dossier, ou l'en sort (`None`).
     SetTabFolder { id: TabId, folder: Option<String> },
     Navigate { id: TabId, input: String },
@@ -369,6 +371,9 @@ pub struct TabView {
     pub zoom: f32,
     /// Vrai si la page joue du son.
     pub audible: bool,
+    /// Son coupe par l'utilisateur.
+    #[serde(default)]
+    pub muted: bool,
     /// Vrai si l'onglet a ete mis en sommeil pour economiser la memoire.
     pub asleep: bool,
     /// L'utilisateur l'a demande toujours eveille.

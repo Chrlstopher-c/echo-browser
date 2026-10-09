@@ -305,6 +305,18 @@ fn apply(request: UiRequest) {
             open_tab(echo_extensions::profile::MANAGE_PAGE);
             publish_tabs();
         }
+        UiRequest::SetTabMuted { id, muted } => {
+            let host = session::with(|s| {
+                let tab = s.tabs.get_mut(id)?;
+                tab.muted = muted;
+                tab.browser().and_then(|b| b.host())
+            })
+            .flatten();
+            if let Some(host) = host {
+                host.set_audio_muted(i32::from(muted));
+            }
+            publish_tabs();
+        }
         UiRequest::KeepTabAwake { id, keep } => {
             session::with(|s| s.tabs.get_mut(id).map(|tab| tab.keep_awake = keep));
             if keep {
