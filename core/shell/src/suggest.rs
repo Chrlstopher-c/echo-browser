@@ -114,8 +114,8 @@ pub fn fetch_engine(query: String) {
             let mut items = for_address(&query);
             let typed = query.trim().to_lowercase();
             let extra = found.iter().filter(|t| t.to_lowercase() != typed).take(4).map(|t| search_item("query", t));
-            let at = usize::from(items.first().is_some_and(|i| i.kind == "search"));
-            items.splice(at..at, extra);
+            // Comme Chrome : ce que l'utilisateur connait deja (onglets, favoris, historique) passe avant le moteur.
+            items.extend(extra);
             crate::bridge::publish(&echo_contract::CoreEvent::Suggestions { query, items });
         });
     });

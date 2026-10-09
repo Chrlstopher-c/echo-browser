@@ -72,7 +72,7 @@ fn page_tools(click: &Click, facts: &PageFacts) -> Vec<MenuEntry> {
     if click.page.starts_with("http") || click.page.starts_with("file:") {
         tools.push(MenuEntry::new(MenuItemKind::FindInPage, "Rechercher dans la page"));
     }
-    if click.page.starts_with("http") {
+    if click.page.starts_with("http") && !click.editable {
         let label = if facts.reading { "Quitter la lecture" } else { "Lire en mode lecture" };
         tools.push(MenuEntry::new(MenuItemKind::Reader, label));
         tools.push(if facts.watched {
@@ -121,7 +121,7 @@ fn image_entries(_image: &str) -> Vec<MenuEntry> {
 fn selection_entries(selection: &str) -> Vec<MenuEntry> {
     let mut entries = vec![
         MenuEntry::new(MenuItemKind::Copy, "Copier"),
-        MenuEntry::new(MenuItemKind::SearchSelection, "Rechercher cette sélection"),
+        MenuEntry::new(MenuItemKind::SearchSelection, &search_label(selection)),
     ];
     if looks_like_url(selection) {
         entries.push(MenuEntry::new(MenuItemKind::OpenSelection, "Ouvrir cette adresse"));
@@ -295,4 +295,11 @@ pub fn size_of(target: &ContextTarget) -> (i32, i32) {
         .map(|entry| if entry.separator { SEPARATOR_HEIGHT } else { ENTRY_HEIGHT })
         .sum();
     (MENU_WIDTH, height + 2 * MENU_PADDING)
+}
+
+/// « Rechercher « debut de la selection » sur <moteur> », comme Chrome.
+fn search_label(selection: &str) -> String {
+    let short: String = selection.split_whitespace().collect::<Vec<_>>().join(" ").chars().take(24).collect();
+    let more = if selection.trim().chars().count() > 24 { "…" } else { "" };
+    format!("Rechercher « {short}{more} » sur {}", crate::search::engine().name)
 }

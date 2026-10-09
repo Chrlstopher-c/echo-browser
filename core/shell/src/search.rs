@@ -6,6 +6,7 @@ pub const HOME: &str = "echo://ui/nouvel-onglet.html";
 /// Un moteur : identifiant du reglage `search.engine`, nom affiche, modele de recherche et de suggestions.
 pub struct Engine {
     pub id: &'static str,
+    pub name: &'static str,
     query: &'static str,
     suggest: &'static str,
 }
@@ -13,19 +14,19 @@ pub struct Engine {
 /// Moteurs proposes. `{q}` recoit les termes encodes. Les suggestions repondent au format OpenSearch
 /// (`["termes", ["suggestion", …]]`).
 pub const ENGINES: &[Engine] = &[
-    Engine { id: "google", query: "https://www.google.com/search?q={q}",
+    Engine { id: "google", name: "Google", query: "https://www.google.com/search?q={q}",
         suggest: "https://suggestqueries.google.com/complete/search?client=firefox&q={q}" },
-    Engine { id: "duckduckgo", query: "https://duckduckgo.com/?q={q}",
+    Engine { id: "duckduckgo", name: "DuckDuckGo", query: "https://duckduckgo.com/?q={q}",
         suggest: "https://duckduckgo.com/ac/?type=list&q={q}" },
-    Engine { id: "qwant", query: "https://www.qwant.com/?q={q}",
+    Engine { id: "qwant", name: "Qwant", query: "https://www.qwant.com/?q={q}",
         suggest: "https://api.qwant.com/api/suggest/?client=opensearch&q={q}" },
-    Engine { id: "ecosia", query: "https://www.ecosia.org/search?q={q}",
+    Engine { id: "ecosia", name: "Ecosia", query: "https://www.ecosia.org/search?q={q}",
         suggest: "https://ac.ecosia.org/autocomplete?type=list&q={q}" },
-    Engine { id: "bing", query: "https://www.bing.com/search?q={q}",
+    Engine { id: "bing", name: "Bing", query: "https://www.bing.com/search?q={q}",
         suggest: "https://api.bing.com/osjson.aspx?query={q}" },
-    Engine { id: "startpage", query: "https://www.startpage.com/do/search?q={q}",
+    Engine { id: "startpage", name: "Startpage", query: "https://www.startpage.com/do/search?q={q}",
         suggest: "https://www.startpage.com/osuggestions?q={q}" },
-    Engine { id: "brave", query: "https://search.brave.com/search?q={q}",
+    Engine { id: "brave", name: "Brave Search", query: "https://search.brave.com/search?q={q}",
         suggest: "https://search.brave.com/api/suggest?q={q}" },
 ];
 

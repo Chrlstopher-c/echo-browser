@@ -95,6 +95,8 @@ export interface CoreState {
   pageTheme: unknown
   /** Dernier choix de theme demande par une page, et son instant (pour rejouer un meme choix). */
   schemeRequest: { choice: string; at: number } | null
+  /** Fiches proposees pour le champ ou l'utilisateur vient d'entrer. */
+  formOffer: { actions: NoticeAction[]; at: number } | null
   /** Autres navigateurs trouves (null : pas encore demande). */
   importSources: ImportSourceView[] | null
   /** Incremente a chaque Ctrl+Alt+S. */
@@ -140,6 +142,7 @@ export const EMPTY_CORE_STATE: CoreState = {
   narrow: false,
   pageTheme: null,
   schemeRequest: null,
+  formOffer: null,
   importSources: null,
   sidebarToggleToken: 0,
   find: { count: 0, current: 0 },
@@ -213,6 +216,8 @@ export function reduceCore(state: CoreState, event: CoreEvent): CoreState {
       return { ...state, fullscreen: event.active }
     case 'importSources':
       return { ...state, importSources: event.sources }
+    case 'formOffer':
+      return { ...state, formOffer: { actions: event.actions, at: Date.now() } }
     case 'schemeChoiceRequested':
       return { ...state, schemeRequest: { choice: event.choice, at: Date.now() } }
     case 'pageTheme':

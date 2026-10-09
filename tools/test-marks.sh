@@ -13,7 +13,7 @@ ui({"kind": "pinTab", "id": active()["id"], "pinned": True}); time.sleep(1.5)
 marks = lambda: ev("[...document.querySelectorAll('[data-mark=initiale]')].map(e=>e.textContent)")
 until(lambda: "l" in [m.lower() for m in marks()], f"pas d'initiale pour l'epingle sans favicon : {marks()}")
 ui({"kind": "openPage", "page": "aide"}); time.sleep(2)
-echo_marks = ev("document.querySelectorAll('svg circle[fill=currentColor]').length")
+echo_marks = ev("document.querySelectorAll('[data-mark=echo]').length")
 assert echo_marks >= 1, "page d'Echo sans sa marque"
 print(f"OK : marques d'onglet (initiales {marks()}, marque d'Echo)")
 PY

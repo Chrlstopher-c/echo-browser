@@ -10,6 +10,7 @@ import {
   type IconComponent,
 } from '../shared/design/icons'
 import { IconEye, IconEyeOff, IconReader } from '../shared/design/icons-page'
+import { IconMinus } from '../shared/design/icons'
 
 export interface MenuPanelProps {
   target: ContextTarget
@@ -30,7 +31,7 @@ const ICONS: Partial<Record<MenuItemKind, IconComponent>> = {
   searchSelection: IconSearch, openSelection: IconOpen,
   back: IconBack, forward: IconForward, reload: IconReload, copyPageLink: IconCopy, bookmark: IconStar,
   savePage: IconDownload, print: IconPrinter, toggleShield: IconShield, viewSource: IconCode, inspect: IconWrench,
-  hideElement: IconEyeOff, unhideElements: IconEye, watchPage: IconClock, unwatchPage: IconClock,
+  hideElement: IconMinus, unhideElements: IconEye, watchPage: IconClock, unwatchPage: IconClock,
   fillForm1: IconUser, fillForm2: IconUser, fillForm3: IconUser, manageForms: IconUser, reader: IconReader,
   findInPage: IconSearch,
 }

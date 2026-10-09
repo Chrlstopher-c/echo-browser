@@ -281,6 +281,8 @@ pub enum CoreEvent {
     WindowNarrow { narrow: bool },
     /// Theme courant pour les pages d'Echo (elles ne partagent pas le stockage de la barre hors du profil principal).
     PageTheme { theme: serde_json::Value },
+    /// Fiches de formulaire proposees pour le champ ou l'utilisateur vient d'entrer (affichees sous l'adresse).
+    FormOffer { actions: Vec<NoticeAction> },
     /// Une page demande un theme (clair, sombre, systeme) : la barre l'applique.
     SchemeChoiceRequested { choice: String },
     /// Navigateurs trouves sur la machine, d'ou importer.

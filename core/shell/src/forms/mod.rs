@@ -91,9 +91,5 @@ pub fn offer(browser_id: i32) {
             request: echo_contract::UiRequest::FillForm { index: index as u32 },
         })
         .collect();
-    crate::bridge::publish(&echo_contract::CoreEvent::Notice {
-        level: echo_contract::NoticeLevel::Info,
-        message: "Remplir ce formulaire avec une fiche :".to_string(),
-        actions,
-    });
+    crate::bridge::publish(&echo_contract::CoreEvent::FormOffer { actions });
 }

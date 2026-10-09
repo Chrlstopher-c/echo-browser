@@ -5,6 +5,7 @@ import { AddressField } from '../address/address-field'
 import { ExtensionBar } from '../extensions/extension-bar'
 import { DownloadStrip } from '../library/downloads/download-strip'
 import { FindBar } from '../find/find-bar'
+import { FormOffer } from '../forms/form-offer'
 import { ExtensionMenu } from '../extensions/extension-menu'
 import { TopControls } from '../address/top-controls'
 import { RestartStrip } from '../restart/restart-strip'
@@ -79,6 +80,7 @@ function ColumnHeader({ model }: { model: SidebarModel }): ReactElement {
         }}
       />
       <FindBar find={model.find} result={core.state.find} />
+      <FormOffer offer={core.state.formOffer} send={core.send} />
       <Extensions model={model} />
     </header>
   )

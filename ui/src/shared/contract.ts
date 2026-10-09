@@ -188,6 +188,7 @@ export type CoreEvent =
   | { kind: 'windowNarrow'; narrow: boolean }
   | { kind: 'pageTheme'; theme: unknown }
   | { kind: 'schemeChoiceRequested'; choice: string }
+  | { kind: 'formOffer'; actions: NoticeAction[] }
   | { kind: 'importSources'; sources: ImportSourceView[] }
   | { kind: 'toggleSidebarRequested' }
   | { kind: 'findResult'; count: number; current: number }

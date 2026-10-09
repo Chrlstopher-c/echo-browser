@@ -6,13 +6,21 @@ source tools/banc.sh
 uv run -q --with websocket-client python - <<'PY'
 import time
 from banc import *
-url = page("p.html", "<style>body{height:100vh}</style><p>texte", "p")
+url = page("p.html", "<style>body{height:100vh}input{position:fixed;left:20px;top:200px;width:300px}</style>"
+           "<p id=t>pomme de terre</p><input id=champ>", "p")
 call(op="open", url=url)
 until(lambda: active()["url"] == url and not active()["loading"], "page non chargee")
 time.sleep(1)
 texte = context_menu(url, 600, 500)
 assert "Désactiver le bouclier sur ce site" in texte, texte
 assert "Rechercher dans la page" in texte, texte
+call(op="click", x=800, y=600); time.sleep(0.5)
+ev("getSelection().selectAllChildren(document.getElementById('t'));1", url)
+texte = context_menu(url, 40, 22)
+assert "Rechercher « pomme de terre » sur Google" in texte, texte
+call(op="click", x=800, y=600); time.sleep(0.5)
+texte = context_menu(url, 100, 210)
+assert "mode lecture" not in texte, f"mode lecture propose dans un champ : {texte}"
 call(op="click", x=800, y=600); time.sleep(0.5)
 call(op="key", code=0x43, ch="c", mods=["ctrl", "shift"])
 until(lambda: "Adresse copiée" in (ev("[...document.querySelectorAll('[role=status]')].map(e=>e.innerText).join('|')") or ""),
