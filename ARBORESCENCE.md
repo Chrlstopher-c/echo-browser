@@ -107,6 +107,7 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `core/shell/src/containers.rs` — les conteneurs d'onglets. Chacun a son propre contexte Chromium — cookies,
 - `core/shell/src/control.rs` — la prise de pilotage locale — un outil (MCP de Claude, script) y liste,
 - `core/shell/src/devtools.rs` — les outils de developpement ancres a droite de la page, dans la fenetre d'Echo.
+- `core/shell/src/error_page.rs` — les pages d'erreur reseau en francais, dans le style d'Echo. Chromium affiche les siennes (qui
 - `core/shell/src/extension_profiles.rs`
 - `core/shell/src/extension_tabs/mod.rs`
 - `core/shell/src/extension_tabs/polyfill.js`
@@ -203,6 +204,7 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `tools/test-account-auto.sh`
 - `tools/test-account-sync.sh`
 - `tools/test-admin.sh`
+- `tools/test-autocomplete.sh`
 - `tools/test-bookmarks.sh`
 - `tools/test-clear-data.sh`
 - `tools/test-codecs-install.sh`
@@ -309,6 +311,7 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `ui/src/address/suggestion-list.tsx` — la liste de suggestions sous l'adresse — onglets ouverts, favoris, historique ; la ligne choisie au
 - `ui/src/address/top-controls.tsx` — rangee de controles compacts — precedent, suivant, rechargement, repli de la barre.
 - `ui/src/address/use-address-field.ts` — etat du champ d'adresse — brouillon de saisie, focus, selection, validation.
+- `ui/src/address/use-inline-completion.ts` — complete l'adresse pendant la frappe, comme Chrome — « git » devient « github.com », la partie
 - `ui/src/address/use-suggestions.ts` — suggestions de l'adresse pendant la saisie — demande au coeur (apres une courte pause de frappe),
 - `ui/src/admin/admin-accounts.tsx` — la liste des comptes de l'administration — e-mail, dates, version, taille du coffre, sessions — et
 - `ui/src/admin/admin-charts.tsx` — les visuels du tableau de bord — tuiles chiffrees, barres par jour sur 30 jours, jauges par nom.
@@ -376,6 +379,7 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `ui/src/settings/setting-catalogue.ts` — habillage des reglages — pour chaque cle que le coeur livre, un groupe, un libelle
 - `ui/src/settings/setting-row.tsx` — une ligne de reglage — libelle, explication, et le controle qui va avec son type.
 - `ui/src/settings/settings-sheet.tsx` — feuille des reglages — apparence tenue par l'interface, puis les reglages du coeur par theme.
+- `ui/src/settings/site-list.tsx` — une liste de sites en pastilles (sites qui ne dorment jamais…) — retirer d'un clic, ajouter en
 - `ui/src/settings/use-settings.ts` — reglages groupes par theme d'apres le catalogue, et envoi des modifications au coeur.
 - `ui/src/settings/video-section.tsx` — decodeur video complet (H.264/AAC) — etat, installation a la demande depuis un tiers, retrait.
 - `ui/src/shared/contract-account.ts` — contrat du compte Echo (miroir de core/contract/src/account.rs).
