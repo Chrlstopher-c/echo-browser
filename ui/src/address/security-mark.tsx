@@ -15,8 +15,8 @@ interface Reading {
 const READING: Record<SecurityReading, Reading> = {
   secure: { label: 'Connexion chiffrée', tone: 'text-ink-muted', Icon: IconLock },
   mixed: { label: 'Connexion chiffrée, contenu mixte', tone: 'text-warn', Icon: IconWarning },
-  invalid: { label: 'Certificat invalide', tone: 'text-danger', Icon: IconWarning },
-  insecure: { label: 'Connexion non chiffrée', tone: 'text-warn', Icon: IconLockOpen },
+  invalid: { label: 'Non sécurisé : certificat refusé', tone: 'text-danger', Icon: IconWarning },
+  insecure: { label: 'Non sécurisé : connexion non chiffrée', tone: 'text-warn', Icon: IconLockOpen },
   local: { label: 'Page interne du navigateur', tone: 'text-ink-faint', Icon: IconSearch },
   blank: { label: 'Rechercher ou saisir une adresse', tone: 'text-ink-faint', Icon: IconSearch },
 }

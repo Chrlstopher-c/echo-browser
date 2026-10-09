@@ -1,9 +1,8 @@
 // Responsabilite : mise en forme du panneau Reseau — tailles, durees, types et raisons de blocage en francais.
+import { formatBytes } from '../shared/format'
 
 export function size(bytes: number): string {
-  if (bytes < 1024) return `${bytes} o`
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(bytes < 10 * 1024 ? 1 : 0)} Ko`
-  return `${(bytes / 1024 / 1024).toFixed(1)} Mo`
+  return formatBytes(bytes)
 }
 
 const KIND: Record<string, string> = {

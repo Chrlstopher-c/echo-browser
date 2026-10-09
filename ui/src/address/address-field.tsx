@@ -43,15 +43,29 @@ function BookmarkStar({ on, onToggle }: { on: boolean; onToggle: () => void }): 
   )
 }
 
-function RestingHost({ url }: { url: string }): ReactElement {
+/** Comme Chrome : une page non chiffree ou au certificat refuse le dit en toutes lettres, avant l'adresse. */
+function UnsafeLabel({ security }: { security: string }): ReactElement | null {
+  if (security !== 'insecure' && security !== 'invalid') return null
+  return (
+    <span data-unsafe={security}
+      className={`mr-1.5 shrink-0 font-medium ${security === 'invalid' ? 'text-danger' : 'text-warn'}`}>
+      Non sécurisé
+    </span>
+  )
+}
+
+function RestingHost({ url, security }: { url: string; security: string }): ReactElement {
   const shape = readUrl(url)
   if (shape.host.length === 0) {
     return <span className="truncate whitespace-nowrap text-ink-faint">Rechercher ou saisir une URL</span>
   }
   return (
-    <span className="truncate">
+    <span className="flex min-w-0 items-center">
+      <UnsafeLabel security={security} />
+      <span className="truncate">
       <span className="text-ink">{shape.host}</span>
       {shape.path.length > 0 && <span className="text-ink-faint">{shape.path}</span>}
+      </span>
     </span>
   )
 }
@@ -122,7 +136,7 @@ export function AddressField(props: AddressFieldProps): ReactElement {
           <div className={`pointer-events-none absolute inset-y-0 left-[39px] flex items-center
             ${tab !== null && Math.abs(tab.zoom - 1) > 0.001 ? 'right-[80px]' : 'right-[34px]'}
             overflow-hidden text-[12.5px] leading-none`}>
-            <RestingHost url={tab?.url ?? ''} />
+            <RestingHost url={tab?.url ?? ''} security={security} />
           </div>
         )}
         {!field.editing && tab !== null && <ZoomBadge zoom={tab.zoom} onReset={onResetZoom} />}

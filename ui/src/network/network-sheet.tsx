@@ -2,7 +2,7 @@
 // blocages), le detail d'un domaine, et les actions a la volee : bloquer un domaine sur ce site, isolement strict.
 
 import { useEffect, useState, type ReactElement } from 'react'
-import type { NetDomainView, NetRequestView, NetworkView, UiRequest } from '../shared/contract'
+import type { NetDomainView, NetRequestView, NetworkView, Security, UiRequest } from '../shared/contract'
 import { IconChevronLeft } from '../shared/design/icons'
 import { PushButton } from '../shared/design/push-button'
 import { Segmented } from '../shared/design/segmented'
@@ -14,6 +14,44 @@ import { NetworkWeight } from './network-weight'
 export interface NetworkSheetProps {
   network: NetworkView | null
   send: (request: UiRequest) => void
+  /** Etat de la connexion de l'onglet actif. */
+  security: Security | null
+}
+
+const VERDICT: Record<Security, { text: string; detail: string; tone: string }> = {
+  secure: { text: 'Connexion sûre', detail: 'Les échanges avec ce site sont chiffrés.', tone: 'text-guard' },
+  mixed: {
+    text: 'Connexion en partie sûre', tone: 'text-warn', detail: 'Certains éléments arrivent sans chiffrement.',
+  },
+  insecure: {
+    text: 'Non sécurisé', tone: 'text-warn',
+    detail: 'Ce que vous tapez ici peut être lu en chemin. N’y saisissez aucun mot de passe.',
+  },
+  invalid: {
+    text: 'Non sécurisé : certificat refusé', tone: 'text-danger',
+    detail: 'Le site n’a pas prouvé son identité. Ne saisissez rien ici.',
+  },
+  local: { text: 'Page locale', detail: 'Rien ne sort de l’ordinateur.', tone: 'text-ink-muted' },
+}
+
+/** En tete du panneau, en langage courant : la connexion, puis ce que la page contacte et ce qu'Echo a bloque. */
+function Summary({ network, security }: { network: NetworkView; security: Security | null }): ReactElement {
+  const verdict = VERDICT[security ?? 'local']
+  const others = network.domains.filter((d) => d.thirdParty).length
+  const blocked = network.domains.reduce((n, d) => n + d.blocked, 0)
+  const plural = others > 1 ? 's' : ''
+  const contacts = others === 0
+    ? 'Aucun autre site contacté'
+    : `${others} autre${plural} site${plural} contacté${plural}`
+  return (
+    <div className="mx-2 rounded-row bg-card px-2.5 py-2 shadow-card" data-summary="">
+      <p className={`text-[13px] font-medium ${verdict.tone}`}>{verdict.text}</p>
+      <p className="text-[11px] leading-snug text-ink-muted">{verdict.detail}</p>
+      <p className="pt-1 text-[11px] text-ink-muted">
+        {contacts}{blocked > 0 ? ` · ${blocked} élément${blocked > 1 ? 's' : ''} bloqué${blocked > 1 ? 's' : ''}` : ''}
+      </p>
+    </div>
+  )
 }
 
 interface DomainRowProps {
@@ -29,8 +67,9 @@ function DomainRow({ d, blocked, send }: DomainRowProps): ReactElement {
         onClick={() => send({ kind: 'networkFocus', host: d.host })}>
         <p className={`truncate text-[12px] ${blocked ? 'text-danger line-through' : 'text-ink'}`}>{d.host}</p>
         <p className="numerique truncate text-[10.5px] text-ink-faint">
-          {d.requests} req. · {size(d.bytes)}{d.blocked > 0 ? ` · ${d.blocked} bloquée(s)` : ''}
-          {d.thirdParty ? ' · tiers' : ''}
+          {d.requests} requête{d.requests > 1 ? 's' : ''} · {size(d.bytes)}
+          {d.blocked > 0 ? ` · ${d.blocked} bloquée${d.blocked > 1 ? 's' : ''}` : ''}
+          {d.thirdParty ? ' · autre site' : ''}
         </p>
       </button>
       {d.thirdParty && (
@@ -117,7 +156,7 @@ function Domains({ network, send }: { network: NetworkView; send: NetworkSheetPr
   )
 }
 
-export function NetworkSheet({ network, send }: NetworkSheetProps): ReactElement {
+export function NetworkSheet({ network, send, security }: NetworkSheetProps): ReactElement {
   const [view, setView] = useState<View>('domaines')
   useEffect(() => {
     send({ kind: 'networkWatch', on: true })
@@ -126,6 +165,7 @@ export function NetworkSheet({ network, send }: NetworkSheetProps): ReactElement
   if (network === null) return <p className="px-2 py-2 text-[11.5px] text-ink-faint">Lecture du réseau…</p>
   return (
     <div className="flex flex-col gap-2">
+      <Summary network={network} security={security} />
       <Totals network={network} />
       <Strict network={network} send={send} />
       <div className="px-2">

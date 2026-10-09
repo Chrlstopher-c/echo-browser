@@ -108,7 +108,7 @@ impl Tab {
             can_go_back,
             can_go_forward,
             favicon: self.favicon.clone(),
-            security: security_of(&self.url),
+            security: security_for(self.browser().map(|b| b.identifier()), &self.url),
             pinned: self.pinned,
             folder: self.folder.clone(),
             container: self.container.clone(),
@@ -126,7 +126,27 @@ impl Tab {
     }
 }
 
-/// Etat de la connexion, lu depuis l'adresse. Le detail du certificat viendra plus tard.
+/// Pages dont le certificat a ete refuse (par navigateur) : leur cadenas doit le dire, pas « chiffrée ».
+static CERT_ERRORS: parking_lot::Mutex<Vec<(i32, String)>> = parking_lot::Mutex::new(Vec::new());
+
+/// Chromium a refuse le certificat de cette page (codes ERR_CERT_*, -200 a -299).
+pub fn note_cert_error(browser_id: i32, url: &str) {
+    let mut errors = CERT_ERRORS.lock();
+    errors.retain(|(id, _)| *id != browser_id);
+    errors.push((browser_id, url.to_string()));
+}
+
+/// Une page s'est chargee normalement : son navigateur n'est plus en erreur de certificat.
+pub fn clear_cert_error(browser_id: i32) {
+    CERT_ERRORS.lock().retain(|(id, _)| *id != browser_id);
+}
+
+/// Etat de la connexion : l'adresse, corrigee par les refus de certificat vus pour ce navigateur.
+fn security_for(browser_id: Option<i32>, url: &str) -> Security {
+    let refused = browser_id.is_some_and(|id| CERT_ERRORS.lock().iter().any(|(b, u)| *b == id && u == url));
+    if refused { Security::Invalid } else { security_of(url) }
+}
+
 fn security_of(url: &str) -> Security {
     if url.starts_with("https://") {
         Security::Secure

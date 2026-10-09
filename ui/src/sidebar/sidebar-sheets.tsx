@@ -16,7 +16,7 @@ function SheetBody({ model }: { model: SidebarModel }): ReactElement | null {
     case 'shield':
       return <ShieldSheet view={core.shield} url={core.activeTab?.url ?? ''} shield={model.shield} />
     case 'network':
-      return <NetworkSheet network={core.state.network} send={core.send} />
+      return <NetworkSheet network={core.state.network} send={core.send} security={core.activeTab?.security ?? null} />
     case 'library':
       return <LibrarySheet controller={model.library} />
     case 'extensions':
