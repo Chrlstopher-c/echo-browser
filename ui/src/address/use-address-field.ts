@@ -18,6 +18,8 @@ export function useAddressField(
   tab: TabView | null,
   onSubmit: (input: string) => void,
   focusToken: number,
+  /** Echap : l'utilisateur renonce (fenetre etroite : la barre repart). */
+  onLeave?: () => void,
 ): AddressFieldState {
   const url = tab?.url === 'about:blank' ? '' : (tab?.url ?? '')
   const [draft, setDraft] = useState(url)
@@ -56,9 +58,10 @@ export function useAddressField(
       if (event.key === 'Escape') {
         event.stopPropagation()
         inputRef.current?.blur()
+        onLeave?.()
       }
     },
-    [draft, onSubmit],
+    [draft, onSubmit, onLeave],
   )
 
   return { value: draft, editing, inputRef, onChange: setDraft, onFocus, onBlur, onKeyDown }

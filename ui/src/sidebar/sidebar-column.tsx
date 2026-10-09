@@ -63,7 +63,14 @@ function ColumnHeader({ model }: { model: SidebarModel }): ReactElement {
       />
       <AddressField
         tab={active}
-        onSubmit={tabs.navigate}
+        onSubmit={(input) => {
+          tabs.navigate(input)
+          // Fenetre etroite : la barre montree pour taper repart une fois l'adresse validee.
+          if (core.state.narrow) core.send({ kind: 'revealSidebar', reveal: false })
+        }}
+        onLeave={() => {
+          if (core.state.narrow) core.send({ kind: 'revealSidebar', reveal: false })
+        }}
         onResetZoom={() => {
           if (active !== null) tabs.setZoom(active.id, 1)
         }}

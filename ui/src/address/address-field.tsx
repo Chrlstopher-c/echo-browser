@@ -29,6 +29,8 @@ export interface AddressFieldProps {
   /** La page est-elle dans les favoris ? `null` : page interne, pas d'etoile. */
   bookmarked: boolean | null
   onToggleBookmark: () => void
+  /** Echap dans l'adresse. */
+  onLeave?: () => void
 }
 
 function BookmarkStar({ on, onToggle }: { on: boolean; onToggle: () => void }): ReactElement {
@@ -118,7 +120,7 @@ function AddressInput({ field, list }: { field: AddressFieldState; list: Suggest
 
 export function AddressField(props: AddressFieldProps): ReactElement {
   const { tab, onSubmit, onResetZoom, focusToken, onOpenSecurity, send } = props
-  const field = useAddressField(tab, onSubmit, focusToken)
+  const field = useAddressField(tab, onSubmit, focusToken, props.onLeave)
   const list = useSuggestions(field.value, field.editing, props.suggestions, send, onSubmit,
     () => field.inputRef.current?.blur())
   const security = tab === null || tab.url.length === 0 || tab.url === 'about:blank' ? 'blank' : tab.security

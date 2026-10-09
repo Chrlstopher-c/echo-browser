@@ -48,11 +48,17 @@ pub fn docked_width() -> i32 {
 
 /// La place que la barre doit finir par reserver : toute sa largeur, sauf repliee et non montree.
 fn target_dock() -> i32 {
-    if COLLAPSED.load(Ordering::Relaxed) && !REVEALED.load(Ordering::Relaxed) {
+    if (COLLAPSED.load(Ordering::Relaxed) && !REVEALED.load(Ordering::Relaxed)) || floating() {
         0
     } else {
         CHROME_WIDTH_NOW.load(Ordering::Relaxed)
     }
+}
+
+/// Fenetre etroite, barre repliee mais montree : elle flotte par-dessus la page au lieu de la pousser (la page n'a
+/// plus la place d'etre repoussee ; contre-audit du 09/10 : 212 px utiles).
+fn floating() -> bool {
+    NARROW.load(Ordering::Relaxed) && COLLAPSED.load(Ordering::Relaxed) && REVEALED.load(Ordering::Relaxed)
 }
 
 /// Lance le glissement de la barre vers sa place cible. La page suit : elle est repoussee, pas recouverte.
@@ -124,7 +130,8 @@ fn place_chrome(window: &Window) {
     let width = CHROME_WIDTH_NOW.load(Ordering::Relaxed);
     let collapsed = COLLAPSED.load(Ordering::Relaxed);
     let dock = DOCK_NOW.load(Ordering::Relaxed).min(width);
-    let shown = width > 0 && dock > 0;
+    let floating = floating();
+    let shown = width > 0 && (dock > 0 || floating);
     EDGE_STRIP.with(|slot| {
         if let Some(strip) = slot.borrow().as_ref() {
             strip.set_bounds(Rect { x: 0, y: 0, width: EDGE_WIDTH, height: size.height });
@@ -135,7 +142,7 @@ fn place_chrome(window: &Window) {
         let Some(controller) = slot.borrow().clone() else { return };
         let bounds = Rect {
             // La barre glisse depuis le bord gauche : sa partie cachee sort de la fenetre.
-            x: dock - width,
+            x: if floating { 0 } else { dock - width },
             y: CONTENT_INSET,
             width,
             height: (size.height - 2 * CONTENT_INSET).max(0),

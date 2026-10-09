@@ -18,6 +18,13 @@ sway = lambda cmd: subprocess.run(["swaymsg", f'[pid={pid}] {cmd}'], check=False
 sway("floating enable, resize set 800 600"); time.sleep(2)
 until(lambda: width() >= 760, f"fenetre de 800 px : la page n'a que {width()} px (barre non repliee)")
 print(f"large : page {large} px ; 800 px : page {width()} px (barre repliee)")
+etroite = width()
+call(op="key", code=0x4C, ch="l", mods=["ctrl"]); time.sleep(1.5)
+assert width() == etroite, f"Ctrl+L pousse la page en fenetre etroite : {etroite} -> {width()}"
+until(lambda: ev("document.activeElement?.getAttribute('aria-label')") == "Adresse", "Ctrl+L sans focus sur l'adresse")
+press_in_address("Escape"); time.sleep(1)
+assert width() == etroite
+print("fenetre etroite : Ctrl+L montre la barre par-dessus, la page garde sa largeur")
 sway("floating disable"); time.sleep(2)
 until(lambda: width() == large, f"fenetre elargie : page {width()} px au lieu de {large}")
 call(op="key", code=0x53, ch="s", mods=["ctrl", "alt"]); time.sleep(1.5)

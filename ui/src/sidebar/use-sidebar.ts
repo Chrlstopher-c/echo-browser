@@ -90,16 +90,17 @@ export function useSidebar(): SidebarModel {
   // Ctrl+F : la barre se deplie et quitte un panneau ouvert pour montrer la recherche.
   useEffect(() => {
     if (state.findToken === 0) return
-    width.expand()
+    if (!state.narrow) width.expand()
     sheet.close()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.findToken])
 
+  // Fenetre etroite : la barre se montre par-dessus la page (le coeur la revele) au lieu de la pousser.
   const focusAddress = useCallback((): void => {
-    width.expand()
+    if (!state.narrow) width.expand()
     sheet.close()
     setLocalFocus((current) => current + 1)
-  }, [width, sheet])
+  }, [width, sheet, state.narrow])
 
   // Ctrl+L relaye par le coeur : meme chemin que le geste local. Ne reagit qu'au jeton du coeur.
   useEffect(() => {
