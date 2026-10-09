@@ -2,7 +2,7 @@
 // ajoutee reste selectionnee (une touche de plus la remplace, Entree la valide). Seulement quand l'utilisateur ajoute
 // des caracteres, jamais quand il efface.
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import type { CoreState } from '../shared/core-state'
 import type { AddressFieldState } from './use-address-field'
 
@@ -20,6 +20,14 @@ export interface InlineCompletion {
 export function useInlineCompletion(field: AddressFieldState, received: CoreState['suggestions']): InlineCompletion {
   const [typed, setTyped] = useState('')
   const growing = useRef(false)
+  // Selection a poser une fois la valeur completee rendue (React replace le curseur en fin de champ a chaque rendu).
+  const pending = useRef<[number, number] | null>(null)
+  useLayoutEffect(() => {
+    const range = pending.current
+    if (range === null) return
+    pending.current = null
+    field.inputRef.current?.setSelectionRange(range[0], range[1])
+  }, [field.value, field.inputRef])
   const onChange = (next: string): void => {
     growing.current = next.length > typed.length && next.startsWith(typed)
     setTyped(next)
@@ -40,8 +48,8 @@ export function useInlineCompletion(field: AddressFieldState, received: CoreStat
     const target = text.includes('/') ? full : full.split('/')[0] ?? full
     if (target.length <= text.length) return
     growing.current = false
+    pending.current = [text.length, target.length]
     field.onChange(text + target.slice(text.length))
-    requestAnimationFrame(() => field.inputRef.current?.setSelectionRange(text.length, target.length))
   }, [received, typed, field])
   return { typed, onChange }
 }

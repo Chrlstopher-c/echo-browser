@@ -20,4 +20,5 @@ call(op="activate", id=[t for t in tabs() if t["url"] == url][0]["id"]); time.sl
 sel = ev("getSelection().toString()", url)
 assert sel == "", f"surlignage reste dans la page : {sel!r}"
 print("Ctrl+F : recherche fermee quand un lien ouvre un onglet")
+print("OK : finitions (adresse vide, recherche fermee)")
 PY
