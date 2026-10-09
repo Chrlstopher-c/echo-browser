@@ -50,6 +50,8 @@ export const HELP: HelpSection[] = [
         + 'suivant.' },
       { title: 'Créer, renommer, supprimer', how: 'Le « + » à côté des pastilles crée un profil ; Réglages → Profils '
         + 'pour renommer, changer la teinte, réinitialiser ou supprimer.', action: { label: 'Réglages', request: page('reglages') } },
+      { title: 'Effacer les données', how: 'Ctrl+Maj+Suppr ou Réglages → Effacer : historique, cookies et cache du '
+        + 'profil, sur la dernière heure, 24 h, 7 jours ou tout.', action: { label: 'Réglages', request: page('reglages') } },
       { title: 'Navigation privée', how: 'Ctrl+Maj+N, l’œil barré à côté de « Nouvel onglet », ou clic droit sur un '
         + 'lien : rien n’est gardé (ni historique, ni cookies, ni session) et l’onglet est marqué « Privé ».' },
       { title: 'Conteneurs', how: 'Clic droit sur un onglet → ouvrir dans un conteneur, ou clic droit sur un lien → '
@@ -116,7 +118,7 @@ export const SHORTCUTS: Array<[string, string]> = [
   ['Ctrl+Tab / Ctrl+Page↓', 'Onglet suivant'], ['Ctrl+Maj+Tab / Ctrl+Page↑', 'Onglet précédent'],
   ['Ctrl+1 … 9', 'Aller à l’onglet n'], ['Ctrl+L / Ctrl+K', 'Adresse et palette'], ['Ctrl+O', 'Ouvrir un fichier'],
   ['Ctrl+F', 'Rechercher dans la page'], ['Ctrl+Alt+R', 'Mode lecture'],
-  ['Ctrl+D', 'Ajouter aux favoris'], ['Ctrl+H / Ctrl+J', 'Bibliothèque (historique, fichiers)'],
+  ['Ctrl+D', 'Ajouter aux favoris'], ['Ctrl+Maj+Suppr', 'Effacer les données de navigation'], ['Ctrl+H / Ctrl+J', 'Bibliothèque (historique, fichiers)'],
   ['Ctrl+P', 'Imprimer'], ['Ctrl+S', 'Enregistrer la page'], ['Ctrl+U', 'Code source'],
   ['Ctrl+R / F5', 'Recharger'], ['Ctrl+Maj+R', 'Recharger sans cache'], ['Alt+← / Alt+→', 'Précédent / suivant'],
   ['Ctrl+ + / Ctrl+ − / Ctrl+0', 'Zoom'], ['Échap / F11', 'Quitter le plein écran'], ['F12 / Ctrl+Maj+I', 'Outils de développement'],

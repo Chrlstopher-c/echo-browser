@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from 'react'
 
-export type PageId = 'reglages' | 'bibliotheque' | 'extensions' | 'bienvenue' | 'admin' | 'aide'
+export type PageId = 'reglages' | 'bibliotheque' | 'extensions' | 'bienvenue' | 'admin' | 'aide' | 'effacer'
 
 function read(): PageId {
   const hash = window.location.hash.slice(1)
-  const known: PageId[] = ['bibliotheque', 'extensions', 'bienvenue', 'admin', 'aide']
+  const known: PageId[] = ['bibliotheque', 'extensions', 'bienvenue', 'admin', 'aide', 'effacer']
   return known.find((page) => page === hash) ?? 'reglages'
 }
 

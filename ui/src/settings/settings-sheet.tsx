@@ -20,6 +20,7 @@ import { ContainersSection } from './containers-section'
 import { ProfilesSection } from './profiles-section'
 import { FormsSection } from '../forms/forms-section'
 import { ImportSection } from '../import/import-section'
+import { ClearDataSection } from './clear-data-section'
 import { useFormCards } from '../forms/form-cards'
 import type { ProfileNames } from '../spaces/use-profile-names'
 import { GrantsSection } from './grants-section'
@@ -44,6 +45,8 @@ export interface SettingsSheetProps {
   send: (request: UiRequest) => void
   onDevTools: () => void
   importSources: ImportSourceView[] | null
+  /** Bloc a montrer d'emblee (Ctrl+Maj+Suppr : « Effacer »). */
+  focus?: string
 }
 
 const SCHEMES: Array<Segment<SchemeChoice>> = [
@@ -145,6 +148,13 @@ export function SettingsSheet(props: SettingsSheetProps): ReactElement {
   const { settings, space, containers, profiles, grants, onForgetGrant, codecs, onCodecs, onDevTools } = props
   const { update, onCheckUpdate, account, vault, send } = props
   const cards = useFormCards(send, settings.raw)
+  useEffect(() => {
+    if (props.focus === undefined) return
+    const timer = window.setTimeout(() => {
+      document.querySelector(`[data-settings-part="${props.focus}"]`)?.scrollIntoView({ block: 'start' })
+    }, 120)
+    return () => window.clearTimeout(timer)
+  }, [props.focus])
   return (
     <div className="flex flex-col gap-3">
       <SettingsSummary version={`${settings.sections.length}${account !== null}${codecs !== null}${update !== null}`} />
@@ -158,6 +168,7 @@ export function SettingsSheet(props: SettingsSheetProps): ReactElement {
         <ContainersSection actions={containers} />
       </Part>
       <Part title="Formulaires"><FormsSection cards={cards} /></Part>
+      <Part title="Effacer"><ClearDataSection send={send} /></Part>
       <Part title="Importer">
         <section>
           <SectionLabel>Importer d’un autre navigateur</SectionLabel>

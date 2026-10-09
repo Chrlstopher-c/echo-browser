@@ -13,6 +13,7 @@ use tracing::debug;
 mod key {
     pub const TAB: i32 = 0x09;
     pub const ESCAPE: i32 = 0x1B;
+    pub const DELETE: i32 = 0x2E;
     pub const PAGE_UP: i32 = 0x21;
     pub const PAGE_DOWN: i32 = 0x22;
     pub const LEFT: i32 = 0x25;
@@ -67,6 +68,8 @@ pub enum Action {
     ToggleSidebar,
     /// Ctrl+Maj+N : onglet de navigation privee.
     NewPrivateTab,
+    /// Ctrl+Maj+Suppr : effacer les donnees de navigation.
+    ClearData,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -117,6 +120,7 @@ pub fn resolve(code: i32, unmodified: u16, modifiers: u32) -> Option<Action> {
         (false, false, false, key::F12) => Some(Action::ToggleDevTools),
         (false, false, false, key::F11) => Some(Action::ToggleFullscreen),
         (false, false, false, key::ESCAPE) => Some(Action::DismissOverlay),
+        (true, true, false, key::DELETE) => Some(Action::ClearData),
         (true, false, false, code) if (key::DIGIT_1..=key::DIGIT_9).contains(&code) => {
             Some(Action::SelectTab((code - key::DIGIT_1) as usize))
         }

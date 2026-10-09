@@ -252,6 +252,9 @@ fn apply(request: UiRequest) {
         UiRequest::StopFind => crate::find::stop(),
         UiRequest::ImportSources => crate::importer::publish_sources(),
         UiRequest::ImportBrowser { id } => crate::importer::run(&id),
+        UiRequest::ClearBrowsingData { since, history, cookies, cache } => {
+            crate::privacy::clear_now(since, history, cookies, cache)
+        }
         UiRequest::Suggest { query } => {
             let items = crate::suggest::for_address(&query);
             publish(&CoreEvent::Suggestions { query: query.clone(), items });
@@ -433,7 +436,7 @@ pub(crate) fn open_page_by_name(page: &str) {
 }
 
 fn open_page(page: &str) {
-    if !matches!(page, "reglages" | "bibliotheque" | "extensions" | "bienvenue" | "admin" | "aide") {
+    if !matches!(page, "reglages" | "bibliotheque" | "extensions" | "bienvenue" | "admin" | "aide" | "effacer") {
         return;
     }
     let url = format!("{PAGES_URL}#{page}");

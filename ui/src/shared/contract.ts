@@ -21,13 +21,14 @@ export type UiRequest =
   /** Reveille d'avance un onglet endormi que la souris survole. */
   | { kind: 'warmTab'; id: TabId }
   /** Ouvre une page pleine largeur d'Echo dans un onglet, ou y revient. */
-  | { kind: 'openPage'; page: 'reglages' | 'bibliotheque' | 'extensions' | 'admin' | 'aide' }
+  | { kind: 'openPage'; page: 'reglages' | 'bibliotheque' | 'extensions' | 'admin' | 'aide' | 'effacer' }
   /** Suggestions pour ce que l'utilisateur tape dans l'adresse. */
   | { kind: 'suggest'; query: string }
   | { kind: 'find'; text: string; forward: boolean; next: boolean }
   | { kind: 'stopFind' }
   | { kind: 'importSources' }
   | { kind: 'importBrowser'; id: string }
+  | { kind: 'clearBrowsingData'; since: number; history: boolean; cookies: boolean; cache: boolean }
   /** Ouvrir un panneau de la barre (`network`, `shield`, `extensions`) — depuis l'Aide par exemple. */
   | { kind: 'openSidebarSheet'; sheet: string }
   /** Referme les outils de developpement ancres. */

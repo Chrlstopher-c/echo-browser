@@ -27,14 +27,31 @@ pub fn wipe_if_asked() {
     info!(removed, "traces de navigation effacees au demarrage");
 }
 
-/// Marque demandant d'effacer les caches au prochain demarrage (ils sont en cours d'usage).
+/// Marque demandant d'effacer les caches au prochain demarrage.
 const PENDING: &str = "effacer-au-demarrage";
 
-/// Demande d'effacer cookies et caches au prochain lancement.
-pub fn wipe_next_start() {
-    if let Err(error) = std::fs::write(crate::flags::data_dir().join(PENDING), b"") {
-        warn!(%error, "marque d'effacement non ecrite");
+/// Efface maintenant, pour le profil affiche : l'historique depuis `since` (0 = tout), et/ou ses cookies (sessions de
+/// sites) et son cache. Cookies et cache passent par l'onglet actif, qui porte le contexte du profil.
+pub fn clear_now(since: i64, history: bool, cookies: bool, cache: bool) {
+    use cef::{CefString, ImplBrowser, ImplBrowserHost};
+    let forgotten = if history {
+        crate::session::with(|s| echo_library::history::forget_since(&s.library, since, &s.tabs.space())).unwrap_or(0)
+    } else {
+        0
+    };
+    let host = crate::session::with(|s| s.tabs.active().and_then(|t| t.browser()).and_then(|b| b.host())).flatten();
+    if let Some(host) = host {
+        for (wanted, method) in [(cookies, "Network.clearBrowserCookies"), (cache, "Network.clearBrowserCache")] {
+            if wanted {
+                host.execute_dev_tools_method(0, Some(&CefString::from(method)), None);
+            }
+        }
     }
+    info!(since, history, cookies, cache, forgotten, "donnees de navigation effacees");
+    crate::bridge::publish_history("");
+    crate::account::schedule::touch_soft();
+    let message = "Données de navigation effacées.".to_string();
+    crate::bridge::publish(&echo_contract::CoreEvent::notice(echo_contract::NoticeLevel::Info, message));
 }
 
 /// Parcourt les profils et conteneurs (deux niveaux : `profile/Default`, `profile/conteneur-x/Default`…).

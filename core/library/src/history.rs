@@ -144,6 +144,24 @@ pub fn forget(library: &Library, url: &str, at: i64) -> bool {
         .is_some()
 }
 
+/// Efface l'historique du profil `space` depuis `since` (secondes ; 0 = tout). Chaque adresse effacee est notee
+/// pour les autres machines du compte. Rend le nombre d'adresses effacees.
+pub fn forget_since(library: &Library, since: i64, space: &str) -> usize {
+    let urls: Vec<String> = library
+        .with(|db| {
+            let mut statement =
+                db.prepare("SELECT DISTINCT url FROM history WHERE space = ?1 AND visited_at >= ?2")?;
+            let rows = statement.query_map(params![space, since], |row| row.get::<_, String>(0))?;
+            rows.collect()
+        })
+        .unwrap_or_default();
+    let at = now();
+    for url in &urls {
+        forget(library, url, at);
+    }
+    urls.len()
+}
+
 /// Les effacements recents (adresse ou `ALL`, date), pour les transmettre aux autres machines.
 pub fn forgotten(library: &Library) -> Vec<(String, i64)> {
     library

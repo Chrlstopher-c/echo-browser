@@ -184,6 +184,9 @@ pub enum UiRequest {
     ImportSources,
     /// Reprendre favoris et historique d'un autre navigateur.
     ImportBrowser { id: String },
+    /// Efface les donnees de navigation du profil affiche : historique depuis `since` (secondes, 0 = tout),
+    /// cookies, cache.
+    ClearBrowsingData { since: i64, history: bool, cookies: bool, cache: bool },
     /// Ouvrir un panneau de la barre (`network`, `shield`, `extensions`) — depuis l'Aide par exemple.
     OpenSidebarSheet { sheet: String },
 

@@ -80,6 +80,7 @@ function Content({ page }: { page: PageId }): ReactElement {
         send={send}
       onDevTools={() => send({ kind: 'openDevTools', id: state.activeId ?? 0 })}
       importSources={state.importSources}
+      {...(page === 'effacer' ? { focus: 'Effacer' } : {})}
     />
   )
 }
@@ -98,7 +99,9 @@ function Welcome(): ReactElement {
 
 export function PagesApp(): ReactElement {
   usePageTheme()
-  const [page, go] = usePageRoute()
+  const [route, go] = usePageRoute()
+  // « effacer » est un endroit des Reglages, pas une page a part.
+  const page: PageId = route === 'effacer' ? 'reglages' : route
   const admin = useCore().state.account?.admin === true
   useEffect(() => {
     document.title = page === 'bienvenue' ? 'Bienvenue' : PAGES.find((p) => p.id === page)?.label ?? 'Echo'
@@ -110,7 +113,7 @@ export function PagesApp(): ReactElement {
         <Nav page={page} go={go} admin={admin} />
         <main className="min-w-0 flex-1 rounded-tile bg-card p-5 shadow-card">
           <h1 className="mb-4 text-[18px] font-semibold text-ink">{PAGES.find((p) => p.id === page)?.label}</h1>
-          <Content page={page} />
+          <Content page={route} />
         </main>
       </div>
     </div>
