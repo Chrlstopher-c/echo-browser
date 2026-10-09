@@ -180,6 +180,10 @@ pub enum UiRequest {
     Find { text: String, forward: bool, next: bool },
     /// Ferme la recherche dans la page.
     StopFind,
+    /// Les autres navigateurs installes, d'ou importer.
+    ImportSources,
+    /// Reprendre favoris et historique d'un autre navigateur.
+    ImportBrowser { id: String },
     /// Ouvrir un panneau de la barre (`network`, `shield`, `extensions`) — depuis l'Aide par exemple.
     OpenSidebarSheet { sheet: String },
 
@@ -264,6 +268,8 @@ pub enum CoreEvent {
     SidebarSheetRequested { sheet: String },
     /// La fenetre passe sous (ou repasse au-dessus de) la largeur ou la barre se replie d'elle-meme.
     WindowNarrow { narrow: bool },
+    /// Navigateurs trouves sur la machine, d'ou importer.
+    ImportSources { sources: Vec<ImportSourceView> },
     /// Ctrl+Alt+S : replier ou deplier la barre.
     ToggleSidebarRequested,
     /// Une page surveillee a change depuis la visite precedente.
@@ -475,4 +481,12 @@ impl CoreEvent {
     pub fn notice(level: NoticeLevel, message: impl Into<String>) -> Self {
         CoreEvent::Notice { level, message: message.into(), actions: Vec::new() }
     }
+}
+
+/// Un navigateur installe dont on peut reprendre favoris et historique.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ImportSourceView {
+    pub id: String,
+    pub name: String,
 }

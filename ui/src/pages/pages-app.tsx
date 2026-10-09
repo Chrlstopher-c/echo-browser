@@ -79,6 +79,7 @@ function Content({ page }: { page: PageId }): ReactElement {
         vault={state.vault}
         send={send}
       onDevTools={() => send({ kind: 'openDevTools', id: state.activeId ?? 0 })}
+      importSources={state.importSources}
     />
   )
 }
@@ -90,7 +91,9 @@ function Admin(): ReactElement {
 
 function Welcome(): ReactElement {
   const { state, send } = useCore()
-  return <WelcomePage account={state.account} send={send} />
+  return (
+    <WelcomePage account={state.account} settings={state.settings} importSources={state.importSources} send={send} />
+  )
 }
 
 export function PagesApp(): ReactElement {

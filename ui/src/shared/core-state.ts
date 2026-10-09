@@ -1,6 +1,6 @@
 // Responsabilite : etat de l'interface derive des evenements du coeur. Reducteur pur, sans effet de bord.
 
-import type { NoticeAction,
+import type { ImportSourceView, NoticeAction,
   BookmarkView,
   CoreEvent,
   DownloadView,
@@ -91,6 +91,8 @@ export interface CoreState {
   findToken: number
   /** Fenetre etroite : la barre se replie d'elle-meme. */
   narrow: boolean
+  /** Autres navigateurs trouves (null : pas encore demande). */
+  importSources: ImportSourceView[] | null
   /** Incremente a chaque Ctrl+Alt+S. */
   sidebarToggleToken: number
   find: { count: number; current: number }
@@ -132,6 +134,7 @@ export const EMPTY_CORE_STATE: CoreState = {
   systemDark: null,
   findToken: 0,
   narrow: false,
+  importSources: null,
   sidebarToggleToken: 0,
   find: { count: 0, current: 0 },
   network: null,
@@ -202,6 +205,8 @@ export function reduceCore(state: CoreState, event: CoreEvent): CoreState {
       return reduceLibrary(state, event)
     case 'fullscreenChanged':
       return { ...state, fullscreen: event.active }
+    case 'importSources':
+      return { ...state, importSources: event.sources }
     case 'windowNarrow':
       return { ...state, narrow: event.narrow }
     case 'toggleSidebarRequested':

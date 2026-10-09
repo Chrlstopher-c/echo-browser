@@ -90,7 +90,8 @@ function ColumnFooter({ model }: { model: SidebarModel }): ReactElement {
       <RestartStrip pending={extensions.restartPending} count={extensions.pending} onRestart={extensions.restart} />
       <PermissionStrip requests={core.state.permissions} send={core.send} />
       <CodecsStrip codecs={core.state.codecs} send={core.send} />
-      <DiscoverStrip send={core.send} />
+      <DiscoverStrip send={core.send} ready={core.state.settings.some((s) => s.key === 'onboarding.done'
+        && s.value.type === 'flag' && s.value.value)} />
       <PageChangeStrip change={core.state.pageChange} />
       <RoutineStrip proposal={core.state.routineProposal} send={core.send} />
       <SyncStrip account={core.state.account} send={core.send} />

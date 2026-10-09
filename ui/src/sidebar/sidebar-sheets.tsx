@@ -33,7 +33,7 @@ function SheetBody({ model }: { model: SidebarModel }): ReactElement | null {
         account={core.state.account}
         vault={core.state.vault}
         send={core.send}
-        onDevTools={model.tabs.devTools} />
+        onDevTools={model.tabs.devTools} importSources={core.state.importSources} />
     case null:
       return null
   }

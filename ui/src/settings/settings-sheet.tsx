@@ -12,13 +12,14 @@ import {
 import { Segmented, type Segment } from '../shared/design/segmented'
 import type { ContainerActions } from '../tabs/use-containers'
 import type {
-  AccountView, PermissionGrantView, UiRequest, UpdateView, VaultKindView, VideoCodecsView,
+  AccountView, ImportSourceView, PermissionGrantView, UiRequest, UpdateView, VaultKindView, VideoCodecsView,
 } from '../shared/contract'
 import { AccountSection } from '../account/account-section'
 import { AboutSection } from './about-section'
 import { ContainersSection } from './containers-section'
 import { ProfilesSection } from './profiles-section'
 import { FormsSection } from '../forms/forms-section'
+import { ImportSection } from '../import/import-section'
 import { useFormCards } from '../forms/form-cards'
 import type { ProfileNames } from '../spaces/use-profile-names'
 import { GrantsSection } from './grants-section'
@@ -42,6 +43,7 @@ export interface SettingsSheetProps {
   vault: VaultKindView[] | null
   send: (request: UiRequest) => void
   onDevTools: () => void
+  importSources: ImportSourceView[] | null
 }
 
 const SCHEMES: Array<Segment<SchemeChoice>> = [
@@ -156,6 +158,12 @@ export function SettingsSheet(props: SettingsSheetProps): ReactElement {
         <ContainersSection actions={containers} />
       </Part>
       <Part title="Formulaires"><FormsSection cards={cards} /></Part>
+      <Part title="Importer">
+        <section>
+          <SectionLabel>Importer d’un autre navigateur</SectionLabel>
+          <div className="px-2"><ImportSection sources={props.importSources} send={send} /></div>
+        </section>
+      </Part>
       <Part title="Autorisations"><GrantsSection grants={grants} onForget={onForgetGrant} /></Part>
       {codecs !== null && <Part title="Vidéo"><VideoSection view={codecs} onAction={onCodecs} /></Part>}
       <CoreSections settings={settings} />

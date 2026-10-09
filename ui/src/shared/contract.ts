@@ -26,6 +26,8 @@ export type UiRequest =
   | { kind: 'suggest'; query: string }
   | { kind: 'find'; text: string; forward: boolean; next: boolean }
   | { kind: 'stopFind' }
+  | { kind: 'importSources' }
+  | { kind: 'importBrowser'; id: string }
   /** Ouvrir un panneau de la barre (`network`, `shield`, `extensions`) — depuis l'Aide par exemple. */
   | { kind: 'openSidebarSheet'; sheet: string }
   /** Referme les outils de developpement ancres. */
@@ -179,6 +181,7 @@ export type CoreEvent =
   | { kind: 'focusAddressRequested' }
   | { kind: 'findRequested' }
   | { kind: 'windowNarrow'; narrow: boolean }
+  | { kind: 'importSources'; sources: ImportSourceView[] }
   | { kind: 'toggleSidebarRequested' }
   | { kind: 'findResult'; count: number; current: number }
   /** Le navigateur va se relancer : l'interface montre son ecran d'attente. */
@@ -476,4 +479,10 @@ export interface SuggestionView {
 export interface NoticeAction {
   label: string
   request: UiRequest
+}
+
+/** Un navigateur installe dont Echo peut reprendre favoris et historique. */
+export interface ImportSourceView {
+  id: string
+  name: string
 }

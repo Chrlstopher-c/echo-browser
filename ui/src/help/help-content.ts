@@ -79,6 +79,8 @@ export const HELP: HelpSection[] = [
         + 'ligne lance la recherche ; le moteur se choisit dans Réglages → Navigation.' },
       { title: 'Barre repliée', how: 'Ctrl+Alt+S ou le bouton en haut de la barre la replie ; la poignée au bord '
         + 'gauche la fait revenir. Dans une fenêtre étroite, elle se replie d’elle-même.' },
+      { title: 'Importer d’un autre navigateur', how: 'Réglages → Importer : favoris et historique de Chrome, '
+        + 'Chromium, Brave, Edge, Vivaldi, Firefox ou Zen, en un clic.', action: { label: 'Réglages', request: page('reglages') } },
       { title: 'Rechercher dans la page', how: 'Ctrl+F, ou clic droit → « Rechercher dans la page » : le nombre '
         + 'd’occurrences s’affiche, Entrée passe à la suivante, Maj+Entrée à la précédente, Échap ferme.' },
       { title: 'Reprise exacte', how: 'Ce que vous aviez tapé et la position des vidéos reviennent après une relance '

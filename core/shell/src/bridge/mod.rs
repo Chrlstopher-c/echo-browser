@@ -246,6 +246,8 @@ fn apply(request: UiRequest) {
         UiRequest::AccountDelete => crate::account::delete(),
         UiRequest::Find { text, forward, next } => crate::find::find(&text, forward, next),
         UiRequest::StopFind => crate::find::stop(),
+        UiRequest::ImportSources => crate::importer::publish_sources(),
+        UiRequest::ImportBrowser { id } => crate::importer::run(&id),
         UiRequest::Suggest { query } => {
             let items = crate::suggest::for_address(&query);
             publish(&CoreEvent::Suggestions { query: query.clone(), items });

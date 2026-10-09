@@ -16,6 +16,29 @@ pub struct Entry {
 /// Nombre d'entrees rendues par defaut.
 const PAGE: usize = 200;
 
+/// Ajoute des visites venues d'un autre navigateur (adresse, titre, date en secondes). Les doublons sont ignores.
+/// Rend le nombre de visites ajoutees.
+pub fn import_many(library: &Library, visits: &[(String, String, i64)]) -> usize {
+    library
+        .with(|db| {
+            let tx = db.unchecked_transaction()?;
+            let mut added = 0;
+            {
+                let mut insert = tx.prepare(
+                    "INSERT OR IGNORE INTO history (url, title, favicon, visited_at) VALUES (?1, ?2, NULL, ?3)",
+                )?;
+                for (url, title, at) in visits {
+                    if url.starts_with("http") {
+                        added += insert.execute(params![url, title, at])?;
+                    }
+                }
+            }
+            tx.commit()?;
+            Ok(added)
+        })
+        .unwrap_or(0)
+}
+
 /// Enregistre une visite. Les pages internes n'y figurent pas.
 pub fn record(library: &Library, url: &str, title: &str, favicon: Option<&str>) -> bool {
     if url.is_empty() || url.starts_with("echo://") || url.starts_with("chrome://") {

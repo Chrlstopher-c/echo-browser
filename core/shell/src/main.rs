@@ -24,6 +24,7 @@ mod launch;
 mod flags;
 mod find;
 mod forms;
+mod importer;
 mod identity;
 mod injection;
 mod menu;
