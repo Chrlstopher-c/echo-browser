@@ -74,6 +74,13 @@ export function useSidebar(): SidebarModel {
   const [localFocus, setLocalFocus] = useState(0)
   const find = useFind(send, state.findToken, state.activeId)
 
+  // Theme choisi dans la page Reglages (autre profil compris) : la barre l'applique.
+  useEffect(() => {
+    const wanted = state.schemeRequest?.choice
+    if (wanted === 'light' || wanted === 'dark' || wanted === 'system') space.setSchemeChoice(wanted)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.schemeRequest])
+
   // Ctrl+Alt+S relaye par le coeur.
   useEffect(() => {
     if (state.sidebarToggleToken > 0) width.toggle()

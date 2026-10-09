@@ -4,7 +4,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { OverlayTheme, UiRequest } from '../shared/contract'
 import { readLocal, writeLocal } from '../shared/local-store'
-import { applySpace } from './apply-space'
+import { applySpace, themeObject } from './apply-space'
 import {
   buildSpace,
   DEFAULT_SCHEME,
@@ -51,7 +51,7 @@ export function readStoredScheme(): Scheme {
 }
 
 /** Applique l'espace a l'interface et le transmet au coeur (cadre, pages, surimpressions). */
-function usePublishSpace(space: Space, send: (request: UiRequest) => void): void {
+function usePublishSpace(space: Space, send: (request: UiRequest) => void, choice: SchemeChoice): void {
   useEffect(() => {
     applySpace(space)
     send({ kind: 'setAccent', color: space.tokens.shell })
@@ -60,7 +60,8 @@ function usePublishSpace(space: Space, send: (request: UiRequest) => void): void
     // Ce qui s'affiche au-dessus de la page est une page a part : elle ne partage pas
     // nos jetons, le coeur les lui transmet.
     send({ kind: 'setOverlayTheme', theme: overlayTheme(space) })
-  }, [space, send])
+    send({ kind: 'setPageTheme', theme: { ...themeObject(space), choice } })
+  }, [space, send, choice])
 }
 
 const NOW_KEY = 'echo.scheme.now'
@@ -96,7 +97,7 @@ export function useSpace(
   const hue = profiles.hueOf(id)
   const space = useMemo(() => buildSpace(id, scheme, hue), [id, scheme, hue])
 
-  usePublishSpace(space, send)
+  usePublishSpace(space, send, follow ? 'system' : fixed)
   useEffect(() => writeLocal(NOW_KEY, scheme), [scheme])
   // Le choix fait dans la page Reglages (autre document) arrive par le stockage partage.
   useEffect(() => {

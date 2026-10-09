@@ -7,7 +7,7 @@ import { ListRow } from '../shared/design/list-row'
 import { SectionLabel } from '../shared/design/section-label'
 import { SpacePicker } from '../spaces/space-picker'
 import {
-  readSchemeChoice, readStoredScheme, writeSchemeChoice, type SchemeChoice, type SpaceController,
+  readSchemeChoice, readStoredScheme, type SchemeChoice, type SpaceController,
 } from '../spaces/use-space'
 import { Segmented, type Segment } from '../shared/design/segmented'
 import type { ContainerActions } from '../tabs/use-containers'
@@ -45,6 +45,8 @@ export interface SettingsSheetProps {
   send: (request: UiRequest) => void
   onDevTools: () => void
   importSources: ImportSourceView[] | null
+  /** Theme publie par la barre (page pleine largeur). */
+  pageTheme?: unknown
   /** Bloc a montrer d'emblee (Ctrl+Maj+Suppr : « Effacer »). */
   focus?: string
 }
@@ -56,15 +58,18 @@ const SCHEMES: Array<Segment<SchemeChoice>> = [
 ]
 
 /** Theme : dans la barre il passe par l'espace, dans la page pleine largeur par le stockage partage. */
-function ThemeSection({ space }: { space: SpaceController | undefined }): ReactElement {
-  const [local, setLocal] = useState<SchemeChoice>(readSchemeChoice)
-  const value = space?.schemeChoice ?? local
+function ThemeSection({ space, fromCore, send }: {
+  space: SpaceController | undefined; fromCore: unknown; send: (request: UiRequest) => void
+}): ReactElement {
+  // Dans la page pleine largeur, le choix affiche est celui que la barre publie (vrai dans tous les profils).
+  const published = typeof fromCore === 'object' && fromCore !== null
+    ? new Map(Object.entries(fromCore)).get('choice') : null
+  const pageValue: SchemeChoice = published === 'light' || published === 'dark' || published === 'system'
+    ? published : readSchemeChoice()
+  const value = space?.schemeChoice ?? pageValue
   const choose = (choice: SchemeChoice): void => {
     if (space !== undefined) space.setSchemeChoice(choice)
-    else {
-      writeSchemeChoice(choice)
-      setLocal(choice)
-    }
+    else send({ kind: 'setSchemeChoice', choice })
   }
   return (
     <section>
@@ -160,7 +165,7 @@ export function SettingsSheet(props: SettingsSheetProps): ReactElement {
       <SettingsSummary version={`${settings.sections.length}${account !== null}${codecs !== null}${update !== null}`} />
       {account !== null && <Part title="Compte"><AccountSection account={account} vault={vault} send={send} /></Part>}
       <Part title="Apparence">
-        <ThemeSection space={space} />
+        <ThemeSection space={space} fromCore={props.pageTheme} send={send} />
         {space !== undefined && <AppearanceSection space={space} profiles={profiles} />}
       </Part>
       <Part title="Profils">

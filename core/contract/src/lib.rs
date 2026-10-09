@@ -182,6 +182,10 @@ pub enum UiRequest {
     Find { text: String, forward: bool, next: bool },
     /// Ferme la recherche dans la page.
     StopFind,
+    /// Jetons du theme courant, relayes aux pages d'Echo des autres profils et de la navigation privee.
+    SetPageTheme { theme: serde_json::Value },
+    /// Choix du theme fait dans une page (Reglages) : relaye a la barre, qui le tient.
+    SetSchemeChoice { choice: String },
     /// Les autres navigateurs installes, d'ou importer.
     ImportSources,
     /// Reprendre favoris et historique d'un autre navigateur.
@@ -275,6 +279,10 @@ pub enum CoreEvent {
     SidebarSheetRequested { sheet: String },
     /// La fenetre passe sous (ou repasse au-dessus de) la largeur ou la barre se replie d'elle-meme.
     WindowNarrow { narrow: bool },
+    /// Theme courant pour les pages d'Echo (elles ne partagent pas le stockage de la barre hors du profil principal).
+    PageTheme { theme: serde_json::Value },
+    /// Une page demande un theme (clair, sombre, systeme) : la barre l'applique.
+    SchemeChoiceRequested { choice: String },
     /// Navigateurs trouves sur la machine, d'ou importer.
     ImportSources { sources: Vec<ImportSourceView> },
     /// Ctrl+Alt+S : replier ou deplier la barre.

@@ -52,7 +52,7 @@ function Nav({ page, go, admin }: { page: PageId; go: (next: PageId) => void; ad
   )
 }
 
-function Content({ page }: { page: PageId }): ReactElement {
+function Content({ page, theme }: { page: PageId; theme: unknown }): ReactElement {
   const core = useCore()
   const { state, send } = core
   const settings = useSettings(send, state.settings)
@@ -80,6 +80,7 @@ function Content({ page }: { page: PageId }): ReactElement {
         send={send}
       onDevTools={() => send({ kind: 'openDevTools', id: state.activeId ?? 0 })}
       importSources={state.importSources}
+      pageTheme={theme}
       {...(page === 'effacer' ? { focus: 'Effacer' } : {})}
     />
   )
@@ -98,7 +99,7 @@ function Welcome(): ReactElement {
 }
 
 export function PagesApp(): ReactElement {
-  usePageTheme()
+  const theme = usePageTheme(useCore().state.pageTheme)
   const [route, go] = usePageRoute()
   // « effacer » est un endroit des Reglages, pas une page a part.
   const page: PageId = route === 'effacer' ? 'reglages' : route
@@ -113,7 +114,7 @@ export function PagesApp(): ReactElement {
         <Nav page={page} go={go} admin={admin} />
         <main className="min-w-0 flex-1 rounded-tile bg-card p-5 shadow-card">
           <h1 className="mb-4 text-[18px] font-semibold text-ink">{PAGES.find((p) => p.id === page)?.label}</h1>
-          <Content page={route} />
+          <Content page={route} theme={theme} />
         </main>
       </div>
     </div>

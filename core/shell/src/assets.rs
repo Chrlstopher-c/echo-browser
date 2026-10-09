@@ -124,6 +124,14 @@ wrap_scheme_handler_factory! {
                 let body = crate::terminal::handle(route, &post_body(request));
                 return Some(StaticResource::new(body, "application/octet-stream".into(), StdRc::new(Cell::new(0))));
             }
+            if url.starts_with("echo://ui/data/theme") {
+                let body = if comes_from_interface(frame.as_deref()) {
+                    crate::bridge::context::page_theme().into_bytes()
+                } else {
+                    b"null".to_vec()
+                };
+                return Some(StaticResource::new(body, "application/json".into(), StdRc::new(Cell::new(0))));
+            }
             if let Some(route) = url.strip_prefix("echo://ui/data/suggest") {
                 if !comes_from_interface(frame.as_deref()) {
                     return Some(StaticResource::new(Vec::new(), "application/json".into(), StdRc::new(Cell::new(0))));

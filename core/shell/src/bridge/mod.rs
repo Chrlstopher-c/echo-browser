@@ -200,6 +200,12 @@ fn apply(request: UiRequest) {
         UiRequest::RunContextMenu { action } => context::run(action),
         UiRequest::CloseContextMenu => crate::overlay::close_menu_from_page(),
         UiRequest::SetOverlayTheme { theme } => context::set_theme(theme),
+        UiRequest::SetPageTheme { theme } => context::set_page_theme(theme),
+        UiRequest::SetSchemeChoice { choice } => {
+            if matches!(choice.as_str(), "light" | "dark" | "system") {
+                publish(&CoreEvent::SchemeChoiceRequested { choice });
+            }
+        }
         UiRequest::CloseExtensionPopup => {
             crate::overlay::close_extension_popup();
             publish(&CoreEvent::ExtensionPopupChanged { id: None });

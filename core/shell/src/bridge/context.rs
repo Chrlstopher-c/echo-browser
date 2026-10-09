@@ -23,6 +23,27 @@ thread_local! {
 }
 
 /// Retient les couleurs que porteront les surimpressions.
+/// Jetons du theme des pages d'Echo, en JSON (servis par `echo://ui/data/theme`).
+static PAGE_THEME: parking_lot::Mutex<String> = parking_lot::Mutex::new(String::new());
+
+/// Retient le theme des pages et le pousse aux pages ouvertes (onglets « nouvel onglet » de tous les profils).
+pub fn set_page_theme(theme: serde_json::Value) {
+    let json = theme.to_string();
+    *PAGE_THEME.lock() = json.clone();
+    super::publish(&echo_contract::CoreEvent::PageTheme { theme });
+    let script = format!("window.echoTheme && window.echoTheme.apply({json})");
+    let frames = session::with(|s| s.tabs.main_frames()).unwrap_or_default();
+    for frame in frames.iter().filter(|f| CefString::from(&f.url()).to_string().starts_with("echo://ui/")) {
+        frame.execute_java_script(Some(&CefString::from(script.as_str())), None, 0);
+    }
+}
+
+/// Le theme des pages, ou `null` avant que la barre l'ait donne.
+pub fn page_theme() -> String {
+    let theme = PAGE_THEME.lock().clone();
+    if theme.is_empty() { "null".to_string() } else { theme }
+}
+
 pub fn set_theme(theme: echo_contract::OverlayTheme) {
     THEME.with(|cell| *cell.borrow_mut() = theme);
 }

@@ -28,7 +28,19 @@
     }
   }
 
-  const theme = read();
+  // Hors du profil principal (autre profil, navigation privee), le stockage local est vide : le coeur donne le theme.
+  function fromCore() {
+    try {
+      const request = new XMLHttpRequest();
+      request.open('GET', 'echo://ui/data/theme', false);
+      request.send();
+      return request.status === 200 ? JSON.parse(request.responseText) : null;
+    } catch (error) {
+      return null;
+    }
+  }
+
+  const theme = read() || fromCore();
   if (theme) apply(theme);
   addEventListener('storage', (event) => {
     if (event.key !== 'echo.theme') return;

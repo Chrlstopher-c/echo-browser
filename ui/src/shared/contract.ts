@@ -26,6 +26,8 @@ export type UiRequest =
   | { kind: 'suggest'; query: string }
   | { kind: 'find'; text: string; forward: boolean; next: boolean }
   | { kind: 'stopFind' }
+  | { kind: 'setPageTheme'; theme: Record<string, unknown> }
+  | { kind: 'setSchemeChoice'; choice: 'light' | 'dark' | 'system' }
   | { kind: 'setTabMuted'; id: TabId; muted: boolean }
   | { kind: 'importSources' }
   | { kind: 'importBrowser'; id: string }
@@ -184,6 +186,8 @@ export type CoreEvent =
   | { kind: 'focusAddressRequested' }
   | { kind: 'findRequested' }
   | { kind: 'windowNarrow'; narrow: boolean }
+  | { kind: 'pageTheme'; theme: unknown }
+  | { kind: 'schemeChoiceRequested'; choice: string }
   | { kind: 'importSources'; sources: ImportSourceView[] }
   | { kind: 'toggleSidebarRequested' }
   | { kind: 'findResult'; count: number; current: number }

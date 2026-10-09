@@ -91,6 +91,10 @@ export interface CoreState {
   findToken: number
   /** Fenetre etroite : la barre se replie d'elle-meme. */
   narrow: boolean
+  /** Theme relaye par le coeur aux pages d'Echo. */
+  pageTheme: unknown
+  /** Dernier choix de theme demande par une page, et son instant (pour rejouer un meme choix). */
+  schemeRequest: { choice: string; at: number } | null
   /** Autres navigateurs trouves (null : pas encore demande). */
   importSources: ImportSourceView[] | null
   /** Incremente a chaque Ctrl+Alt+S. */
@@ -134,6 +138,8 @@ export const EMPTY_CORE_STATE: CoreState = {
   systemDark: null,
   findToken: 0,
   narrow: false,
+  pageTheme: null,
+  schemeRequest: null,
   importSources: null,
   sidebarToggleToken: 0,
   find: { count: 0, current: 0 },
@@ -207,6 +213,10 @@ export function reduceCore(state: CoreState, event: CoreEvent): CoreState {
       return { ...state, fullscreen: event.active }
     case 'importSources':
       return { ...state, importSources: event.sources }
+    case 'schemeChoiceRequested':
+      return { ...state, schemeRequest: { choice: event.choice, at: Date.now() } }
+    case 'pageTheme':
+      return { ...state, pageTheme: event.theme }
     case 'windowNarrow':
       return { ...state, narrow: event.narrow }
     case 'toggleSidebarRequested':
