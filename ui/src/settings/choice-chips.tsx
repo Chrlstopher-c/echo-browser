@@ -10,6 +10,9 @@ export interface ChoiceChipsProps {
   onChange: (next: string) => void
 }
 
+const ACTIVE = 'bg-field text-ink shadow-field ring-1 ring-guard/60'
+const IDLE = 'bg-card text-ink-muted shadow-card hover:text-ink'
+
 export function ChoiceChips({ options, value, label, onChange }: ChoiceChipsProps): ReactElement {
   // Une ancienne valeur libre (« google », une adresse) retombe sur le premier choix, comme le fait le coeur.
   const current = options.some((option) => option.id === value) ? value : options[0]?.id
@@ -21,7 +24,7 @@ export function ChoiceChips({ options, value, label, onChange }: ChoiceChipsProp
           <button key={option.id} type="button" role="radio" aria-checked={active}
             onClick={() => onChange(option.id)}
             className={`rounded-full px-2.5 py-1 text-[11.5px] transition-shadow duration-100
-              ${active ? 'bg-field text-ink shadow-field ring-1 ring-guard/60' : 'bg-card text-ink-muted shadow-card hover:text-ink'}`}>
+              ${active ? ACTIVE : IDLE}`}>
             {option.label}
           </button>
         )

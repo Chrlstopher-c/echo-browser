@@ -55,6 +55,17 @@ pub fn wanted() -> bool {
     !cards().is_empty()
 }
 
+/// Page web chargee : si des fiches existent, pose le script qui signale l'entree dans un champ.
+pub fn arm(browser: Option<&cef::Browser>, frame: &cef::Frame) {
+    if !wanted() {
+        return;
+    }
+    if let Some(browser) = browser {
+        page_loaded(browser.identifier());
+    }
+    frame.execute_java_script(Some(&CefString::from(OFFER_JS)), Some(&CefString::from("echo://formulaires")), 0);
+}
+
 /// Une nouvelle page : la proposition pourra revenir.
 pub fn page_loaded(browser_id: i32) {
     OFFERED.lock().retain(|id| *id != browser_id);

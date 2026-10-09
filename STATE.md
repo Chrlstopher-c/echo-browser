@@ -59,6 +59,33 @@
   Une page déjà ouverte garde l'ancienne teinte dans ses angles jusqu'au rechargement.
 
 
+## Audit UX → 10/10 (E13→E17, autonomie du 09/10) — release 0.11.0
+Audit Opus du 08/10 (notes : navigation 5, esthétique 7,5, grand public 4, finition 4,5, concurrents 6,5) traité en
+entier, une story = un test isolé (`tools/banc.sh` + `tools/banc.py` : prélude et outils communs des tests).
+- **Navigation** : Ctrl+F (barre sous l'adresse, compteur, Échap ; `find.rs`) ; palette avec ligne « Rechercher … »
+  et suggestions du moteur (`search.suggest`) ; moteur au choix (7, `search.rs`, enfin branché : il était codé en dur) ;
+  rouvrir/popups/conteneurs à leur place ; plein écran bord à bord + Échap ; paliers de zoom de Chrome ; barre
+  repliée d'elle-même sous 900 px + poignée + Ctrl+Alt+S ; navigation pendant un réveil gardée.
+- **Bug clavier trouvé** : avec Ctrl, Chromium rend le caractère en code de contrôle (`& 0x1F`) : Ctrl+0 devenait
+  Ctrl+P (impression), Ctrl+& Ctrl+F. Le code de contrôle ne vaut plus que pour une touche lettre (`shortcuts.rs`).
+- **Finition** : dates (le cœur horodate en secondes : `fromCoreTime`) ; Réglages sans clés internes (seules les
+  entrées du catalogue s'affichent ; 4 réglages affichés n'agissaient pas : ne-pas-suivre, tout effacer à la
+  fermeture, demander où enregistrer, moteur — tous branchés), sommaire, thème Clair/Sombre/Système (portail XDG,
+  `system_theme.rs`) ; bouclier compté par onglet et par page ; Ctrl+D confirmé + étoile ; notifications à boutons ;
+  téléchargements avec progression ; Chromium en français (`LANGUAGE=fr` : Linux ignore `locale`) ; lecture réglable ;
+  initiales teintées quand une icône manque.
+- **Grand public** : contrastes ≥ 4,5:1 (garde CI `ui/scripts/contrast.ts`) ; onglets au clavier (tablist) ; profils
+  en cibles de 24 px avec le nom actif ; cadenas honnête (certificat refusé = « Non sécurisé », résumé en clair) ;
+  veille selon la mémoire libre (`sleep.rs`, plus selon le nombre d'onglets) ; bouton Claude Code seulement si
+  installé ; accueil qui configure (thème, moteur, import) ; recherche dans l'Aide.
+- **Profils = identités jusque dans les données** : base v3 (`space` sur `history` et `bookmarks`), dossiers,
+  suggestions, nouvel onglet par profil ; la synchro porte le profil (`s` / `space`, absents = principal). Une
+  installation neuve n'a qu'un profil ; les profils d'origine qui ont un dossier restent (`profiles.legacy`).
+- **Face aux concurrents** : import Chrome/Chromium/Brave/Edge/Vivaldi/Firefox/Zen (`core/library/src/import.rs`) ;
+  navigation privée (contexte en mémoire `prive`, Ctrl+Maj+N) ; effacer les données (Ctrl+Maj+Suppr) ; nouvel onglet
+  en tuiles ; conteneurs nommés sur l'onglet + « Ouvrir dans : … » ; couper le son ; fiches proposées au focus (la
+  page ne peut que déclencher l'offre, le remplissage part d'un clic dans Echo).
+
 ## Popups, reprise de session, arrêt (08/10 soir)
 
 - **Popups** : depuis la 0.4.0, toute fenêtre `window.open` qui garde `window.opener` restait sur about:blank. Cause
@@ -99,49 +126,6 @@
   (`profils-a-effacer.json`), extensions du profil retirées. Le profil principal (`graphite`) ne se supprime pas.
 - Test : `tools/test-help-profiles.sh`.
 
-## Raccourcis et fichiers locaux (demande de Chris, 08/10)
-
-- Lettres lues dans le caractère produit (disposition du clavier), plus dans le code de touche : en AZERTY, le code
-  suit souvent la position US (Ctrl+W arrivait comme Ctrl+Z). Ajoutés : Ctrl+O (sélecteur du système via le portail
-  du bureau — crate `rfd`, dans un fil à part : le dialogue intégré de CEF faisait tomber Echo), Ctrl+Maj+T, Ctrl+D,
-  Ctrl+H/J, Ctrl+P, Ctrl+S, Ctrl+U, Alt+←/→, Ctrl+Page↑/↓, Ctrl +/−/0.
-- Barre d'adresse : `/chemin`, `~/…` → `file://` (dossier listé, fichier ouvert) ; `localhost:3000`, IP:port → http.
-- `echo-browser fichier…` ouvre les pages ; Echo déjà lancé → confiées par la prise de pilotage. Entrée de bureau :
-  `%U` + types (HTML, PDF, images, texte, dossiers). Pilotage : op `key` (frappe simulée).
-- Piège de banc : un dialogue de fichiers passe par le portail de la session D-Bus de l'utilisateur et s'ouvre sur SON
-  écran → tests avec un bus D-Bus privé (`test-shortcuts.sh`). Tests : `test-shortcuts.sh`, `test-launch.sh`.
-
-## Signaux anonymes partagés (E9 S2, nuit du 08/10) — PAS ENCORE DÉPLOYÉ sur le service de production
-
-- Réglage « Partager des signaux anonymes » (`signals.share`, Vie privée), coupé par défaut. Activé seulement : domaines
-  visités et hôtes bloqués par le bouclier comptés par jour (`signals_day`) ; chaque jour fini part en un lot sans
-  compte, jeton aléatoire neuf (aucun identifiant stable), puis est effacé ; coupé → tout ce qui attendait est effacé.
-- Service : `POST /v1/signaux` (jour fini de moins de 8 j, doublon refusé, 3 lots par adresse et par jour via empreinte
-  HMAC jour+IP effacée après 2 j), agrégats `signaux` (installations, total), gardés 90 j. Administration : section
-  « Signaux partagés », clés montrées seulement au-delà de k installations un même jour (`SEUIL_K`, 3).
-- À faire au déploiement : `wrangler d1 execute --remote --file schema.sql` (3 tables ajoutées) puis `wrangler deploy`.
-- Test : `tools/test-signals.sh` (rien sans accord, lot envoyé puis effacé, seuil k).
-
-## E10 — idées de Chris, première vague (nuit du 08/10)
-
-- Réseau (`core/network`, `shell/src/network.rs`, `ui/src/network`) : chaque requête notée par onglet (500 dernières,
-  résumé par domaine, tiers via le domaine enregistrable), diffusée seulement panneau ouvert. Règles par site
-  (`reseau.json`) : domaine bloqué sur ce site, isolement strict ; appliquées avant le bouclier, même site en exception.
-- Vue « Poids » (idée 12) : part des tiers, poids par type, requêtes les plus lourdes / lentes, alertes (image > 500 Ko,
-  script tiers > 100 Ko). Piège de banc : une image invalide est coupée par Chromium (0 octet compté).
-- Journal d'accès par site (table `site_journal`, 200 par site) : premier contact avec un tiers, permissions et décision,
-  téléchargements. Onglet « Journal » du panneau Réseau.
-- Reprise exacte (`page_state.rs`) : saisies (jamais mots de passe / carte) + position des médias, dans la session,
-  rejouées au réveil et à la relance sans écraser une saisie.
-- Routines (`routines.rs`, table `sequences`/`routines`) : suites de 2 à 4 sites par empreinte, proposées au 3e passage.
-- Mémoire de structure (`page_memory.rs`, table `hidden_elements`) : « Masquer cet élément » retenu par empreinte de
-  gabarit (squelette balises + classes stables, répétitions écrasées), appliqué aux pages de même gabarit DU MÊME SITE.
-  Sécurité : une page peut écrire dans la console comme nos scripts — un masquage n'est cru que dans les 3 s qui suivent
-  un vrai « Masquer » de l'utilisateur, et un autre site qui annonce le même gabarit ne reçoit rien.
-- Surveiller une page (idée 15, `watch.rs`, table `watched_pages`) : clic droit « Surveiller cette page », texte lu à
-  chaque visite (seulement à notre demande, fenêtre de 15 s), lignes ajoutées/retirées montrées en bas de la barre.
-- Tests : `test-network.sh`, `test-page-state.sh`, `test-routines.sh`, `test-hide-element.sh`, `test-watch.sh`.
-
 ## Synchro automatique (consigne de Chris, 08/10)
 
 - Modes (`sync.mode`, par machine) : temps réel (lot 5 s, contrôle `/v1/etat` chaque minute), automatique (défaut :
@@ -155,21 +139,6 @@
   ~500 en automatique → 10 utilisateurs × 2 machines tiennent même tous en temps réel (~50 000 requêtes, ~60 000
   écritures). Au-delà de ~15 machines en temps réel permanent, surveiller le tableau de bord.
 
-## Tableau de bord des créateurs (E9 S1, 08/10)
-
-- Dans Echo : page « Administration » (pages pleine largeur + lien dans Réglages → Compte), visible seulement si le
-  compte connecté porte le drapeau admin (table `admins` ; relu à chaque synchro via `/v1/moi`). Le serveur vérifie la
-  session admin à CHAQUE appel : cacher la section n'est que de l'affichage. Test : `tools/test-admin.sh`.
-- Détail (S1b) : usage par compte et par jour (table `usage`, 90 j), machines par session (table `machines`, sans nom
-  de machine), fiche d'un compte (requêtes/jour, actions, machines, coffre par type), actifs/jour, synchros/jour,
-  envois par type, plus actifs. Compte de Chris admin en production (08/10).
-- Pages pleine largeur : elles défilent (le `body` garde `overflow: hidden` pour la barre).
-- Secours web : `/admin` sur le service (clé `ADMIN_KEY` en secret Wrangler ; sert aussi à nommer le 1er admin). Comptes
-  (e-mail complet, choix de Chris), actifs 1/7/30 j, sessions, coffre par type (tailles), requêtes et erreurs par jour,
-  routes, versions d'Echo (en-tête `X-Echo-Version` envoyé par le navigateur). Actions : déconnecter, supprimer.
-- Jamais le contenu du coffre : chiffré sur les machines. Tables ajoutées : `activite`, `compteurs` (CREATE IF NOT EXISTS).
-- Test : `compte/test/compte.test.mjs` (avec `ADMIN_KEY`).
-
 ## Historique synchronisé, données du compte, réveil des extensions (08/10)
 
 - Historique dans le coffre (type `historique`, réglage `sync.history` actif par défaut) : les 1 000 adresses les plus
@@ -181,52 +150,6 @@
   elles reçoivent l'état d'avant la veille puis l'actuel (onglet fermé pendant la veille : non annoncé).
 - Tests : `tools/test-account-sync.sh` (historique, effacement, données montrées, suppression),
   `tools/test-extension-events.sh` (réveil après 45 s de veille).
-
-## Onglets des autres machines + pont (0.7.0, 08/10)
-- Type `onglets` du coffre : une entrée par machine (`<données>/machine-id` aléatoire, nom = /etc/hostname, 100 pages web
-  max) ; chaque machine n'écrit que la sienne (fusion par clé). Bibliothèque → « Machines » (section absente sans autre
-  machine) ; clic = nouvel onglet. `shell/src/account/machine.rs`, `ui/src/library/devices/`.
-- Pont (`bridge/script.rs`) : l'état de départ n'était rejoué qu'au PREMIER abonné ; la page pleine largeur a plusieurs
-  abonnés → certains états manquaient jusqu'à leur prochaine publication. L'amorce garde le dernier événement de chaque
-  sorte d'état et le rejoue à chaque abonné (pas les ponctuels ni les incrémentaux par onglet).
-
-## Releases publiées le 08/10 (nuit)
-- v0.5.0 (mise à jour automatique + correctif profil principal), v0.6.0 (compte Echo), v0.7.0 (onglets des autres
-  machines, pont), rattachées au commit de la
-  branche `nuit/2026-10-06` (le mode nuit interdit de pousser `main` : à faire avancer au retour de Chris).
-- Vérifié pour de vrai : une 0.5.0 téléchargée de GitHub et installée (`installer.sh`, HOME temporaire) a trouvé la 0.6.0,
-  l'a vérifiée, préparée, puis a basculé au redémarrage (0.5.0 gardée en `.precedent`, essai validé) ; idem 0.6.0 → 0.7.0.
-
-## Compte Echo synchronisé (0.6.0, 08/10)
-- Service : `compte/` (Worker + D1, offre gratuite), déployé (`pnpm exec wrangler deploy` dans compte/), adresse dans
-  `.env.local` (ECHO_SYNC_URL) → `start.sh` l'exporte, `package-release.sh` la met dans `release.json` (`sync`).
-  Routes `/v1/{sel,inscription,connexion,deconnexion,coffre,coffre/:type,compte}` ; 10 échecs/15 min → 429 ; sel fictif
-  stable pour une adresse inconnue (pas d'énumération) ; écriture du coffre avec version de base (409 si concurrence).
-  Calcul serveur minimal (SHA-256) : l'offre gratuite limite à 10 ms de CPU par requête. Tests : `cd compte && pnpm dev`
-  puis `node test/compte.test.mjs` (COMPTE_URL pour viser le service en ligne ; nettoyer les comptes `essai-%`).
-- Chiffrement (`core/account/crypto.rs`, ring) : PBKDF2-SHA256 600 000 → HKDF → clé d'accès (envoyée) / clé de chiffrement
-  (jamais envoyée) ; AES-256-GCM avec le type en données associées. Fusion à trois voies (`merge.rs`) : réglages par clé,
-  favoris par url, extensions par profil en ensembles. Synchro : connexion, +10 s au démarrage, toutes les 10 min, bouton.
-- Synchronisé : 14 réglages choisis (`account/local.rs`), favoris, extensions par profil (déclarées sur la machine qui ne les
-  a pas). Jamais : cookies, mots de passe, historique. Compte local : `<données>/compte.json` (0600).
-- Premier lancement (aucune session, `onboarding.done` faux) : `pages.html#bienvenue` (3 écrans + compte, « Passer ») ;
-  `ECHO_NO_WELCOME=1` pour les essais. Tests : `tools/test-account-sync.sh` (deux instances), `cargo test -p echo-account
-  -- --ignored` avec COMPTE_URL (deux machines au niveau de la crate).
-
-## Mise à jour automatique (0.5.0, 08/10)
-- `core/shell/src/update/` : archive installée reconnue par `release.json` (version + dépôt, écrit par package-release) ;
-  vérification 30 s après le démarrage puis toutes les 6 h (`ECHO_UPDATE_URL`, `ECHO_UPDATE_DELAY_S` pour les essais) ;
-  téléchargement en flux + SHA-256 (digest GitHub ET fichier `.sha256`, qui doivent concorder), extraction dans
-  `<installation>.maj` ; bandeau « prêt → Redémarrer ». La bascule et le retour en arrière sont dans le LANCEUR
-  (`echo-browser.sh`) : un binaire cassé ne peut pas revenir seul ; la relance interne passe par le lanceur.
-  Version courante = celle de `release.json`. Réglage `updates.auto`. Test : `tools/test-update.sh`.
-
-## INCIDENT 08/10 : comptes déconnectés (corrigé)
-- Cause : sans `cache_path`, CEF (runtime Chrome) ouvre au démarrage le « dernier profil utilisé » de `Local State`
-  (`profile.last_used`) ; une fenêtre Chrome d'extension ouverte dans un conteneur le change → au redémarrage, le contexte
-  commun = un conteneur vide (`conteneur-profil-sable`), tous les comptes du profil principal « déconnectés ». Données
-  intactes dans `profile/Default` (cookies vérifiés sur copie). Correctif : `--profile-directory=Default` (flags.rs).
-  Test qui reproduit puis vérifie : `tools/test-default-profile.sh` (échoue sans le correctif).
 
 ## Extensions : onglets dans les service workers, pubs Twitch (08/10)
 - Service workers d'extension (`extension_tabs/workers.rs` + `worker.js`) : connexion au protocole de débogage, mise en pause
@@ -259,9 +182,8 @@
   fenêtres sur l'écran de Chris ; test-contextmenu/occlusion/popup interrogent Hyprland.
 
 ## Ce qui n'existe pas encore
-- Mode lecture
-- Pagination de l'historique : la recherche ne rend que les soixante premières entrées
-- Mise en sourdine ; veille manuelle et réglage du délai dans l'interface (la veille auto existe)
+- Pagination de l'historique : la recherche ne rend que les 200 premières entrées
+- Gestionnaire de mots de passe (choix : Proton Pass en extension), traduction de page
 - Les extensions déclarées en ligne de commande demandent encore une relance
 
 ## Décisions structurantes

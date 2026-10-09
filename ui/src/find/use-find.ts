@@ -1,4 +1,5 @@
-// Responsabilite : etat de la recherche dans la page — ouverture (Ctrl+F, clic droit), texte, envoi au coeur, fermeture.
+// Responsabilite : etat de la recherche dans la page — ouverture (Ctrl+F, clic droit), texte, envoi au coeur,
+// fermeture.
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { UiRequest } from '../shared/contract'
@@ -13,7 +14,9 @@ export interface FindController {
   close: () => void
 }
 
-export function useFind(send: (request: UiRequest) => void, requested: number, activeId: number | null): FindController {
+export function useFind(
+  send: (request: UiRequest) => void, requested: number, activeId: number | null,
+): FindController {
   const [open, setOpen] = useState(false)
   const [text, setTextState] = useState('')
   const [focusToken, setFocusToken] = useState(0)

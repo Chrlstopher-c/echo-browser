@@ -20,30 +20,35 @@ function Counter({ find, result }: FindBarProps): ReactElement | null {
   )
 }
 
-export function FindBar({ find, result }: FindBarProps): ReactElement | null {
+function FindInput({ find }: { find: FindController }): ReactElement {
   const input = useRef<HTMLInputElement>(null)
   useEffect(() => {
-    if (!find.open) return
     input.current?.focus()
     input.current?.select()
-  }, [find.open, find.focusToken])
+  }, [find.focusToken])
+  return (
+    <input ref={input} value={find.text} aria-label="Rechercher dans la page" placeholder="Rechercher dans la page"
+      spellCheck={false} autoComplete="off"
+      onChange={(event) => find.setText(event.target.value)}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter') {
+          event.preventDefault()
+          find.step(!event.shiftKey)
+        } else if (event.key === 'Escape') {
+          event.preventDefault()
+          find.close()
+        }
+      }}
+      className="min-w-0 flex-1 bg-transparent text-[12.5px] text-ink outline-none placeholder:text-ink-faint" />
+  )
+}
+
+export function FindBar({ find, result }: FindBarProps): ReactElement | null {
   if (!find.open) return null
   return (
     <div role="search" className="flex h-9 items-center gap-1.5 rounded-full bg-field pr-1 pl-3 shadow-field">
       <IconSearch size={13} className="shrink-0 text-ink-faint" aria-hidden />
-      <input ref={input} value={find.text} aria-label="Rechercher dans la page" placeholder="Rechercher dans la page"
-        spellCheck={false} autoComplete="off"
-        onChange={(event) => find.setText(event.target.value)}
-        onKeyDown={(event) => {
-          if (event.key === 'Enter') {
-            event.preventDefault()
-            find.step(!event.shiftKey)
-          } else if (event.key === 'Escape') {
-            event.preventDefault()
-            find.close()
-          }
-        }}
-        className="min-w-0 flex-1 bg-transparent text-[12.5px] text-ink outline-none placeholder:text-ink-faint" />
+      <FindInput find={find} />
       <Counter find={find} result={result} />
       <IconButton label="Occurrence précédente (Maj+Entrée)" onClick={() => find.step(false)}>
         <IconBack size={13} className="rotate-90" />

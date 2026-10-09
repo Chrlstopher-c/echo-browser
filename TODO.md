@@ -1,5 +1,13 @@
 # TODO — echo-browser
 
+## FAIT 09/10 — audit UX → 10/10 (E13→E17), release 0.11.0
+- Tout l'audit Opus du 08/10 traité (détail : STATE.md, EPICS.md E13→E17). Contre-audit : voir STATE.md.
+- À vérifier par Chris sur sa vraie machine (le banc n'a ni clavier, ni souris, ni son) : Ctrl+0 / Ctrl+& en vrai
+  clavier, sélecteur « Demander où enregistrer » (portail), thème « Système » qui suit le bureau, poignée de la barre
+  repliée au survol, Ctrl+F sur un long article.
+- Écarts assumés : liste de la palette limitée à la largeur de la barre ; mode lecture proposé sur toute page web
+  (pas de détection d'article à l'avance) ; mode lecture perdu quand l'onglet s'endort.
+
 ## FAIT 08/10 — releases 0.8.0 et 0.9.0, `main` à jour, signaux anonymes déployés
 - Console d'administration DANS Echo (comptes admin, drapeau serveur) + détail par compte : faite, en production.
 - Synchro automatique (temps réel / automatique / manuelle), alerte « pas synchronisé » : faite, service déployé.

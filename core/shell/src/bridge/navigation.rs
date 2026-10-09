@@ -50,23 +50,26 @@ pub(super) fn focus_find() {
     publish(&CoreEvent::FindRequested);
 }
 
+/// Ouvre un onglet vierge (prive : contexte en memoire). Comme Chrome et Arc : un nouvel onglet, c'est d'abord une
+/// adresse ou une recherche a taper, le curseur y va.
+fn new_tab(private: bool) {
+    if private {
+        if let Some(id) = super::open_tab_in(search::HOME, Some(crate::containers::PRIVATE)) {
+            super::select_tab(id);
+        }
+    } else {
+        open_tab(search::HOME);
+    }
+    publish_tabs();
+    focus_address();
+}
+
 /// Applique un raccourci clavier.
 pub fn perform(action: crate::shortcuts::Action) {
     use crate::shortcuts::Action;
     match action {
-        Action::NewPrivateTab => {
-            if let Some(id) = super::open_tab_in(search::HOME, Some(crate::containers::PRIVATE)) {
-                super::select_tab(id);
-            }
-            publish_tabs();
-            focus_address();
-        }
-        Action::NewTab => {
-            open_tab(search::HOME);
-            publish_tabs();
-            // Comme Chrome et Arc : un nouvel onglet, c'est d'abord une adresse ou une recherche a taper.
-            focus_address();
-        }
+        Action::NewPrivateTab => new_tab(true),
+        Action::NewTab => new_tab(false),
         Action::CloseTab => {
             if let Some(id) = session::with(|s| s.tabs.active_id()).flatten() {
                 close_tab(id);

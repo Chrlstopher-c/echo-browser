@@ -64,6 +64,7 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `core/library/src/downloads.rs` — les telechargements, en cours et passes.
 - `core/library/src/hidden.rs` — les elements que l'utilisateur a masques, retenus par gabarit de page (empreinte de la structure,
 - `core/library/src/history.rs` — l'historique de navigation, sa recherche et son effacement.
+- `core/library/src/import.rs` — lire les favoris et l'historique d'un autre navigateur installe (famille Chrome, famille
 - `core/library/src/journal.rs` — le journal d'acces de chaque site — ce qu'il a fait de sensible (premier contact avec un tiers,
 - `core/library/src/lib.rs`
 - `core/library/src/permissions.rs` — les decisions de permission (camera, micro, position, notifications…) retenues
@@ -118,10 +119,13 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `core/shell/src/extension_tabs/workers.rs`
 - `core/shell/src/files.rs` — ouvrir des fichiers et des dossiers locaux dans le navigateur — Ctrl+O (dialogue du systeme,
 - `core/shell/src/filtering.rs` — soumettre chaque requete du navigateur au bouclier, et appliquer sa decision.
+- `core/shell/src/find.rs` — la recherche dans la page (Ctrl+F) — Chromium cherche et surligne, la barre affiche
 - `core/shell/src/flags.rs` — les drapeaux Chromium imposes au demarrage, et pourquoi chacun est la.
 - `core/shell/src/forms/fill.js`
 - `core/shell/src/forms/mod.rs` — les fiches de formulaire (identite, adresse) — lues dans le reglage synchronise `forms.cards`,
+- `core/shell/src/forms/offer.js`
 - `core/shell/src/identity.rs` — ce que le navigateur declare de lui-meme aux sites qu'il visite.
+- `core/shell/src/importer.rs` — reprendre dans Echo les favoris et l'historique d'un autre navigateur (Chrome, Firefox, Brave…),
 - `core/shell/src/injection/filter.rs` — glisser le traitement du bouclier dans le flux HTML de la page,
 - `core/shell/src/injection/mod.rs` — appliquer dans la page ce que le blocage reseau ne peut pas faire —
 - `core/shell/src/injection/twitch/LICENSE-vaft`
@@ -138,6 +142,7 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `core/shell/src/permissions.rs` — les demandes de permission des sites (camera, micro, position, notifications,
 - `core/shell/src/persist.rs` — sauvegarder les onglets au fil de l'eau, pour les retrouver apres une fermeture
 - `core/shell/src/presence.rs`
+- `core/shell/src/privacy.rs` — effacer les traces de navigation — au demarrage si « Tout effacer à la fermeture » est coche
 - `core/shell/src/profiles.rs` — les profils (espaces facon Arc). Chacun a sa liste d'onglets et, sauf le profil par
 - `core/shell/src/reader/LICENSE-readability`
 - `core/shell/src/reader/lecture.js`
@@ -147,14 +152,16 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `core/shell/src/roundness.rs` — les angles arrondis de la page. Une vue web est un rectangle natif que Chromium ne sait
 - `core/shell/src/routines.rs` — routines dans le navigateur — suit les sites ouverts a la suite (seance = visites a moins de 15 min
 - `core/shell/src/scheme.rs` — le theme clair ou sombre que les pages voient (`prefers-color-scheme`). Il suit celui
-- `core/shell/src/search.rs` — le moteur de recherche et la page d'accueil.
+- `core/shell/src/search.rs` — le moteur de recherche (choisi dans les Reglages) et la page d'accueil.
 - `core/shell/src/selftest.rs` — rejouer sans main les manipulations d'onglets, pour verifier
 - `core/shell/src/session.rs` — l'etat vivant du navigateur — les onglets, l'interface, le bouclier.
 - `core/shell/src/shortcuts.rs` — les raccourcis clavier du navigateur, interceptes avant la page.
+- `core/shell/src/shutdown.rs` — arret demande par le systeme (SIGTERM a la fermeture de session ou par `stop.sh`, SIGINT, SIGHUP).
 - `core/shell/src/signals.rs` — signaux anonymes (reglage `signals.share`, coupe par defaut). Seulement s'il est active : les
 - `core/shell/src/sleep.rs` — endormir periodiquement les onglets inactifs pour rendre leur memoire.
 - `core/shell/src/store.rs` — installer une extension depuis le Chrome Web Store sans quitter Echo. La boutique
 - `core/shell/src/suggest.rs` — les suggestions de la page « nouvel onglet » — onglets ouverts, favoris et
+- `core/shell/src/system_theme.rs` — le theme du bureau (clair ou sombre), lu par le portail XDG, pour le choix « Système » d'Echo.
 - `core/shell/src/tabs.rs` — les onglets — creation, bascule, fermeture, et la vue qui leur sert de scene.
 - `core/shell/src/terminal.rs` — le terminal de Claude Code — la commande lancee, et les routes
 - `core/shell/src/transfers.rs` — suivre les telechargements de Chromium et les rendre a la bibliotheque.
@@ -181,6 +188,9 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `rust-toolchain.toml`
 - `start.sh`
 - `stop.sh`
+- `tools/__pycache__/banc.cpython-313.pyc`
+- `tools/banc.py`
+- `tools/banc.sh`
 - `tools/bench-ram.sh`
 - `tools/bench-twitch-ads.py`
 - `tools/bench-video.sh`
@@ -193,46 +203,72 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `tools/test-account-auto.sh`
 - `tools/test-account-sync.sh`
 - `tools/test-admin.sh`
+- `tools/test-bookmarks.sh`
+- `tools/test-clear-data.sh`
 - `tools/test-codecs-install.sh`
 - `tools/test-codecs-prompt.sh`
+- `tools/test-container-visible.sh`
 - `tools/test-containers.sh`
 - `tools/test-contextmenu.sh`
 - `tools/test-control.sh`
 - `tools/test-copy-image.sh`
 - `tools/test-default-profile.sh`
+- `tools/test-downloads.sh`
 - `tools/test-drag-folder.sh`
 - `tools/test-extension-events.sh`
 - `tools/test-extension-profiles.sh`
 - `tools/test-extension-query.sh`
 - `tools/test-extension-tabs.sh`
+- `tools/test-find.sh`
 - `tools/test-folders.sh`
+- `tools/test-forms-offer.sh`
 - `tools/test-forms.sh`
+- `tools/test-french.sh`
+- `tools/test-fullscreen.sh`
 - `tools/test-help-profiles.sh`
+- `tools/test-help-search.sh`
 - `tools/test-hide-element.sh`
 - `tools/test-inspect.sh`
 - `tools/test-ipc-origin.sh`
 - `tools/test-keep-awake.sh`
 - `tools/test-launch.sh`
+- `tools/test-marks.sh`
 - `tools/test-media-sleep.sh`
+- `tools/test-menu-extras.sh`
+- `tools/test-mute.sh`
+- `tools/test-narrow.sh`
 - `tools/test-network.sh`
 - `tools/test-never-sleep.sh`
 - `tools/test-occlusion.sh`
 - `tools/test-page-state.sh`
 - `tools/test-palette.sh`
 - `tools/test-popup.sh`
+- `tools/test-positions.sh`
+- `tools/test-private.sh`
+- `tools/test-profile-isolation.sh`
+- `tools/test-profile-strip.sh`
 - `tools/test-profiles.sh`
 - `tools/test-reader.sh`
 - `tools/test-routines.sh`
 - `tools/test-scheme.sh`
+- `tools/test-security.sh`
+- `tools/test-settings.sh`
+- `tools/test-shield-count.sh`
 - `tools/test-shield-toggle.sh`
 - `tools/test-shortcuts.sh`
 - `tools/test-sidebar-anim.sh`
 - `tools/test-signals.sh`
+- `tools/test-sleep-pressure.sh`
 - `tools/test-sleep-scroll.sh`
+- `tools/test-tabs-keyboard.sh`
+- `tools/test-terminal-button.sh`
 - `tools/test-trim-alive.sh`
 - `tools/test-update.sh`
+- `tools/test-wake-navigate.sh`
 - `tools/test-warm.sh`
 - `tools/test-watch.sh`
+- `tools/test-welcome.sh`
+- `tools/test-zoom.sh`
 - `ui/.gitignore`
 - `ui/README.md`
 - `ui/bun.lock`
@@ -258,6 +294,7 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `ui/public/terminal.html`
 - `ui/public/terminal.js`
 - `ui/public/theme.js`
+- `ui/scripts/contrast.ts` — garde d'accessibilite — tout texte (encre, encre attenuee, encre pale) atteint 4,5:1 sur les
 - `ui/src/account/account-form.tsx` — formulaire du compte Echo — creer un compte ou se connecter. Le mot de passe part vers le coeur
 - `ui/src/account/account-manage.tsx` — Reglages → Compte, une fois connecte — etat de la synchronisation, historique synchronise ou non,
 - `ui/src/account/account-section.tsx` — Reglages → Compte — la connexion quand il n'y a pas de compte, sa gestion sinon.
@@ -292,16 +329,20 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `ui/src/extensions/extensions-sheet.tsx` — feuille des extensions — installation, inventaire, gestion complete.
 - `ui/src/extensions/install-field.tsx` — champ d'installation d'une extension — saisie, refus lisible, ouverture du catalogue.
 - `ui/src/extensions/use-extensions.ts` — commandes du panneau des extensions — installation par le catalogue, bascule,
+- `ui/src/find/find-bar.tsx` — barre de recherche dans la page, sous l'adresse — champ, « 3/12 », precedent, suivant, fermer.
+- `ui/src/find/use-find.ts` — etat de la recherche dans la page — ouverture (Ctrl+F, clic droit), texte, envoi au coeur, fermeture.
 - `ui/src/forms/form-cards.ts` — les fiches de formulaire (identite, contact, adresse) — lues dans le reglage synchronise
 - `ui/src/forms/forms-section.tsx` — Reglages → Formulaires — les fiches que le clic droit « Remplir : … » verse dans les champs vides
 - `ui/src/help/discover-strip.tsx` — bandeau « a decouvrir », une seule fois par machine : ou trouver l'Aide, la securite du site et
 - `ui/src/help/help-content.ts` — le contenu de l'Aide — ce qu'Echo sait faire, ou le trouver, et un bouton qui y mene. Les textes
 - `ui/src/help/help-page.tsx` — page Aide — ce qu'Echo sait faire, ou le trouver (avec un bouton qui y mene), et les raccourcis.
+- `ui/src/import/import-section.tsx` — reprendre favoris et historique d'un autre navigateur — liste des navigateurs trouves sur la
 - `ui/src/library/bookmarks/bookmarks-panel.tsx` — panneau des favoris — ajout de la page courante, liste reordonnable, retrait au survol.
 - `ui/src/library/bookmarks/use-bookmarks.ts` — commandes des favoris — ajout depuis l'onglet courant, retrait, reordonnancement.
 - `ui/src/library/devices/devices-panel.tsx` — Bibliotheque → Machines — les onglets ouverts sur les autres machines du compte Echo, a rouvrir ici.
 - `ui/src/library/downloads/download-badge.tsx` — badge des telechargements en cours sur le bouton bibliotheque — un anneau qui avance.
 - `ui/src/library/downloads/download-reading.ts` — lecture d'un telechargement — progression, libelle d'etat, agregat pour le badge.
+- `ui/src/library/downloads/download-strip.tsx` — telechargements en cours, au pied de la barre — nom, progression, annuler. Visible tant qu'un
 - `ui/src/library/downloads/downloads-panel.tsx` — panneau des telechargements — progression en direct, ouverture, dossier, annulation, oubli.
 - `ui/src/library/downloads/use-downloads.ts` — commandes des telechargements — ouvrir, reveler, annuler, oublier.
 - `ui/src/library/history/history-panel.tsx` — panneau de l'historique — recherche, journees, retrait d'une visite, effacement.
@@ -317,12 +358,14 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `ui/src/pages/pages-app.tsx` — les pages pleine largeur d'Echo — reglages et bibliotheque — dans un onglet, la ou la
 - `ui/src/pages/use-page-route.ts` — la section affichee, lue dans l'ancre de l'adresse (#reglages, #bibliotheque, #admin).
 - `ui/src/pages/use-page-theme.ts` — la page prend la teinte et le schema choisis dans la barre (stockage local partage),
-- `ui/src/pages/welcome-page.tsx` — presentation d'Echo au premier lancement (facon Arc) — quelques ecrans, puis le compte Echo a creer,
+- `ui/src/pages/welcome-page.tsx` — premier lancement — un accueil qui configure (theme, moteur de recherche, import depuis un autre
 - `ui/src/restart/restart-screen.tsx` — ecran d'attente plein cadre pendant la relance du navigateur. Il vit quelques
 - `ui/src/restart/restart-strip.tsx` — bande de relance — propose le redemarrage sans l'imposer, jamais bloquante.
 - `ui/src/routines/routine-strip.tsx` — proposition de routine en bas de la barre — une suite de sites revient souvent ; la creer (nommee)
 - `ui/src/routines/routines-panel.tsx` — Bibliotheque → Routines — les suites de sites enregistrees ; les ouvrir d'un geste, les retirer.
 - `ui/src/settings/about-section.tsx` — Reglages → A propos — version d'Echo, etat de la mise a jour, verification a la demande.
+- `ui/src/settings/choice-chips.tsx` — choix parmi une liste fermee (moteur de recherche…) — pastilles en relief, la choisie enfoncee.
+- `ui/src/settings/clear-data-section.tsx` — « Effacer les données de navigation » du profil affiche — periode, historique, cookies, cache —
 - `ui/src/settings/containers-section.tsx` — conteneurs dans les reglages — nom et retrait ; l'ouverture se fait depuis la liste d'onglets.
 - `ui/src/settings/grants-section.tsx` — les autorisations retenues par site (camera, micro, position…) et leur retrait.
 - `ui/src/settings/profiles-section.tsx` — les profils dans les reglages — chacun est une identite (onglets, comptes, extensions a part) :
@@ -348,7 +391,7 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `ui/src/shared/design/search-field.tsx` — champ de recherche d'une feuille — loupe, saisie, effacement.
 - `ui/src/shared/design/section-label.tsx` — intitule de section d'une feuille — petites capitales, appendice optionnel a droite.
 - `ui/src/shared/design/segmented.tsx` — selecteur a segments — un seul choix, le fond actif glisse d'un segment a l'autre.
-- `ui/src/shared/design/site-mark.tsx` — marque d'un site — favicon s'il existe, sinon l'initiale de l'hote, sinon un globe.
+- `ui/src/shared/design/site-mark.tsx` — marque d'un site — favicon s'il se charge, sinon l'initiale de l'hote sur une pastille teintee
 - `ui/src/shared/design/stepper.tsx` — reglage numerique — moins, valeur, plus. La valeur est bornee et affichee avec son unite.
 - `ui/src/shared/design/text-field.tsx` — champ texte d'un reglage — modifie en place, valide sur Entree ou a la perte du focus,
 - `ui/src/shared/design/theme.css` — systeme de design d'Echo Browser — jetons semantiques. Les couleurs sont
@@ -372,7 +415,7 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `ui/src/shield/shield-stat.tsx` — chiffre de blocage — nombre monospace et sa legende complete.
 - `ui/src/shield/use-shield.ts` — commandes du bouclier — interrupteurs, listes de filtres, rafraichissement borne.
 - `ui/src/sidebar/codecs-strip.tsx` — proposer le decodeur video complet quand une page en a besoin (Twitch, MP4 en H.264/AAC), puis le
-- `ui/src/sidebar/notice-strip.tsx` — message du coeur, pose au-dessus de la rangee d'outils, efface automatiquement.
+- `ui/src/sidebar/notice-strip.tsx` — message du coeur, pose au-dessus de la rangee d'outils, efface automatiquement ; ses boutons
 - `ui/src/sidebar/permission-strip.tsx` — la question d'un site qui demande une permission (camera, micro, position…).
 - `ui/src/sidebar/sheet-host.tsx` — cadre anime d'une feuille — en-tete avec titre et fermeture, corps defilant.
 - `ui/src/sidebar/sheet.ts` — identite des feuilles qui se posent sur la liste d'onglets.
@@ -392,11 +435,12 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `ui/src/spaces/apply-space.ts` — poser les jetons d'un espace sur le document. Les utilitaires Tailwind lisent
 - `ui/src/spaces/space-palette.ts` — les espaces — une teinte (graphite, sable…) dans l'un des deux schemas, clair ou sombre.
 - `ui/src/spaces/space-picker.tsx` — choix de la teinte du profil dans les reglages — une pastille par teinte, la courante cochee.
-- `ui/src/spaces/space-strip.tsx` — bande des profils au pied de la barre — un point par profil, a sa teinte (le courant etire en
+- `ui/src/spaces/space-strip.tsx` — bande des profils au pied de la barre — un point par profil a sa teinte, le profil courant avec
 - `ui/src/spaces/use-profile-names.ts` — les profils (identites facon Arc) — leur liste, leur nom et leur teinte, enregistres dans le reglage
 - `ui/src/spaces/use-space.ts` — espace courant (teinte + schema clair/sombre) — choix persistes, jetons poses sur le
 - `ui/src/stage/dev-toolbar.tsx` — leviers de simulation poses sur la scene — son, sommeil, telechargement, plein ecran.
 - `ui/src/stage/page-stage.tsx` — scene de developpement — la place de la page, dans un cadre flottant aux coins
+- `ui/src/tabs/container-names.ts` — ce dont les lignes d'onglet ont besoin sans le recevoir de composant en composant : les noms des
 - `ui/src/tabs/drop-target.ts` — savoir sur quel dossier un onglet a ete lache, d'apres le point de lacher.
 - `ui/src/tabs/folder-section.tsx` — un dossier d'onglets dans la barre — en-tete (plier, renommer) et onglets rangés dedans.
 - `ui/src/tabs/menu-item.tsx` — une ligne de menu contextuel de la barre, et son separateur.

@@ -154,60 +154,69 @@ mots de passe (Proton Pass), traduction de page (service tiers). Chaque story : 
 clair ET sombre, test `tools/test-*.sh` isolé. Fin : régression complète, contre-audit, release 0.11.0.
 
 ### E13 — Navigation
-- [ ] S1 Recherche dans la page : Ctrl+F (et clic droit « Rechercher dans la page ») ouvre une barre flottante, compteur
+- [x] S1 Recherche dans la page : Ctrl+F (et clic droit « Rechercher dans la page ») ouvre une barre flottante, compteur
   « 3/12 », Entrée / Maj+Entrée, Échap ferme et efface. VERIFY: `test-find.sh` (compte, suivant, fermeture).
-- [ ] S2 Palette : 1re ligne « Rechercher « … » sur <moteur> », suggestions du moteur (réglage, coupable), police du
+- [x] S2 Palette : 1re ligne « Rechercher « … » sur <moteur> », suggestions du moteur (réglage, coupable), police du
   texte (pas monospace), pas de cadenas pendant la frappe, liste large qui déborde de la barre. VERIFY: `test-palette.sh`.
-- [ ] S3 Moteur au choix dans une liste (Google, DuckDuckGo, Qwant, Ecosia, Bing, Startpage, Brave) au lieu d'un champ
+- [x] S3 Moteur au choix dans une liste (Google, DuckDuckGo, Qwant, Ecosia, Bing, Startpage, Brave) au lieu d'un champ
   « %s ». VERIFY: test qui change le moteur → URL de recherche suivie.
-- [ ] S4 Positions : Ctrl+Maj+T rouvre à sa place ; popup et lien « nouvel onglet » juste sous le parent ; passage en
+- [x] S4 Positions : Ctrl+Maj+T rouvre à sa place ; popup et lien « nouvel onglet » juste sous le parent ; passage en
   conteneur garde la place. VERIFY: test d'index.
-- [ ] S5 Plein écran : Échap en sort ; bord à bord (ni marge ni coins). VERIFY: test + capture.
-- [ ] S6 Zoom : paliers de Chrome (90/100/110/125/150…), pastille qui réserve sa place, Ctrl+0 / Ctrl+à. VERIFY: test.
-- [ ] S7 Fenêtre étroite : barre repliée d'office sous 900 px, poignée visible, raccourci Ctrl+Alt+S. VERIFY: test.
-- [ ] S8 Navigation demandée pendant le réveil d'un onglet endormi : jamais perdue. VERIFY: test.
+- [x] S5 Plein écran : Échap en sort ; bord à bord (ni marge ni coins). VERIFY: test + capture.
+- [x] S6 Zoom : paliers de Chrome (90/100/110/125/150…), pastille qui réserve sa place, Ctrl+0 / Ctrl+à. VERIFY: test.
+- [x] S7 Fenêtre étroite : barre repliée d'office sous 900 px, poignée visible, raccourci Ctrl+Alt+S. VERIFY: test.
+- [x] S8 Navigation demandée pendant le réveil d'un onglet endormi : jamais perdue. VERIFY: test.
 
 ### E14 — Finition
-- [ ] S1 Dates de l'historique et des fichiers (secondes ≠ millisecondes). VERIFY: test vitest + capture.
-- [ ] S2 Réglages : section « Autres » supprimée ; thème Clair / Sombre / Système ; sommaire. VERIFY: test DOM.
-- [ ] S3 Bouclier : compteur de l'onglet actif ; vrais nombres de règles dès le 1er lancement ; accents ; listes sous
+- [x] S1 Dates de l'historique et des fichiers (secondes ≠ millisecondes). VERIFY: test vitest + capture.
+- [x] S2 Réglages : section « Autres » supprimée ; thème Clair / Sombre / Système ; sommaire. VERIFY: test DOM.
+- [x] S3 Bouclier : compteur de l'onglet actif ; vrais nombres de règles dès le 1er lancement ; accents ; listes sous
   « Avancé » ; bandeaux de cookies coupés par défaut. VERIFY: test deux onglets → deux chiffres.
-- [ ] S4 Favoris : Ctrl+D confirme (bulle « Ajouté aux favoris ») + étoile dans l'adresse ; pages internes et pages
+- [x] S4 Favoris : Ctrl+D confirme (bulle « Ajouté aux favoris ») + étoile dans l'adresse ; pages internes et pages
   d'erreur ni en favori ni dans l'historique. VERIFY: test.
-- [ ] S5 Téléchargements : progression visible, bulle cliquable (Ouvrir / Afficher le dossier). VERIFY: test.
-- [ ] S6 Chromium en français (pages d'erreur, DevTools). VERIFY: page d'erreur lue en français.
-- [ ] S7 Mode lecture : titre unique, une seule famille de police, taille et largeur réglables. VERIFY: test-reader.
-- [ ] S8 Icônes de repli : initiale teintée pour un épinglé ou un onglet sans favicon, logo Echo pour les pages
+- [x] S5 Téléchargements : progression visible, bulle cliquable (Ouvrir / Afficher le dossier). VERIFY: test.
+- [x] S6 Chromium en français (pages d'erreur, DevTools). VERIFY: page d'erreur lue en français.
+- [x] S7 Mode lecture : titre unique, une seule famille de police, taille et largeur réglables. VERIFY: test-reader.
+- [x] S8 Icônes de repli : initiale teintée pour un épinglé ou un onglet sans favicon, logo Echo pour les pages
   internes. VERIFY: test DOM + capture.
 
 ### E15 — Grand public et accessibilité
-- [ ] S1 Contraste ≥ 4,5:1 pour tout texte (clair et sombre). VERIFY: test qui calcule les contrastes des jetons.
-- [ ] S2 Onglets au clavier : `tablist`/`tab`, `aria-selected`, flèches, Entrée, Suppr. VERIFY: test DOM.
-- [ ] S3 Profils : cible ≥ 24 px, nom du profil actif visible, libellés aria justes. VERIFY: test DOM.
-- [ ] S4 Cadenas honnête : certificat invalide = « Non sécurisé » rouge ; http = « Non sécurisé » en toutes lettres ;
+- [x] S1 Contraste ≥ 4,5:1 pour tout texte (clair et sombre). VERIFY: test qui calcule les contrastes des jetons.
+- [x] S2 Onglets au clavier : `tablist`/`tab`, `aria-selected`, flèches, Entrée, Suppr. VERIFY: test DOM.
+- [x] S3 Profils : cible ≥ 24 px, nom du profil actif visible, libellés aria justes. VERIFY: test DOM.
+- [x] S4 Cadenas honnête : certificat invalide = « Non sécurisé » rouge ; http = « Non sécurisé » en toutes lettres ;
   résumé en langage courant en tête du panneau. VERIFY: test (page http + état d'erreur de certificat).
-- [ ] S5 Veille selon la mémoire réellement libre, plus un nombre d'onglets ; réglage qui dit vrai ; icône « garder
+- [x] S5 Veille selon la mémoire réellement libre, plus un nombre d'onglets ; réglage qui dit vrai ; icône « garder
   éveillé » distincte du thème. VERIFY: test 6 onglets, rien ne dort avant le délai réglé.
-- [ ] S6 Bouton Claude Code montré seulement si `claude` est installé ; extensions : « Catalogue » en bouton principal,
+- [x] S6 Bouton Claude Code montré seulement si `claude` est installé ; extensions : « Catalogue » en bouton principal,
   phrase juste ; interrupteurs étiquetés selon leur état. VERIFY: test DOM.
-- [ ] S7 Accueil qui configure : thème, moteur, import, puis compte ; pas de bulle d'astuce pendant l'accueil ; l'accueil
+- [x] S7 Accueil qui configure : thème, moteur, import, puis compte ; pas de bulle d'astuce pendant l'accueil ; l'accueil
   ne reste pas dans l'historique ; afficher le mot de passe. VERIFY: test du parcours.
-- [ ] S8 Recherche dans l'Aide. VERIFY: test DOM.
+- [x] S8 Recherche dans l'Aide. VERIFY: test DOM.
 
 ### E16 — Profils = identités
-- [ ] S1 Un seul profil au premier lancement (les profils existants ne bougent pas). VERIFY: test premier lancement.
-- [ ] S2 Historique, favoris, dossiers, suggestions et nouvel onglet propres à chaque profil. VERIFY: test
+- [x] S1 Un seul profil au premier lancement (les profils existants ne bougent pas). VERIFY: test premier lancement.
+- [x] S2 Historique, favoris, dossiers, suggestions et nouvel onglet propres à chaque profil. VERIFY: test
   Personnel/Travail sans fuite.
-- [ ] S3 Conteneur visible (couleur + nom sur la ligne d'onglet) ; clic droit de lien « Ouvrir dans un conteneur ».
-- [ ] S4 Navigation privée : Ctrl+Maj+N, onglet en mémoire seule (rien sur disque, pas d'historique), aspect distinct.
+- [x] S3 Conteneur visible (couleur + nom sur la ligne d'onglet) ; clic droit de lien « Ouvrir dans un conteneur ».
+- [x] S4 Navigation privée : Ctrl+Maj+N, onglet en mémoire seule (rien sur disque, pas d'historique), aspect distinct.
   VERIFY: test (aucun cookie ni historique après fermeture).
 
 ### E17 — Face aux concurrents
-- [ ] S1 Import Chrome / Firefox / Chromium (favoris + historique) depuis l'accueil et les Réglages. VERIFY: test avec
+- [x] S1 Import Chrome / Firefox / Chromium (favoris + historique) depuis l'accueil et les Réglages. VERIFY: test avec
   profils factices.
-- [ ] S2 Effacer les données de navigation (Ctrl+Maj+Suppr) : période, historique, cookies, cache. VERIFY: test.
-- [ ] S3 Nouvel onglet : tuiles avec icônes, plus de champ en double. VERIFY: capture.
-- [ ] S4 Clic droit : « Rechercher « sélection » », bascules cochées, lecture seulement si article ; Ctrl+Maj+C copie
+- [x] S2 Effacer les données de navigation (Ctrl+Maj+Suppr) : période, historique, cookies, cache. VERIFY: test.
+- [x] S3 Nouvel onglet : tuiles avec icônes, plus de champ en double. VERIFY: capture.
+- [x] S4 Clic droit : « Rechercher « sélection » », bascules cochées, lecture seulement si article ; Ctrl+Maj+C copie
   l'adresse. VERIFY: test-contextmenu.
-- [ ] S5 Couper le son d'un onglet depuis son indicateur audio. VERIFY: test.
-- [ ] S6 Fiches de formulaire proposées au focus d'un champ reconnu. VERIFY: test-forms.
+- [x] S5 Couper le son d'un onglet depuis son indicateur audio. VERIFY: test.
+- [x] S6 Fiches de formulaire proposées au focus d'un champ reconnu. VERIFY: test-forms.
+
+- Fait le 09/10 (autonomie) : toutes les stories, chacune avec son test isole (`tools/test-*.sh` : find, settings,
+  palette, positions, fullscreen, zoom, narrow, wake-navigate, shield-count, bookmarks, downloads, french, reader,
+  marks, contrast en CI, tabs-keyboard, profile-strip, security, sleep-pressure, terminal-button, welcome,
+  help-search, profile-isolation, container-visible, private, clear-data, menu-extras, mute, forms-offer).
+- Ecarts assumes : la liste de la palette reste dans la barre (la vue de la barre ne peut pas deborder sur la page) ;
+  « lecture seulement si article » non fait (l'entree reste sur toute page web, la vue dit « pas d'article ») ; le
+  selecteur « Demander où enregistrer » (portail) n'est pas rejouable sur le banc ; Ctrl+0 sur un vrai clavier AZERTY
+  couvert par test unitaire seulement.

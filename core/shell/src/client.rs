@@ -171,11 +171,8 @@ wrap_load_handler! {
             if frame.is_main() == 1 && crate::store::is_store(&url) {
                 frame.execute_java_script(Some(&CefString::from(crate::store::BUTTON_SCRIPT)), Some(&CefString::from("echo://store")), 0);
             }
-            if frame.is_main() == 1 && url.starts_with("http") && crate::forms::wanted() {
-                if let Some(browser) = browser.as_deref() {
-                    crate::forms::page_loaded(browser.identifier());
-                }
-                frame.execute_java_script(Some(&CefString::from(crate::forms::OFFER_JS)), Some(&CefString::from("echo://formulaires")), 0);
+            if frame.is_main() == 1 && url.starts_with("http") {
+                crate::forms::arm(browser.as_deref(), frame);
             }
             if frame.is_main() == 1 && url.starts_with("http") {
                 frame.execute_java_script(

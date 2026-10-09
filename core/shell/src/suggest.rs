@@ -40,16 +40,7 @@ pub fn suggest(query: &str) -> Value {
             .take(PER_SECTION)
             .map(|e| json!({"title": e.title, "url": e.url}))
             .collect();
-        // Sites les plus frequentes du profil : les tuiles du nouvel onglet.
-        let mut frequent = echo_library::history::search(&s.library, "", &space).0;
-        frequent.sort_by(|a, b| b.visits.cmp(&a.visits));
-        let mut hosts = std::collections::HashSet::new();
-        let top: Vec<Value> = frequent
-            .into_iter()
-            .filter(|e| hosts.insert(e.url.split('/').nth(2).unwrap_or_default().to_string()))
-            .take(TOP_SITES)
-            .map(|e| json!({"title": e.title, "url": e.url, "visits": e.visits}))
-            .collect();
+        let top = top_sites(&s.library, &space);
         json!({"ok": true, "tabs": tabs, "bookmarks": bookmarks, "history": history, "top": top})
     });
     found.unwrap_or_else(|| json!({"ok": false, "error": "navigateur occupe"}))
@@ -128,4 +119,17 @@ pub fn fetch_engine(query: String) {
             crate::bridge::publish(&echo_contract::CoreEvent::Suggestions { query, items });
         });
     });
+}
+
+/// Sites les plus frequentes du profil, un par hote : les tuiles du nouvel onglet.
+fn top_sites(library: &echo_library::Library, space: &str) -> Vec<Value> {
+    let mut frequent = echo_library::history::search(library, "", space).0;
+    frequent.sort_by(|a, b| b.visits.cmp(&a.visits));
+    let mut hosts = std::collections::HashSet::new();
+    frequent
+        .into_iter()
+        .filter(|e| hosts.insert(e.url.split('/').nth(2).unwrap_or_default().to_string()))
+        .take(TOP_SITES)
+        .map(|e| json!({"title": e.title, "url": e.url, "visits": e.visits}))
+        .collect()
 }
