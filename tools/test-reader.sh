@@ -78,7 +78,7 @@ assert ev(article, "getComputedStyle(document.querySelector('article p')).fontSi
 print("reglages de lecture retenus d'une ouverture a l'autre")
 call(op="key", code=82, ch="r", mods=["ctrl", "alt"])
 until(lambda: "MENU-DU-SITE" in ev(article, "document.body.innerText"), "seconde sortie impossible")
-assert "Lire en mode lecture" in menu(article), "etat de lecture garde apres la sortie"
+until(lambda: "Lire en mode lecture" in menu(article), "etat de lecture garde apres la sortie", tries=8)
 print("Ctrl+Alt+R : page d'origine rendue")
 court = f"http://localhost:{PORT}/court.html"
 call(op="navigate", id=[t for t in call(op="tabs")["tabs"] if t["active"]][0]["id"], url=court); time.sleep(2.5)

@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Decouvrabilite et profils : l'Aide (F1) liste les fonctions et ouvre le panneau Securite et reseau ; le cadenas de
 # l'adresse l'ouvre aussi ; le « + » des pastilles cree un profil et y passe ; Reglages → Profils supprime et
-# reinitialise (onglets fermes, dossier efface au lancement suivant). Instance isolee.
+# reinitialise (onglets fermes, dossier efface au lancement suivant). Une installation neuve a un seul profil. Instance
+# isolee.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 W="$(mktemp -d)"; PORT=$((29000 + RANDOM % 500))
@@ -60,7 +61,7 @@ try:
     click(BAR, '[aria-label="Nouveau profil"]')
 except Exception:
     pass  # changer de profil recharge la barre : la reponse peut se perdre, le resultat est verifie juste apres
-until(lambda: len(profils()) == 6, "le + n'a pas cree de profil")
+until(lambda: len(profils()) == 2, "le + n'a pas cree de profil")
 nouveau = profils()[-1]["id"]
 until(lambda: any(t["space"] == nouveau for t in call(op="tabs")["tabs"]), "pas passe au nouveau profil")
 print(f"+ : profil {nouveau} cree, on y est")
@@ -74,7 +75,7 @@ try:
 except Exception:
     pass  # l'onglet Reglages appartient au profil supprime : il se ferme avec lui
 time.sleep(1.5)
-until(lambda: len(profils()) == 5, "profil non supprime de la liste")
+until(lambda: len(profils()) == 1, "profil non supprime de la liste")
 assert nouveau in json.load(open(f"{W}/data/profils-a-effacer.json")), "effacement du dossier non programme"
 assert not any(t["space"] == nouveau for t in call(op="tabs")["tabs"]), "onglets du profil supprime encore ouverts"
 print("Reglages : profil supprime (onglets fermes, dossier programme pour effacement)")
