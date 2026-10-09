@@ -51,6 +51,12 @@ pub fn suggest_url(terms: &str) -> String {
     engine().suggest.replace("{q}", &encode(terms))
 }
 
+/// La page traduite en francais par Google Traduction (l'adresse de la page lui est transmise : c'est dit dans le menu
+/// et dans l'Aide).
+pub fn translate_url(page: &str) -> String {
+    format!("https://translate.google.com/translate?sl=auto&tl=fr&u={}", encode(page))
+}
+
 /// Lit une reponse OpenSearch : `["termes", ["a", "b"]]`.
 pub fn parse_suggestions(body: &str) -> Vec<String> {
     let Ok(serde_json::Value::Array(parts)) = serde_json::from_str::<serde_json::Value>(body) else {

@@ -371,6 +371,7 @@ export type MenuItemKind =
   | 'manageForms'
   | 'reader'
   | 'findInPage'
+  | 'translatePage'
   | 'openLinkPrivate'
   | 'openLinkInContainer1'
   | 'openLinkInContainer2'

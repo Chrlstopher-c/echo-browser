@@ -5,12 +5,11 @@ import { motion } from 'framer-motion'
 import { useEffect, type ReactElement } from 'react'
 import type { ContextTarget, MenuEntry, MenuItemKind, UiRequest } from '../shared/contract'
 import {
-  IconBack, IconClipboard, IconClock, IconCode, IconCopy, IconDownload, IconFile, IconForward, IconImage, IconOpen,
-  IconPlus, IconPrinter, IconReload, IconScissors, IconSearch, IconShield, IconStar, IconUser, IconWrench,
+  IconBack, IconClipboard, IconClock, IconCode, IconCopy, IconDownload, IconFile, IconForward, IconGlobe, IconImage,
+  IconMinus, IconOpen, IconPlus, IconPrinter, IconReload, IconScissors, IconSearch, IconShield, IconStar, IconUser, IconWrench,
   type IconComponent,
 } from '../shared/design/icons'
 import { IconEye, IconEyeOff, IconReader } from '../shared/design/icons-page'
-import { IconMinus } from '../shared/design/icons'
 
 export interface MenuPanelProps {
   target: ContextTarget
@@ -33,7 +32,7 @@ const ICONS: Partial<Record<MenuItemKind, IconComponent>> = {
   savePage: IconDownload, print: IconPrinter, toggleShield: IconShield, viewSource: IconCode, inspect: IconWrench,
   hideElement: IconMinus, unhideElements: IconEye, watchPage: IconClock, unwatchPage: IconClock,
   fillForm1: IconUser, fillForm2: IconUser, fillForm3: IconUser, manageForms: IconUser, reader: IconReader,
-  findInPage: IconSearch,
+  findInPage: IconSearch, translatePage: IconGlobe,
 }
 
 function Item({ entry, onRun }: { entry: MenuEntry; onRun: (kind: MenuItemKind) => void }): ReactElement {

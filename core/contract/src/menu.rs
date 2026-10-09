@@ -92,6 +92,8 @@ pub enum MenuItemKind {
     Reader,
     /// Ouvrir la recherche dans la page (Ctrl+F).
     FindInPage,
+    /// Ouvrir la page traduite en francais (Google Traduction) dans un onglet.
+    TranslatePage,
     OpenLinkInTab,
     /// Ouvrir le lien dans le premier, deuxieme ou troisieme conteneur.
     /// Ouvrir le lien dans un onglet de navigation privee.

@@ -73,6 +73,7 @@ fn page_tools(click: &Click, facts: &PageFacts) -> Vec<MenuEntry> {
         tools.push(MenuEntry::new(MenuItemKind::FindInPage, "Rechercher dans la page"));
     }
     if click.page.starts_with("http") && !click.editable {
+        tools.push(MenuEntry::new(MenuItemKind::TranslatePage, "Traduire la page en français"));
         let label = if facts.reading { "Quitter la lecture" } else { "Lire en mode lecture" };
         tools.push(MenuEntry::new(MenuItemKind::Reader, label));
         tools.push(if facts.watched {

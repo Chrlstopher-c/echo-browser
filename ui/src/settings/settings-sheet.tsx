@@ -21,6 +21,7 @@ import { ProfilesSection } from './profiles-section'
 import { FormsSection } from '../forms/forms-section'
 import { ImportSection } from '../import/import-section'
 import { ClearDataSection } from './clear-data-section'
+import { PasswordsSection } from './passwords-section'
 import { useFormCards } from '../forms/form-cards'
 import type { ProfileNames } from '../spaces/use-profile-names'
 import { GrantsSection } from './grants-section'
@@ -172,6 +173,7 @@ export function SettingsSheet(props: SettingsSheetProps): ReactElement {
         <ProfilesSection profiles={profiles} scheme={space?.space.scheme ?? readStoredScheme()} />
         <ContainersSection actions={containers} />
       </Part>
+      <Part title="Mots de passe"><PasswordsSection send={send} /></Part>
       <Part title="Formulaires"><FormsSection cards={cards} /></Part>
       <Part title="Effacer"><ClearDataSection send={send} /></Part>
       <Part title="Importer">

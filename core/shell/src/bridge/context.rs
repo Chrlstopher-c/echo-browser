@@ -140,6 +140,7 @@ pub fn run(action: MenuItemKind) {
         MenuItemKind::FillForm3 => crate::forms::fill(2),
         MenuItemKind::Reader => crate::reader::toggle_active(),
         MenuItemKind::FindInPage => super::navigation::focus_find(),
+        MenuItemKind::TranslatePage => open_and_show(&crate::search::translate_url(&click.page)),
         MenuItemKind::ManageForms => super::open_page_by_name("reglages"),
         MenuItemKind::UnwatchPage => crate::watch::unwatch_active(),
         MenuItemKind::Bookmark => {
