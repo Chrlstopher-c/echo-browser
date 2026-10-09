@@ -5,7 +5,7 @@
 - Esthétique : menus contextuels au style de la barre (surimpression opaque : dessiner les coins dans la teinte).
 - Grand public : pages d'erreur maison (sans « Chrome »), DevTools en français (traductions absentes de CEF).
 - Concurrents : traduction dans la page, extensions actives sans redémarrage, vue partagée, espaces façon Arc/Zen.
-- Divers : « Importé » avec le nombre, liste des sites éveillés en puces, `app_id` Wayland (titre de fenêtre fait),
+- Divers : « Importé » avec le nombre, `app_id` Wayland (titre de fenêtre et sites éveillés en pastilles faits),
   « Mises à jour automatiques » masqué en version de développement.
 
 ## FAIT 09/10 — audit UX → 10/10 (E13→E18), releases 0.11.0 et 0.11.1

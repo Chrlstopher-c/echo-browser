@@ -7,6 +7,7 @@ import { TextField } from '../shared/design/text-field'
 import { Toggle } from '../shared/design/toggle'
 import type { SettingEntry } from './use-settings'
 import { ChoiceChips } from './choice-chips'
+import { SiteList } from './site-list'
 
 export interface SettingRowProps {
   entry: SettingEntry
@@ -29,6 +30,10 @@ function Control({ entry, onChange }: SettingRowProps): ReactElement {
       )
     }
     case 'text':
+      if (definition.sites === true) {
+        return <SiteList value={value.value} label={definition.label}
+          onChange={(next) => onChange({ type: 'text', value: next })} />
+      }
       if (definition.choices !== undefined) {
         return (
           <ChoiceChips options={definition.choices} value={value.value} label={definition.label}

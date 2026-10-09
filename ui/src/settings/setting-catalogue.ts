@@ -39,6 +39,8 @@ export interface SettingDefinition {
   choices?: ChoiceOption[]
   /** Pour un texte libre : exemple affiche quand le champ est vide. */
   placeholder?: string
+  /** Texte qui est une liste de sites separes par des virgules : affiche en pastilles. */
+  sites?: boolean
 }
 
 /** Moteurs proposes ; les identifiants sont ceux du coeur (`core/shell/src/search.rs`). */
@@ -102,8 +104,8 @@ export const SETTING_CATALOGUE: Record<string, SettingDefinition> = {
   'tabs.neverSleep': {
     group: 'tabs',
     label: 'Sites qui ne dorment jamais',
-    detail: 'Messageries et courrier : leurs onglets restent éveillés pour recevoir les messages. Un site par virgule.',
-    placeholder: 'mail.example.com, chat.example.com',
+    detail: 'Messageries et courrier : leurs onglets restent éveillés pour recevoir les messages.',
+    sites: true,
   },
   'downloads.ask_location': {
     group: 'downloads',

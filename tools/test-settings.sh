@@ -18,6 +18,9 @@ for interdit in ["Autres", "shield.enabled", "onboarding", "profiles.list", "Res
 sommaire = ev("[...document.querySelectorAll('nav[aria-label=\"Sommaire des réglages\"] button')].map(b=>b.textContent)", PAGES)
 assert {"Apparence", "Navigation", "Vie privée", "Onglets"} <= set(sommaire), sommaire
 print(f"reglages propres, sommaire : {sommaire}")
+ev("document.querySelector('[aria-label=\"Retirer discord.com\"]').click()", P := PAGES)
+until(lambda: ev("!document.querySelector('[aria-label=\"Retirer discord.com\"]')", PAGES), "pastille non retiree")
+print("sites eveilles en pastilles : retrait d'un clic")
 ev("[...document.querySelectorAll('[role=radio]')].find(b=>b.textContent==='DuckDuckGo').click()", PAGES)
 until(lambda: ev("[...document.querySelectorAll('[role=radio]')].find(b=>b.textContent==='DuckDuckGo').getAttribute('aria-checked')", PAGES) == "true", "choix du moteur non retenu")
 call(op="activate", id=[t for t in tabs() if "alpha" in t["url"]][0]["id"]); time.sleep(1)
