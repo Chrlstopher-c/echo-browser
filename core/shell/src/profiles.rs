@@ -7,6 +7,16 @@ use cef::{ImplCookieManager, ImplRequestContext};
 pub const DEFAULT: &str = "graphite";
 
 /// Le conteneur des onglets d'un profil, `None` pour le profil par defaut.
+/// Les quatre profils d'origine (teintes) dont un dossier existe deja : ils ont servi, on les garde visibles.
+pub fn legacy_with_data() -> Vec<String> {
+    let dir = crate::flags::data_dir().join("profile");
+    ["sable", "rose", "foret", "ardoise"]
+        .into_iter()
+        .filter(|id| dir.join(format!("conteneur-profil-{id}")).is_dir())
+        .map(str::to_string)
+        .collect()
+}
+
 pub fn container_for(space: &str) -> Option<String> {
     (space != DEFAULT && crate::containers::is_valid_id(space)).then(|| format!("profil-{space}"))
 }

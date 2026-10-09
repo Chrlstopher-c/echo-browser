@@ -78,10 +78,14 @@ fn to_view(entry: downloads::Download) -> DownloadView {
 /// Diffuse les reglages.
 pub fn publish_settings() {
     let Some(all) = session::with(|s| settings::all(&s.library)) else { return };
-    let settings = all
-        .into_iter()
-        .map(|(key, value)| SettingView { key, value: to_contract(value) })
-        .collect();
+    let mut settings: Vec<SettingView> =
+        all.into_iter().map(|(key, value)| SettingView { key, value: to_contract(value) }).collect();
+    // Lecture seule (jamais enregistree ni synchronisee) : les profils d'avant la liste `profiles.list` qui ont deja
+    // des donnees. Une installation neuve n'en a aucun et ne montre qu'un profil.
+    settings.push(SettingView {
+        key: "profiles.legacy".to_string(),
+        value: SettingValue::Text(crate::profiles::legacy_with_data().join(",")),
+    });
     super::publish(&CoreEvent::SettingsChanged { settings });
 }
 

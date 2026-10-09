@@ -8,6 +8,7 @@ import { HUES, isSpaceId, type SpaceId } from './space-palette'
 
 const LIST_KEY = 'profiles.list'
 const LEGACY_NAMES_KEY = 'profiles.names'
+const LEGACY_KEY = 'profiles.legacy'
 export const DEFAULT_PROFILE = 'graphite'
 
 const DEFAULT_NAMES: Record<string, string> = {
@@ -66,8 +67,12 @@ export function readProfiles(settings: SettingView[]): ProfileEntry[] {
   } catch (error) {
     console.warn('liste de profils illisible', error)
   }
+  // Sans liste enregistree : le profil principal, plus les profils d'origine qui ont deja servi (une installation
+  // neuve n'en montre qu'un, audit du 08/10 ; un utilisateur ancien retrouve les siens).
   const names = legacyNames(settings)
-  return HUES.map((hue) => ({ id: hue.id, name: names[hue.id] ?? DEFAULT_NAMES[hue.id] ?? hue.name, hue: hue.id }))
+  const used = new Set((textOf(settings, LEGACY_KEY) ?? '').split(',').filter(Boolean))
+  return HUES.filter((hue) => hue.id === DEFAULT_PROFILE || used.has(hue.id) || names[hue.id] !== undefined)
+    .map((hue) => ({ id: hue.id, name: names[hue.id] ?? DEFAULT_NAMES[hue.id] ?? hue.name, hue: hue.id }))
 }
 
 export function useProfileNames(send: (request: UiRequest) => void, settings: SettingView[]): ProfileNames {

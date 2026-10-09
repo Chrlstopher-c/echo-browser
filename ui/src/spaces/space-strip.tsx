@@ -1,5 +1,5 @@
-// Responsabilite : bande des profils au pied de la barre — un point par profil, a sa teinte (le courant etire en
-// trait), un « + » pour en creer un, et la bascule clair/sombre. Les noms n'apparaissent qu'au survol.
+// Responsabilite : bande des profils au pied de la barre — un point par profil a sa teinte, le profil courant avec
+// son nom en clair, un « + » pour en creer un, et la bascule clair/sombre. Chaque cible fait au moins 24 px.
 
 import { motion } from 'framer-motion'
 import type { ReactElement } from 'react'
@@ -22,23 +22,24 @@ function HueDot(props: {
   id: string; hue: SpaceId; name: string; active: boolean; scheme: Scheme; onSelect: (id: string) => void
 }): ReactElement {
   const { id, hue, name, active, scheme, onSelect } = props
+  const tint = buildSpace(id, scheme, hue).tokens.tint
   return (
-    <button
+    <motion.button
+      layout
+      transition={PANEL}
       type="button"
       role="radio"
       aria-checked={active}
       title={name}
-      aria-label={`Profil ${name}`}
+      aria-label={/^profil\b/i.test(name) ? name : `Profil ${name}`}
       onClick={() => onSelect(id)}
-      className="grid h-4 place-items-center px-0.5"
+      className={`flex h-6 min-w-6 shrink-0 items-center justify-center gap-1.5 rounded-full
+        ${active ? 'max-w-[112px] bg-field px-2 shadow-field' : 'px-1 hover:bg-hover'}`}
     >
-      <motion.span
-        layout
-        transition={PANEL}
-        style={{ backgroundColor: active ? buildSpace(id, scheme, hue).tokens.tint : undefined }}
-        className={`block h-1.5 rounded-full ${active ? 'w-4' : 'w-1.5 bg-ink/20 hover:bg-ink/40'}`}
-      />
-    </button>
+      <span style={{ backgroundColor: tint }}
+        className={`block size-2 shrink-0 rounded-full ${active ? '' : 'opacity-45'}`} />
+      {active && <span className="truncate text-[11px] text-ink">{name}</span>}
+    </motion.button>
   )
 }
 
@@ -46,14 +47,14 @@ export function SpaceStrip(props: SpaceStripProps): ReactElement {
   const { current, scheme, profiles, onSelect, onCreate, onToggleScheme } = props
   return (
     <div className="flex h-7 items-center justify-between">
-      <div role="radiogroup" aria-label="Profils" className="flex h-5 min-w-0 items-center gap-1.5 overflow-hidden">
+      <div role="radiogroup" aria-label="Profils" className="flex h-7 min-w-0 items-center gap-0.5 overflow-hidden">
         {profiles.map((p) => (
           <HueDot key={p.id} id={p.id} hue={p.hue} name={p.name} active={p.id === current} scheme={scheme}
             onSelect={onSelect} />
         ))}
         <button type="button" title="Nouveau profil" aria-label="Nouveau profil" onClick={onCreate}
-          className="grid size-4 place-items-center rounded-full text-ink-faint hover:text-ink">
-          <IconPlus size={10} />
+          className="grid size-6 shrink-0 place-items-center rounded-full text-ink-faint hover:bg-hover hover:text-ink">
+          <IconPlus size={11} />
         </button>
       </div>
       <button
