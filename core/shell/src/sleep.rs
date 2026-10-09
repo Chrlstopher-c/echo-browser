@@ -53,14 +53,35 @@ fn idle_delay() -> Option<Duration> {
     enabled.then(|| Duration::from_secs((minutes.max(1.0) * 60.0) as u64))
 }
 
-/// Au-dela de ce nombre de pages en memoire, la veille se hate.
-const PRESSURE_TABS: usize = 4;
+/// Quand la memoire de l'ordinateur vient a manquer, la veille n'attend plus le delai regle.
 const PRESSURE_IDLE: Duration = Duration::from_secs(60);
+/// Seuils de manque : moins de 12 % de la memoire disponible, ou moins de 1,5 Go.
+const PRESSURE_RATIO: f64 = 0.12;
+const PRESSURE_FLOOR_KB: u64 = 1_536 * 1024;
 
-/// Beaucoup d'onglets ouverts : on n'attend plus le delai complet pour rendre la memoire.
+/// Memoire (totale, disponible) en Ko, lue dans /proc/meminfo.
+fn meminfo() -> Option<(u64, u64)> {
+    let text = std::fs::read_to_string("/proc/meminfo").ok()?;
+    let field = |name: &str| {
+        text.lines().find(|l| l.starts_with(name))?.split_whitespace().nth(1)?.parse::<u64>().ok()
+    };
+    Some((field("MemTotal:")?, field("MemAvailable:")?))
+}
+
+/// La memoire vient-elle a manquer ? `ECHO_PRESSURE=1` le simule (bancs).
+fn memory_short() -> bool {
+    if std::env::var("ECHO_PRESSURE").is_ok_and(|v| v == "1") {
+        return true;
+    }
+    meminfo().is_some_and(|(total, available)| {
+        available < PRESSURE_FLOOR_KB || (available as f64) < total as f64 * PRESSURE_RATIO
+    })
+}
+
+/// Le delai regle, sauf si la memoire manque : alors on rend la memoire des onglets inactifs plus tot. Le nombre
+/// d'onglets ouverts n'entre plus en compte (audit du 08/10 : 60 s des 5 onglets, contre 5 min affichees).
 fn under_pressure(idle: Duration) -> Duration {
-    let live = crate::session::with(|s| s.tabs.live_count()).unwrap_or(0);
-    if live > PRESSURE_TABS { idle.min(PRESSURE_IDLE) } else { idle }
+    if memory_short() { idle.min(PRESSURE_IDLE) } else { idle }
 }
 
 /// Delai avant de purger la memoire JavaScript d'une page d'arriere-plan (`ECHO_TRIM_AFTER_S`, 0 = jamais).

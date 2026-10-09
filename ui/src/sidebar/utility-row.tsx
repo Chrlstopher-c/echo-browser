@@ -18,6 +18,8 @@ export interface UtilityRowProps {
   /** Un changement d'extension attend la relance : le bouton porte une pastille. */
   restartPending: boolean
   downloads: DownloadsSummary
+  /** Claude Code installe sur la machine : sinon pas de bouton de terminal. */
+  terminal: boolean
   onToggle: (sheet: SheetId) => void
   onOpenTerminal: () => void
   /** Reglages et bibliotheque s'ouvrent en page pleine largeur, dans un onglet. */
@@ -37,9 +39,11 @@ export function UtilityRow(props: UtilityRowProps): ReactElement {
       <IconButton label="Sécurité et réseau" onClick={() => onToggle('network')} active={open === 'network'}>
         <IconActivity size={15} />
       </IconButton>
-      <IconButton label="Claude Code" onClick={onOpenTerminal}>
-        <IconTerminal size={15} />
-      </IconButton>
+      {props.terminal && (
+        <IconButton label="Claude Code" onClick={onOpenTerminal}>
+          <IconTerminal size={15} />
+        </IconButton>
+      )}
       <IconButton label="Bibliothèque" onClick={() => onOpenPage('bibliotheque')}>
         <IconLibrary size={15} />
         <DownloadBadge summary={downloads} />

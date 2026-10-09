@@ -91,3 +91,15 @@ pub fn handle(route: &str, body: &[u8]) -> Vec<u8> {
         _ => Vec::new(),
     }
 }
+
+/// Claude Code (et tmux) sont-ils installes ? Sinon le bouton du terminal n'a rien a ouvrir et reste cache.
+pub fn available() -> bool {
+    if std::env::var_os("ECHO_TERM_CMD").is_some() {
+        return true;
+    }
+    let found = |name: &str| {
+        std::env::var_os("PATH")
+            .is_some_and(|path| std::env::split_paths(&path).any(|dir| dir.join(name).is_file()))
+    };
+    found("claude") && found("tmux")
+}

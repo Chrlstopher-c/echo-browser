@@ -86,6 +86,10 @@ pub fn publish_settings() {
         key: "profiles.legacy".to_string(),
         value: SettingValue::Text(crate::profiles::legacy_with_data().join(",")),
     });
+    settings.push(SettingView {
+        key: "system.claudeCode".to_string(),
+        value: SettingValue::Flag(crate::terminal::available()),
+    });
     super::publish(&CoreEvent::SettingsChanged { settings });
 }
 

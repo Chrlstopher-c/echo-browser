@@ -103,6 +103,8 @@ function ColumnFooter({ model }: { model: SidebarModel }): ReactElement {
         compact={false}
         restartPending={extensions.restartPending}
         downloads={library.downloads.summary}
+        terminal={core.state.settings.some((s) => s.key === 'system.claudeCode' && s.value.type === 'flag'
+          && s.value.value)}
         onToggle={sheet.toggle}
         onOpenTerminal={() => core.send({ kind: 'openTerminal' })}
         onOpenPage={(page) => core.send({ kind: 'openPage', page })}
@@ -129,7 +131,8 @@ export function SidebarColumn({ model }: { model: SidebarModel }): ReactElement 
           onContextMenu={menu.openArea}
           className={`h-full overflow-y-auto ${sheet.current === null ? '' : 'invisible'}`}
         >
-          <TabsArea tabs={core.state.tabs.filter((tab) => tab.space === model.space.space.id)} activeId={core.state.activeId} actions={tabs} menu={menu}
+          <TabsArea tabs={core.state.tabs.filter((tab) => tab.space === model.space.space.id)}
+            activeId={core.state.activeId} actions={tabs} menu={menu}
             folders={folders} containers={containers} compact={false} />
         </div>
         <SidebarSheets model={model} />

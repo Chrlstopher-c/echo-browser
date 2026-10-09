@@ -2,11 +2,10 @@
 
 import type { KeyboardEvent, ReactElement } from 'react'
 import { IconOpen, IconPlus } from '../shared/design/icons'
-import { PushButton } from '../shared/design/push-button'
 import type { InstallField as InstallFieldState } from './use-extensions'
 
-const PLACEHOLDER = 'Adresse du Chrome Web Store, ou identifiant'
-const HINT = 'L’extension s’installe au prochain démarrage, sans quitter le navigateur.'
+const PLACEHOLDER = 'ou collez l’adresse d’une extension'
+const HINT = 'Sur la fiche d’une extension, « Ajouter à Echo ». Elle s’active au prochain démarrage d’Echo.'
 
 export interface InstallFieldProps {
   install: InstallFieldState
@@ -28,7 +27,7 @@ function SourceInput({ install }: { install: InstallFieldState }): ReactElement 
         placeholder={PLACEHOLDER}
         onChange={(event) => install.change(event.target.value)}
         onKeyDown={onKeyDown}
-        className="numerique min-w-0 flex-1 bg-transparent text-[11.5px] text-ink outline-none select-text
+        className="min-w-0 flex-1 bg-transparent text-[11.5px] text-ink outline-none select-text
           placeholder:text-ink-faint"
       />
       <button
@@ -48,13 +47,15 @@ function SourceInput({ install }: { install: InstallFieldState }): ReactElement 
 export function InstallField({ install, onOpenStore }: InstallFieldProps): ReactElement {
   return (
     <div className="flex flex-col gap-1.5 px-2 pb-2">
+      <button type="button" onClick={onOpenStore}
+        className="flex h-9 items-center justify-center gap-2 rounded-row bg-card text-[12.5px] font-medium text-ink
+          shadow-card transition-shadow duration-100 hover:text-guard active:shadow-pressed">
+        <IconOpen size={13} /> Parcourir le catalogue d’extensions
+      </button>
       <SourceInput install={install} />
-      <div className="flex items-start justify-between gap-2 px-0.5">
-        <p className={`text-[11px] leading-snug ${install.error === null ? 'text-ink-faint' : 'text-danger'}`}>
-          {install.error ?? HINT}
-        </p>
-        <PushButton onClick={onOpenStore} icon={<IconOpen size={11} />}>Catalogue</PushButton>
-      </div>
+      <p className={`px-0.5 text-[11px] leading-snug ${install.error === null ? 'text-ink-faint' : 'text-danger'}`}>
+        {install.error ?? HINT}
+      </p>
     </div>
   )
 }
