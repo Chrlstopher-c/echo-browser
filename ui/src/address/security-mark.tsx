@@ -18,6 +18,7 @@ const READING: Record<SecurityReading, Reading> = {
   invalid: { label: 'Non sécurisé : certificat refusé', tone: 'text-danger', Icon: IconWarning },
   insecure: { label: 'Non sécurisé : connexion non chiffrée', tone: 'text-warn', Icon: IconLockOpen },
   local: { label: 'Page interne du navigateur', tone: 'text-ink-faint', Icon: IconSearch },
+  failed: { label: 'Page non chargée', tone: 'text-ink-faint', Icon: IconWarning },
   blank: { label: 'Rechercher ou saisir une adresse', tone: 'text-ink-faint', Icon: IconSearch },
 }
 

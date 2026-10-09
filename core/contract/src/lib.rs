@@ -390,6 +390,8 @@ pub enum Security {
     Invalid,
     Insecure,
     Local,
+    /// La page n'a pas pu se charger (reseau, adresse introuvable) : rien n'est chiffre ni affiche.
+    Failed,
 }
 
 /// L'etat du bouclier pour l'onglet courant.

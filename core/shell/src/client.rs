@@ -147,14 +147,13 @@ wrap_load_handler! {
             let url = failed_url.map(CefString::to_string).unwrap_or_default();
             let texte = error_text.map(CefString::to_string).unwrap_or_default();
             tracing::warn!(%url, %texte, code = error_code.get_raw(), "chargement en echec");
-            // ERR_ABORTED (-3) : navigation remplacee par une autre, pas une page d'erreur.
             let main = frame.is_some_and(|f| f.is_main() == 1);
+            // ERR_ABORTED (-3) : navigation remplacee par une autre, pas un echec.
             if main && error_code.get_raw() != -3 {
                 crate::bridge::library::note_failed_load(&url);
-            }
-            if main && (-299..=-200).contains(&error_code.get_raw()) {
                 if let Some(browser) = browser.as_deref() {
-                    crate::tabs::note_cert_error(browser.identifier(), &url);
+                    let certificate = (-299..=-200).contains(&error_code.get_raw());
+                    crate::tabs::note_load_error(browser.identifier(), &url, certificate);
                     crate::bridge::publish_tabs();
                 }
             }
@@ -164,8 +163,9 @@ wrap_load_handler! {
             let Some(frame) = frame else { return };
             if frame.is_main() == 1 && (200..400).contains(&status) {
                 if let Some(browser) = browser.as_deref() {
-                    crate::tabs::clear_cert_error(browser.identifier());
+                    crate::tabs::clear_load_errors(browser.identifier());
                 }
+                crate::bridge::library::note_loaded(&CefString::from(&frame.url()).to_string());
             }
             let url = CefString::from(&frame.url()).to_string();
             if frame.is_main() == 1 && crate::store::is_store(&url) {

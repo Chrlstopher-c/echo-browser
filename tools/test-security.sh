@@ -29,5 +29,8 @@ lock = ev("document.querySelector('[aria-label=\"Sécurité du site\"]')?.getAtt
 assert "chiffrée" not in lock and "refusé" in lock, lock
 ui({"kind": "openSidebarSheet", "sheet": "network"})
 until(lambda: "certificat refusé" in (ev("document.querySelector('[data-summary]')?.innerText") or ""), "resume du panneau")
+call(op="open", url="https://localhost:1/")
+until(lambda: active()["security"] == "failed", f"page en echec : {active()['security']}")
+assert "chiffrée" not in (ev("document.querySelector('[aria-label=\"Sécurité du site\"]')?.getAttribute('title')") or "")
 print(f"OK : cadenas honnete (http, certificat refuse : {lock!r}), resume du panneau")
 PY

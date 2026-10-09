@@ -31,7 +31,7 @@ while step() != "compte" and step() is not None and ev("[...document.querySelect
     click("Suivant"); time.sleep(0.5)
 click("Commencer"); time.sleep(2)
 assert active()["url"].startswith("echo://ui/nouvel-onglet"), active()["url"]
-assert not active()["canGoBack"] if "canGoBack" in active() else True
+assert active()["canGoBack"] is False, "Precedent ramenerait a l'accueil"
 call(op="open", url="echo://ui/pages.html#bibliotheque"); time.sleep(2)
 assert "Favori importe" in ev("document.body.innerText", "echo://ui/pages.html"), "favori importe absent"
 type_address("meteo")

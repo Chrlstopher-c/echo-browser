@@ -69,6 +69,16 @@ impl Tab {
         if url.is_empty() || self.history.get(self.position).map(String::as_str) == Some(url) {
             return;
         }
+        // L'accueil du premier lancement s'efface derriere le nouvel onglet : Precedent ne doit pas y ramener.
+        if self.history.get(self.position).is_some_and(|u| u.contains("pages.html#bienvenue")) {
+            self.history.truncate(self.position);
+            self.position = self.history.len().saturating_sub(1);
+            if self.history.is_empty() {
+                self.history.push(url.to_string());
+                self.position = 0;
+                return;
+            }
+        }
         self.history.truncate(self.position + 1);
         self.history.push(url.to_string());
         self.position = self.history.len() - 1;
@@ -132,22 +142,35 @@ impl Tab {
 /// Pages dont le certificat a ete refuse (par navigateur) : leur cadenas doit le dire, pas « chiffrée ».
 static CERT_ERRORS: parking_lot::Mutex<Vec<(i32, String)>> = parking_lot::Mutex::new(Vec::new());
 
-/// Chromium a refuse le certificat de cette page (codes ERR_CERT_*, -200 a -299).
-pub fn note_cert_error(browser_id: i32, url: &str) {
-    let mut errors = CERT_ERRORS.lock();
+/// Pages en echec de chargement (hors certificat), par navigateur : leur cadenas dit « Page non chargée ».
+static LOAD_ERRORS: parking_lot::Mutex<Vec<(i32, String)>> = parking_lot::Mutex::new(Vec::new());
+
+/// Chromium a refuse le certificat de cette page (codes ERR_CERT_*, -200 a -299), ou n'a pas pu la charger.
+pub fn note_load_error(browser_id: i32, url: &str, certificate: bool) {
+    let list = if certificate { &CERT_ERRORS } else { &LOAD_ERRORS };
+    let mut errors = list.lock();
     errors.retain(|(id, _)| *id != browser_id);
     errors.push((browser_id, url.to_string()));
 }
 
-/// Une page s'est chargee normalement : son navigateur n'est plus en erreur de certificat.
-pub fn clear_cert_error(browser_id: i32) {
+/// Une page s'est chargee normalement : son navigateur n'est plus en erreur.
+pub fn clear_load_errors(browser_id: i32) {
     CERT_ERRORS.lock().retain(|(id, _)| *id != browser_id);
+    LOAD_ERRORS.lock().retain(|(id, _)| *id != browser_id);
 }
 
-/// Etat de la connexion : l'adresse, corrigee par les refus de certificat vus pour ce navigateur.
+/// Etat de la connexion : l'adresse, corrigee par les echecs vus pour ce navigateur.
 fn security_for(browser_id: Option<i32>, url: &str) -> Security {
-    let refused = browser_id.is_some_and(|id| CERT_ERRORS.lock().iter().any(|(b, u)| *b == id && u == url));
-    if refused { Security::Invalid } else { security_of(url) }
+    let seen = |list: &parking_lot::Mutex<Vec<(i32, String)>>| {
+        browser_id.is_some_and(|id| list.lock().iter().any(|(b, u)| *b == id && u == url))
+    };
+    if seen(&CERT_ERRORS) {
+        Security::Invalid
+    } else if seen(&LOAD_ERRORS) {
+        Security::Failed
+    } else {
+        security_of(url)
+    }
 }
 
 fn security_of(url: &str) -> Security {

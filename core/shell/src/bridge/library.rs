@@ -174,11 +174,15 @@ pub fn note_failed_load(url: &str) {
 }
 
 /// Enregistre une visite. Appele a chaque page arrivee a son terme.
+/// La page a fini de se charger normalement : elle pourra entrer dans l'historique.
+pub fn note_loaded(url: &str) {
+    FAILED.lock().retain(|u| u != url);
+}
+
 pub fn record_visit(url: &str, title: &str, space: &str) {
-    let failed = {
-        let mut list = FAILED.lock();
-        list.iter().position(|u| u == url).map(|at| list.remove(at)).is_some()
-    };
+    // Une page en echec reste exclue tant qu'elle n'a pas ete chargee normalement (son titre d'erreur arrive
+    // plusieurs fois : la premiere exclusion ne suffisait pas, contre-audit du 09/10).
+    let failed = FAILED.lock().iter().any(|u| u == url);
     if failed || !is_web(url) {
         return;
     }

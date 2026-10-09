@@ -288,7 +288,7 @@ export interface TabView {
   keepAwake: boolean
 }
 
-export type Security = 'secure' | 'mixed' | 'invalid' | 'insecure' | 'local'
+export type Security = 'secure' | 'mixed' | 'invalid' | 'insecure' | 'local' | 'failed'
 
 /** L'etat du bouclier pour l'onglet courant. */
 export interface ShieldView {

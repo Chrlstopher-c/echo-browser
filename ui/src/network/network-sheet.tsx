@@ -32,6 +32,7 @@ const VERDICT: Record<Security, { text: string; detail: string; tone: string }> 
     detail: 'Le site n’a pas prouvé son identité. Ne saisissez rien ici.',
   },
   local: { text: 'Page locale', detail: 'Rien ne sort de l’ordinateur.', tone: 'text-ink-muted' },
+  failed: { text: 'Page non chargée', detail: 'Le site n’a pas répondu : rien n’a été échangé.', tone: 'text-ink-muted' },
 }
 
 /** En tete du panneau, en langage courant : la connexion, puis ce que la page contacte et ce qu'Echo a bloque. */

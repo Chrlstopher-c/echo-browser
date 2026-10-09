@@ -146,6 +146,8 @@ pub fn select_tab(id: TabId) {
     dismiss_overlays();
     if session::with(|s| s.tabs.active_id()).flatten() != Some(id) {
         crate::devtools::undock();
+        // La barre de recherche se ferme avec le changement d'onglet : ses surlignages partent avec elle.
+        crate::find::stop_clearing();
     }
     if session::with(|s| s.tabs.is_asleep(id)).unwrap_or(false) {
         wake_tab(id);

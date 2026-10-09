@@ -30,6 +30,13 @@ pub fn stop() {
 /// Chromium compte sans activer la premiere ; on la designe alors une fois, comme le ferait Entree.
 static PENDING_FIRST: parking_lot::Mutex<Option<String>> = parking_lot::Mutex::new(None);
 
+/// Ferme la recherche de l'onglet actif en retirant aussi la selection (changement d'onglet).
+pub fn stop_clearing() {
+    if let Some(host) = active_host() {
+        host.stop_finding(1);
+    }
+}
+
 fn active_host() -> Option<BrowserHost> {
     crate::session::with(|s| s.tabs.active().and_then(|t| t.browser()).and_then(|b| b.host())).flatten()
 }

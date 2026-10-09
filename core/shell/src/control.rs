@@ -175,7 +175,8 @@ fn tabs() -> Value {
         .map(|t| {
             json!({"id": t.id, "title": t.title, "url": t.url, "active": active == Some(t.id),
                    "asleep": t.asleep, "loading": t.loading, "favicon": t.favicon, "pinned": t.pinned, "folder": t.folder,
-                   "container": t.container, "space": t.space, "keepAwake": t.keep_awake, "zoom": t.zoom})
+                   "container": t.container, "space": t.space, "keepAwake": t.keep_awake, "zoom": t.zoom,
+                   "canGoBack": t.can_go_back, "security": t.security, "muted": t.muted})
         })
         .collect();
     json!({"ok": true, "tabs": list})

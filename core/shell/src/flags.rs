@@ -8,7 +8,9 @@ use std::path::PathBuf;
 /// Mesure le 2026-09-10 sur RTX 3060 + Wayland.
 /// Glic/Actor : fonctions d'agent de Chrome, qui plantent dans la fenetre d'ancrage des extensions
 /// (TabInterface::GetFromContents) et ne servent pas dans Echo. Mesure le 07/10.
-const DISABLED_FEATURES: &str = "Vulkan,Glic,GlicActor,GlicActorUi";
+/// `HttpsUpgrades` : Chromium tente https d'abord et, dans CEF, ne revient pas en http quand le site ne repond pas en
+/// https (contre-audit du 09/10 : http://neverssl.com injoignable). Le reglage « HTTPS seulement » n'existe pas ici.
+const DISABLED_FEATURES: &str = "Vulkan,Glic,GlicActor,GlicActorUi,HttpsUpgrades";
 
 /// Decodage video par la carte graphique (NVDEC via VA-API, pilote `libva-nvidia-driver`) : le processeur
 /// n'a plus a decoder la 4K. `ECHO_HWDEC=0` le coupe (artefacts possibles selon le pilote).
