@@ -4,7 +4,8 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import type { ReactElement } from 'react'
 import type { TabView } from '../shared/contract'
-import { IconMoon, IconSun } from '../shared/design/icons'
+import { IconMoon } from '../shared/design/icons'
+import { IconActivity } from '../shared/design/icons-page'
 import { QUICK } from '../shared/design/motion'
 import { ProgressRing } from '../shared/design/progress-ring'
 import { SiteMark } from '../shared/design/site-mark'
@@ -49,7 +50,7 @@ function AwakePip(): ReactElement {
       className="absolute -right-1.5 -bottom-1.5 grid size-[13px] place-items-center rounded-full bg-card text-warn
         shadow-card ring-1 ring-shell"
     >
-      <IconSun size={10} />
+      <IconActivity size={10} />
     </span>
   )
 }

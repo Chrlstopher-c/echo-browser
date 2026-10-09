@@ -1,10 +1,11 @@
 // Responsabilite : le contenu du menu contextuel selon la cible — un onglet, un dossier, le fond de la liste.
 
+import { IconActivity } from '../shared/design/icons-page'
 import type { ReactElement } from 'react'
 import type { TabView } from '../shared/contract'
 import { formatZoom } from '../shared/format'
 import {
-  IconClose, IconFolder, IconMoon, IconPin, IconPlus, IconReload, IconStar, IconSun, IconTrash, IconUnpin, IconUser,
+  IconClose, IconFolder, IconMoon, IconPin, IconPlus, IconReload, IconStar, IconTrash, IconUnpin, IconUser,
 } from '../shared/design/icons'
 import { Stepper } from '../shared/design/stepper'
 import { chosenContainer, containerColor, type ContainerActions } from './use-containers'
@@ -115,7 +116,7 @@ export function TabBody(props: Common & { tab: TabView; others: TabView[]; activ
       <MenuItem icon={<IconStar size={13} />} label="Ajouter aux favoris"
         onClick={run(() => actions.addBookmark(tab.id))} />
       <MenuItem icon={<IconReload size={13} />} label="Recharger" onClick={run(() => actions.reload(tab.id))} />
-      <MenuItem icon={<IconSun size={13} />} label="Garder éveillé" checked={tab.keepAwake}
+      <MenuItem icon={<IconActivity size={13} />} label="Garder éveillé" checked={tab.keepAwake}
         onClick={run(() => actions.keepAwake(tab.id, !tab.keepAwake))} />
       {!tab.asleep && !tab.keepAwake && tab.id !== activeId && (
         <MenuItem icon={<IconMoon size={13} />} label="Endormir" onClick={run(() => actions.sleep(tab.id))} />

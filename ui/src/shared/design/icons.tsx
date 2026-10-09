@@ -479,3 +479,14 @@ export function IconHelp(props: IconProps): ReactElement {
     </Glyph>
   )
 }
+
+/** Marque d'Echo : un point et deux ondes qui s'en eloignent. Pages internes du navigateur. */
+export function IconEcho(props: IconProps): ReactElement {
+  return (
+    <Glyph {...props}>
+      <circle cx="5" cy="8" r="1.4" fill="currentColor" stroke="none" />
+      <path d="M8 5a4 4 0 0 1 0 6" />
+      <path d="M10.5 3a7 7 0 0 1 0 10" />
+    </Glyph>
+  )
+}
