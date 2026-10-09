@@ -29,6 +29,7 @@ export type UiRequest =
   | { kind: 'setTabMuted'; id: TabId; muted: boolean }
   | { kind: 'importSources' }
   | { kind: 'importBrowser'; id: string }
+  | { kind: 'fillForm'; index: number }
   | { kind: 'clearBrowsingData'; since: number; history: boolean; cookies: boolean; cache: boolean }
   /** Ouvrir un panneau de la barre (`network`, `shield`, `extensions`) — depuis l'Aide par exemple. */
   | { kind: 'openSidebarSheet'; sheet: string }

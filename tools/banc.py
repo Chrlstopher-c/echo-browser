@@ -118,3 +118,17 @@ def context_menu(page_url, x=400, y=300):
         cdp(page_url, "Input.dispatchMouseEvent", {"type": kind, "x": x, "y": y, "button": "right", "clickCount": 1})
     time.sleep(1.2)
     return ev("document.body.innerText", "echo://ui/menu")
+
+
+def with_page_focus(page_url, js):
+    """Execute `js` dans la page comme si la fenetre avait le focus (le banc n'en a pas : sans cela, aucun evenement
+    de focus n'atteint la page). L'emulation ne dure que la session DevTools, d'ou une seule connexion."""
+    t = [t for t in targets() if t["url"].startswith(page_url)][0]
+    ws = websocket.create_connection(t["webSocketDebuggerUrl"], suppress_origin=True)
+    for i, (method, params) in enumerate([("Emulation.setFocusEmulationEnabled", {"enabled": True}),
+                                          ("Runtime.evaluate", {"expression": js})], start=1):
+        ws.send(json.dumps({"id": i, "method": method, "params": params}))
+        while json.loads(ws.recv()).get("id") != i:
+            pass
+    time.sleep(0.5)
+    ws.close()

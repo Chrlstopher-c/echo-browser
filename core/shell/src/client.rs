@@ -171,6 +171,12 @@ wrap_load_handler! {
             if frame.is_main() == 1 && crate::store::is_store(&url) {
                 frame.execute_java_script(Some(&CefString::from(crate::store::BUTTON_SCRIPT)), Some(&CefString::from("echo://store")), 0);
             }
+            if frame.is_main() == 1 && url.starts_with("http") && crate::forms::wanted() {
+                if let Some(browser) = browser.as_deref() {
+                    crate::forms::page_loaded(browser.identifier());
+                }
+                frame.execute_java_script(Some(&CefString::from(crate::forms::OFFER_JS)), Some(&CefString::from("echo://formulaires")), 0);
+            }
             if frame.is_main() == 1 && url.starts_with("http") {
                 frame.execute_java_script(
                     Some(&CefString::from(crate::page_memory::announce_script().as_str())),
@@ -260,6 +266,12 @@ wrap_display_handler! {
             line: i32,
         ) -> i32 {
             let message = message.map(CefString::to_string).unwrap_or_default();
+            if message == crate::forms::FIELD_MARKER {
+                if let Some(browser) = browser {
+                    crate::forms::offer(browser.identifier());
+                }
+                return 1;
+            }
             if let Some(fingerprint) = message.strip_prefix(crate::page_memory::FINGERPRINT_MARKER) {
                 if let Some(browser) = browser {
                     crate::page_memory::announced(browser, fingerprint);

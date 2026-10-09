@@ -41,3 +41,48 @@ pub fn fill(index: usize) {
     let script = format!("({})({});", FILL_JS.trim().trim_end_matches(';'), fields);
     frame.execute_java_script(Some(&CefString::from(script.as_str())), Some(&CefString::from("echo://formulaires")), 0);
 }
+
+/// Script pose dans les pages quand l'utilisateur a des fiches : il signale l'entree dans un champ reconnu.
+pub const OFFER_JS: &str = include_str!("offer.js");
+/// Message console de ce script.
+pub const FIELD_MARKER: &str = "echo:formulaire:champ";
+
+/// Pages (par navigateur) ou la proposition a deja ete faite : une seule fois par page chargee.
+static OFFERED: parking_lot::Mutex<Vec<i32>> = parking_lot::Mutex::new(Vec::new());
+
+/// Faut-il poser le script ? Seulement si des fiches existent.
+pub fn wanted() -> bool {
+    !cards().is_empty()
+}
+
+/// Une nouvelle page : la proposition pourra revenir.
+pub fn page_loaded(browser_id: i32) {
+    OFFERED.lock().retain(|id| *id != browser_id);
+}
+
+/// L'utilisateur est entre dans un champ reconnu de l'onglet actif : la barre propose les fiches. Le remplissage ne
+/// part que d'un clic dans la barre (requete `fillForm`), jamais de la page, qui ne peut que faire apparaitre l'offre.
+pub fn offer(browser_id: i32) {
+    let active = crate::session::with(|s| s.tabs.active().and_then(|t| t.browser()).map(|b| b.identifier())).flatten();
+    if active != Some(browser_id) || OFFERED.lock().contains(&browser_id) {
+        return;
+    }
+    let names = names();
+    if names.is_empty() {
+        return;
+    }
+    OFFERED.lock().push(browser_id);
+    let actions = names
+        .into_iter()
+        .enumerate()
+        .map(|(index, name)| echo_contract::NoticeAction {
+            label: name,
+            request: echo_contract::UiRequest::FillForm { index: index as u32 },
+        })
+        .collect();
+    crate::bridge::publish(&echo_contract::CoreEvent::Notice {
+        level: echo_contract::NoticeLevel::Info,
+        message: "Remplir ce formulaire avec une fiche :".to_string(),
+        actions,
+    });
+}

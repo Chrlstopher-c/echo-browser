@@ -186,6 +186,8 @@ pub enum UiRequest {
     ImportSources,
     /// Reprendre favoris et historique d'un autre navigateur.
     ImportBrowser { id: String },
+    /// Remplir le formulaire de la page active avec la fiche `index` (clic dans la barre).
+    FillForm { index: u32 },
     /// Efface les donnees de navigation du profil affiche : historique depuis `since` (secondes, 0 = tout),
     /// cookies, cache.
     ClearBrowsingData { since: i64, history: bool, cookies: bool, cache: bool },

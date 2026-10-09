@@ -252,6 +252,7 @@ fn apply(request: UiRequest) {
         UiRequest::StopFind => crate::find::stop(),
         UiRequest::ImportSources => crate::importer::publish_sources(),
         UiRequest::ImportBrowser { id } => crate::importer::run(&id),
+        UiRequest::FillForm { index } => crate::forms::fill(index as usize),
         UiRequest::ClearBrowsingData { since, history, cookies, cache } => {
             crate::privacy::clear_now(since, history, cookies, cache)
         }
