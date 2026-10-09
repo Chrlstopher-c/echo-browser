@@ -113,6 +113,12 @@ fn perform_page(action: crate::shortcuts::Action) {
         Action::Library => super::open_page_by_name("bibliotheque"),
         Action::Help => super::open_page_by_name("aide"),
         Action::ClearData => super::open_page_by_name("effacer"),
+        Action::CopyUrl => {
+            if let Some((_, _, url)) = active.filter(|(_, _, url)| !url.starts_with("echo://")) {
+                super::context::copy(&url);
+                publish(&CoreEvent::notice(echo_contract::NoticeLevel::Info, "Adresse copiée."));
+            }
+        }
         Action::Print => with_browser(|browser| {
             if let Some(host) = browser.host() {
                 host.print();

@@ -116,7 +116,7 @@ export const HELP: HelpSection[] = [
 export const SHORTCUTS: Array<[string, string]> = [
   ['Ctrl+T', 'Nouvel onglet'], ['Ctrl+Maj+N', 'Onglet de navigation privée'], ['Ctrl+W', 'Fermer l’onglet'], ['Ctrl+Maj+T', 'Rouvrir l’onglet fermé'],
   ['Ctrl+Tab / Ctrl+Page↓', 'Onglet suivant'], ['Ctrl+Maj+Tab / Ctrl+Page↑', 'Onglet précédent'],
-  ['Ctrl+1 … 9', 'Aller à l’onglet n'], ['Ctrl+L / Ctrl+K', 'Adresse et palette'], ['Ctrl+O', 'Ouvrir un fichier'],
+  ['Ctrl+1 … 9', 'Aller à l’onglet n'], ['Ctrl+L / Ctrl+K', 'Adresse et palette'], ['Ctrl+Maj+C', 'Copier l’adresse de la page'], ['Ctrl+O', 'Ouvrir un fichier'],
   ['Ctrl+F', 'Rechercher dans la page'], ['Ctrl+Alt+R', 'Mode lecture'],
   ['Ctrl+D', 'Ajouter aux favoris'], ['Ctrl+Maj+Suppr', 'Effacer les données de navigation'], ['Ctrl+H / Ctrl+J', 'Bibliothèque (historique, fichiers)'],
   ['Ctrl+P', 'Imprimer'], ['Ctrl+S', 'Enregistrer la page'], ['Ctrl+U', 'Code source'],

@@ -33,6 +33,8 @@ pub struct PageFacts {
     pub reading: bool,
     /// Noms des conteneurs proposes pour ouvrir un lien.
     pub containers: Vec<String>,
+    /// Le bouclier filtre-t-il cette page ? L'entree dit ce qu'elle fera, pas un simple « Bouclier ».
+    pub shield_on: bool,
 }
 
 pub fn build(click: &Click, facts: PageFacts) -> ContextTarget {
@@ -51,7 +53,7 @@ pub fn build(click: &Click, facts: PageFacts) -> ContextTarget {
         entries.extend(group);
     }
     if entries.is_empty() {
-        entries.extend(page_entries(click));
+        entries.extend(page_entries(click, facts.shield_on));
     } else {
         entries.push(MenuEntry::separator());
         entries.push(MenuEntry::new(MenuItemKind::HideElement, "Masquer cet élément"));
@@ -151,7 +153,8 @@ fn form_entries(forms: &[String]) -> Vec<MenuEntry> {
     entries
 }
 
-fn page_entries(click: &Click) -> Vec<MenuEntry> {
+fn page_entries(click: &Click, shield_on: bool) -> Vec<MenuEntry> {
+    let shield = if shield_on { "Désactiver le bouclier sur ce site" } else { "Réactiver le bouclier sur ce site" };
     vec![
         MenuEntry::new(MenuItemKind::Back, "Précédent").disabled_when(!click.can_go_back),
         MenuEntry::new(MenuItemKind::Forward, "Suivant").disabled_when(!click.can_go_forward),
@@ -162,7 +165,7 @@ fn page_entries(click: &Click) -> Vec<MenuEntry> {
         MenuEntry::new(MenuItemKind::SavePage, "Enregistrer la page"),
         MenuEntry::new(MenuItemKind::Print, "Imprimer"),
         MenuEntry::separator(),
-        MenuEntry::new(MenuItemKind::ToggleShield, "Bouclier sur ce site"),
+        MenuEntry::new(MenuItemKind::ToggleShield, shield),
         MenuEntry::new(MenuItemKind::ViewSource, "Code source"),
         MenuEntry::new(MenuItemKind::HideElement, "Masquer cet élément"),
         MenuEntry::new(MenuItemKind::Inspect, "Examiner l'élément"),

@@ -70,6 +70,8 @@ pub enum Action {
     NewPrivateTab,
     /// Ctrl+Maj+Suppr : effacer les donnees de navigation.
     ClearData,
+    /// Ctrl+Maj+C : copier l'adresse de la page (comme Arc et Zen).
+    CopyUrl,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -133,6 +135,7 @@ fn ctrl_letter(letter: char, shift: bool) -> Option<Action> {
         ('t', false) => Action::NewTab,
         ('t', true) => Action::ReopenTab,
         ('n', true) => Action::NewPrivateTab,
+        ('c', true) => Action::CopyUrl,
         ('w', false) => Action::CloseTab,
         ('l' | 'k', false) => Action::FocusAddress,
         ('f', false) => Action::Find,

@@ -39,6 +39,7 @@ pub fn open(click: Click, x: i32, y: i32) {
         forms: crate::forms::names(),
         reading: crate::reader::active_reading(),
         containers: crate::containers::named().into_iter().map(|(_, name)| name).collect(),
+        shield_on: session::with(|s| s.shield.is_enabled() && s.shield.is_active_for(&click.page)).unwrap_or(true),
     };
     let target = menu::build(&click, facts);
     let (width, height) = menu::size_of(&target);
@@ -153,7 +154,7 @@ fn open_and_show(url: &str) {
 
 /// Le presse-papiers passe par la page : le processus navigateur n'y a pas acces
 /// directement, mais la page selectionnee, elle, sait copier.
-fn copy(value: &str) {
+pub(super) fn copy(value: &str) {
     if value.is_empty() {
         return;
     }
