@@ -12,6 +12,7 @@ import { IconSearch, IconStar, IconStarFilled } from '../shared/design/icons'
 import { SecurityMark } from './security-mark'
 import { SuggestionList } from './suggestion-list'
 import { useSuggestions, type Suggestions } from './use-suggestions'
+import { useInlineCompletion } from './use-inline-completion'
 import type { CoreState } from '../shared/core-state'
 import { useAddressField, type AddressFieldState } from './use-address-field'
 
@@ -97,7 +98,9 @@ function ZoomBadge({ zoom, onReset }: { zoom: number; onReset: () => void }): Re
   )
 }
 
-function AddressInput({ field, list }: { field: AddressFieldState; list: Suggestions }): ReactElement {
+function AddressInput({ field, list, onType }: {
+  field: AddressFieldState; list: Suggestions; onType: (next: string) => void
+}): ReactElement {
   return (
     <input
       ref={field.inputRef}
@@ -106,7 +109,7 @@ function AddressInput({ field, list }: { field: AddressFieldState; list: Suggest
       autoComplete="off"
       aria-label="Adresse"
       placeholder={field.editing ? 'Rechercher ou saisir une URL' : undefined}
-      onChange={(event) => field.onChange(event.target.value)}
+      onChange={(event) => onType(event.target.value)}
       onFocus={field.onFocus}
       onBlur={field.onBlur}
       onKeyDown={(event) => {
@@ -121,7 +124,8 @@ function AddressInput({ field, list }: { field: AddressFieldState; list: Suggest
 export function AddressField(props: AddressFieldProps): ReactElement {
   const { tab, onSubmit, onResetZoom, focusToken, onOpenSecurity, send } = props
   const field = useAddressField(tab, onSubmit, focusToken, props.onLeave)
-  const list = useSuggestions(field.value, field.editing, props.suggestions, send, onSubmit,
+  const completion = useInlineCompletion(field, props.suggestions)
+  const list = useSuggestions(completion.typed || field.value, field.editing, props.suggestions, send, onSubmit,
     () => field.inputRef.current?.blur())
   const security = tab === null || tab.url.length === 0 || tab.url === 'about:blank' ? 'blank' : tab.security
   return (
@@ -133,7 +137,7 @@ export function AddressField(props: AddressFieldProps): ReactElement {
         {field.editing
           ? <IconSearch size={13} className="shrink-0 text-ink-faint" aria-hidden />
           : <SecurityMark security={security} onOpen={onOpenSecurity} />}
-        <AddressInput field={field} list={list} />
+        <AddressInput field={field} list={list} onType={completion.onChange} />
         {!field.editing && (
           <div className={`pointer-events-none absolute inset-y-0 left-[39px] flex items-center
             ${tab !== null && Math.abs(tab.zoom - 1) > 0.001 ? 'right-[80px]' : 'right-[34px]'}

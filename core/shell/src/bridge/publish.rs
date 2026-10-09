@@ -232,8 +232,11 @@ pub fn publish_tabs() {
     let Some((tabs, active)) = session::with(|s| (s.tabs.snapshot(), s.tabs.active_id())) else {
         return;
     };
+    let title = tabs.iter().find(|t| Some(t.id) == active).map(|t| t.title.clone()).unwrap_or_default();
     publish(&CoreEvent::TabsChanged { tabs, active });
     crate::find::active_changed();
+    let chrome = session::with(|s| s.chrome.clone()).flatten();
+    crate::window::set_window_title(&title, chrome.as_ref());
     crate::persist::schedule();
     crate::extension_tabs::tabs_changed();
 }

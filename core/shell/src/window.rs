@@ -170,6 +170,14 @@ pub fn is_narrow() -> bool {
     NARROW.load(Ordering::Relaxed)
 }
 
+/// Titre de la fenetre : celui de l'onglet actif, comme les autres navigateurs (barre des taches, Alt+Tab).
+pub fn set_window_title(page: &str, chrome: Option<&BrowserView>) {
+    let Some(window) = chrome.and_then(|c| View::from(c).window()) else { return };
+    let title =
+        if page.is_empty() || page.starts_with("echo://") { WINDOW_TITLE.to_string() } else { page.to_string() };
+    window.set_title(Some(&CefString::from(title.as_str())));
+}
+
 /// Largeur courante de la barre.
 pub fn chrome_width_now() -> i32 {
     CHROME_WIDTH_NOW.load(Ordering::Relaxed)

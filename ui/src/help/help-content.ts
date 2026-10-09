@@ -84,7 +84,8 @@ export const HELP: HelpSection[] = [
     topics: [
       { title: 'Palette d’adresse', how: 'Ctrl+K (ou Ctrl+L) puis tapez : onglets ouverts, favoris et historique '
         + 'apparaissent sous l’adresse ; ↓/↑ puis Entrée. Un onglet déjà ouvert est rejoint, pas dupliqué. La première '
-        + 'ligne lance la recherche ; le moteur se choisit dans Réglages → Navigation.' },
+        + 'ligne lance la recherche, et l’adresse d’un site déjà visité se complète en tapant ; le moteur se choisit dans '
+        + 'Réglages → Navigation.' },
       { title: 'Barre repliée', how: 'Ctrl+Alt+S ou le bouton en haut de la barre la replie ; la poignée au bord '
         + 'gauche la fait revenir. Dans une fenêtre étroite, elle se replie d’elle-même.' },
       { title: 'Importer d’un autre navigateur', how: 'Réglages → Importer : favoris et historique de Chrome, '
