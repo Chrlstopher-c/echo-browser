@@ -58,12 +58,16 @@ Ports : sonde de présence `127.0.0.1:4330` ; port de débogage local `127.0.0.1
   fichiers.
 - `./tools/test-account-auto.sh`, `test-admin.sh`, `test-signals.sh` — synchro automatique, administration, signaux
   anonymes (service local `compte/`).
+- Nouveaux tests (0.11.0) sur un prélude commun `tools/banc.sh` + `tools/banc.py` : `test-find`, `test-settings`,
+  `test-positions`, `test-fullscreen`, `test-zoom`, `test-narrow` (SWAYSOCK), `test-security`, `test-private`,
+  `test-profile-isolation`, `test-clear-data`, `test-welcome`, `test-forms-offer`… ; `bun scripts/contrast.ts` (dans
+  `ui/`) garde les contrastes ≥ 4,5:1.
 - **Les scripts de test lancent une instance isolée** (`ECHO_RUN_DIR`, `ECHO_CONTROL_NAME`) : ils ne touchent jamais au navigateur de l'utilisateur.
 
 ## Variables utiles (bancs et diagnostic)
 
 `ECHO_DATA_DIR`, `ECHO_RUN_DIR`, `ECHO_LOG=debug`, `ECHO_SLEEP_AFTER_S`, `ECHO_BENCH_URLS`, `ECHO_BENCH_UI`, `ECHO_BENCH_JS`,
-`ECHO_FLAGS`, `ECHO_ROUND=0`, `ECHO_TERM_CMD`, `ECHO_CONTROL=0`, `ECHO_ROUTINE_GAP_S` (routines, essais), `ECHO_SIGNALS_SHIFT_DAYS` et `ECHO_SIGNALS_SEND_S` (signaux, essais).
+`ECHO_FLAGS`, `ECHO_ROUND=0`, `ECHO_TERM_CMD`, `ECHO_CONTROL=0`, `ECHO_ROUTINE_GAP_S` (routines, essais), `ECHO_SIGNALS_SHIFT_DAYS` et `ECHO_SIGNALS_SEND_S` (signaux, essais), `ECHO_PRESSURE=1` (mémoire qui manque, simulée), `ECHO_IMPORT_HOME` (dossier où chercher les autres navigateurs à importer).
 
 ## Documentation
 
