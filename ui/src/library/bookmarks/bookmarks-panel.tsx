@@ -82,14 +82,14 @@ function AddCurrent({ controller }: { controller: BookmarksController }): ReactE
   return (
     <div className="flex items-center justify-between gap-2 px-2 pb-2">
       <p className="truncate text-[11px] text-ink-faint">{hint}</p>
-      <PushButton
+      {(controller.canAddCurrent || controller.currentSaved) && <PushButton
         tone={controller.currentSaved ? 'neutral' : 'guard'}
         disabled={!controller.canAddCurrent}
         onClick={controller.addCurrent}
         icon={controller.currentSaved ? <IconStarFilled size={11} /> : <IconStar size={11} />}
       >
         {label}
-      </PushButton>
+      </PushButton>}
     </div>
   )
 }

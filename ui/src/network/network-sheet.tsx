@@ -122,7 +122,7 @@ function Totals({ network }: { network: NetworkView }): ReactElement {
       {cells.map(([label, value]) => (
         <div key={label} className="rounded-row bg-card px-2 py-1.5 shadow-card">
           <p className="text-[10.5px] text-ink-faint">{label}</p>
-          <p className="numerique text-[13px] text-ink">{value}</p>
+          <p className="numerique whitespace-nowrap text-[13px] text-ink">{value}</p>
         </div>
       ))}
     </div>

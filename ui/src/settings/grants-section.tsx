@@ -31,7 +31,7 @@ export function GrantsSection({ grants, onForget }: GrantsSectionProps): ReactEl
     <section>
       <SectionLabel>Autorisations des sites</SectionLabel>
       {grants.length === 0 ? (
-        <p className="px-2 text-[11px] leading-snug text-ink-faint">
+        <p className="px-2 text-[11.5px] leading-snug text-ink-faint">
           Aucune décision retenue. Cochez « se souvenir » quand un site demande l’accès à la caméra ou au micro.
         </p>
       ) : (

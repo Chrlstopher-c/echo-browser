@@ -318,9 +318,31 @@ pub fn normalize(input: &str) -> String {
     let looks_like_host = !trimmed.contains(' ')
         && trimmed.split('/').next().is_some_and(|host| host.contains('.') && !host.ends_with('.'));
     if looks_like_host {
-        return format!("https://{trimmed}");
+        let url = format!("https://{trimmed}");
+        remember_upgrade(&url);
+        return url;
     }
     search::query_url(trimmed)
+}
+
+/// Adresses tapees sans schema, tentees en https : si https ne repond pas, on revient en http (comme Chrome).
+static UPGRADED: parking_lot::Mutex<Vec<String>> = parking_lot::Mutex::new(Vec::new());
+
+fn remember_upgrade(url: &str) {
+    let mut list = UPGRADED.lock();
+    list.retain(|u| u != url);
+    list.push(url.to_string());
+    if list.len() > 20 {
+        list.remove(0);
+    }
+}
+
+/// Une page tapee sans schema a echoue en https (hors certificat) : l'adresse http a essayer, une seule fois.
+pub fn http_fallback(failed: &str) -> Option<String> {
+    let mut list = UPGRADED.lock();
+    let at = list.iter().position(|u| u == failed || u.trim_end_matches('/') == failed.trim_end_matches('/'))?;
+    list.remove(at);
+    failed.strip_prefix("https://").map(|rest| format!("http://{rest}"))
 }
 
 /// `localhost`, `localhost:3000/…`, ou une adresse IP avec port : un serveur local, en http.

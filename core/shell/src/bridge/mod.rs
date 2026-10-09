@@ -19,7 +19,7 @@ pub use publish::{
     publish_filter_lists, publish_initial_state, publish_shield, publish_tab, publish_tabs,
     set_fullscreen, set_tab_title,
 };
-pub use navigation::{flush_pending, normalize, perform};
+pub use navigation::{flush_pending, http_fallback, normalize, perform};
 use navigation::{current_url, navigate, set_zoom, travel, with_browser};
 use publish::refresh_lists;
 pub mod script;

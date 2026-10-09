@@ -13,6 +13,8 @@ export interface HelpTopic {
   /** Comment y aller, en une ou deux phrases. */
   how: string
   action?: HelpAction
+  /** Autres mots que l'on tape pour le trouver (verbes, synonymes). */
+  keywords?: string
 }
 
 export interface HelpSection {
@@ -50,9 +52,9 @@ export const HELP: HelpSection[] = [
         + 'suivant.' },
       { title: 'Créer, renommer, supprimer', how: 'Le « + » à côté des pastilles crée un profil ; Réglages → Profils '
         + 'pour renommer, changer la teinte, réinitialiser ou supprimer.', action: { label: 'Réglages', request: page('reglages') } },
-      { title: 'Effacer les données', how: 'Ctrl+Maj+Suppr ou Réglages → Effacer : historique, cookies et cache du '
+      { title: 'Effacer les données', keywords: 'supprimer vider cookies cache historique', how: 'Ctrl+Maj+Suppr ou Réglages → Effacer : historique, cookies et cache du '
         + 'profil, sur la dernière heure, 24 h, 7 jours ou tout.', action: { label: 'Réglages', request: page('reglages') } },
-      { title: 'Navigation privée', how: 'Ctrl+Maj+N, l’œil barré à côté de « Nouvel onglet », ou clic droit sur un '
+      { title: 'Navigation privée', keywords: 'incognito privé', how: 'Ctrl+Maj+N, l’œil barré à côté de « Nouvel onglet », ou clic droit sur un '
         + 'lien : rien n’est gardé (ni historique, ni cookies, ni session) et l’onglet est marqué « Privé ».' },
       { title: 'Conteneurs', how: 'Clic droit sur un onglet → ouvrir dans un conteneur, ou clic droit sur un lien → '
         + '« Ouvrir dans : … » : un second compte sur le même site, sans changer de profil. Le nom du conteneur '
@@ -87,22 +89,22 @@ export const HELP: HelpSection[] = [
         + 'gauche la fait revenir. Dans une fenêtre étroite, elle se replie d’elle-même.' },
       { title: 'Importer d’un autre navigateur', how: 'Réglages → Importer : favoris et historique de Chrome, '
         + 'Chromium, Brave, Edge, Vivaldi, Firefox ou Zen, en un clic.', action: { label: 'Réglages', request: page('reglages') } },
-      { title: 'Thème clair, sombre ou système', how: 'Le soleil / la lune en bas de la barre bascule ; Réglages → '
+      { title: 'Thème clair, sombre ou système', keywords: 'mode sombre nuit couleurs', how: 'Le soleil / la lune en bas de la barre bascule ; Réglages → '
         + 'Apparence → Thème pour « Système » (suit le bureau).', action: { label: 'Réglages', request: page('reglages') } },
-      { title: 'Téléchargements', how: 'La progression s’affiche en bas de la barre ; à la fin, « Ouvrir » ou « Afficher '
+      { title: 'Téléchargements', keywords: 'télécharger fichier enregistrer', how: 'La progression s’affiche en bas de la barre ; à la fin, « Ouvrir » ou « Afficher '
         + 'dans le dossier ». Bibliothèque → Fichiers pour les retrouver (Ctrl+J).',
         action: { label: 'Bibliothèque', request: page('bibliotheque') } },
-      { title: 'Mots de passe', how: 'Réglages → Mots de passe : Proton Pass ou Bitwarden en un clic (Echo n’a pas de '
+      { title: 'Mots de passe', keywords: 'mdp identifiants connexion', how: 'Réglages → Mots de passe : Proton Pass ou Bitwarden en un clic (Echo n’a pas de '
         + 'coffre à lui).', action: { label: 'Réglages', request: page('reglages') } },
-      { title: 'Traduire une page', how: 'Clic droit dans la page → « Traduire la page en français » : la page s’ouvre '
+      { title: 'Traduire une page', keywords: 'traduction langue anglais', how: 'Clic droit dans la page → « Traduire la page en français » : la page s’ouvre '
         + 'traduite par Google Traduction, qui reçoit son adresse.' },
-      { title: 'Rechercher dans la page', how: 'Ctrl+F, ou clic droit → « Rechercher dans la page » : le nombre '
+      { title: 'Rechercher dans la page', keywords: 'chercher trouver ctrl+f', how: 'Ctrl+F, ou clic droit → « Rechercher dans la page » : le nombre '
         + 'd’occurrences s’affiche, Entrée passe à la suivante, Maj+Entrée à la précédente, Échap ferme.' },
       { title: 'Reprise exacte', how: 'Ce que vous aviez tapé et la position des vidéos reviennent après une relance '
         + 'ou un onglet réveillé (jamais les mots de passe).' },
       { title: 'Routines', how: 'Quand vous ouvrez souvent les mêmes sites à la suite, Echo propose d’en faire une '
         + 'routine ; Bibliothèque → Routines pour les rouvrir d’un clic.', action: { label: 'Bibliothèque', request: page('bibliotheque') } },
-      { title: 'Couper le son d’un onglet', how: 'Cliquez les barres sonores sur l’onglet, ou clic droit sur l’onglet → '
+      { title: 'Couper le son d’un onglet', keywords: 'sourdine muet audio son', how: 'Cliquez les barres sonores sur l’onglet, ou clic droit sur l’onglet → '
         + '« Couper le son ».' },
       { title: 'Veille des onglets', how: 'Les onglets inactifs dorment pour rendre la mémoire ; clic droit → « Garder '
         + 'éveillé » pour l’éviter.' },
@@ -116,7 +118,7 @@ export const HELP: HelpSection[] = [
     id: 'compte', title: 'Compte Echo',
     intro: 'Vos réglages, favoris, extensions, historique et onglets sur toutes vos machines, chiffrés de bout en bout.',
     topics: [
-      { title: 'Synchronisation', how: 'Réglages → Compte : mode temps réel, automatique ou manuel. Une alerte en bas '
+      { title: 'Synchronisation', keywords: 'synchroniser synchro compte appareils', how: 'Réglages → Compte : mode temps réel, automatique ou manuel. Une alerte en bas '
         + 'de la barre signale quand la machine n’est pas à jour.', action: { label: 'Réglages', request: page('reglages') } },
       { title: 'Vos données', how: 'Réglages → Compte → Données stockées : ce que le serveur garde, déchiffré ici ; et '
         + '« Supprimer le compte » pour tout effacer.' },

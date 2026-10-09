@@ -14,8 +14,16 @@ function teinte(host) {
   return hash;
 }
 
-function marque(url) {
+function marque(url, favicon) {
   const host = hote(url);
+  if (favicon) {
+    const img = document.createElement('img');
+    img.className = 'marque';
+    img.alt = '';
+    img.src = favicon;
+    img.addEventListener('error', () => img.replaceWith(marque(url, null)));
+    return img;
+  }
   const m = document.createElement('span');
   m.className = 'marque';
   m.textContent = host.charAt(0).toUpperCase();
@@ -33,7 +41,7 @@ function tuile(item) {
   const nom = document.createElement('span');
   nom.className = 'nom';
   nom.textContent = item.title ? item.title.split(/ [–—|·-] /)[0] : hote(item.url);
-  a.append(marque(item.url), nom);
+  a.append(marque(item.url, item.favicon), nom);
   return a;
 }
 
@@ -47,7 +55,7 @@ function ligne(item) {
   const h = document.createElement('span');
   h.className = 'hote';
   h.textContent = hote(item.url);
-  a.append(marque(item.url), t, h);
+  a.append(marque(item.url, item.favicon), t, h);
   return a;
 }
 

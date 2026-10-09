@@ -61,7 +61,8 @@ function filterHelp(query: string): HelpSection[] {
   if (words.length === 0) return HELP
   return HELP.map((section) => ({
     ...section,
-    topics: section.topics.filter((t) => words.every((w) => fold(`${t.title} ${t.how} ${section.title}`).includes(w))),
+    topics: section.topics.filter((t) => words.every((w) => fold(`${t.title} ${t.how} ${t.keywords ?? ''} ${section.title}`)
+      .includes(w))),
   })).filter((section) => section.topics.length > 0)
 }
 

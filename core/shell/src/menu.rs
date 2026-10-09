@@ -33,6 +33,8 @@ pub struct PageFacts {
     pub reading: bool,
     /// Noms des conteneurs proposes pour ouvrir un lien.
     pub containers: Vec<String>,
+    /// Proposer « Traduire » : page web publique, hors navigation privee, dont la langue n'est pas le francais.
+    pub translatable: bool,
     /// Le bouclier filtre-t-il cette page ? L'entree dit ce qu'elle fera, pas un simple « Bouclier ».
     pub shield_on: bool,
 }
@@ -73,7 +75,9 @@ fn page_tools(click: &Click, facts: &PageFacts) -> Vec<MenuEntry> {
         tools.push(MenuEntry::new(MenuItemKind::FindInPage, "Rechercher dans la page"));
     }
     if click.page.starts_with("http") && !click.editable {
-        tools.push(MenuEntry::new(MenuItemKind::TranslatePage, "Traduire la page en français"));
+        if facts.translatable {
+            tools.push(MenuEntry::new(MenuItemKind::TranslatePage, "Traduire la page en français"));
+        }
         let label = if facts.reading { "Quitter la lecture" } else { "Lire en mode lecture" };
         tools.push(MenuEntry::new(MenuItemKind::Reader, label));
         tools.push(if facts.watched {
@@ -300,7 +304,7 @@ pub fn size_of(target: &ContextTarget) -> (i32, i32) {
 
 /// « Rechercher « debut de la selection » sur <moteur> », comme Chrome.
 fn search_label(selection: &str) -> String {
-    let short: String = selection.split_whitespace().collect::<Vec<_>>().join(" ").chars().take(24).collect();
-    let more = if selection.trim().chars().count() > 24 { "…" } else { "" };
+    let short: String = selection.split_whitespace().collect::<Vec<_>>().join(" ").chars().take(18).collect();
+    let more = if selection.trim().chars().count() > 18 { "…" } else { "" };
     format!("Rechercher « {short}{more} » sur {}", crate::search::engine().name)
 }

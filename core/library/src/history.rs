@@ -18,6 +18,14 @@ pub struct Entry {
 /// Nombre d'entrees rendues par defaut.
 const PAGE: usize = 200;
 
+/// L'icone d'un site arrive apres sa visite : elle complete les entrees qui n'en ont pas (historique et favoris).
+pub fn set_favicon(library: &Library, url: &str, icon: &str) {
+    library.with(|db| {
+        db.execute("UPDATE history SET favicon = ?2 WHERE url = ?1 AND favicon IS NULL", params![url, icon])?;
+        db.execute("UPDATE bookmarks SET favicon = ?2 WHERE url = ?1 AND favicon IS NULL", params![url, icon])
+    });
+}
+
 /// Ajoute des visites venues d'un autre navigateur (adresse, titre, date en secondes). Les doublons sont ignores.
 /// Rend le nombre de visites ajoutees.
 pub fn import_many(library: &Library, visits: &[(String, String, i64)], space: &str) -> usize {

@@ -60,6 +60,7 @@ pub fn open(click: Click, x: i32, y: i32) {
         forms: crate::forms::names(),
         reading: crate::reader::active_reading(),
         containers: crate::containers::named().into_iter().map(|(_, name)| name).collect(),
+        translatable: translatable(&click.page),
         shield_on: session::with(|s| s.shield.is_enabled() && s.shield.is_active_for(&click.page)).unwrap_or(true),
     };
     let target = menu::build(&click, facts);
@@ -284,4 +285,20 @@ fn open_in_container(link: &str, index: usize) {
         super::select_tab(tab);
     }
     super::publish_tabs();
+}
+
+/// « Traduire » n'a de sens que pour une page web publique hors navigation privee : une page locale ou d'un reseau
+/// prive ne doit pas etre envoyee a Google.
+fn translatable(page: &str) -> bool {
+    let host = page.split('/').nth(2).unwrap_or_default().split(':').next().unwrap_or_default();
+    let local = host == "localhost"
+        || host.ends_with(".local")
+        || host.starts_with("127.")
+        || host.starts_with("10.")
+        || host.starts_with("192.168.")
+        || host.parse::<std::net::IpAddr>().is_ok();
+    let private = session::with(|s| s.tabs.active().map(|t| crate::containers::is_private(t.container.as_deref())))
+        .flatten()
+        .unwrap_or(false);
+    page.starts_with("http") && !local && !private
 }

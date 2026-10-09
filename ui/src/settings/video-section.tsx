@@ -67,7 +67,7 @@ export function VideoSection({ view, onAction }: VideoSectionProps): ReactElemen
         <Action view={view} onAction={onAction} />
       </div>
       {thirdParty && (
-        <p className="px-2 text-[11px] leading-snug text-ink-faint">
+        <p className="px-2 text-[11.5px] leading-snug text-ink-faint">
           H.264 et AAC sont brevetés : Echo ne les distribue pas. Le décodeur vient de {view.source}, vérifié par
           empreinte avant d’être gardé.
         </p>

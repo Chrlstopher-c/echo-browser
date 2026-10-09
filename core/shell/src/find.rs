@@ -7,6 +7,7 @@ use echo_contract::CoreEvent;
 /// Cherche `text` dans l'onglet actif ; `next` passe a l'occurrence suivante (ou precedente si `!forward`).
 pub fn find(text: &str, forward: bool, next: bool) {
     let Some(host) = active_host() else { return };
+    SEARCHED.with(|slot| *slot.borrow_mut() = Some(host.clone()));
     if text.is_empty() {
         host.stop_finding(1);
         crate::bridge::publish(&CoreEvent::FindResult { count: 0, current: 0 });
@@ -30,10 +31,25 @@ pub fn stop() {
 /// Chromium compte sans activer la premiere ; on la designe alors une fois, comme le ferait Entree.
 static PENDING_FIRST: parking_lot::Mutex<Option<String>> = parking_lot::Mutex::new(None);
 
-/// Ferme la recherche de l'onglet actif en retirant aussi la selection (changement d'onglet).
+thread_local! {
+    /// L'onglet ou la recherche a ete lancee : quel que soit le chemin qui change d'onglet (clic, lien
+    /// « nouvel onglet », ouverture de l'exterieur), ses surlignages sont retires.
+    static SEARCHED: std::cell::RefCell<Option<BrowserHost>> = const { std::cell::RefCell::new(None) };
+}
+
+/// Ferme la recherche de l'onglet ou elle a ete lancee, surlignages compris.
 pub fn stop_clearing() {
-    if let Some(host) = active_host() {
+    if let Some(host) = SEARCHED.with(|slot| slot.borrow_mut().take()) {
         host.stop_finding(1);
+    }
+}
+
+/// L'onglet actif a pu changer : si ce n'est plus celui de la recherche, elle est fermee.
+pub fn active_changed() {
+    let searched = SEARCHED.with(|slot| slot.borrow().as_ref().and_then(|h| h.browser()).map(|b| b.identifier()));
+    let active = active_host().and_then(|h| h.browser()).map(|b| b.identifier());
+    if searched.is_some() && searched != active {
+        stop_clearing();
     }
 }
 

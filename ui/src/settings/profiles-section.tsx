@@ -63,7 +63,7 @@ export function ProfilesSection({ profiles, scheme }: { profiles: ProfileNames; 
         <PushButton icon={<IconPlus size={12} />} onClick={() => profiles.create('')}>Nouveau profil</PushButton>
       }>Profils</SectionLabel>
       {profiles.list.map((entry) => <ProfileRow key={entry.id} entry={entry} scheme={scheme} profiles={profiles} />)}
-      <p className="px-2 pt-1 text-[11px] leading-snug text-ink-faint">
+      <p className="px-2 pt-1 text-[11.5px] leading-snug text-ink-faint">
         Chaque profil est une identité : ses onglets, ses comptes et ses extensions ne se mélangent pas aux autres. Le
         profil principal garde les connexions d'origine. On passe d'un profil à l'autre par les pastilles en bas de la
         barre.

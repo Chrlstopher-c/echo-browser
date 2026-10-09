@@ -27,7 +27,7 @@ function Choice(props: { label: string; detail: string; on: boolean; set: (next:
     <div className="flex items-center justify-between gap-3 px-2 py-1.5">
       <div className="min-w-0">
         <p className="text-[12.5px] text-ink">{props.label}</p>
-        <p className="text-[11px] leading-snug text-ink-faint">{props.detail}</p>
+        <p className="text-[11.5px] leading-snug text-ink-faint">{props.detail}</p>
       </div>
       <Toggle checked={props.on} label={props.label} onChange={props.set} />
     </div>
@@ -43,7 +43,7 @@ export function ClearDataSection({ send }: { send: (request: UiRequest) => void 
   return (
     <section aria-label="Effacer les données de navigation">
       <SectionLabel>Effacer les données de navigation</SectionLabel>
-      <p className="px-2 pb-2 text-[11px] leading-snug text-ink-faint">
+      <p className="px-2 pb-2 text-[11.5px] leading-snug text-ink-faint">
         Pour le profil affiché seulement. Ctrl+Maj+Suppr ouvre directement ce panneau.
       </p>
       <div className="px-2 pb-1">

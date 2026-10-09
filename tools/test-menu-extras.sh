@@ -14,7 +14,7 @@ time.sleep(1)
 texte = context_menu(url, 600, 500)
 assert "Désactiver le bouclier sur ce site" in texte, texte
 assert "Rechercher dans la page" in texte, texte
-assert "Traduire la page en français" in texte, texte
+assert "Traduire" not in texte, f"une page locale ne doit pas partir chez Google Traduction : {texte}"
 call(op="click", x=800, y=600); time.sleep(0.5)
 ev("getSelection().selectAllChildren(document.getElementById('t'));1", url)
 texte = context_menu(url, 40, 22)

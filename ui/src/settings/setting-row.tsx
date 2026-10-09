@@ -48,7 +48,7 @@ export function SettingRow({ entry, onChange }: SettingRowProps): ReactElement {
     <div className={`flex gap-3 px-2 py-2 ${stacked ? 'flex-col' : 'items-center justify-between'}`}>
       <div className="min-w-0">
         <p className="text-[12.5px] text-ink">{entry.definition.label}</p>
-        <p className="text-[11px] leading-snug text-ink-faint">{entry.definition.detail}</p>
+        <p className="text-[11.5px] leading-snug text-ink-faint">{entry.definition.detail}</p>
       </div>
       <div className={stacked ? 'w-full' : 'shrink-0'}>
         <Control entry={entry} onChange={onChange} />

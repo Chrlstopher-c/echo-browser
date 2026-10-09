@@ -3,7 +3,7 @@
 
 import { useState, type ReactElement } from 'react'
 import { readUrl } from '../url-shape'
-import { IconFile, IconGlobe } from './icons'
+import { IconFile, IconGlobe, IconSparkle } from './icons'
 
 export interface SiteMarkProps {
   url: string
@@ -44,10 +44,9 @@ export function SiteMark({ url, favicon, size, className = '' }: SiteMarkProps):
   const [loaded, setLoaded] = useState<string | null>(null)
   if (url.startsWith('echo://')) {
     return (
-      <span data-mark="echo" style={{ width: size, height: size, fontSize: Math.round(size * 0.6) }}
-        className={`grid shrink-0 place-items-center rounded-[4px] bg-guard/20 font-bold leading-none text-guard
-          ${className}`}>
-        E
+      <span data-mark="echo" style={{ width: size, height: size }}
+        className={`grid shrink-0 place-items-center rounded-full bg-guard/20 text-guard ${className}`}>
+        <IconSparkle size={Math.round(size * 0.7)} />
       </span>
     )
   }

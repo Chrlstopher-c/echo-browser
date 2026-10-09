@@ -36,7 +36,7 @@ export function ContainersSection({ actions }: { actions: ContainerActions }): R
     <section>
       <SectionLabel>Conteneurs</SectionLabel>
       {actions.containers.length === 0 ? (
-        <p className="px-2 text-[11px] leading-snug text-ink-faint">
+        <p className="px-2 text-[11.5px] leading-snug text-ink-faint">
           Un conteneur isole les cookies et les comptes d’un onglet. Clic droit dans la liste d’onglets pour en créer.
         </p>
       ) : (

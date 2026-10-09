@@ -38,7 +38,7 @@ pub fn suggest(query: &str) -> Value {
             .into_iter()
             .filter(|e| seen.insert(e.url.trim_end_matches('/').to_string()))
             .take(PER_SECTION)
-            .map(|e| json!({"title": e.title, "url": e.url}))
+            .map(|e| json!({"title": e.title, "url": e.url, "favicon": e.favicon}))
             .collect();
         let top = top_sites(&s.library, &space);
         json!({"ok": true, "tabs": tabs, "bookmarks": bookmarks, "history": history, "top": top})
@@ -126,11 +126,13 @@ fn top_sites(library: &echo_library::Library, space: &str) -> Vec<Value> {
     let mut frequent = echo_library::history::search(library, "", space).0;
     frequent.sort_by(|a, b| b.visits.cmp(&a.visits));
     let mut hosts = std::collections::HashSet::new();
+    // Un site par hote (sans « www. », http et https confondus) ; les pages traduites par Google n'en sont pas un.
+    let host_of = |url: &str| url.split('/').nth(2).unwrap_or_default().trim_start_matches("www.").to_string();
     frequent
         .into_iter()
-        .filter(|e| hosts.insert(e.url.split('/').nth(2).unwrap_or_default().to_string()))
+        .filter(|e| !host_of(&e.url).ends_with("translate.goog") && hosts.insert(host_of(&e.url)))
         .take(TOP_SITES)
-        .map(|e| json!({"title": e.title, "url": e.url, "visits": e.visits}))
+        .map(|e| json!({"title": e.title, "url": e.url, "visits": e.visits, "favicon": e.favicon}))
         .collect()
 }
 

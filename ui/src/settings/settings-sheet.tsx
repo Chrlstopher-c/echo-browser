@@ -78,7 +78,7 @@ function ThemeSection({ space, fromCore, send }: {
       <div className="px-2">
         <Segmented name="scheme" segments={SCHEMES} value={value} onChange={choose} />
       </div>
-      <p className="px-2 pt-1 text-[11px] leading-snug text-ink-faint">
+      <p className="px-2 pt-1 text-[11.5px] leading-snug text-ink-faint">
         « Système » suit le thème clair ou sombre du bureau.
       </p>
     </section>
@@ -93,7 +93,7 @@ function AppearanceSection({ space, profiles }: { space: SpaceController; profil
       </SectionLabel>
       <SpacePicker current={space.space.hue} scheme={space.space.scheme}
         onSelect={(hue) => profiles.setHue(space.space.id, hue)} />
-      <p className="px-2 pt-1 text-[11px] leading-snug text-ink-faint">
+      <p className="px-2 pt-1 text-[11.5px] leading-snug text-ink-faint">
         Teinte du profil courant : sa pastille, la barre et le cadre autour de la page.
       </p>
     </section>

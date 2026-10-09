@@ -121,6 +121,10 @@ pub fn set_tab_favicon(browser_id: i32, icon: &str) {
         let new = Some(icon.to_string());
         let changed = tab.favicon != new;
         tab.favicon = new;
+        let (url, private) = (tab.url.clone(), crate::containers::is_private(tab.container.as_deref()));
+        if changed && !private && icon.starts_with("http") {
+            echo_library::history::set_favicon(&s.library, &url, icon);
+        }
         Some(changed)
     })
     .flatten()
@@ -229,6 +233,7 @@ pub fn publish_tabs() {
         return;
     };
     publish(&CoreEvent::TabsChanged { tabs, active });
+    crate::find::active_changed();
     crate::persist::schedule();
     crate::extension_tabs::tabs_changed();
 }

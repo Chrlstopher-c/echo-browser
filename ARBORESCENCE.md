@@ -262,6 +262,7 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `tools/test-sleep-scroll.sh`
 - `tools/test-tabs-keyboard.sh`
 - `tools/test-terminal-button.sh`
+- `tools/test-theme-everywhere.sh`
 - `tools/test-trim-alive.sh`
 - `tools/test-update.sh`
 - `tools/test-wake-navigate.sh`
@@ -330,8 +331,9 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `ui/src/extensions/install-field.tsx` — champ d'installation d'une extension — saisie, refus lisible, ouverture du catalogue.
 - `ui/src/extensions/use-extensions.ts` — commandes du panneau des extensions — installation par le catalogue, bascule,
 - `ui/src/find/find-bar.tsx` — barre de recherche dans la page, sous l'adresse — champ, « 3/12 », precedent, suivant, fermer.
-- `ui/src/find/use-find.ts` — etat de la recherche dans la page — ouverture (Ctrl+F, clic droit), texte, envoi au coeur, fermeture.
+- `ui/src/find/use-find.ts` — etat de la recherche dans la page — ouverture (Ctrl+F, clic droit), texte, envoi au coeur,
 - `ui/src/forms/form-cards.ts` — les fiches de formulaire (identite, contact, adresse) — lues dans le reglage synchronise
+- `ui/src/forms/form-offer.tsx` — les fiches proposees quand l'utilisateur entre dans un champ reconnu — sous l'adresse, en haut de
 - `ui/src/forms/forms-section.tsx` — Reglages → Formulaires — les fiches que le clic droit « Remplir : … » verse dans les champs vides
 - `ui/src/help/discover-strip.tsx` — bandeau « a decouvrir », une seule fois par machine : ou trouver l'Aide, la securite du site et
 - `ui/src/help/help-content.ts` — le contenu de l'Aide — ce qu'Echo sait faire, ou le trouver, et un bouton qui y mene. Les textes
@@ -357,7 +359,7 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `ui/src/pages/main.tsx` — point d'entree des pages pleine largeur (reglages, bibliotheque) ouvertes dans un onglet.
 - `ui/src/pages/pages-app.tsx` — les pages pleine largeur d'Echo — reglages et bibliotheque — dans un onglet, la ou la
 - `ui/src/pages/use-page-route.ts` — la section affichee, lue dans l'ancre de l'adresse (#reglages, #bibliotheque, #admin).
-- `ui/src/pages/use-page-theme.ts` — la page prend la teinte et le schema choisis dans la barre (stockage local partage),
+- `ui/src/pages/use-page-theme.ts` — la page prend la teinte et le schema choisis dans la barre, sans jamais les modifier (changer de
 - `ui/src/pages/welcome-page.tsx` — premier lancement — un accueil qui configure (theme, moteur de recherche, import depuis un autre
 - `ui/src/restart/restart-screen.tsx` — ecran d'attente plein cadre pendant la relance du navigateur. Il vit quelques
 - `ui/src/restart/restart-strip.tsx` — bande de relance — propose le redemarrage sans l'imposer, jamais bloquante.
@@ -368,6 +370,7 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `ui/src/settings/clear-data-section.tsx` — « Effacer les données de navigation » du profil affiche — periode, historique, cookies, cache —
 - `ui/src/settings/containers-section.tsx` — conteneurs dans les reglages — nom et retrait ; l'ouverture se fait depuis la liste d'onglets.
 - `ui/src/settings/grants-section.tsx` — les autorisations retenues par site (camera, micro, position…) et leur retrait.
+- `ui/src/settings/passwords-section.tsx` — mots de passe — Echo n'a pas de coffre a lui (un gestionnaire dedie est plus sur et suit
 - `ui/src/settings/profiles-section.tsx` — les profils dans les reglages — chacun est une identite (onglets, comptes, extensions a part) :
 - `ui/src/settings/setting-catalogue.ts` — habillage des reglages — pour chaque cle que le coeur livre, un groupe, un libelle
 - `ui/src/settings/setting-row.tsx` — une ligne de reglage — libelle, explication, et le controle qui va avec son type.

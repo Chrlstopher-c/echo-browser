@@ -147,12 +147,17 @@ wrap_load_handler! {
             let url = failed_url.map(CefString::to_string).unwrap_or_default();
             let texte = error_text.map(CefString::to_string).unwrap_or_default();
             tracing::warn!(%url, %texte, code = error_code.get_raw(), "chargement en echec");
-            let main = frame.is_some_and(|f| f.is_main() == 1);
+            let main = frame.as_ref().is_some_and(|f| f.is_main() == 1);
             // ERR_ABORTED (-3) : navigation remplacee par une autre, pas un echec.
             if main && error_code.get_raw() != -3 {
                 crate::bridge::library::note_failed_load(&url);
+                let certificate = (-299..=-200).contains(&error_code.get_raw());
+                if let (false, Some(http), Some(frame)) = (certificate, crate::bridge::http_fallback(&url), frame) {
+                    tracing::info!(%url, "https sans reponse : repli en http");
+                    frame.load_url(Some(&CefString::from(http.as_str())));
+                    return;
+                }
                 if let Some(browser) = browser.as_deref() {
-                    let certificate = (-299..=-200).contains(&error_code.get_raw());
                     crate::tabs::note_load_error(browser.identifier(), &url, certificate);
                     crate::bridge::publish_tabs();
                 }

@@ -132,7 +132,9 @@ export function WelcomePage(props: WelcomePageProps): ReactElement {
         </motion.div>
       </AnimatePresence>
       <div className="mt-6 flex items-center gap-3">
-        {index > 0 && <PushButton onClick={() => setIndex(index - 1)}>Précédent</PushButton>}
+        <span className={index > 0 ? '' : 'invisible'}>
+          <PushButton onClick={() => setIndex(index - 1)}>Précédent</PushButton>
+        </span>
         <div className="flex gap-1.5" aria-label={`Étape ${index + 1} sur ${steps.length}`}>
           {steps.map((s, i) => (
             <span key={s}
@@ -142,7 +144,7 @@ export function WelcomePage(props: WelcomePageProps): ReactElement {
         <PushButton tone="guard" onClick={() => (last ? finish(send) : setIndex(index + 1))}>
           {last ? 'Commencer' : 'Suivant'}
         </PushButton>
-        {!last && <PushButton onClick={() => finish(send)}>Passer</PushButton>}
+        <span className={last ? 'invisible' : ''}><PushButton onClick={() => finish(send)}>Passer</PushButton></span>
       </div>
     </div>
   )

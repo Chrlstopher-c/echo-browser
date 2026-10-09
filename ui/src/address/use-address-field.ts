@@ -21,7 +21,8 @@ export function useAddressField(
   /** Echap : l'utilisateur renonce (fenetre etroite : la barre repart). */
   onLeave?: () => void,
 ): AddressFieldState {
-  const url = tab?.url === 'about:blank' ? '' : (tab?.url ?? '')
+  // Un nouvel onglet (page d'Echo) s'ouvre sur une adresse vide, prete a taper : jamais son adresse interne.
+  const url = tab === null || tab.url === 'about:blank' || tab.url.startsWith('echo://') ? '' : tab.url
   const [draft, setDraft] = useState(url)
   const [editing, setEditing] = useState(false)
   const inputRef = useRef<HTMLInputElement | null>(null)
