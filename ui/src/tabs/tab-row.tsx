@@ -2,7 +2,7 @@
 // L'onglet actif est une carte posee : le fond glisse d'une ligne a l'autre. Saisi, il se souleve.
 
 import { motion, Reorder, useDragControls } from 'framer-motion'
-import { useRef, type MouseEvent, type PointerEvent, type ReactElement } from 'react'
+import { useRef, type KeyboardEvent, type MouseEvent, type PointerEvent, type ReactElement } from 'react'
 import type { TabView } from '../shared/contract'
 import { IconClose } from '../shared/design/icons'
 import { PANEL, QUICK } from '../shared/design/motion'
@@ -82,6 +82,24 @@ function ActiveBackdrop(): ReactElement {
   )
 }
 
+/** Clavier dans la liste : fleches pour passer d'un onglet a l'autre, Entree ou Espace pour l'ouvrir, Suppr pour le
+ * fermer. Le focus suit l'ordre affiche (attribut `data-tab-row`). */
+function onRowKey(event: KeyboardEvent<HTMLElement>, onSelect: () => void, onClose: () => void): void {
+  const rows = [...document.querySelectorAll<HTMLElement>('[data-tab-row]')]
+  const at = rows.indexOf(event.currentTarget)
+  const focus = (index: number): void => rows[Math.max(0, Math.min(rows.length - 1, index))]?.focus()
+  switch (event.key) {
+    case 'ArrowDown': focus(at + 1); break
+    case 'ArrowUp': focus(at - 1); break
+    case 'Home': focus(0); break
+    case 'End': focus(rows.length - 1); break
+    case 'Enter': case ' ': onSelect(); break
+    case 'Delete': case 'Backspace': onClose(); focus(at); break
+    default: return
+  }
+  event.preventDefault()
+}
+
 /** Survol prolonge d'un onglet endormi : il se reveille d'avance. */
 function useWarm(asleep: boolean, onWarm: () => void): { start: () => void; stop: () => void } {
   const timer = useRef(0)
@@ -114,8 +132,15 @@ export function TabRow(props: TabRowProps): ReactElement {
       onPointerEnter={warm.start}
       onPointerLeave={warm.stop}
       onContextMenu={onContextMenu}
+      onKeyDown={(event: KeyboardEvent<HTMLElement>) => onRowKey(event, onSelect, onClose)}
       title={title}
-      className={`group relative isolate flex items-center gap-2.5 rounded-row
+      role="tab"
+      aria-selected={active}
+      aria-label={tab.asleep ? `${title} (endormi)` : title}
+      tabIndex={active ? 0 : -1}
+      data-tab-row=""
+      className={`group relative isolate flex items-center gap-2.5 rounded-row outline-none
+        focus-visible:ring-1 focus-visible:ring-guard/70
         ${compact ? 'justify-center px-0' : 'pr-1.5 pl-4'}
         ${active ? 'text-ink' : 'text-ink-muted hover:bg-hover hover:text-ink'}`}
     >

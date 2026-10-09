@@ -64,7 +64,8 @@ export function TabList(props: TabListProps): ReactElement {
 
   return (
     <div data-loose-tabs className="flex flex-col gap-0.5">
-      <Reorder.Group axis="y" values={order} onReorder={setOrder} className="flex flex-col gap-0.5">
+      <Reorder.Group axis="y" values={order} onReorder={setOrder} className="flex flex-col gap-0.5"
+        role="tablist" aria-orientation="vertical" aria-label="Onglets">
         <AnimatePresence initial={false}>
           {order.map((tab) => (
             <TabRow

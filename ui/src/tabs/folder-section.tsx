@@ -80,7 +80,8 @@ export function FolderSection(props: FolderSectionProps): ReactElement {
     <div data-folder-id={folder.id} className="flex flex-col gap-0.5">
       <Header {...props} />
       {!folder.collapsed && (
-        <Reorder.Group axis="y" values={members} onReorder={() => undefined} className="flex flex-col gap-0.5 pl-3">
+        <Reorder.Group axis="y" values={members} onReorder={() => undefined} className="flex flex-col gap-0.5 pl-3"
+          role="tablist" aria-orientation="vertical" aria-label={`Dossier ${folder.name}`}>
           {members.map((tab) => (
             <TabRow
               key={tab.id}
