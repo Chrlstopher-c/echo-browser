@@ -36,6 +36,10 @@ pub fn prepare_environment() {
             std::env::set_var("MALLOC_TRIM_THRESHOLD_", "65536");
         }
     }
+    // Sous Linux, Chromium choisit la langue de ses pages (erreurs, impression, outils de developpement) dans
+    // l'environnement et ignore le reglage `locale` : `LANGUAGE` la met a celle d'Echo, pour ce processus seulement.
+    // SAFETY : meme moment, avant tout autre fil.
+    unsafe { std::env::set_var("LANGUAGE", "fr") };
     // Le pilote NVIDIA ne se pose que sur une machine NVIDIA : ailleurs, VA-API choisit le sien (AMD, Intel).
     let nvidia = std::path::Path::new("/proc/driver/nvidia/version").exists();
     if hardware_decoding() && nvidia && std::env::var_os("LIBVA_DRIVER_NAME").is_none() {
@@ -95,6 +99,7 @@ pub fn apply(process_type: &str, command_line: &mut CommandLine) {
     // Les outils de developpement ancres se connectent au port de debogage local : seule leur origine est
     // admise, aucune page web ne peut s'y brancher.
     switch_with_value(command_line, "remote-allow-origins", "devtools://devtools");
+    switch_with_value(command_line, "lang", "fr");
 
     // Banc : `ECHO_FLAGS="--a --b=1"` ajoute des drapeaux Chromium pour mesurer leur effet.
     let pont = crate::extension_tabs::install_pont();
