@@ -1,7 +1,7 @@
 # TODO — echo-browser
 
 ## Pour atteindre 10/10 (second contre-audit du 09/10 : 8 / 8 / 7 / 7,5 / 7,5)
-- Navigation : palette plus large ou centrée (Ctrl+K façon Arc), Ctrl+N. (Autocomplétion faite le 09/10.)
+- Navigation : palette plus large ou centrée (Ctrl+K façon Arc), Ctrl+N ouvre un onglet (une seule fenêtre). (Autocomplétion faite le 09/10.)
 - Esthétique : menus contextuels au style de la barre (surimpression opaque : dessiner les coins dans la teinte).
 - Grand public : DevTools en français (traductions absentes de CEF), page de certificat refusé de Chromium (pages d'erreur réseau maison faites le 09/10).
 - Concurrents : traduction dans la page, extensions actives sans redémarrage, vue partagée, espaces façon Arc/Zen.

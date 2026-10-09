@@ -132,7 +132,8 @@ pub fn resolve(code: i32, unmodified: u16, modifiers: u32) -> Option<Action> {
 
 fn ctrl_letter(letter: char, shift: bool) -> Option<Action> {
     Some(match (letter, shift) {
-        ('t', false) => Action::NewTab,
+        // Echo n'a qu'une fenetre : Ctrl+N (nouvelle fenetre ailleurs) ouvre un onglet plutot que rien.
+        ('t' | 'n', false) => Action::NewTab,
         ('t', true) => Action::ReopenTab,
         ('n', true) => Action::NewPrivateTab,
         ('c', true) => Action::CopyUrl,
@@ -181,6 +182,7 @@ mod tests {
         assert_eq!(resolve(key::DIGIT_0, 0, CTRL), reset);
         assert_eq!(resolve(key::NUMPAD_0, 0, CTRL), reset);
         assert_eq!(resolve(0x46, u16::from(b'f'), CTRL), Some(Action::Find));
+        assert_eq!(resolve(0x4E, u16::from(b'n'), CTRL), Some(Action::NewTab));
         // Codes de controle que Chromium fabrique avec Ctrl : « 0 » & 0x1F = 16, « & » & 0x1F = 6.
         assert_eq!(resolve(key::DIGIT_0, 16, CTRL), reset);
         assert_eq!(resolve(key::DIGIT_1, 6, CTRL), Some(Action::SelectTab(0)));
