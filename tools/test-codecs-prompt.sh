@@ -6,7 +6,7 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 ARCHIVE="${1:-$(ls -t dist-release/*.tar.xz | head -1)}"
 WORK="$(mktemp -d)"
-export ECHO_RUN_DIR="$WORK/run" ECHO_CONTROL_NAME="test-$$" ECHO_DATA_DIR="$WORK/data" ECHO_HWDEC=0 ECHO_NO_ANCHOR=1
+export ECHO_RUN_DIR="$WORK/run" ECHO_CONTROL_NAME="test-$$" ECHO_DATA_DIR="$WORK/data" ECHO_HWDEC=0
 export ECHO_DEVTOOLS_PORT=$((30000 + RANDOM % 20000))
 mkdir -p "$ECHO_RUN_DIR" "$ECHO_DATA_DIR" && tar -xf "$ARCHIVE" -C "$WORK"
 ffmpeg -loglevel error -f lavfi -i testsrc=d=30:s=640x360:r=30 -f lavfi -i sine=f=440:d=30 \
