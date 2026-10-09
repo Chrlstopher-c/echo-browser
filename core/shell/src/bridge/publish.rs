@@ -101,13 +101,13 @@ pub fn publish_tab(browser_id: i32, url: &str, title: &str, loading: bool) {
         if !loading {
             tab.record_visit(url);
         }
-        Some(tab.title.clone())
+        Some((tab.title.clone(), crate::tabs::Tabs::space_of_tab(tab)))
     })
     .flatten();
 
-    let Some(title) = known else { return };
+    let Some((title, space)) = known else { return };
     if !loading {
-        library::record_visit(url, &title);
+        library::record_visit(url, &title, &space);
     }
     publish_tabs();
 }
@@ -188,11 +188,12 @@ pub fn set_tab_title(browser_id: i32, title: &str) {
         let tab = s.tabs.by_browser(browser_id)?;
         tab.title = title.to_string();
         let current = tab.browser().and_then(|b| b.main_frame()).map(|f| CefString::from(&f.url()).to_string());
-        Some(current.filter(|u| !u.is_empty()).unwrap_or_else(|| tab.url.clone()))
+        let url = current.filter(|u| !u.is_empty()).unwrap_or_else(|| tab.url.clone());
+        Some((url, crate::tabs::Tabs::space_of_tab(tab)))
     })
     .flatten();
-    if let Some(url) = url {
-        library::record_visit(&url, title);
+    if let Some((url, space)) = url {
+        library::record_visit(&url, title, &space);
         publish_tabs();
     }
 }

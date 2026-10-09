@@ -43,7 +43,7 @@ pub fn read() -> BTreeMap<String, Value> {
             .collect();
         let favoris: Vec<Value> = echo_library::bookmarks::list(&s.library)
             .into_iter()
-            .map(|b| json!({"url": b.url, "title": b.title}))
+            .map(|b| json!({"url": b.url, "title": b.title, "space": b.space}))
             .collect();
         BTreeMap::from([
             ("reglages".to_string(), Value::Object(reglages)),
@@ -77,20 +77,25 @@ pub fn apply(writes: &BTreeMap<String, Value>) {
 }
 
 fn apply_bookmarks(favoris: &[Value]) {
-    let wanted: Vec<(String, String)> = favoris
+    let wanted: Vec<(String, String, String)> = favoris
         .iter()
-        .filter_map(|f| Some((f["url"].as_str()?.to_string(), f["title"].as_str().unwrap_or_default().to_string())))
+        .filter_map(|f| {
+            let space = f["space"].as_str().unwrap_or(crate::profiles::DEFAULT).to_string();
+            Some((f["url"].as_str()?.to_string(), f["title"].as_str().unwrap_or_default().to_string(), space))
+        })
         .collect();
-    let urls: HashSet<&str> = wanted.iter().map(|(u, _)| u.as_str()).collect();
+    let urls: HashSet<&str> = wanted.iter().map(|(u, _, _)| u.as_str()).collect();
     crate::session::with(|s| {
         for bookmark in echo_library::bookmarks::list(&s.library) {
             if !urls.contains(bookmark.url.as_str()) {
                 echo_library::bookmarks::remove(&s.library, &bookmark.url);
             }
         }
-        for (url, title) in &wanted {
-            if !echo_library::bookmarks::contains(&s.library, url) {
-                echo_library::bookmarks::add(&s.library, url, title, None);
+        let known: Vec<(String, String)> =
+            echo_library::bookmarks::list(&s.library).into_iter().map(|b| (b.url, b.space)).collect();
+        for (url, title, space) in &wanted {
+            if !known.iter().any(|(u, sp)| u == url && sp == space) {
+                echo_library::bookmarks::add(&s.library, url, title, None, space);
             }
         }
     });

@@ -8,6 +8,8 @@ export interface Folder {
   id: string
   name: string
   collapsed: boolean
+  /** Profil du dossier ; absent pour les dossiers d'avant les profils separes (profil principal). */
+  space?: string
 }
 
 export interface FolderActions {
@@ -26,6 +28,7 @@ export interface FolderActions {
 }
 
 const KEY = 'tabs.folders'
+const DEFAULT_SPACE = 'graphite'
 const DEFAULT_NAME = 'Nouveau dossier'
 
 function isFolder(value: unknown): value is Folder {
@@ -40,7 +43,10 @@ export function parseFolders(settings: SettingView[]): Folder[] {
   try {
     const parsed: unknown = JSON.parse(raw.value)
     if (!Array.isArray(parsed)) return []
-    return parsed.filter(isFolder).map((item) => ({ id: item.id, name: item.name, collapsed: item.collapsed === true }))
+    return parsed.filter(isFolder).map((item) => ({
+      id: item.id, name: item.name, collapsed: item.collapsed === true,
+      ...(typeof item.space === 'string' ? { space: item.space } : {}),
+    }))
   } catch (error) {
     console.warn('dossiers illisibles', error)
     return []
@@ -53,6 +59,7 @@ function patch(folders: Folder[], id: string, change: Partial<Folder>): Folder[]
 
 interface Deps {
   folders: Folder[]
+  space: string
   editing: string | null
   edit: (id: string | null) => void
   save: (next: Folder[]) => void
@@ -60,7 +67,7 @@ interface Deps {
   send: (request: UiRequest) => void
 }
 
-function buildActions({ folders, editing, edit, save, assign, send }: Deps): FolderActions {
+function buildActions({ folders, space, editing, edit, save, assign, send }: Deps): FolderActions {
   const toggle = (id: string): void =>
     save(patch(folders, id, { collapsed: !(folders.find((f) => f.id === id)?.collapsed ?? false) }))
   return {
@@ -69,7 +76,7 @@ function buildActions({ folders, editing, edit, save, assign, send }: Deps): Fol
     edit,
     create: (name, tabId) => {
       const id = `d${Date.now().toString(36)}`
-      save([...folders, { id, name: name ?? DEFAULT_NAME, collapsed: false }])
+      save([...folders, { id, name: name ?? DEFAULT_NAME, collapsed: false, space }])
       if (tabId !== undefined) assign(tabId, id)
       edit(id)
     },
@@ -87,20 +94,25 @@ function buildActions({ folders, editing, edit, save, assign, send }: Deps): Fol
   }
 }
 
-export function useFolders(send: (request: UiRequest) => void, settings: SettingView[]): FolderActions {
-  const folders = useMemo(() => parseFolders(settings), [settings])
+/** Les dossiers du profil `space` seulement : ceux des autres profils restent enregistres, mais invisibles ici. */
+export function useFolders(send: (request: UiRequest) => void, settings: SettingView[], space: string): FolderActions {
+  const all = useMemo(() => parseFolders(settings), [settings])
+  const mine = useCallback((folder: Folder): boolean => (folder.space ?? DEFAULT_SPACE) === space, [space])
+  const folders = useMemo(() => all.filter(mine), [all, mine])
   const [editing, edit] = useState<string | null>(null)
   const save = useCallback(
-    (next: Folder[]): void =>
-      send({ kind: 'updateSetting', key: KEY, value: { type: 'text', value: JSON.stringify(next) } }),
-    [send],
+    (next: Folder[]): void => {
+      const kept = [...all.filter((folder) => !mine(folder)), ...next]
+      send({ kind: 'updateSetting', key: KEY, value: { type: 'text', value: JSON.stringify(kept) } })
+    },
+    [send, all, mine],
   )
   const assign = useCallback(
     (id: TabId, folder: string | null): void => send({ kind: 'setTabFolder', id, folder }),
     [send],
   )
   return useMemo(
-    () => buildActions({ folders, editing, edit, save, assign, send }),
-    [folders, editing, save, assign, send],
+    () => buildActions({ folders, space, editing, edit, save, assign, send }),
+    [folders, space, editing, save, assign, send],
   )
 }

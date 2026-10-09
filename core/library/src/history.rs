@@ -11,6 +11,8 @@ pub struct Entry {
     pub visited_at: i64,
     /// Nombre total de visites sur cette adresse.
     pub visits: u32,
+    /// Profil ou la visite a eu lieu.
+    pub space: String,
 }
 
 /// Nombre d'entrees rendues par defaut.
@@ -18,18 +20,18 @@ const PAGE: usize = 200;
 
 /// Ajoute des visites venues d'un autre navigateur (adresse, titre, date en secondes). Les doublons sont ignores.
 /// Rend le nombre de visites ajoutees.
-pub fn import_many(library: &Library, visits: &[(String, String, i64)]) -> usize {
+pub fn import_many(library: &Library, visits: &[(String, String, i64)], space: &str) -> usize {
     library
         .with(|db| {
             let tx = db.unchecked_transaction()?;
             let mut added = 0;
             {
                 let mut insert = tx.prepare(
-                    "INSERT OR IGNORE INTO history (url, title, favicon, visited_at) VALUES (?1, ?2, NULL, ?3)",
+                    "INSERT OR IGNORE INTO history (url, title, favicon, visited_at, space) VALUES (?1, ?2, NULL, ?3, ?4)",
                 )?;
                 for (url, title, at) in visits {
                     if url.starts_with("http") {
-                        added += insert.execute(params![url, title, at])?;
+                        added += insert.execute(params![url, title, at, space])?;
                     }
                 }
             }
@@ -39,55 +41,57 @@ pub fn import_many(library: &Library, visits: &[(String, String, i64)]) -> usize
         .unwrap_or(0)
 }
 
-/// Enregistre une visite. Les pages internes n'y figurent pas.
-pub fn record(library: &Library, url: &str, title: &str, favicon: Option<&str>) -> bool {
+/// Enregistre une visite dans le profil `space`. Les pages internes n'y figurent pas.
+pub fn record(library: &Library, url: &str, title: &str, favicon: Option<&str>, space: &str) -> bool {
     if url.is_empty() || url.starts_with("echo://") || url.starts_with("chrome://") {
         return false;
     }
     library
         .with(|db| {
             db.execute(
-                "INSERT OR REPLACE INTO history (url, title, favicon, visited_at)
-                 VALUES (?1, ?2, ?3, ?4)",
-                params![url, title, favicon, now()],
+                "INSERT OR REPLACE INTO history (url, title, favicon, visited_at, space)
+                 VALUES (?1, ?2, ?3, ?4, ?5)",
+                params![url, title, favicon, now(), space],
             )
         })
         .is_some()
 }
 
-/// Les entrees les plus recentes, filtrees par `terms` si la chaine n'est pas vide.
-/// Rend aussi le nombre total d'adresses distinctes.
-pub fn search(library: &Library, terms: &str) -> (Vec<Entry>, usize) {
+/// Les entrees les plus recentes du profil `space`, filtrees par `terms` si la chaine n'est pas vide.
+/// Rend aussi le nombre total d'adresses distinctes du profil.
+pub fn search(library: &Library, terms: &str, space: &str) -> (Vec<Entry>, usize) {
     library
         .with(|db| {
-            let total: usize =
-                db.query_row("SELECT COUNT(DISTINCT url) FROM history", [], |row| row.get(0))?;
+            let total: usize = db.query_row(
+                "SELECT COUNT(DISTINCT url) FROM history WHERE space = ?1", params![space], |row| row.get(0),
+            )?;
             let entries = if terms.trim().is_empty() {
-                latest_in(db, PAGE)?
+                latest_in(db, PAGE, Some(space))?
             } else {
-                matching(db, terms.trim())?
+                matching(db, terms.trim(), space)?
             };
             Ok((entries, total))
         })
         .unwrap_or_default()
 }
 
-fn latest_in(db: &Connection, limit: usize) -> rusqlite::Result<Vec<Entry>> {
+/// Une entree par adresse (et par profil), sa derniere visite ; `space` : un seul profil, sinon tous.
+fn latest_in(db: &Connection, limit: usize, space: Option<&str>) -> rusqlite::Result<Vec<Entry>> {
     let mut statement = db.prepare(
-        "SELECT url, title, favicon, MAX(visited_at) AS seen, COUNT(*) AS visits
-         FROM history GROUP BY url ORDER BY seen DESC LIMIT ?1",
+        "SELECT url, title, favicon, MAX(visited_at) AS seen, COUNT(*) AS visits, space
+         FROM history WHERE ?2 IS NULL OR space = ?2 GROUP BY url, space ORDER BY seen DESC LIMIT ?1",
     )?;
-    collect(statement.query_map(params![limit as i64], row_to_entry)?)
+    collect(statement.query_map(params![limit as i64, space], row_to_entry)?)
 }
 
-fn matching(db: &Connection, terms: &str) -> rusqlite::Result<Vec<Entry>> {
+fn matching(db: &Connection, terms: &str, space: &str) -> rusqlite::Result<Vec<Entry>> {
     let pattern = format!("%{}%", terms.replace('%', "\\%"));
     let mut statement = db.prepare(
-        "SELECT url, title, favicon, MAX(visited_at) AS seen, COUNT(*) AS visits
-         FROM history WHERE url LIKE ?1 ESCAPE '\\' OR title LIKE ?1 ESCAPE '\\'
+        "SELECT url, title, favicon, MAX(visited_at) AS seen, COUNT(*) AS visits, space
+         FROM history WHERE (url LIKE ?1 ESCAPE '\\' OR title LIKE ?1 ESCAPE '\\') AND space = ?3
          GROUP BY url ORDER BY seen DESC LIMIT ?2",
     )?;
-    collect(statement.query_map(params![pattern, PAGE as i64], row_to_entry)?)
+    collect(statement.query_map(params![pattern, PAGE as i64, space], row_to_entry)?)
 }
 
 fn row_to_entry(row: &rusqlite::Row<'_>) -> rusqlite::Result<Entry> {
@@ -97,6 +101,7 @@ fn row_to_entry(row: &rusqlite::Row<'_>) -> rusqlite::Result<Entry> {
         favicon: row.get(2)?,
         visited_at: row.get(3)?,
         visits: row.get::<_, i64>(4)? as u32,
+        space: row.get(5)?,
     })
 }
 
@@ -151,20 +156,20 @@ pub fn forgotten(library: &Library) -> Vec<(String, i64)> {
         .unwrap_or_default()
 }
 
-/// Les `limit` adresses visitees le plus recemment (une entree par adresse, sa derniere visite).
+/// Les `limit` adresses visitees le plus recemment, tous profils (synchronisation).
 pub fn latest(library: &Library, limit: usize) -> Vec<Entry> {
-    library.with(|db| latest_in(db, limit)).unwrap_or_default()
+    library.with(|db| latest_in(db, limit, None)).unwrap_or_default()
 }
 
 /// Ajoute une visite venue d'une autre machine (sans doublon), sauf si elle a ete effacee ici depuis.
-pub fn import(library: &Library, url: &str, title: &str, visited_at: i64) -> bool {
+pub fn import(library: &Library, url: &str, title: &str, visited_at: i64, space: &str) -> bool {
     library
         .with(|db| {
             db.execute(
-                "INSERT OR IGNORE INTO history (url, title, favicon, visited_at)
-                 SELECT ?1, ?2, NULL, ?3
+                "INSERT OR IGNORE INTO history (url, title, favicon, visited_at, space)
+                 SELECT ?1, ?2, NULL, ?3, ?4
                  WHERE NOT EXISTS (SELECT 1 FROM history_forgotten WHERE url IN (?1, '*') AND at >= ?3)",
-                params![url, title, visited_at],
+                params![url, title, visited_at, space],
             )
         })
         .is_some()

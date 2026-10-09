@@ -27,7 +27,7 @@ pub(super) fn set_zoom(id: echo_contract::TabId, factor: f32) {
 }
 
 /// Donne le focus clavier a la barre (la page le garde sinon : la saisie partirait dans la page), puis a l'adresse.
-fn focus_address() {
+pub(super) fn focus_address() {
     focus_chrome();
     publish(&CoreEvent::FocusAddressRequested);
 }
@@ -57,6 +57,8 @@ pub fn perform(action: crate::shortcuts::Action) {
         Action::NewTab => {
             open_tab(search::HOME);
             publish_tabs();
+            // Comme Chrome et Arc : un nouvel onglet, c'est d'abord une adresse ou une recherche a taper.
+            focus_address();
         }
         Action::CloseTab => {
             if let Some(id) = session::with(|s| s.tabs.active_id()).flatten() {

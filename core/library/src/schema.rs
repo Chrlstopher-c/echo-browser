@@ -4,7 +4,7 @@ use rusqlite::Connection;
 use tracing::info;
 
 /// Version du schema. A incrementer en ajoutant la migration correspondante.
-const VERSION: i32 = 2;
+const VERSION: i32 = 3;
 
 /// Prepare la base : cree ce qui manque, met a niveau ce qui est ancien.
 pub fn prepare(connection: &Connection) -> rusqlite::Result<()> {
@@ -97,6 +97,20 @@ pub fn prepare(connection: &Connection) -> rusqlite::Result<()> {
             PRIMARY KEY (origin, kind)
          );",
     )?;
+    // Version 3 : historique et favoris propres a chaque profil. Les donnees d'avant vont au profil principal.
+    for table in ["history", "bookmarks"] {
+        add_column(connection, table, "space", "TEXT NOT NULL DEFAULT 'graphite'")?;
+    }
     connection.pragma_update(None, "user_version", VERSION)?;
+    Ok(())
+}
+
+/// Ajoute une colonne si elle manque (SQLite n'a pas d'`ADD COLUMN IF NOT EXISTS`).
+fn add_column(connection: &Connection, table: &str, column: &str, definition: &str) -> rusqlite::Result<()> {
+    let mut statement = connection.prepare(&format!("PRAGMA table_info({table})"))?;
+    let exists = statement.query_map([], |row| row.get::<_, String>(1))?.flatten().any(|name| name == column);
+    if !exists {
+        connection.execute_batch(&format!("ALTER TABLE {table} ADD COLUMN {column} {definition}"))?;
+    }
     Ok(())
 }

@@ -29,7 +29,7 @@ pub fn local_value() -> Value {
             let forgotten_after = all.get(&entry.url).and_then(|e| e["d"].as_i64()).is_some_and(|d| d >= entry.visited_at);
             if entry.url.len() <= MAX_URL && !forgotten_after {
                 let title: String = entry.title.chars().take(MAX_TITLE).collect();
-                all.insert(entry.url, json!({"t": title, "v": entry.visited_at}));
+                all.insert(entry.url, json!({"t": title, "v": entry.visited_at, "s": entry.space}));
             }
         }
     });
@@ -43,7 +43,8 @@ pub fn apply(merged: &Value) {
         for (url, entry) in entries {
             match (entry["v"].as_i64(), entry["d"].as_i64()) {
                 (Some(at), _) if url != history::ALL => {
-                    history::import(&s.library, url, entry["t"].as_str().unwrap_or_default(), at);
+                    let space = entry["s"].as_str().unwrap_or(crate::profiles::DEFAULT);
+                    history::import(&s.library, url, entry["t"].as_str().unwrap_or_default(), at, space);
                 }
                 (_, Some(at)) => {
                     history::forget(&s.library, url, at);

@@ -36,10 +36,11 @@ fn apply(name: &str, harvest: import::Harvest) {
         let known: std::collections::HashSet<String> =
             echo_library::bookmarks::list(&s.library).into_iter().map(|b| b.url).collect();
         let mut added = 0;
+        let space = s.tabs.space();
         for (url, title) in harvest.bookmarks.iter().filter(|(url, _)| !known.contains(url)) {
-            added += usize::from(echo_library::bookmarks::add(&s.library, url, title, None));
+            added += usize::from(echo_library::bookmarks::add(&s.library, url, title, None, &space));
         }
-        (added, echo_library::history::import_many(&s.library, &harvest.history))
+        (added, echo_library::history::import_many(&s.library, &harvest.history, &space))
     });
     let Some((bookmarks, pages)) = counts else { return };
     tracing::info!(name, bookmarks, pages, "import d'un autre navigateur");

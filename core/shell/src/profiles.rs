@@ -57,6 +57,11 @@ pub fn switch(id: &str) {
     }
     crate::bridge::publish_tabs();
     crate::bridge::publish_extensions();
+    if !same {
+        // Favoris et historique sont ceux du profil : la Bibliotheque et la barre suivent.
+        crate::bridge::publish_bookmarks();
+        crate::bridge::publish_history("");
+    }
 }
 
 /// Dossiers de profils a effacer au prochain lancement (un contexte ouvert ne peut pas l'etre a chaud).

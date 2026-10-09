@@ -9,7 +9,7 @@ fn library() -> Library {
 #[test]
 fn un_favori_sajoute_se_retrouve_et_se_retire() {
     let lib = library();
-    assert!(bookmarks::add(&lib, "https://exemple.fr", "Exemple", None));
+    assert!(bookmarks::add(&lib, "https://exemple.fr", "Exemple", None, "graphite"));
     assert!(bookmarks::contains(&lib, "https://exemple.fr"));
     assert_eq!(bookmarks::list(&lib).len(), 1);
 
@@ -20,8 +20,8 @@ fn un_favori_sajoute_se_retrouve_et_se_retire() {
 #[test]
 fn ajouter_deux_fois_la_meme_adresse_ne_cree_pas_de_doublon() {
     let lib = library();
-    bookmarks::add(&lib, "https://exemple.fr", "Ancien titre", None);
-    bookmarks::add(&lib, "https://exemple.fr", "Nouveau titre", None);
+    bookmarks::add(&lib, "https://exemple.fr", "Ancien titre", None, "graphite");
+    bookmarks::add(&lib, "https://exemple.fr", "Nouveau titre", None, "graphite");
 
     let all = bookmarks::list(&lib);
     assert_eq!(all.len(), 1);
@@ -32,9 +32,9 @@ fn ajouter_deux_fois_la_meme_adresse_ne_cree_pas_de_doublon() {
 fn les_favoris_gardent_l_ordre_choisi() {
     let lib = library();
     for name in ["a", "b", "c"] {
-        bookmarks::add(&lib, &format!("https://{name}.fr"), name, None);
+        bookmarks::add(&lib, &format!("https://{name}.fr"), name, None, "graphite");
     }
-    assert!(bookmarks::move_to(&lib, "https://c.fr", 0));
+    assert!(bookmarks::move_to(&lib, "https://c.fr", 0, "graphite"));
 
     let urls: Vec<String> = bookmarks::list(&lib).into_iter().map(|b| b.url).collect();
     assert_eq!(urls, ["https://c.fr", "https://a.fr", "https://b.fr"]);
@@ -43,25 +43,25 @@ fn les_favoris_gardent_l_ordre_choisi() {
 #[test]
 fn l_historique_se_cherche_par_titre_et_par_adresse() {
     let lib = library();
-    history::record(&lib, "https://recettes.fr/tarte", "Tarte aux pommes", None);
-    history::record(&lib, "https://meteo.fr", "Meteo du jour", None);
+    history::record(&lib, "https://recettes.fr/tarte", "Tarte aux pommes", None, "graphite");
+    history::record(&lib, "https://meteo.fr", "Meteo du jour", None, "graphite");
 
-    let (trouve, total) = history::search(&lib, "tarte");
+    let (trouve, total) = history::search(&lib, "tarte", "graphite");
     assert_eq!(trouve.len(), 1);
     assert_eq!(trouve[0].url, "https://recettes.fr/tarte");
     assert_eq!(total, 2);
 
-    let (par_titre, _) = history::search(&lib, "Meteo");
+    let (par_titre, _) = history::search(&lib, "Meteo", "graphite");
     assert_eq!(par_titre.len(), 1);
 }
 
 #[test]
 fn les_pages_internes_ne_vont_pas_dans_l_historique() {
     let lib = library();
-    assert!(!history::record(&lib, "echo://ui/index.html", "Interface", None));
-    assert!(!history::record(&lib, "chrome://extensions", "Extensions", None));
+    assert!(!history::record(&lib, "echo://ui/index.html", "Interface", None, "graphite"));
+    assert!(!history::record(&lib, "chrome://extensions", "Extensions", None, "graphite"));
 
-    let (entries, total) = history::search(&lib, "");
+    let (entries, total) = history::search(&lib, "", "graphite");
     assert!(entries.is_empty());
     assert_eq!(total, 0);
 }
@@ -69,9 +69,9 @@ fn les_pages_internes_ne_vont_pas_dans_l_historique() {
 #[test]
 fn l_historique_s_efface_entierement() {
     let lib = library();
-    history::record(&lib, "https://exemple.fr", "Exemple", None);
+    history::record(&lib, "https://exemple.fr", "Exemple", None, "graphite");
     assert!(history::clear(&lib));
-    assert_eq!(history::search(&lib, "").1, 0);
+    assert_eq!(history::search(&lib, "", "graphite").1, 0);
 }
 
 #[test]
@@ -128,11 +128,11 @@ fn un_telechargement_se_suit_puis_s_oublie() {
 fn une_visite_effacee_ne_revient_pas_par_une_autre_machine() {
     let lib = library();
     let t = echo_library::now();
-    history::import(&lib, "https://a.fr", "A", t - 100);
+    history::import(&lib, "https://a.fr", "A", t - 100, "graphite");
     assert!(history::remove(&lib, "https://a.fr", t - 100));
-    assert!(history::import(&lib, "https://a.fr", "A", t - 100));
-    assert_eq!(history::search(&lib, "").1, 0);
-    history::import(&lib, "https://a.fr", "A", t);
+    assert!(history::import(&lib, "https://a.fr", "A", t - 100, "graphite"));
+    assert_eq!(history::search(&lib, "", "graphite").1, 0);
+    history::import(&lib, "https://a.fr", "A", t, "graphite");
     assert_eq!(history::latest(&lib, 10)[0].visited_at, t);
     assert!(history::forgotten(&lib).iter().any(|(url, at)| url == "https://a.fr" && *at == t - 100));
 }
@@ -140,11 +140,11 @@ fn une_visite_effacee_ne_revient_pas_par_une_autre_machine() {
 #[test]
 fn tout_effacer_est_transmis_et_bloque_les_visites_anterieures() {
     let lib = library();
-    history::record(&lib, "https://b.fr", "B", None);
+    history::record(&lib, "https://b.fr", "B", None, "graphite");
     assert!(history::clear(&lib));
     assert!(history::forgotten(&lib).iter().any(|(url, _)| url == history::ALL));
-    history::import(&lib, "https://c.fr", "C", 50);
-    assert_eq!(history::search(&lib, "").1, 0);
+    history::import(&lib, "https://c.fr", "C", 50, "graphite");
+    assert_eq!(history::search(&lib, "", "graphite").1, 0);
 }
 
 #[test]
@@ -239,4 +239,20 @@ fn page_surveillee_lignes_ajoutees_et_retirees() {
     assert_eq!(change.removed, ["Prix : 20 €"]);
     watched::unwatch(&lib, url);
     assert!(!watched::is_watched(&lib, url));
+}
+
+#[test]
+fn historique_et_favoris_propres_a_chaque_profil() {
+    let lib = Library::in_memory().unwrap();
+    history::record(&lib, "https://perso.fr", "Perso", None, "graphite");
+    history::record(&lib, "https://travail.fr", "Travail", None, "sable");
+    bookmarks::add(&lib, "https://banque.fr", "Banque", None, "graphite");
+    bookmarks::add(&lib, "https://outil.fr", "Outil", None, "sable");
+    let urls = |space: &str| history::search(&lib, "", space).0.into_iter().map(|e| e.url).collect::<Vec<_>>();
+    assert_eq!(urls("graphite"), vec!["https://perso.fr"]);
+    assert_eq!(urls("sable"), vec!["https://travail.fr"]);
+    assert_eq!(history::search(&lib, "trav", "graphite").0.len(), 0);
+    assert_eq!(bookmarks::list_in(&lib, "sable").len(), 1);
+    assert_eq!(bookmarks::list(&lib).len(), 2, "la synchronisation voit tous les profils");
+    assert_eq!(history::latest(&lib, 10).len(), 2);
 }

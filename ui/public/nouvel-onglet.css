@@ -39,35 +39,49 @@ main {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 22vh 24px 0;
+  padding: 18vh 24px 40px;
 }
 
-form { width: min(560px, 100%); }
+.accroche { margin: 0 0 28px; color: var(--ink-faint); font-size: 14px; text-align: center; }
 
-input {
-  width: 100%;
-  height: 54px;
-  padding: 0 22px;
-  border: 0;
-  border-radius: 999px;
-  background: var(--shell);
+#tuiles {
+  display: grid;
+  grid-template-columns: repeat(4, 112px);
+  gap: 18px;
+}
+@media (max-width: 560px) { #tuiles { grid-template-columns: repeat(2, 112px); } }
+
+.tuile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 8px 12px;
+  border-radius: 18px;
   color: var(--ink);
-  font: inherit;
-  font-size: 16px;
-  outline: none;
-  box-shadow: var(--shadow-pressed);
-  transition: box-shadow 160ms cubic-bezier(0.22, 0.61, 0.36, 1);
+  text-decoration: none;
+  box-shadow: var(--shadow-card);
+  transition: box-shadow 140ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+.tuile:hover { box-shadow: var(--shadow-pressed); }
+.tuile:focus-visible { outline: 2px solid color-mix(in srgb, var(--tint) 60%, transparent); outline-offset: 2px; }
+.tuile .marque { width: 40px; height: 40px; font-size: 19px; border-radius: 12px; }
+.tuile .nom { width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: center; font-size: 12.5px; }
+
+.marque {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  font-weight: 600;
+  font-size: 11px;
 }
 
-input::placeholder { color: var(--ink-faint); }
-
-input:focus { box-shadow: var(--shadow-pressed), 0 0 0 2px color-mix(in srgb, var(--tint) 45%, transparent); }
-
-#suggestions { width: min(560px, 100%); margin-top: 14px; }
-
-.groupe { margin-top: 10px; }
-.groupe h2 {
-  margin: 0 0 4px;
+#recents { width: min(560px, 100%); margin-top: 34px; }
+#recents h2 {
+  margin: 0 0 6px;
   padding: 0 12px;
   font-size: 11px;
   font-weight: 500;
@@ -78,15 +92,14 @@ input:focus { box-shadow: var(--shadow-pressed), 0 0 0 2px color-mix(in srgb, va
 
 .ligne {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 10px;
   height: 34px;
   padding: 0 12px;
   border-radius: 14px;
-  cursor: default;
-  align-items: center;
+  color: var(--ink);
+  text-decoration: none;
 }
-.ligne.actif { box-shadow: var(--shadow-pressed); }
+.ligne:hover { box-shadow: var(--shadow-pressed); }
 .ligne .titre { flex: 0 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ligne .hote { flex: 1 1 0; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ink-faint); font-size: 13px; }
-.ligne .action { margin-left: auto; font-size: 11.5px; color: var(--ink-faint); white-space: nowrap; }

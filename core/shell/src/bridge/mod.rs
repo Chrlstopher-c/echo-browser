@@ -131,9 +131,13 @@ fn apply(request: UiRequest) {
             reload_active();
         }
         UiRequest::NewTab { url, container } => {
+            let blank = url.is_none();
             let target = url.map(|u| normalize(&u)).unwrap_or_else(|| search::HOME.to_string());
             open_tab_in(&target, scoped(container).as_deref());
             publish_tabs();
+            if blank {
+                navigation::focus_address();
+            }
         }
         UiRequest::SetTabContainer { id, container } => move_to_container(id, scoped(container)),
         UiRequest::WarmTab { id } => warm_tab(id),

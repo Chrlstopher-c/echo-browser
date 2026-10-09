@@ -258,6 +258,11 @@ impl Tabs {
         if self.space.is_empty() { crate::profiles::DEFAULT.to_string() } else { self.space.clone() }
     }
 
+    /// Profil d'un onglet (le principal si l'onglet n'en porte pas).
+    pub fn space_of_tab(tab: &Tab) -> String {
+        if tab.space.is_empty() { crate::profiles::DEFAULT.to_string() } else { tab.space.clone() }
+    }
+
     pub fn set_space(&mut self, space: &str) {
         self.space = space.to_string();
     }

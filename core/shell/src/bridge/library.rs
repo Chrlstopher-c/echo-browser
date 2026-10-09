@@ -8,7 +8,8 @@ use tracing::warn;
 
 /// Diffuse les favoris.
 pub fn publish_bookmarks() {
-    let Some(list) = session::with(|s| bookmarks::list(&s.library)) else { return };
+    // Les favoris du profil affiche seulement : un profil est une identite.
+    let Some(list) = session::with(|s| bookmarks::list_in(&s.library, &s.tabs.space())) else { return };
     let bookmarks = list
         .into_iter()
         .map(|entry| BookmarkView {
@@ -33,7 +34,7 @@ pub fn publish_permissions() {
 
 /// Diffuse l'historique, filtre par `terms`.
 pub fn publish_history(terms: &str) {
-    let Some((found, total)) = session::with(|s| history::search(&s.library, terms)) else {
+    let Some((found, total)) = session::with(|s| history::search(&s.library, terms, &s.tabs.space())) else {
         return;
     };
     let entries = found
@@ -118,15 +119,15 @@ pub fn is_web(url: &str) -> bool {
 pub fn add_bookmark(id: echo_contract::TabId) {
     let entry = session::with(|s| {
         let tab = s.tabs.get_mut(id)?;
-        Some((tab.url.clone(), tab.title.clone()))
+        Some((tab.url.clone(), tab.title.clone(), crate::tabs::Tabs::space_of_tab(tab)))
     })
     .flatten();
-    let Some((url, title)) = entry else { return };
+    let Some((url, title, space)) = entry else { return };
     // Les pages d'Echo (reglages, bibliotheque, aide) ne sont pas des sites : rien a mettre en favori.
     if url.is_empty() || !is_web(&url) {
         return;
     }
-    session::with(|s| bookmarks::add(&s.library, &url, &title, None));
+    session::with(|s| bookmarks::add(&s.library, &url, &title, None, &space));
     publish_bookmarks();
     super::publish(&CoreEvent::Notice {
         level: echo_contract::NoticeLevel::Info,
@@ -147,7 +148,7 @@ pub fn remove_bookmark(url: &str) {
 }
 
 pub fn move_bookmark(url: &str, to: usize) {
-    session::with(|s| bookmarks::move_to(&s.library, url, to));
+    session::with(|s| bookmarks::move_to(&s.library, url, to, &s.tabs.space()));
     publish_bookmarks();
 }
 
@@ -173,7 +174,7 @@ pub fn note_failed_load(url: &str) {
 }
 
 /// Enregistre une visite. Appele a chaque page arrivee a son terme.
-pub fn record_visit(url: &str, title: &str) {
+pub fn record_visit(url: &str, title: &str, space: &str) {
     let failed = {
         let mut list = FAILED.lock();
         list.iter().position(|u| u == url).map(|at| list.remove(at)).is_some()
@@ -181,7 +182,7 @@ pub fn record_visit(url: &str, title: &str) {
     if failed || !is_web(url) {
         return;
     }
-    if session::with(|s| history::record(&s.library, url, title, None)) == Some(true) {
+    if session::with(|s| history::record(&s.library, url, title, None, space)) == Some(true) {
         crate::account::schedule::touch_soft();
         crate::routines::visited(url);
         crate::signals::note_visit(url);
