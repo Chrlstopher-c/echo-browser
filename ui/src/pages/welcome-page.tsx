@@ -125,7 +125,8 @@ export function WelcomePage(props: WelcomePageProps): ReactElement {
         <motion.div key={step} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -8 }}
           transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }} data-step={step}
-          className="flex w-full max-w-lg flex-col items-center gap-5 rounded-tile bg-card px-10 py-12 text-center
+          className="flex min-h-[440px] w-full max-w-lg flex-col items-center justify-center gap-5 rounded-tile bg-card
+            px-10 py-12 text-center
             shadow-card">
           <StepBody step={step} props={props} />
         </motion.div>

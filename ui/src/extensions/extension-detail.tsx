@@ -23,12 +23,12 @@ function Permissions({ permissions }: { permissions: string[] }): ReactElement |
         <span
           key={permission}
           title={permission}
-          className="rounded-full bg-hover px-1.5 py-[1px] text-[10px] text-ink-muted"
+          className="rounded-full bg-hover px-1.5 py-[1px] text-[10.5px] text-ink-muted"
         >
           {permissionLabel(permission)}
         </span>
       ))}
-      {rest > 0 && <span className="px-1 py-[1px] text-[10px] text-ink-faint">+{rest}</span>}
+      {rest > 0 && <span className="px-1 py-[1px] text-[10.5px] text-ink-faint">+{rest}</span>}
     </div>
   )
 }
@@ -63,7 +63,7 @@ export function ExtensionDetail({ item, controller }: ExtensionDetailProps): Rea
               Réglages
             </PushButton>
           )}
-          <span className="numerique ml-auto truncate text-[10px] text-ink-faint" title={item.id}>
+          <span className="numerique ml-auto truncate text-[10.5px] text-ink-faint" title={item.id}>
             {item.id.slice(0, 12)}…
           </span>
         </div>

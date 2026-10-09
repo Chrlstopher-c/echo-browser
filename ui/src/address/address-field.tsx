@@ -87,7 +87,7 @@ function ZoomBadge({ zoom, onReset }: { zoom: number; onReset: () => void }): Re
           transition={QUICK}
           onPointerDown={(event) => event.stopPropagation()}
           onClick={onReset}
-          className="numerique z-10 shrink-0 rounded bg-ink/10 px-1 py-px text-[10px] text-ink-muted
+          className="numerique z-10 shrink-0 rounded bg-ink/10 px-1 py-px text-[10.5px] text-ink-muted
             transition-colors duration-100 hover:bg-ink/15 hover:text-ink"
         >
           {formatZoom(zoom)}

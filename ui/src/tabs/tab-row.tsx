@@ -68,7 +68,7 @@ function ContainerChip({ context }: { context: string | null }): ReactElement | 
   if (id === 'prive') {
     return (
       <span data-container="Privé" title="Navigation privée : rien n’est gardé"
-        className="flex shrink-0 items-center gap-1 rounded-full bg-ink px-1.5 text-[10px] leading-[15px] text-shell">
+        className="flex shrink-0 items-center gap-1 rounded-full bg-ink px-1.5 text-[10.5px] leading-[16px] text-shell">
         <IconEyeOff size={9} /> Privé
       </span>
     )
@@ -78,7 +78,7 @@ function ContainerChip({ context }: { context: string | null }): ReactElement | 
   return (
     <span data-container={name} title={`Conteneur : ${name}`}
       style={{ color: containerColor(id), borderColor: containerColor(id) }}
-      className="max-w-[64px] shrink-0 truncate rounded-full border px-1.5 text-[10px] leading-[15px]">
+      className="max-w-[64px] shrink-0 truncate rounded-full border px-1.5 text-[10.5px] leading-[16px]">
       {name}
     </span>
   )

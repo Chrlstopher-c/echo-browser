@@ -34,7 +34,7 @@ interface RankedProps {
 function Ranked({ title, rows, value }: RankedProps): ReactElement {
   return (
     <div className="flex flex-col">
-      <p className="px-2 pb-1 text-[10px] font-semibold tracking-[0.12em] text-ink-faint uppercase">{title}</p>
+      <p className="px-2 pb-1 text-[10.5px] font-semibold tracking-[0.12em] text-ink-faint uppercase">{title}</p>
       {rows.map((r, i) => (
         <div key={`${r.url}-${i}`} className="flex items-center gap-2 px-2 py-0.5" title={r.url}>
           <span className="min-w-0 flex-1 truncate text-[11.5px] text-ink">{name(r)}</span>

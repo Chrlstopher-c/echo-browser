@@ -66,7 +66,7 @@ export function SuggestionList({ items, selected, onPick }: SuggestionListProps)
               ${index === selected ? 'bg-hover shadow-pressed' : 'hover:bg-hover'}`}>
             <Icon size={13} className="shrink-0 text-ink-faint" aria-label={label} />
             <div className="min-w-0 flex-1"><Lines item={item} /></div>
-            {item.kind === 'tab' && <span className="shrink-0 text-[10px] text-guard">aller</span>}
+            {item.kind === 'tab' && <span className="shrink-0 text-[10.5px] text-guard">aller</span>}
           </li>
         )
       })}

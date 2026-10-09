@@ -30,7 +30,7 @@ function ExtensionIcon({ item }: { item: ExtensionView }): ReactElement {
 function PendingMark(): ReactElement {
   return (
     <span title="Prend effet à la relance"
-      className="shrink-0 rounded-full bg-warn/15 px-1.5 py-[1px] text-[10px] font-medium text-warn">
+      className="shrink-0 rounded-full bg-warn/15 px-1.5 py-[1px] text-[10.5px] font-medium text-warn">
       relance
     </span>
   )

@@ -26,7 +26,7 @@ function HistoryRow({ entry, controller }: { entry: HistoryEntryView; controller
         <span className="min-w-0 flex-1 truncate text-ink">{entry.title.length > 0 ? entry.title : host}</span>
         {entry.visits > 1 && (
           <span title={`${entry.visits} visites`}
-            className="numerique shrink-0 rounded bg-ink/8 px-1 text-[10px] text-ink-faint">×{entry.visits}</span>
+            className="numerique shrink-0 rounded bg-ink/8 px-1 text-[10.5px] text-ink-faint">×{entry.visits}</span>
         )}
         <span className="numerique shrink-0 text-[10.5px] text-ink-faint group-hover:hidden">
           {formatTime(fromCoreTime(entry.visitedAt))}

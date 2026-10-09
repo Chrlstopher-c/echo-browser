@@ -74,7 +74,7 @@ function DomainRow({ d, blocked, send }: DomainRowProps): ReactElement {
         </p>
       </button>
       {d.thirdParty && (
-        <PushButton tone={blocked ? 'neutral' : 'danger'}
+        <PushButton tone="neutral"
           onClick={() => send({ kind: 'networkBlockHost', host: d.host, blocked: !blocked })}>
           {blocked ? 'Débloquer' : 'Bloquer'}
         </PushButton>
@@ -121,7 +121,7 @@ function Totals({ network }: { network: NetworkView }): ReactElement {
     <div className="grid grid-cols-3 gap-2 px-2">
       {cells.map(([label, value]) => (
         <div key={label} className="rounded-row bg-card px-2 py-1.5 shadow-card">
-          <p className="text-[10px] text-ink-faint">{label}</p>
+          <p className="text-[10.5px] text-ink-faint">{label}</p>
           <p className="numerique text-[13px] text-ink">{value}</p>
         </div>
       ))}
