@@ -86,6 +86,14 @@ entier, une story = un test isolé (`tools/banc.sh` + `tools/banc.py` : prélude
   en tuiles ; conteneurs nommés sur l'onglet + « Ouvrir dans : … » ; couper le son ; fiches proposées au focus (la
   page ne peut que déclencher l'offre, le remplissage part d'un clic dans Echo).
 
+## Releases 0.11.0 et 0.11.1 (09/10 matin) — main à jour
+Second contre-audit après E18 : navigation 8, esthétique 8, grand public 7, finition 7,5, concurrents 7,5. Ses défauts
+corrigeables sont livrés dans la 0.11.1 : adresse vide sur un nouvel onglet, recherche Ctrl+F fermée à tout changement
+d'onglet (`find::active_changed`), repli en http d'un domaine tapé sans https (`http_fallback`), « Traduire » seulement
+pour une page publique hors privé, vraies icônes des sites (`history::set_favicon`, historique et favoris), marque
+d'Echo non alphabétique, intitulés 11 px, Aide par mots-clés. Page récapitulative (artefact privé) :
+https://claude.ai/artifact/CSBRVVyqCoWwGUSjSJbr3c. Reste pour 10/10 : voir TODO.md.
+
 ## Contre-audit du 09/10 et E18
 Contre-audit Opus (agent isolé, mêmes règles) : navigation 7,5, esthétique 8, grand public 6,5, finition 6,5,
 concurrents 7,5, avec 10 bugs (N1→N10). Tous corrigés (E18) : Précédent qui ramenait à l'accueil (l'accueil sort du fil

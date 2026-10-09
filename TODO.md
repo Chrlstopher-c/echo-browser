@@ -1,6 +1,14 @@
 # TODO — echo-browser
 
-## FAIT 09/10 — audit UX → 10/10 (E13→E17), release 0.11.0
+## Pour atteindre 10/10 (second contre-audit du 09/10 : 8 / 8 / 7 / 7,5 / 7,5)
+- Navigation : autocomplétion dans l'adresse, palette plus large ou centrée (Ctrl+K façon Arc), Ctrl+N.
+- Esthétique : menus contextuels au style de la barre (surimpression opaque : dessiner les coins dans la teinte).
+- Grand public : pages d'erreur maison (sans « Chrome »), DevTools en français (traductions absentes de CEF).
+- Concurrents : traduction dans la page, extensions actives sans redémarrage, vue partagée, espaces façon Arc/Zen.
+- Divers : « Importé » avec le nombre, liste des sites éveillés en puces, `app_id` Wayland et titre de fenêtre,
+  « Mises à jour automatiques » masqué en version de développement.
+
+## FAIT 09/10 — audit UX → 10/10 (E13→E18), releases 0.11.0 et 0.11.1
 - Tout l'audit Opus du 08/10 traité (détail : STATE.md, EPICS.md E13→E17). Contre-audit : voir STATE.md.
 - À vérifier par Chris sur sa vraie machine (le banc n'a ni clavier, ni souris, ni son) : Ctrl+0 / Ctrl+& en vrai
   clavier, sélecteur « Demander où enregistrer » (portail), thème « Système » qui suit le bureau, poignée de la barre

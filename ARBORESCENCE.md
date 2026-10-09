@@ -242,6 +242,7 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `tools/test-occlusion.sh`
 - `tools/test-page-state.sh`
 - `tools/test-palette.sh`
+- `tools/test-polish.sh`
 - `tools/test-popup.sh`
 - `tools/test-positions.sh`
 - `tools/test-private.sh`
