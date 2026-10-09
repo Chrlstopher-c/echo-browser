@@ -245,7 +245,8 @@ impl Tabs {
             favicon: None,
             last_active: Instant::now(),
             trimmed: false,
-            title: url.to_string(),
+            // Le titre de la page arrive apres : un nouvel onglet ne doit pas s'afficher sous son adresse interne.
+            title: if url.starts_with(crate::search::HOME) { "Nouvel onglet".to_string() } else { url.to_string() },
             url: url.to_string(),
             loading: true,
             history: vec![url.to_string()],

@@ -32,6 +32,7 @@ export function readUrl(raw: string): UrlShape {
 
 /** Etiquette courte d'un onglet quand le titre manque encore. */
 export function fallbackTitle(url: string): string {
+  if (url.startsWith('echo://')) return url.includes('nouvel-onglet') ? 'Nouvel onglet' : 'Echo'
   const shape = readUrl(url)
   return shape.host.length > 0 ? shape.host : 'Nouvel onglet'
 }

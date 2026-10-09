@@ -19,7 +19,7 @@ function PinnedTile(props: {
   tab: TabView; active: boolean; compact: boolean; onSelect: () => void; onContextMenu: (event: MouseEvent) => void
 }): ReactElement {
   const { tab, active, compact, onSelect, onContextMenu } = props
-  const title = tab.title.length > 0 ? tab.title : fallbackTitle(tab.url)
+  const title = tab.title.length > 0 && !tab.title.startsWith('echo://') ? tab.title : fallbackTitle(tab.url)
   return (
     <motion.button
       layout

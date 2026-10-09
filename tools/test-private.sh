@@ -12,6 +12,10 @@ call(op="open", url=page("depart.html", "<p>depart", "depart")); time.sleep(1.5)
 call(op="key", code=0x4E, ch="n", mods=["ctrl", "shift"]); time.sleep(3)
 until(lambda: "Privé" in (ev("[...document.querySelectorAll('[data-container]')].map(e=>e.dataset.container).join()") or ""),
       "onglet prive non marque")
+labels = ev("[...document.querySelectorAll('[role=tab]')].map(e=>e.getAttribute('aria-label'))")
+assert not any((l or "").startswith("echo://") for l in labels), f"onglet titre par son adresse interne : {labels}"
+NEW = [t["url"] for t in targets() if t["url"].startswith("echo://ui/nouvel-onglet")]
+assert any("Navigation privée" in (ev("document.body.innerText", u) or "") for u in NEW), "nouvel onglet prive pas neutre"
 call(op="navigate", id=active()["id"], url=secret)
 until(lambda: active()["url"] == secret and not active()["loading"], "page secrete non chargee")
 time.sleep(1)

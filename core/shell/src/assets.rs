@@ -137,7 +137,8 @@ wrap_scheme_handler_factory! {
                     return Some(StaticResource::new(Vec::new(), "application/json".into(), StdRc::new(Cell::new(0))));
                 }
                 let query = route.strip_prefix("?q=").map(percent_decode).unwrap_or_default();
-                let reply = crate::control::call_ui(serde_json::json!({"op": "suggest", "q": query}));
+                let browser = frame.as_deref().and_then(|f| f.browser()).map_or(0, |b| b.identifier());
+                let reply = crate::control::call_ui(serde_json::json!({"op": "suggest", "q": query, "browser": browser}));
                 return Some(StaticResource::new(reply.to_string().into_bytes(), "application/json".into(), StdRc::new(Cell::new(0))));
             }
             if let Some(id) = url.strip_prefix("echo://icones/") {

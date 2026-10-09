@@ -125,7 +125,9 @@ fn run(job: Job) {
         Some("read") => read(&request, reply),
         Some("suggest") => {
             let query = request.get("q").and_then(Value::as_str).unwrap_or("");
-            let _ = reply.send(crate::suggest::suggest(query));
+            let browser = request.get("browser").and_then(Value::as_i64).and_then(|b| i32::try_from(b).ok());
+            let private = browser.is_some_and(crate::suggest::is_private_browser);
+            let _ = reply.send(if private { crate::suggest::private_page() } else { crate::suggest::suggest(query) });
         }
         Some("open") => open(&request, &reply),
         Some("navigate") => navigate(&request, &reply),

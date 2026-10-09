@@ -157,7 +157,8 @@ function useWarm(asleep: boolean, onWarm: () => void): { start: () => void; stop
 export function TabRow(props: TabRowProps): ReactElement {
   const { tab, active, compact, onSelect, onClose, onWarm, onContextMenu, onDragEnd } = props
   const warm = useWarm(tab.asleep, onWarm)
-  const title = tab.title.length > 0 ? tab.title : fallbackTitle(tab.url)
+  // Un titre qui n'est qu'une adresse interne d'Echo (titre pas encore recu) se lit mal : nom de repli.
+  const title = tab.title.length > 0 && !tab.title.startsWith('echo://') ? tab.title : fallbackTitle(tab.url)
   const controls = useDragControls()
   const onPointerDown = (event: PointerEvent): void => {
     if (event.button !== 0) return

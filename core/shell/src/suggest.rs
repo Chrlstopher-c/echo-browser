@@ -90,7 +90,7 @@ fn search_row(query: &str) -> Option<echo_contract::SuggestionView> {
 pub fn fetch_engine(query: String) {
     use echo_library::settings::Value;
     let allowed = crate::session::with(|s| echo_library::settings::get(&s.library, "search.suggest")).flatten();
-    if matches!(allowed, Some(Value::Flag(false))) || search_row(&query).is_none() {
+    if matches!(allowed, Some(Value::Flag(false))) || search_row(&query).is_none() || active_is_private() {
         return;
     }
     let url = crate::search::suggest_url(query.trim());
@@ -132,4 +132,23 @@ fn top_sites(library: &echo_library::Library, space: &str) -> Vec<Value> {
         .take(TOP_SITES)
         .map(|e| json!({"title": e.title, "url": e.url, "visits": e.visits}))
         .collect()
+}
+
+/// Le navigateur est-il un onglet de navigation privee ?
+pub fn is_private_browser(browser_id: i32) -> bool {
+    crate::session::with(|s| s.tabs.by_browser(browser_id).map(|t| crate::containers::is_private(t.container.as_deref())))
+        .flatten()
+        .unwrap_or(false)
+}
+
+/// Le nouvel onglet prive ne montre rien de l'historique ni des favoris (comme Chrome et Firefox).
+pub fn private_page() -> Value {
+    json!({"ok": true, "private": true, "tabs": [], "bookmarks": [], "history": [], "top": []})
+}
+
+/// L'onglet actif est-il prive ? Alors la frappe n'est pas envoyee au moteur.
+fn active_is_private() -> bool {
+    crate::session::with(|s| s.tabs.active().map(|t| crate::containers::is_private(t.container.as_deref())))
+        .flatten()
+        .unwrap_or(false)
 }

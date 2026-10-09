@@ -56,6 +56,12 @@ async function charger() {
     const reponse = await fetch('echo://ui/data/suggest?q=');
     const data = await reponse.json();
     if (!data.ok) return;
+    if (data.private) {
+      document.body.classList.add('prive');
+      document.querySelector('.accroche').textContent =
+        'Navigation privée : ni historique, ni cookies, ni session ne sont gardés quand l’onglet se ferme.';
+      return;
+    }
     tuiles.replaceChildren(...(data.top || []).map(tuile));
     const vus = new Set((data.top || []).map((i) => i.url));
     const liste = (data.history || []).filter((i) => !vus.has(i.url)).slice(0, 5);
