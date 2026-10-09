@@ -1,4 +1,4 @@
-:root { --shell: #222326; --ink: #ebeced; --ink-muted: #a3a6ae; --ink-faint: #6c707a; --hover: #27282c; --tint: #8f96a3; }
+:root { --shell: #222326; --ink: #ebeced; --ink-muted: #babcbf; --ink-faint: #989a9f; --hover: #27282c; --tint: #8f96a3; }
 html, body { margin: 0; height: 100%; overflow: hidden; background: var(--shell); color: var(--ink); }
 body.barre {
   display: flex; align-items: center; justify-content: space-between; padding: 0 6px 0 12px; box-sizing: border-box;

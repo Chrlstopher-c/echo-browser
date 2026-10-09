@@ -22,8 +22,8 @@
 
   /* Encre. */
   --color-ink: #e7e8ea;
-  --color-ink-muted: #9a9fa7;
-  --color-ink-faint: #63686f;
+  --color-ink-muted: #babcbf;
+  --color-ink-faint: #989a9f;
 
   /* Teinte propre a l'espace : pastille du selecteur, liseré de l'onglet actif. */
   --color-tint: #8f96a3;
