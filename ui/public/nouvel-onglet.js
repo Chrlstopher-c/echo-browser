@@ -17,12 +17,15 @@ function teinte(host) {
 function marque(url, favicon) {
   const host = hote(url);
   if (favicon) {
-    const img = document.createElement('img');
+    // L'initiale reste tant que l'icone n'est pas reellement chargee : une icone qui ne repond jamais ne laisse pas
+    // de tuile vide.
+    const initiale = marque(url, null);
+    const img = new Image();
     img.className = 'marque';
     img.alt = '';
+    img.addEventListener('load', () => { if (img.naturalWidth > 0) initiale.replaceWith(img); });
     img.src = favicon;
-    img.addEventListener('error', () => img.replaceWith(marque(url, null)));
-    return img;
+    return initiale;
   }
   const m = document.createElement('span');
   m.className = 'marque';
