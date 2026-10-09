@@ -58,10 +58,26 @@ text = ev(article, "document.body.innerText")
 assert "Ada et la machine" in text and "Paragraphe 11" in text, "article incomplet"
 assert not any(x in text for x in ("MENU-DU-SITE", "PUBLICITE", "PIED-DE-PAGE")), f"bruit garde : {text[:200]}"
 assert "min de lecture" in text
-print("lecture : article seul (titre, 12 paragraphes, ni menu ni pub ni pied)")
+assert text.count("Ada et la machine") == 1, "titre en double"
+fonts = ev(article, "[...new Set(['h1','.meta','article p'].map(s=>getComputedStyle(document.querySelector(s)).fontFamily))]")
+assert len(fonts) == 1, f"plusieurs polices : {fonts}"
+taille = lambda: ev(article, "getComputedStyle(document.querySelector('article p')).fontSize")
+avant = taille()
+ev(article, "document.querySelector('[data-do=plus]').click()")
+until(lambda: taille() != avant, "A+ sans effet")
+ev(article, "document.querySelector('[data-do=ton]').click()")
+assert ev(article, "document.documentElement.dataset.ton") == "clair"
+print(f"lecture : article seul, titre unique, une police, taille {avant} -> {taille()}, couleurs")
 assert "Quitter la lecture" in menu(article), "le menu ne propose pas d'en sortir"
 call(op="key", code=82, ch="r", mods=["ctrl", "alt"])
 until(lambda: "MENU-DU-SITE" in ev(article, "document.body.innerText"), "Ctrl+Alt+R ne rend pas la page")
+call(op="key", code=82, ch="r", mods=["ctrl", "alt"])
+until(lambda: ev(article, "document.documentElement.dataset.echoLecture") == "1", "retour en lecture impossible")
+assert ev(article, "document.documentElement.dataset.ton") == "clair", "reglages de lecture oublies"
+assert ev(article, "getComputedStyle(document.querySelector('article p')).fontSize") == taille()
+print("reglages de lecture retenus d'une ouverture a l'autre")
+call(op="key", code=82, ch="r", mods=["ctrl", "alt"])
+until(lambda: "MENU-DU-SITE" in ev(article, "document.body.innerText"), "seconde sortie impossible")
 assert "Lire en mode lecture" in menu(article), "etat de lecture garde apres la sortie"
 print("Ctrl+Alt+R : page d'origine rendue")
 court = f"http://localhost:{PORT}/court.html"

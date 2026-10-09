@@ -59,7 +59,8 @@ export const HELP: HelpSection[] = [
     intro: 'Des outils qui agissent sur la page en cours.',
     topics: [
       { title: 'Mode lecture', how: 'Clic droit dans un article → « Lire en mode lecture » (Ctrl+Alt+R) : le texte seul, '
-        + 'sans publicité ni menus, au thème d’Echo. « Quitter la lecture » rend la page.' },
+        + 'sans publicité ni menus. En haut : A− / A+, largeur de colonne, couleurs (clair, sépia, sombre) ; « Quitter '
+        + 'la lecture » rend la page.' },
       { title: 'Remplir un formulaire', how: 'Clic droit dans un champ → « Remplir : fiche ». Les fiches (nom, e-mail, '
         + 'adresse…) se créent dans Réglages → Formulaires ; jamais de mot de passe ni de carte.' },
       { title: 'Masquer cet élément', how: 'Clic droit sur une bannière ou un bloc gênant : masqué sur toutes les pages '
