@@ -158,6 +158,9 @@ wrap_load_handler! {
                     return;
                 }
                 if let Some(browser) = browser.as_deref() {
+                    if !certificate {
+                        crate::error_page::note(browser.identifier(), error_code.get_raw(), &url);
+                    }
                     crate::tabs::note_load_error(browser.identifier(), &url, certificate);
                     crate::bridge::publish_tabs();
                 }
@@ -166,6 +169,9 @@ wrap_load_handler! {
 
         fn on_load_end(&self, browser: Option<&mut Browser>, frame: Option<&mut Frame>, status: i32) {
             let Some(frame) = frame else { return };
+            if let (1, Some(browser)) = (frame.is_main(), browser.as_deref()) {
+                crate::error_page::loaded(browser.identifier(), frame, status);
+            }
             if frame.is_main() == 1 && (200..400).contains(&status) {
                 if let Some(browser) = browser.as_deref() {
                     crate::tabs::clear_load_errors(browser.identifier());

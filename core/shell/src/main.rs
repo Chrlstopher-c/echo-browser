@@ -22,6 +22,7 @@ mod files;
 mod filtering;
 mod launch;
 mod flags;
+mod error_page;
 mod find;
 mod forms;
 mod importer;
