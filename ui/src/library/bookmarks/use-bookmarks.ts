@@ -25,7 +25,8 @@ interface Source {
 type Send = (request: UiRequest) => void
 
 function isSavable(tab: TabView | null): tab is TabView {
-  return tab !== null && tab.url.length > 0 && tab.url !== 'about:blank'
+  // Seules les pages web et les fichiers se mettent en favori : les pages d'Echo ne sont pas des sites.
+  return tab !== null && /^(https?|file):/.test(tab.url)
 }
 
 /** Ordre local pendant le glisser, realigne sur le coeur des qu'il parle. */

@@ -76,7 +76,9 @@ function AddCurrent({ controller }: { controller: BookmarksController }): ReactE
   const label = controller.currentSaved ? 'Page enregistrée' : 'Enregistrer cette page'
   const hint = controller.currentSaved
     ? 'La page courante est dans vos favoris.'
-    : 'La page courante peut être mise de côté.'
+    : controller.canAddCurrent
+      ? 'La page courante peut être mise de côté.'
+      : 'Sur une page web : Ctrl+D ou l’étoile de l’adresse.'
   return (
     <div className="flex items-center justify-between gap-2 px-2 pb-2">
       <p className="truncate text-[11px] text-ink-faint">{hint}</p>

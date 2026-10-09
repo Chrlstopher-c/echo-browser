@@ -57,8 +57,8 @@ export function FormsSection({ cards }: { cards: FormCards }): ReactElement {
         {cards.list.map((card) => <CardEditor key={card.id} card={card} cards={cards} />)}
       </div>
       <p className="px-2 pt-1 text-[11px] leading-snug text-ink-faint">
-        Clic droit dans un champ → « Remplir : fiche » : Echo complète les champs vides reconnus (nom, e-mail,
-        adresse…). Jamais de mot de passe ni de carte bancaire. Les fiches suivent votre compte Echo, chiffrées.
+        En entrant dans un champ reconnu (nom, e-mail, adresse…), la barre propose vos fiches ; un clic complète les
+        champs vides. Aussi au clic droit dans un champ. Jamais de mot de passe ni de carte bancaire. Les fiches suivent votre compte Echo, chiffrées.
       </p>
     </section>
   )

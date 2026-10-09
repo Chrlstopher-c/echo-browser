@@ -87,6 +87,11 @@ export const HELP: HelpSection[] = [
         + 'gauche la fait revenir. Dans une fenêtre étroite, elle se replie d’elle-même.' },
       { title: 'Importer d’un autre navigateur', how: 'Réglages → Importer : favoris et historique de Chrome, '
         + 'Chromium, Brave, Edge, Vivaldi, Firefox ou Zen, en un clic.', action: { label: 'Réglages', request: page('reglages') } },
+      { title: 'Thème clair, sombre ou système', how: 'Le soleil / la lune en bas de la barre bascule ; Réglages → '
+        + 'Apparence → Thème pour « Système » (suit le bureau).', action: { label: 'Réglages', request: page('reglages') } },
+      { title: 'Téléchargements', how: 'La progression s’affiche en bas de la barre ; à la fin, « Ouvrir » ou « Afficher '
+        + 'dans le dossier ». Bibliothèque → Fichiers pour les retrouver (Ctrl+J).',
+        action: { label: 'Bibliothèque', request: page('bibliotheque') } },
       { title: 'Rechercher dans la page', how: 'Ctrl+F, ou clic droit → « Rechercher dans la page » : le nombre '
         + 'd’occurrences s’affiche, Entrée passe à la suivante, Maj+Entrée à la précédente, Échap ferme.' },
       { title: 'Reprise exacte', how: 'Ce que vous aviez tapé et la position des vidéos reviennent après une relance '

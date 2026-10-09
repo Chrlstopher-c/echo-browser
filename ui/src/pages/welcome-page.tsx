@@ -91,7 +91,7 @@ function StepBody({ step, props }: { step: Step; props: WelcomePageProps }): Rea
             <IconSparkle size={30} />
           </span>
           <Heading title="Bienvenue dans Echo" text={'Un navigateur rapide et sobre : publicités et traqueurs bloqués, '
-            + 'onglets inactifs endormis, un profil par identité. Trois réglages et c’est parti.'} />
+            + 'onglets inactifs endormis, un profil par identité. Quelques réglages et c’est parti.'} />
         </>
       )
     case 'theme':
