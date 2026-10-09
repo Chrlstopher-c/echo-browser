@@ -31,12 +31,14 @@ pub struct PageFacts {
     pub forms: Vec<String>,
     /// La page est affichee en mode lecture.
     pub reading: bool,
+    /// Noms des conteneurs proposes pour ouvrir un lien.
+    pub containers: Vec<String>,
 }
 
 pub fn build(click: &Click, facts: PageFacts) -> ContextTarget {
     let mut entries = Vec::new();
     let groups: [(bool, Vec<MenuEntry>); 5] = [
-        (!click.link.is_empty(), link_entries(&click.link)),
+        (!click.link.is_empty(), link_entries(&click.link, &facts.containers)),
         (!click.image.is_empty(), image_entries(&click.image)),
         (!click.media.is_empty(), media_entries()),
         (!click.selection.is_empty(), selection_entries(&click.selection)),
@@ -80,14 +82,20 @@ fn page_tools(click: &Click, facts: &PageFacts) -> Vec<MenuEntry> {
     tools
 }
 
-fn link_entries(link: &str) -> Vec<MenuEntry> {
-    vec![
+fn link_entries(link: &str, containers: &[String]) -> Vec<MenuEntry> {
+    const KINDS: [MenuItemKind; 3] =
+        [MenuItemKind::OpenLinkInContainer1, MenuItemKind::OpenLinkInContainer2, MenuItemKind::OpenLinkInContainer3];
+    let mut entries = vec![
         MenuEntry::new(MenuItemKind::OpenLinkInTab, "Ouvrir dans un nouvel onglet"),
         MenuEntry::new(MenuItemKind::OpenLinkInBackground, "Ouvrir en arrière-plan"),
-        MenuEntry::new(MenuItemKind::CopyLink, "Copier l'adresse du lien"),
-        MenuEntry::new(MenuItemKind::SaveLink, "Enregistrer la cible")
-            .disabled_when(link.starts_with("javascript:")),
-    ]
+    ];
+    let in_container =
+        containers.iter().zip(KINDS).map(|(name, kind)| MenuEntry::new(kind, &format!("Ouvrir dans : {name}")));
+    entries.extend(in_container);
+    entries.push(MenuEntry::new(MenuItemKind::CopyLink, "Copier l'adresse du lien"));
+    let save = MenuEntry::new(MenuItemKind::SaveLink, "Enregistrer la cible");
+    entries.push(save.disabled_when(link.starts_with("javascript:")));
+    entries
 }
 
 fn media_entries() -> Vec<MenuEntry> {

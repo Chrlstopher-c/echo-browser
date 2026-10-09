@@ -413,7 +413,7 @@ pub fn publish(event: &CoreEvent) {
 
 /// Installation demandee par le bouton « Ajouter à Echo » du catalogue.
 /// Un conteneur choisi dans l'interface appartient au profil affiche.
-fn scoped(container: Option<String>) -> Option<String> {
+pub(super) fn scoped(container: Option<String>) -> Option<String> {
     let space = session::with(|s| s.tabs.space()).unwrap_or_else(|| crate::profiles::DEFAULT.to_string());
     container.map(|c| crate::profiles::scope_container(&space, &c))
 }

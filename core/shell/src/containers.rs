@@ -103,3 +103,15 @@ pub fn later<J: FnOnce() + Send + 'static>(job: J) {
 }
 
 const RETRY_MS: i64 = 40;
+
+/// Les conteneurs crees par l'utilisateur (reglage `tabs.containers`) : (identifiant, nom), dans leur ordre.
+pub fn named() -> Vec<(String, String)> {
+    use echo_library::settings::Value;
+    let raw = crate::session::with(|s| echo_library::settings::get(&s.library, "tabs.containers")).flatten();
+    let Some(Value::Text(json)) = raw else { return Vec::new() };
+    let list: Vec<serde_json::Value> = serde_json::from_str(&json).unwrap_or_default();
+    list.iter()
+        .filter_map(|c| Some((c["id"].as_str()?.to_string(), c["name"].as_str().unwrap_or("Conteneur").to_string())))
+        .filter(|(id, _)| is_valid_id(id))
+        .collect()
+}

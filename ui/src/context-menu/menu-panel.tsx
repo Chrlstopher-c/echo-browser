@@ -22,7 +22,8 @@ function Separator(): ReactElement {
 
 /** Meme langage que le menu des onglets : une icone par action, alignee a gauche. */
 const ICONS: Partial<Record<MenuItemKind, IconComponent>> = {
-  openLinkInTab: IconOpen, openLinkInBackground: IconPlus, copyLink: IconCopy, saveLink: IconDownload,
+  openLinkInTab: IconOpen, openLinkInBackground: IconPlus,
+  openLinkInContainer1: IconUser, openLinkInContainer2: IconUser, openLinkInContainer3: IconUser, copyLink: IconCopy, saveLink: IconDownload,
   openImage: IconImage, copyImageLink: IconCopy, saveImage: IconDownload, copyImage: IconImage,
   openMedia: IconOpen, copyMediaLink: IconCopy, saveMedia: IconDownload,
   copy: IconCopy, cut: IconScissors, paste: IconClipboard, pastePlain: IconClipboard, selectAll: IconFile,

@@ -8,6 +8,8 @@ import { IconClose } from '../shared/design/icons'
 import { PANEL, QUICK } from '../shared/design/motion'
 import { fallbackTitle } from '../shared/url-shape'
 import { AudioBars, TabMark } from './tab-mark'
+import { useContainerName } from './container-names'
+import { chosenContainer, containerColor } from './use-containers'
 
 export interface DropPoint {
   x: number
@@ -58,12 +60,27 @@ function CloseAction({ onClose }: { onClose: () => void }): ReactElement {
   )
 }
 
+/** Le conteneur d'un onglet, en clair : sa couleur et son nom (comme Firefox), pas un simple point. */
+function ContainerChip({ context }: { context: string | null }): ReactElement | null {
+  const id = chosenContainer(context)
+  const name = useContainerName(id)
+  if (id === null || name === null) return null
+  return (
+    <span data-container={name} title={`Conteneur : ${name}`}
+      style={{ color: containerColor(id), borderColor: containerColor(id) }}
+      className="max-w-[64px] shrink-0 truncate rounded-full border px-1.5 text-[10px] leading-[15px]">
+      {name}
+    </span>
+  )
+}
+
 function RowBody({ tab, title, onClose }: { tab: TabView; title: string; onClose: () => void }): ReactElement {
   return (
     <>
       <span className={`min-w-0 flex-1 truncate text-[12.5px] leading-none ${tab.asleep ? 'text-ink-faint' : ''}`}>
         {title}
       </span>
+      <ContainerChip context={tab.container} />
       {tab.audible && !tab.asleep && (
         <AudioBars className="shrink-0 text-guard transition-opacity duration-100 group-hover:opacity-0" />
       )}

@@ -93,6 +93,10 @@ pub enum MenuItemKind {
     /// Ouvrir la recherche dans la page (Ctrl+F).
     FindInPage,
     OpenLinkInTab,
+    /// Ouvrir le lien dans le premier, deuxieme ou troisieme conteneur.
+    OpenLinkInContainer1,
+    OpenLinkInContainer2,
+    OpenLinkInContainer3,
     OpenLinkInBackground,
     CopyLink,
     SaveLink,

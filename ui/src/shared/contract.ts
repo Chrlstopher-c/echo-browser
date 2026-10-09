@@ -361,6 +361,9 @@ export type MenuItemKind =
   | 'manageForms'
   | 'reader'
   | 'findInPage'
+  | 'openLinkInContainer1'
+  | 'openLinkInContainer2'
+  | 'openLinkInContainer3'
   | 'unwatchPage'
 
 export interface MenuEntry {

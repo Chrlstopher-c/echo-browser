@@ -99,3 +99,22 @@ def open_page(name):
     call(op="open", url=f"echo://ui/{name}.html")
     until(lambda: any(t["url"].startswith(f"echo://ui/{name}") for t in targets()), f"page {name} absente")
     time.sleep(1)
+
+
+def cdp(where, method, params):
+    """Commande DevTools brute sur la premiere cible dont l'adresse commence par `where`."""
+    t = [t for t in targets() if t["url"].startswith(where)][0]
+    ws = websocket.create_connection(t["webSocketDebuggerUrl"], suppress_origin=True)
+    ws.send(json.dumps({"id": 1, "method": method, "params": params}))
+    while (m := json.loads(ws.recv())).get("id") != 1:
+        pass
+    ws.close()
+    return m.get("result", {})
+
+
+def context_menu(page_url, x=400, y=300):
+    """Vrai clic droit dans la page (le banc n'a pas de souris) ; rend le texte du menu ouvert."""
+    for kind in ("mousePressed", "mouseReleased"):
+        cdp(page_url, "Input.dispatchMouseEvent", {"type": kind, "x": x, "y": y, "button": "right", "clickCount": 1})
+    time.sleep(1.2)
+    return ev("document.body.innerText", "echo://ui/menu")

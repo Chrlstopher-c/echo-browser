@@ -4,6 +4,7 @@ import { useMemo, type ReactElement } from 'react'
 import type { TabId, TabView } from '../shared/contract'
 import { FolderSection } from './folder-section'
 import { PinnedGrid } from './pinned-grid'
+import { ContainerNames } from './container-names'
 import { TabList } from './tab-list'
 import { TabMenu } from './tab-menu'
 import type { TabActions } from './use-tab-actions'
@@ -47,28 +48,31 @@ export function TabsArea({ tabs, activeId, actions, menu, folders, containers, c
     () => tabs.filter((tab) => !tab.pinned && (tab.folder === null || !known.has(tab.folder))),
     [tabs, known],
   )
+  const names = useMemo(() => new Map(containers.containers.map((c) => [c.id, c.name])), [containers.containers])
   return (
-    <div className="flex flex-col gap-3">
-      <PinnedGrid
-        pinned={pinned}
-        activeId={activeId}
-        compact={compact}
-        onSelect={actions.select}
-        onContextMenu={menu.openFor}
-      />
-      {pinned.length > 0 && loose.length > 0 && <div className="mx-1 border-t border-hairline" />}
-      {!compact && <p className="intitule px-4">Onglets</p>}
-      {!compact && <Folders tabs={tabs} activeId={activeId} actions={actions} menu={menu} folders={folders} />}
-      <TabList onFolder={folders.assign} all={tabs} loose={loose} activeId={activeId} compact={compact}
-        actions={actions} menu={menu} />
-      <TabMenu
-        tabs={tabs}
-        controller={menu}
-        actions={actions}
-        folders={folders}
-        containers={containers}
-        activeId={activeId}
-      />
-    </div>
+    <ContainerNames.Provider value={names}>
+      <div className="flex flex-col gap-3">
+        <PinnedGrid
+          pinned={pinned}
+          activeId={activeId}
+          compact={compact}
+          onSelect={actions.select}
+          onContextMenu={menu.openFor}
+        />
+        {pinned.length > 0 && loose.length > 0 && <div className="mx-1 border-t border-hairline" />}
+        {!compact && <p className="intitule px-4">Onglets</p>}
+        {!compact && <Folders tabs={tabs} activeId={activeId} actions={actions} menu={menu} folders={folders} />}
+        <TabList onFolder={folders.assign} all={tabs} loose={loose} activeId={activeId} compact={compact}
+          actions={actions} menu={menu} />
+        <TabMenu
+          tabs={tabs}
+          controller={menu}
+          actions={actions}
+          folders={folders}
+          containers={containers}
+          activeId={activeId}
+        />
+      </div>
+    </ContainerNames.Provider>
   )
 }

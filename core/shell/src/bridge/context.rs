@@ -38,6 +38,7 @@ pub fn open(click: Click, x: i32, y: i32) {
         watched: crate::watch::active_watched(),
         forms: crate::forms::names(),
         reading: crate::reader::active_reading(),
+        containers: crate::containers::named().into_iter().map(|(_, name)| name).collect(),
     };
     let target = menu::build(&click, facts);
     let (width, height) = menu::size_of(&target);
@@ -73,6 +74,9 @@ pub fn run(action: MenuItemKind) {
     match action {
         MenuItemKind::OpenLinkInTab | MenuItemKind::OpenImage => open_and_show(&target_url(&click, action)),
         MenuItemKind::OpenLinkInBackground => super::open_tab_like_active(&click.link),
+        MenuItemKind::OpenLinkInContainer1 => open_in_container(&click.link, 0),
+        MenuItemKind::OpenLinkInContainer2 => open_in_container(&click.link, 1),
+        MenuItemKind::OpenLinkInContainer3 => open_in_container(&click.link, 2),
         MenuItemKind::OpenSelection => open_and_show(&navigation::normalize(&click.selection)),
         MenuItemKind::SearchSelection => open_and_show(&crate::search::query_url(&click.selection)),
         MenuItemKind::CopyLink => copy(&click.link),
@@ -242,4 +246,13 @@ fn clone_click(click: &Click) -> Click {
 /// Le menu tel qu'il sera affiche, pour les essais et le journal.
 pub fn preview(click: &Click) -> ContextTarget {
     menu::build(click, menu::PageFacts::default())
+}
+
+/// Ouvre un lien dans le `index`-ieme conteneur de l'utilisateur, au premier plan.
+fn open_in_container(link: &str, index: usize) {
+    let Some((id, _)) = crate::containers::named().into_iter().nth(index) else { return };
+    if let Some(tab) = super::open_tab_in(link, super::scoped(Some(id)).as_deref()) {
+        super::select_tab(tab);
+    }
+    super::publish_tabs();
 }

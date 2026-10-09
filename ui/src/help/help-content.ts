@@ -50,8 +50,9 @@ export const HELP: HelpSection[] = [
         + 'suivant.' },
       { title: 'Créer, renommer, supprimer', how: 'Le « + » à côté des pastilles crée un profil ; Réglages → Profils '
         + 'pour renommer, changer la teinte, réinitialiser ou supprimer.', action: { label: 'Réglages', request: page('reglages') } },
-      { title: 'Conteneurs', how: 'Clic droit sur un onglet → ouvrir dans un conteneur : un second compte sur le même '
-        + 'site, sans changer de profil.' },
+      { title: 'Conteneurs', how: 'Clic droit sur un onglet → ouvrir dans un conteneur, ou clic droit sur un lien → '
+        + '« Ouvrir dans : … » : un second compte sur le même site, sans changer de profil. Le nom du conteneur '
+        + 's’affiche sur l’onglet.' },
     ],
   },
   {
