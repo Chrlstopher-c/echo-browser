@@ -86,6 +86,12 @@ entier, une story = un test isolé (`tools/banc.sh` + `tools/banc.py` : prélude
   en tuiles ; conteneurs nommés sur l'onglet + « Ouvrir dans : … » ; couper le son ; fiches proposées au focus (la
   page ne peut que déclencher l'offre, le remplissage part d'un clic dans Echo).
 
+## Release 0.11.4 (09/10) — lanceur sûr pendant une mise à jour
+Chez Chris, la mise à jour 0.11.2 → 0.11.3 a été déclenchée par le « Redémarrer » de la 0.11.2 (encore buggé) : fantôme
+0.11.2 sans fenêtre, chaque lancement lui passait la main, et le lanceur basculait de version et comptait un essai raté
+à chaque fois (au 3e : retour forcé à 0.11.2). Le lanceur ne bascule plus et ne compte plus rien si Echo est déjà ouvert
+(sous-processus `--type=` exclus). Test `tools/test-maj-relance.sh` (archive installée, mise à jour préparée).
+
 ## Release 0.11.3 (09/10) — relance et fermeture réparées
 « Redémarrer » (codec, extension) tournait à vide et fermer la fenêtre laissait un processus fantôme qui bloquait la
 réouverture (bug présent depuis l'ancrage des extensions) : la fenêtre d'ancrage, de style Chrome, garde la boucle de

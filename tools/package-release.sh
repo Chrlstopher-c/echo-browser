@@ -51,6 +51,13 @@ cat > "$STAGE/echo-browser.sh" <<'EOF'
 here="$(dirname "$(readlink -f "$0")")"
 parent="$(dirname "$here")"; name="$(basename "$here")"
 staged="$parent/$name.maj"; previous="$parent/$name.precedent"; trial="$here/.essai-demarrage"
+# Echo deja ouvert : ce lancement lui passe la main, il ne doit ni basculer de version sous ses pieds ni compter
+# comme un demarrage rate de la version a l'essai (sinon retour force a l'ancienne). Les sous-processus de Chromium
+# (--type=…) ne comptent pas : ils peuvent trainer un instant pendant une relance.
+if pgrep -u "$USER" -af "^($here|$previous)/echo-browser( |$)" | grep -qv -- "--type="; then
+  export CEF_PATH="$here/cef" LD_LIBRARY_PATH="$here/cef${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" ECHO_UI_DIR="$here/ui"
+  cd "$here" && exec "$here/echo-browser" "$@"
+fi
 # Mise a jour preparee par Echo : bascule (l'ancienne version est gardee), la nouvelle est a l'essai.
 if [ -x "$staged/echo-browser" ] && [ -f "$staged/release.json" ]; then
   rm -rf "$previous"
