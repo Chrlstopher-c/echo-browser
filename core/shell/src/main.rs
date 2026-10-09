@@ -104,13 +104,16 @@ fn main() -> anyhow::Result<()> {
 
     info!("boucle de messages lancee");
     run_message_loop();
+    info!("boucle de messages terminee, arret");
     // Lacher nos references aux vues et surimpressions AVANT l'arret de CEF : sinon des observateurs restent
     // enregistres, Chromium echoue une verification a la sortie et passe une dizaine de secondes a ecrire un rapport de plantage.
     window::release_views();
     containers::release();
     anchor::release();
     session::release();
+    info!("vues relachees, arret de Chromium");
     shutdown();
+    info!("Chromium arrete");
 
     // La relance a lieu ici, et pas avant : `exec` ne revient jamais, et le faire
     // pendant que Chromium tourne laisserait ses processus enfants orphelins.

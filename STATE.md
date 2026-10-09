@@ -86,7 +86,13 @@ entier, une story = un test isolé (`tools/banc.sh` + `tools/banc.py` : prélude
   en tuiles ; conteneurs nommés sur l'onglet + « Ouvrir dans : … » ; couper le son ; fiches proposées au focus (la
   page ne peut que déclencher l'offre, le remplissage part d'un clic dans Echo).
 
-## Releases 0.11.0, 0.11.1 et 0.11.2 (09/10 matin) — main à jour
+## Release 0.11.3 (09/10) — relance et fermeture réparées
+« Redémarrer » (codec, extension) tournait à vide et fermer la fenêtre laissait un processus fantôme qui bloquait la
+réouverture (bug présent depuis l'ancrage des extensions) : la fenêtre d'ancrage, de style Chrome, garde la boucle de
+Chromium en vie. `anchor::quit()` la ferme avant `quit_message_loop` (relance, fermeture, dernier onglet). Test réel
+`tools/test-relance.sh` (ancrage actif) ; `test-codecs-prompt` tourne avec `ECHO_NO_ANCHOR=1` et ne le voyait pas.
+
+## Releases 0.11.0, 0.11.1 et 0.11.2 (09/10 matin)
 Second contre-audit après E18 : navigation 8, esthétique 8, grand public 7, finition 7,5, concurrents 7,5. Ses défauts
 corrigeables sont livrés dans la 0.11.1 : adresse vide sur un nouvel onglet, recherche Ctrl+F fermée à tout changement
 d'onglet (`find::active_changed`), repli en http d'un domaine tapé sans https (`http_fallback`), « Traduire » seulement

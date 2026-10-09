@@ -406,7 +406,8 @@ wrap_task! {
 
     impl Task {
         fn execute(&self) {
-            quit_message_loop();
+            tracing::info!("relance : sortie de la boucle demandee");
+            crate::anchor::quit();
         }
     }
 }

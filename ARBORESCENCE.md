@@ -209,6 +209,7 @@ Genere par `tools/gen-arborescence.py` (ne pas editer a la main). Un fichier par
 - `tools/test-clear-data.sh`
 - `tools/test-codecs-install.sh`
 - `tools/test-codecs-prompt.sh`
+- `tools/test-relance.sh`
 - `tools/test-container-visible.sh`
 - `tools/test-containers.sh`
 - `tools/test-contextmenu.sh`

@@ -344,7 +344,7 @@ wrap_window_delegate! {
             *self.chrome_view.borrow_mut() = None;
             *self.content_host.borrow_mut() = None;
             info!("fenetre fermee, arret du navigateur");
-            quit_message_loop();
+            crate::anchor::quit();
         }
 
         /// Toute demande de fermeture de la fenetre (raccourci du gestionnaire de fenetres, bouton, signal) ferme

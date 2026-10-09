@@ -110,3 +110,11 @@ pub fn release() {
         window.close();
     }
 }
+
+/// Sort de la boucle de messages. La fenetre d'ancrage est de style Chrome : tant qu'elle vit, Chromium garde
+/// la boucle en marche et `quit_message_loop` reste sans effet (relance qui tourne a vide, processus fantome
+/// apres fermeture). On la ferme donc d'abord.
+pub fn quit() {
+    release();
+    quit_message_loop();
+}

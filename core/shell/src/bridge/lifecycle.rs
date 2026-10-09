@@ -250,7 +250,7 @@ pub fn close_tab(id: TabId) {
     let remaining = detached.remaining;
     detached.dispose();
     if remaining == 0 {
-        quit_message_loop();
+        crate::anchor::quit();
         return;
     }
     session::with(|s| s.tabs.refresh_visibility());
